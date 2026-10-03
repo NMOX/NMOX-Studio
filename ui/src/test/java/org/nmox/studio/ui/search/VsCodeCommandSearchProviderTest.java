@@ -177,6 +177,13 @@ class VsCodeCommandSearchProviderTest {
     }
 
     @Test
+    @DisplayName("View: Toggle Word Wrap answers to VS Code's title, on the View menu's own action")
+    void wordWrapRow() {
+        assertThat(titles("word wrap", ALL)).containsExactly("View: Toggle Word Wrap");
+        assertThat(row("View: Toggle Word Wrap").id()).endsWith(".editing.ToggleWordWrapAction");
+    }
+
+    @Test
     @DisplayName("an editor row that names one of the product's own kit actions names one the editor module registers")
     void ownKitActionsExist() throws Exception {
         // the platform's kit actions (format, goto) are its own; ours are named nmox-… and live in the editor

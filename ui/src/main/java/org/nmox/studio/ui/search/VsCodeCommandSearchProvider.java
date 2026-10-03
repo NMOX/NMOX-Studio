@@ -83,6 +83,7 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
             cmd("File: Copy Relative Path of Active File", "Edit", "org.nmox.studio.editor.share.CopyFilePathAction.Relative"),
             cmd("View: Toggle Minimap", "View", "org.nmox.studio.editor.minimap.ToggleMinimapAction"),
             cmd("View: Toggle Sticky Scroll", "View", "org.nmox.studio.editor.sticky.ToggleStickyScrollAction"),
+            cmd("View: Toggle Word Wrap", "View", "org.nmox.studio.editor.editing.ToggleWordWrapAction"),
             cmd("View: Close All Editors", "Window", "org.netbeans.core.windows.actions.CloseAllDocumentsAction"),
             cmd("View: Close Other Editors", "Window", "org.netbeans.core.windows.actions.CloseAllButThisAction"),
             cmd("Developer: Toggle Screencast Mode", "View", "org.nmox.studio.editor.present.ShowKeystrokesAction"),

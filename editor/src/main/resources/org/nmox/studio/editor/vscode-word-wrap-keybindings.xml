@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN"
+                          "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
+<!--
+    Toggle Word Wrap on VS Code's chord: Opt+Z on macOS, Alt+Z on Windows
+    and Linux (View > Word Wrap is the same switch).
+
+    Measured in the assembled cluster: Alt+Z is bound by nothing, editor
+    or global, in any of the five profiles on any OS family, and no
+    two-stroke binding starts with it. So this file rides all five.
+
+    An EDITOR binding on purpose: on macOS Opt+Z also types a character,
+    and only a press the editor's own keymap consumed can have that typed
+    echo swallowed (editing/TypedEcho). A global shortcut would toggle the
+    wrap and leave the character in the file.
+-->
+<bindings>
+    <bind actionName="nmox-toggle-word-wrap" key="A-Z"/>
+</bindings>

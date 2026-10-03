@@ -91,6 +91,10 @@ class EditingRegistrationsTest {
         ACTIONS.add(ExpandLineSelectionAction.NAME);
         BINDS.put("vscode-line-keybindings.xml", "D-L -> " + ExpandLineSelectionAction.NAME);
         WHERE.put("vscode-line-keybindings.xml", Map.of("Idea", "", "Emacs", "OS_MAC"));
+        ACTIONS.add(ToggleWordWrapKeyAction.NAME);
+        BINDS.put("vscode-word-wrap-keybindings.xml", "A-Z -> " + ToggleWordWrapKeyAction.NAME);
+        WHERE.put("vscode-word-wrap-keybindings.xml", Map.of(
+                "NetBeans", "", "Emacs", "", "Idea", "", "Eclipse", "", "NetBeans55", ""));
     }
 
     @Test
@@ -166,5 +170,17 @@ class EditingRegistrationsTest {
             }
             assertThat(byPosition).as(profile + " keybinding files were read").hasSizeGreaterThanOrEqualTo(4);
         }
+    }
+
+    @Test
+    @DisplayName("Word Wrap is a View-menu row between Minimap and Sticky Scroll, on the action Quick Search names")
+    void wordWrapMenuRow() throws Exception {
+        Element generated = parse(GENERATED);
+        Element row = at(generated, "Menu", "View",
+                "org-nmox-studio-editor-editing-ToggleWordWrapAction.shadow");
+        assertThat(row).as("the View menu row").isNotNull();
+        assertThat(attr(row, "position")).isEqualTo("1155");
+        assertThat(attr(row, "originalFile"))
+                .isEqualTo("Actions/View/org-nmox-studio-editor-editing-ToggleWordWrapAction.instance");
     }
 }
