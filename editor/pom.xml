@@ -231,6 +231,15 @@
             <artifactId>org-netbeans-modules-editor-indent</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- the platform's code-template engine (tab stops, mirrored
+             parameters, one undo unit): a repository's .vscode snippets
+             are translated into its template language and inserted
+             through it (editor.snippets). The ide cluster ships it. -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-editor-codetemplates</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-lexer</artifactId>
