@@ -15,6 +15,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.nmox.studio.core.util.BoundedReads;
+import org.nmox.studio.core.util.Containment;
 import org.nmox.studio.core.util.Jsonc;
 
 /**
@@ -108,9 +109,16 @@ public final class VsCodeExtensions {
         if (dir == null) {
             return Recommendations.NONE;
         }
-        File file = new File(new File(dir, ".vscode"), "extensions.json");
-        if (!file.isFile()) {
+        File written = new File(new File(dir, ".vscode"), "extensions.json");
+        if (!written.isFile()) {
             return Recommendations.NONE;
+        }
+        // a .vscode folder or extensions.json that is a link out of the
+        // project is somebody else's file: not read, and said so
+        File file = Containment.resolve(dir, RELATIVE_PATH);
+        if (file == null || !file.isFile()) {
+            LOG.log(Level.INFO, "{0} leads out of the project; it was not read", written);
+            return Recommendations.UNREADABLE;
         }
         try {
             return parse(BoundedReads.read(file, MAX_BYTES));
