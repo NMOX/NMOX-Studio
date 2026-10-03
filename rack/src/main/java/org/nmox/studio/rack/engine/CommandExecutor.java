@@ -176,7 +176,7 @@ public final class CommandExecutor {
             process.onExit().thenRun(() -> LIVE.remove(spawned));
         } catch (IOException | RuntimeException ex) {
             // RuntimeException too: ProcessBuilder refuses an environment
-            // name holding '=' or a NUL (and a NUL in a value) with an
+            // name holding '=' (on POSIX) or a NUL, and a NUL in a value, with an
             // IllegalArgumentException, which once escaped this method —
             // the caller's progress bar spun on and nothing was said. It is
             // a launch that did not happen, and ends the way one does.

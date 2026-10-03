@@ -27,7 +27,13 @@ class CommandExecutorTest {
     @Test
     @DisplayName("an environment no process can take ends the run as a failed launch: exit -1, said, no throw, no value printed")
     void anEnvironmentNoProcessCanTakeIsAFailedLaunch() throws Exception {
-        for (Map<String, String> env : List.of(Map.of("A=B", "x"), Map.of("X", "a\u0000secret-value"))) {
+        // a NUL in a value is refused on every OS; a name holding '=' only
+        // on POSIX (Windows' ProcessEnvironment hands it on, and the
+        // process runs — seen on the windows-latest lane)
+        List<Map<String, String>> refused = org.openide.util.Utilities.isWindows()
+                ? List.of(Map.of("X", "a\u0000secret-value"))
+                : List.of(Map.of("A=B", "x"), Map.of("X", "a\u0000secret-value"));
+        for (Map<String, String> env : refused) {
             List<Integer> exits = new java.util.concurrent.CopyOnWriteArrayList<>();
             List<String> lines = new java.util.concurrent.CopyOnWriteArrayList<>();
             CommandExecutor.Handle h = CommandExecutor.run("bad-env", new File("."), env, List.of("true"),
