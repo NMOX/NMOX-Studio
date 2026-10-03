@@ -39,9 +39,12 @@ import org.nmox.studio.core.util.Containment;
  * quoting}} object), {@code options.cwd} and {@code options.env}, the
  * file-level {@code options} as defaults, and the {@code osx} / {@code
  * linux} / {@code windows} override objects merged over the base — only
- * the running OS's. {@code group} is read for ranking only, and {@code
- * isBackground} only so that nothing is made to wait for a task that
- * never finishes. The file's top-level {@code inputs[]} are read beside
+ * the running OS's. {@code group} is read for ranking only. {@code
+ * problemMatcher} is kept as the file wrote it and bound to its folders
+ * when the task resolves ({@link Launch#matching}); what a matcher means
+ * is {@link VsCodeProblemMatchers}'s. {@code isBackground} says how a
+ * task is waited for: until it exits, or — a watcher — until its problem
+ * matcher says it is ready. The file's top-level {@code inputs[]} are read beside
  * the tasks ({@link InputDef}), and each task's {@code dependsOn} /
  * {@code dependsOrder} — the order they ask for is {@link
  * VsCodeTaskPlan}'s to decide, not this class's.
@@ -174,12 +177,24 @@ public final class VsCodeTasks {
      * {@code dependsOn} entry written as a task-identifier OBJECT
      * ({@code {"type": "npm", "script": "build"}}), as the file wrote it,
      * or null — VS Code resolves that form against tasks its extensions
-     * detect, which this IDE has no list of.
+     * detect, which this IDE has no list of. {@code problemMatchers} is
+     * the task's {@code problemMatcher} as the file wrote it, one entry
+     * per matcher: a name ({@code "$tsc"}) or the JSON text of an inline
+     * matcher object — {@link VsCodeProblemMatchers} reads them.
      */
     record TaskDef(String label, String type, Value command, List<Value> args,
             String cwd, Map<String, String> env, String script, String path,
             List<String> dependsOn, String group, boolean background, ShellOpt shell,
-            boolean sequence, String foreignDependency) {
+            boolean sequence, String foreignDependency, List<String> problemMatchers) {
+
+        /** A task that declares no problem matcher. */
+        TaskDef(String label, String type, Value command, List<Value> args,
+                String cwd, Map<String, String> env, String script, String path,
+                List<String> dependsOn, String group, boolean background, ShellOpt shell,
+                boolean sequence, String foreignDependency) {
+            this(label, type, command, args, cwd, env, script, path, dependsOn, group, background, shell,
+                    sequence, foreignDependency, List.of());
+        }
 
         /** A task whose dependencies are labels and run in parallel. */
         TaskDef(String label, String type, Value command, List<Value> args,
@@ -297,9 +312,18 @@ public final class VsCodeTasks {
      * shown} is the launch line to print and record in place of the argv
      * — the same line with a password input's answer and the editor's
      * selection left as the file wrote them — or null when the argv
-     * carries neither and may be shown as it is.
+     * carries neither and may be shown as it is. {@code matching} is what
+     * the process's output is read for: the task's problem matchers,
+     * bound to their folders ({@link VsCodeProblemMatchers.Applied#NONE}
+     * for a task that declares none).
      */
-    record Launch(List<String> argv, File dir, Map<String, String> env, String shown) implements Resolved {
+    record Launch(List<String> argv, File dir, Map<String, String> env, String shown,
+            VsCodeProblemMatchers.Applied matching) implements Resolved {
+
+        /** A launch whose output is read for nothing. */
+        Launch(List<String> argv, File dir, Map<String, String> env, String shown) {
+            this(argv, dir, env, shown, VsCodeProblemMatchers.Applied.NONE);
+        }
 
         /** A launch whose argv may be shown as it is. */
         Launch(List<String> argv, File dir, Map<String, String> env) {
@@ -307,8 +331,16 @@ public final class VsCodeTasks {
         }
     }
 
-    /** Hand {@code script} to the NPM Service lane in {@code dir}. */
-    record NpmLaunch(File dir, String script) implements Resolved {
+    /**
+     * Hand {@code script} to the NPM Service lane in {@code dir}; {@code
+     * matching} as for a {@link Launch}.
+     */
+    record NpmLaunch(File dir, String script, VsCodeProblemMatchers.Applied matching) implements Resolved {
+
+        /** A script whose output is read for nothing. */
+        NpmLaunch(File dir, String script) {
+            this(dir, script, VsCodeProblemMatchers.Applied.NONE);
+        }
     }
 
     /**
@@ -489,7 +521,8 @@ public final class VsCodeTasks {
                     shellOf(options),
                     // VS Code's DependsOrder.fromString: "sequence", else parallel
                     "sequence".equalsIgnoreCase(String.valueOf(task.opt("dependsOrder")).strip()),
-                    foreignDependency(task.opt("dependsOn"))));
+                    foreignDependency(task.opt("dependsOn")),
+                    problemMatchers(task.opt("problemMatcher"))));
         }
         return new TasksFile(List.copyOf(out), inputs);
     }
@@ -682,6 +715,38 @@ public final class VsCodeTasks {
         return List.copyOf(out);
     }
 
+    /**
+     * {@code problemMatcher} as written — a name, a matcher object, or an
+     * array of either — one entry per matcher, in the file's order: the
+     * name itself, or an object's JSON text (which starts with a brace,
+     * as no name does). Anything else in the array is not a matcher VS
+     * Code would read either, and is kept as the text it is so that the
+     * run can say it was not applied.
+     */
+    private static List<String> problemMatchers(Object o) {
+        List<String> out = new ArrayList<>();
+        if (o instanceof JSONArray arr) {
+            // one more than the run reads, so that it can say the list was cut
+            for (int i = 0; i < arr.length() && out.size() <= VsCodeProblemMatchers.MAX_MATCHERS; i++) {
+                addProblemMatcher(out, arr.opt(i));
+            }
+        } else {
+            addProblemMatcher(out, o);
+        }
+        return List.copyOf(out);
+    }
+
+    private static void addProblemMatcher(List<String> out, Object o) {
+        if (o instanceof String s) {
+            // a name is never taken for an object: a leading brace is dropped from one
+            out.add(s.strip().startsWith("{") ? "?" + s.strip() : s.strip());
+        } else if (o instanceof JSONObject obj) {
+            out.add(obj.toString());
+        } else if (o != null && o != JSONObject.NULL) {
+            out.add("?" + o);
+        }
+    }
+
     /** How much of a task-identifier object a refusal quotes. */
     private static final int MAX_FOREIGN = 120;
 
@@ -800,7 +865,7 @@ public final class VsCodeTasks {
                 if (dir instanceof Refused r) {
                     return new Refused(r.reason(), written.apply(task.path()));
                 }
-                return new NpmLaunch((File) dir, sub.apply(task.script()));
+                return new NpmLaunch((File) dir, sub.apply(task.script()), matching(task, project, env));
             }
             case "shell", "process" -> {
                 if (task.command() == null || task.command().text().isBlank()) {
@@ -830,12 +895,25 @@ public final class VsCodeTasks {
                 }
                 @SuppressWarnings("unchecked")
                 List<String> built = (List<String>) argv;
-                return new Launch(List.copyOf(built), (File) dir, Collections.unmodifiableMap(environment), shown);
+                return new Launch(List.copyOf(built), (File) dir, Collections.unmodifiableMap(environment), shown,
+                        matching(task, project, env));
             }
             default -> {
                 return new Refused(Reason.TYPE, task.type());
             }
         }
+    }
+
+    /**
+     * What {@code task}'s output is read for: its problem matchers, each
+     * bound to the folder its file names are relative to. A matcher's
+     * folder may use the project's variables ({@code ${workspaceFolder}},
+     * {@code ${cwd}}, {@code ${env:NAME}}) and no others — {@link
+     * VsCodeProblemMatchers#read} has already set aside one that does.
+     */
+    private static VsCodeProblemMatchers.Applied matching(TaskDef task, File project, UnaryOperator<String> env) {
+        return VsCodeProblemMatchers.apply(task.problemMatchers(), task.background(), project,
+                folder -> substitute(folder, project, env));
     }
 
     /** Every string of {@code task} a variable could sit in, in the order the file's reader meets them. */
