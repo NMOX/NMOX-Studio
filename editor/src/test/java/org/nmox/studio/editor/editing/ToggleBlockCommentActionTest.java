@@ -126,6 +126,46 @@ class ToggleBlockCommentActionTest {
     }
 
     @Test
+    @DisplayName("pressed as the kit action on an editor document, a wrap is ONE undo step")
+    void oneUndoStepOnAnEditorDocument() throws Exception {
+        org.netbeans.editor.BaseDocument doc = new org.netbeans.editor.BaseDocument(false, "text/javascript");
+        doc.putProperty("mimeType", "text/javascript");
+        doc.insertString(0, "let a = 1;\nlet b = 2;", null);
+        javax.swing.JEditorPane pane = new javax.swing.JEditorPane();
+        pane.setDocument(doc);
+        UndoManager undo = new UndoManager();
+        doc.addUndoableEditListener(undo);
+        pane.select(0, 10);
+        new ToggleBlockCommentAction().actionPerformed(null, pane);
+        assertThat(doc.getText(0, doc.getLength())).isEqualTo("/* let a = 1; */\nlet b = 2;");
+        assertThat(pane.getSelectedText()).isEqualTo("/* let a = 1; */");
+        undo.undo();
+        assertThat(doc.getText(0, doc.getLength())).as("both delimiters gone in one undo")
+                .isEqualTo("let a = 1;\nlet b = 2;");
+        assertThat(undo.canUndo()).isFalse();
+        assertThat(said).isEmpty();
+    }
+
+    @Test
+    @DisplayName("fired by an Alt chord the action arms the typed-echo guard; fired from a menu or Quick Search it does not")
+    void altChordArmsTheEchoGuard() {
+        JTextArea area = editor("text/javascript", "x");
+        int before = area.getKeyListeners().length;
+        ToggleBlockCommentAction action = new ToggleBlockCommentAction();
+        action.actionPerformed(new java.awt.event.ActionEvent(area, java.awt.event.ActionEvent.ACTION_PERFORMED,
+                ToggleBlockCommentAction.NAME), area);
+        assertThat(area.getKeyListeners()).hasSize(before);
+        assertThat(area.getText()).isEqualTo("/* x */");
+        action.actionPerformed(new java.awt.event.ActionEvent(area, java.awt.event.ActionEvent.ACTION_PERFORMED,
+                ToggleBlockCommentAction.NAME, java.awt.event.ActionEvent.ALT_MASK | java.awt.event.ActionEvent.SHIFT_MASK),
+                area);
+        assertThat(area.getKeyListeners()).hasSize(before + 1);
+        assertThat(area.getText()).isEqualTo("x");
+        // no editor at all: nothing happens, and nothing throws
+        action.actionPerformed(null, null);
+    }
+
+    @Test
     @DisplayName("a wrap is undone by the edits it made and nothing else")
     void undoRestoresTheText() {
         JTextArea area = editor("text/javascript", "let a;");

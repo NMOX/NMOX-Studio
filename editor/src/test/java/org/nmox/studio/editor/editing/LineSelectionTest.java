@@ -94,6 +94,23 @@ class LineSelectionTest {
     }
 
     @Test
+    @DisplayName("pressed as the kit action on an editor document, with nothing copied out of it")
+    void asTheKitAction() throws Exception {
+        org.netbeans.editor.BaseDocument doc = new org.netbeans.editor.BaseDocument(false, "text/x-go");
+        doc.insertString(0, "package main\n\nfunc main() {}\n", null);
+        javax.swing.JEditorPane pane = new javax.swing.JEditorPane();
+        pane.setDocument(doc);
+        pane.setCaretPosition(3);
+        ExpandLineSelectionAction action = new ExpandLineSelectionAction();
+        action.actionPerformed(null, pane);
+        assertThat(pane.getSelectedText()).isEqualTo("package main\n");
+        action.actionPerformed(null, pane);
+        assertThat(pane.getSelectedText()).isEqualTo("package main\n\n");
+        action.actionPerformed(null, null);
+        assertThat(doc.getText(0, doc.getLength())).isEqualTo("package main\n\nfunc main() {}\n");
+    }
+
+    @Test
     @DisplayName("in an editor: the line is selected with the caret at its end, and the last line stops at the text's end")
     void inAnEditor() {
         JTextArea area = new JTextArea("alpha\nbeta\ngamma");

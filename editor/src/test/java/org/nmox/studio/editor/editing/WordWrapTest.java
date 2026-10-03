@@ -221,6 +221,40 @@ class WordWrapTest {
     }
 
     @Test
+    @DisplayName("the chord's kit action is the same press, and an Alt chord arms the typed-echo guard")
+    void theKeyActionIsTheSamePress() {
+        LazyDoc ts = new LazyDoc("text/typescript", store.effective("text/typescript"));
+        JTextArea editor = new JTextArea(ts);
+        ToggleWordWrapAction.editors = () -> List.of(editor);
+        int before = editor.getKeyListeners().length;
+        ToggleWordWrapKeyAction key = new ToggleWordWrapKeyAction();
+        key.actionPerformed(new java.awt.event.ActionEvent(editor, java.awt.event.ActionEvent.ACTION_PERFORMED,
+                ToggleWordWrapKeyAction.NAME, java.awt.event.ActionEvent.ALT_MASK), editor);
+        assertThat(ToggleWordWrapAction.wrapsNow(editor)).isTrue();
+        assertThat(editor.getKeyListeners()).hasSize(before + 1);
+        assertThat(said).containsExactly("Word wrap is on for every text/typescript editor");
+        key.actionPerformed(null, null);
+        assertThat(said).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("the View-menu row is a checkbox that reads the editor in hand, and with no editor it says so")
+    void theMenuRow() {
+        ToggleWordWrapAction.editors = List::of;
+        ToggleWordWrapAction action = new ToggleWordWrapAction();
+        assertThat(action.getValue(javax.swing.Action.NAME)).isEqualTo("Word Wrap");
+        javax.swing.JMenuItem item = action.getMenuPresenter();
+        assertThat(item).isInstanceOf(javax.swing.JCheckBoxMenuItem.class);
+        assertThat(item.getText()).isEqualTo("Word Wrap");
+        // the checkbox reports the editor last typed in (in a test run, usually none)
+        assertThat(item.isSelected()).isEqualTo(
+                ToggleWordWrapAction.wrapsNow(org.netbeans.api.editor.EditorRegistry.lastFocusedComponent()));
+        assertThat(item.getToolTipText()).contains("language").contains("saved");
+        action.actionPerformed(null);
+        assertThat(said).as("a press always says what it did, or why it did nothing").hasSize(1);
+    }
+
+    @Test
     @DisplayName("no editor, or a text component that is not a code editor, is refused out loud")
     void noEditorIsRefused() {
         ToggleWordWrapAction.editors = List::of;

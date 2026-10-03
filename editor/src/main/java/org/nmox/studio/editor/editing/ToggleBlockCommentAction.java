@@ -134,8 +134,14 @@ public class ToggleBlockCommentAction extends BaseAction {
                     }
                 }
                 landed[0] = true;
-            } catch (BadLocationException moved) {
-                // the document changed under the edit; an atomic edit rolls back
+            } catch (BadLocationException refused) {
+                // not an offset problem (the window matched, and every offset is
+                // inside it): the document refused a write, as a guarded section
+                // does. One delimiter without the other is broken code, so the
+                // atomic edit is broken and the platform undoes what it wrote.
+                if (doc instanceof BaseDocument atomic) {
+                    atomic.breakAtomicLock();
+                }
             }
         };
         if (doc instanceof BaseDocument atomic) {
