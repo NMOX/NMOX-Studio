@@ -134,12 +134,12 @@ public final class PrettierReformat implements ReformatTask {
      * here too would run both.
      */
     @MimeRegistrations({
-        @MimeRegistration(mimeType = "text/javascript", service = ReformatTask.Factory.class, position = 500),
-        @MimeRegistration(mimeType = "text/typescript", service = ReformatTask.Factory.class, position = 500),
-        @MimeRegistration(mimeType = "text/x-vue", service = ReformatTask.Factory.class, position = 500),
-        @MimeRegistration(mimeType = "text/x-svelte", service = ReformatTask.Factory.class, position = 500),
-        @MimeRegistration(mimeType = "text/x-astro", service = ReformatTask.Factory.class, position = 500),
-        @MimeRegistration(mimeType = "text/x-graphql", service = ReformatTask.Factory.class, position = 500)
+        @MimeRegistration(mimeType = "text/javascript", service = ReformatTask.Factory.class),
+        @MimeRegistration(mimeType = "text/typescript", service = ReformatTask.Factory.class),
+        @MimeRegistration(mimeType = "text/x-vue", service = ReformatTask.Factory.class),
+        @MimeRegistration(mimeType = "text/x-svelte", service = ReformatTask.Factory.class),
+        @MimeRegistration(mimeType = "text/x-astro", service = ReformatTask.Factory.class),
+        @MimeRegistration(mimeType = "text/x-graphql", service = ReformatTask.Factory.class)
     })
     public static final class Factory implements ReformatTask.Factory {
         @Override
