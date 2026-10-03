@@ -183,7 +183,7 @@ shows the one-line link.
 | **Command Palette** | **Quick Search** (⇧⌘P or ⌘I) — actions, files, recent projects, rack devices, live servers, API Studio requests, symbols. VS Code's own command names work too: *Format Document*, *Toggle Terminal*, *Git: Commit* or *Open Settings* lists the action that does the same thing here, under **VS Code commands**, with its own name and chord. |
 | **Extensions** | **Tools ▸ Plugins** installs and updates modules, NMOX's own updates included. Much of what an extension adds in VS Code is a **rack device** here — and you can write one as a JSON file in `~/.nmox/devices.d` ([device files](device-files.md)). |
 | **`tasks.json`** | Your repository's `.vscode/tasks.json` is read: type a task's name into Quick Search (⇧⌘P or ⌘I) and Enter on *Run task: build — make all* runs it, with Workspace Trust asking first on a project you have not trusted, its output in the Output window and the toolbar ■ to stop it. The tasks it `dependsOn` run first, `${file}` is the file open in the editor, and `${input:…}` asks you before anything starts. Beside it, the project's own scripts run the way they are written: the toolbar's Run / Build / Test (F6, F11, ⌃F6), **Run Script** on a `package.json` scripts line, the **NPM Explorer**, and the **Task Rack** (⌘9), where tasks are devices you wire together. |
-| **`launch.json`** | Your repository's `.vscode/launch.json` is read: type a configuration's name into Quick Search (⇧⌘P or ⌘I) and Enter on *Debug: Launch Program — ${workspaceFolder}/server.js* starts the breakpoint debugger on that program, with Workspace Trust asking first. Node (`node`, `pwa-node`) and Python (`python`, `debugpy`) configurations debug their `program` in their `cwd`, with their `args` and `env`; Chrome (`chrome`, `pwa-chrome`) configurations open their `url` (or `file`) with their `webRoot`. Without a `launch.json`, **Debug File** (⇧⌘F5) and the toolbar's debug button work out what to launch from the project itself — the `start` script's entry, `main`, `index.js` — and the **INSPECTOR** rack device launches a debugger as a step in a pipeline. |
+| **`launch.json`** | Your repository's `.vscode/launch.json` is read: type a configuration's name into Quick Search (⇧⌘P or ⌘I) and Enter on *Debug: Launch Program — ${workspaceFolder}/server.js* starts the breakpoint debugger on that program, with Workspace Trust asking first. Node (`node`, `pwa-node`) configurations debug their `program` in their `cwd`, with their `args`, their `env` and `envFile`, under their `runtimeExecutable` and `runtimeArgs` — so an `npm run dev`, a `tsx` or an `--experimental-strip-types` configuration starts as it is written — and a Node `"request": "attach"` attaches to a `node --inspect` process on this machine. Python (`python`, `debugpy`) configurations debug their `program` with `args`, `env`, `envFile` and the interpreter their `python` names; Chrome (`chrome`, `pwa-chrome`) configurations open their `url` (or `file`) with their `webRoot`. `"program": "${file}"` debugs the file your editor shows. Without a `launch.json`, **Debug File** (⇧⌘F5) and the toolbar's debug button work out what to launch from the project itself — the `start` script's entry, `main`, `index.js` — and the **INSPECTOR** rack device launches a debugger as a step in a pipeline. |
 | **Integrated terminal** | The **Terminal** window (⌃\`): the first press starts a shell in the project folder, later presses bring it back. |
 | **`settings.json`** | Tools ▸ Options (on macOS, NMOX Studio ▸ Settings…). A repository's `.vscode/settings.json` is read too: `editor.tabSize`, `editor.insertSpaces` and `editor.indentSize` set its indentation as you type, `files.trimTrailingWhitespace` and `files.insertFinalNewline` (when `true`) apply when you save, and a language block such as `"[typescript]"` overrides them for its language. Where the repository also has an `.editorconfig`, the `.editorconfig` wins wherever both speak. |
 | **Problems panel** | **Action Items** (⌘6), or click the **✕ ⚠** count on the status line: the language servers' errors and warnings, and the lint and type findings from the rack's PURITY and TYPEGUARD devices. As in VS Code, some servers report only on the files you have open; gopls reports on the whole package. |
@@ -212,21 +212,48 @@ it lives; click it for Quick Search. It says so once per project.
   press reaches the shell rather than taking you back to the editor.
 - **`launch.json` is read, and what the debugger cannot honour is
   refused.** The debugger here passes a program, its working folder, its
-  `args` (a list of strings) and its `env` (strings added to the
-  inherited environment), so a configuration that sets `envFile`,
-  `runtimeExecutable`, `runtimeArgs`, `preLaunchTask` or any other field
-  it has not been taught is listed but not started: Enter names the
-  fields on the status line. Starting the program without them would
-  debug something other than what the file says. `args` written as one
-  string (VS Code hands that to a shell) and an `env` value of `null`
-  (which unsets a variable) are refused the same way, and so are
-  `"request": "attach"`, a `compounds` entry, a type with no adapter
-  here (`go`, `msedge`, `cppdbg` and the rest), a value only VS Code can
-  supply (`${file}`, `${input:…}`), and a path outside the project.
-  Fields that only shape what the debugger shows — `skipFiles`,
-  `outFiles`, `sourceMaps`, `console`, `justMyCode`, `presentation` — are
-  accepted and not applied; the program's output goes to the Output
-  window.
+  `args` (a list of strings), its `env` and `envFile`, and the runtime
+  that starts it (`runtimeExecutable` and `runtimeArgs` for Node, `python`
+  for Python); for Node it also attaches to a process already running. A
+  configuration that sets `preLaunchTask`, `postDebugTask`, `restart` or
+  any other field it has not been taught is listed but not started: Enter
+  names the fields on the status line. Starting the program without them
+  would debug something other than what the file says. `args` or
+  `runtimeArgs` written as one string (VS Code hands that to a shell) and
+  an `env` value of `null` (which unsets a variable) are refused the same
+  way, and so are a `compounds` entry, a type with no adapter here (`go`,
+  `msedge`, `cppdbg` and the rest), an attach of anything but Node, a
+  value only VS Code can supply (`${input:…}`, `${command:…}`), and a
+  program, working folder or `envFile` outside the project. Fields that
+  only shape what the debugger shows — `skipFiles`, `outFiles`,
+  `sourceMaps`, `console`, `justMyCode`, `presentation` — are accepted and
+  not applied; the program's output goes to the Output window. Four
+  things are worth knowing before you press Enter:
+  - **An `envFile` that is not there is refused**, where VS Code starts
+    the program without it. Its variables are added to the environment
+    and an `env` entry wins over the file, as in VS Code. The file is read
+    as plain `NAME=value` lines (comment lines, `export`, and one pair of
+    quotes around a value are fine); a line VS Code would read
+    differently — an escape inside double quotes, a `#` after a value, a
+    back-tick, and in a Python configuration an `export` or a `${NAME}` —
+    is refused naming the file and the line number, never the value.
+  - **`${file}`, `${fileBasename}`, `${fileBasenameNoExtension}`,
+    `${fileDirname}` and `${relativeFile}` mean the file in the editor that
+    last had focus.** With no file open the configuration is refused naming
+    the variable, and a `${file}` outside the project is refused like any
+    other program there.
+  - **A `runtimeExecutable` is a name or an absolute path.** A name
+    (`npm`, `tsx`, `nodemon`) is looked up on your PATH and then in the
+    project's `node_modules/.bin`; `${workspaceFolder}/node_modules/.bin/tsx`
+    must be there; a relative path is refused, because VS Code would look
+    it up as a name. When the runtime is the whole command (`npm run dev`
+    with no `program`), the script it starts is debugged as a session of
+    its own, listed in the Sessions window.
+  - **An attach is to this machine.** `port` (9229 unless written) and an
+    `address` of `localhost`, `127.0.0.1` or `::1`; any other address is
+    refused, because this is not remote development. If nothing is
+    listening the status line says so, and ending the session leaves your
+    program running.
 - **`tasks.json` is read, and what cannot run as written is refused.**
   A task runs with the tasks it `dependsOn` first (together, or one
   after another with `"dependsOrder": "sequence"`), with `${file}`,
