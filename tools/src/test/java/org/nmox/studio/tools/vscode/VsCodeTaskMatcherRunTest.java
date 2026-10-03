@@ -168,6 +168,14 @@ class VsCodeTaskMatcherRunTest {
         }
     }
 
+    private static boolean chainIsLive() {
+        return LiveRuns.live().stream().anyMatch(r -> r.id().startsWith("vscode-task-chain:"));
+    }
+
+    private static boolean serveGone() {
+        return LiveRuns.live().stream().noneMatch(r -> r.label().startsWith("real serve"));
+    }
+
     private static boolean posix() {
         return !System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win");
     }
@@ -239,6 +247,9 @@ class VsCodeTaskMatcherRunTest {
         enter("serve");
         await("the watcher is gone: it is started", () -> started().contains("watch"));
         again.complete(Exit.READY);
+        // the run's next stage is queued on the lane: let it land on THIS test's fake
+        // spawner, not on the real one @AfterEach puts back
+        await("and serve after it", () -> started().contains("serve"));
     }
 
     /* ----------------------------------------------------------- npm-type tasks */
@@ -331,12 +342,14 @@ class VsCodeTaskMatcherRunTest {
         BooleanSupplier watcherLive = () -> LiveRuns.live().stream()
                 .filter(r -> r.id().startsWith("vscode-task:") && r.label().startsWith("real watch")).count() == 1;
         assertThat(watcherLive.getAsBoolean()).as("the watcher runs on, where the ■ can reach it").isTrue();
-        await("the first serve has ended", () -> LiveRuns.live().stream()
-                .noneMatch(r -> r.label().startsWith("real serve")));
+        // "Running task" is said BEFORE the spawn: wait for the whole run (its chain entry) to end,
+        // or the spawn can land after this test, in the next test's seams
+        await("the first run has ended", () -> !chainIsLive() && serveGone());
 
         events.clear();
         enter("real serve");
         await("the second serve runs", () -> said().contains("Running task \"real serve\"…"));
+        await("and the second run has ended", () -> !chainIsLive() && serveGone());
         assertThat(said()).first().isEqualTo("Task \"real watch\" is already running and watching; it was not started again.");
         assertThat(watcherLive.getAsBoolean()).as("still exactly one watcher").isTrue();
 

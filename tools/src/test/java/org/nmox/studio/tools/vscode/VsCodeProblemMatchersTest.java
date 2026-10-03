@@ -386,6 +386,17 @@ class VsCodeProblemMatchersTest {
     }
 
     @Test
+    @DisplayName("the lines of a match are used up: the last line of one problem is never the first line of the next")
+    void aMatchedLineIsNotMatchedAgain() {
+        JSONArray patterns = new JSONArray()
+                .put(pattern("^(\\S+)$").put("kind", "file").put("file", 1))
+                .put(pattern("^(\\S+)$").put("message", 1));
+        assertThat(found(matcher(patterns), "a\nb\nc\nd\ne")).extracting(f -> f.file().getName(), Finding::message)
+                .as("a+b, then c+d: not a+b, b+c, c+d, d+e").containsExactly(
+                        org.assertj.core.groups.Tuple.tuple("a", "b"), org.assertj.core.groups.Tuple.tuple("c", "d"));
+    }
+
+    @Test
     @DisplayName("two matchers on one task: each line goes to the first that takes it, and a multi-line one is tried before a single-line one")
     void severalMatchers() {
         JSONArray both = new JSONArray().put("$eslint-stylish").put("$tsc");
