@@ -544,10 +544,12 @@ public final class VsCodeGlob {
                 }
                 return at;
             }
-            Star star = (Star) node;
-            int split = state(SPLIT, '\0', -1, next, null);
-            out.set(split, build(star.body, split));
-            return split;
+            if (node instanceof Star star) {
+                int split = state(SPLIT, '\0', -1, next, null);
+                out.set(split, build(star.body, split));
+                return split;
+            }
+            throw new IllegalStateException("not a piece of a pattern: " + node);
         }
     }
 

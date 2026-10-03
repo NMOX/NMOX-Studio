@@ -300,6 +300,36 @@ class ProjectRulerTest {
     }
 
     @Test
+    @DisplayName("only the editors showing the file are told: another file's editor hears nothing")
+    void onlyTheFilesOwnEditorsAreTold() throws Exception {
+        Path repo = repo("among", "{ \"editor.rulers\": [100] }");
+        NbEditorDocument mine = documentFor(repo.resolve("a.txt"));
+        NbEditorDocument other = documentFor(repo.resolve("b.txt"));
+        List<String> heard = new CopyOnWriteArrayList<>();
+        DocumentUtilities.addPropertyChangeListener(mine, evt -> {
+            if (WIDTH.equals(evt.getPropertyName())) {
+                heard.add("a.txt");
+            }
+        });
+        DocumentUtilities.addPropertyChangeListener(other, evt -> {
+            if (WIDTH.equals(evt.getPropertyName())) {
+                heard.add("b.txt");
+            }
+        });
+        File file = FileUtil.toFile(FileUtil.toFileObject(FileUtil.normalizeFile(repo.resolve("a.txt").toFile())));
+        List<javax.swing.JEditorPane> panes = new ArrayList<>();
+        SwingUtilities.invokeAndWait(() -> {
+            for (NbEditorDocument doc : List.of(mine, other, new NbEditorDocument("text/plain"))) {
+                javax.swing.JEditorPane pane = new javax.swing.JEditorPane();
+                pane.setDocument(doc);
+                panes.add(pane);
+            }
+            EditorConfigCodeStyle.retellAmong(panes, file);
+        });
+        assertThat(heard).containsExactly("a.txt");
+    }
+
+    @Test
     @DisplayName("an editor gaining focus asks again once the answer has aged - how an edit reaches a file nobody is typing in")
     void focusAsksAgain() throws Exception {
         Path repo = repo("focus", "{ \"editor.rulers\": [100] }");

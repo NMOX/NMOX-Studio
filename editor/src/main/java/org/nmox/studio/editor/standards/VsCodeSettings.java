@@ -239,8 +239,10 @@ public final class VsCodeSettings {
             out.put("max_line_length", ruler);
         }
         Object wrap = values.get(WORD_WRAP);
-        if ("on".equals(wrap) || "off".equals(wrap)) {
-            out.put(WORD_WRAP, (String) wrap);
+        if ("on".equals(wrap)) {
+            out.put(WORD_WRAP, "on");
+        } else if ("off".equals(wrap)) {
+            out.put(WORD_WRAP, "off");
         }
         return out;
     }

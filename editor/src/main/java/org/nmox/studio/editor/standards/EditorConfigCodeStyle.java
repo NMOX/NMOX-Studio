@@ -193,14 +193,17 @@ public final class EditorConfigCodeStyle implements CodeStylePreferences.Provide
     static volatile java.util.function.Consumer<File> tellOpenDocuments = EditorConfigCodeStyle::retellOpenDocuments;
 
     private static void retellOpenDocuments(File file) {
-        SwingUtilities.invokeLater(() -> {
-            for (javax.swing.text.JTextComponent c : org.netbeans.api.editor.EditorRegistry.componentList()) {
-                Document doc = c.getDocument();
-                if (file.equals(fileOf(doc))) {
-                    retell(doc);
-                }
+        SwingUtilities.invokeLater(() -> retellAmong(org.netbeans.api.editor.EditorRegistry.componentList(), file));
+    }
+
+    /** Tells the documents of {@code file} among {@code editors}, and no other. */
+    static void retellAmong(Iterable<? extends javax.swing.text.JTextComponent> editors, File file) {
+        for (javax.swing.text.JTextComponent c : editors) {
+            Document doc = c.getDocument();
+            if (file.equals(fileOf(doc))) {
+                retell(doc);
             }
-        });
+        }
     }
 
     /**
