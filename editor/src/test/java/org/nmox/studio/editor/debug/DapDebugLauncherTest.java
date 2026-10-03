@@ -129,7 +129,8 @@ class DapDebugLauncherTest {
     void attachOnlyToLoopback(@TempDir Path tmp) {
         DapDebugLauncher launcher = new DapDebugLauncher();
         File dir = tmp.toFile();
-        for (String address : new String[] {"10.0.0.5", "example.com", "0.0.0.0", "", "127.0.0.2", null}) {
+        // literal addresses only: a host NAME here would be looked up on the network the day this guard broke
+        for (String address : new String[] {"10.0.0.5", "192.168.1.20", "0.0.0.0", "", "127.0.0.2", null}) {
             assertThat(launcher.attachNode("a", address, 9229, dir)).as(String.valueOf(address)).isFalse();
         }
         assertThat(launcher.attachNode("a", "localhost", 0, dir)).isFalse();
