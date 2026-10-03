@@ -89,6 +89,16 @@ class FileTreeFilesExcludeTest {
     }
 
     @Test
+    @DisplayName("the settings are already read when the resolver returns: no row is listed and then taken away")
+    void readWhereTheRootIsResolved() throws Exception {
+        fixture();
+        FileTreePanel.HeavyAwareFilterNode root =
+                (FileTreePanel.HeavyAwareFilterNode) FileTreePanel.REAL_RESOLVER.resolve(tmp.toFile());
+        assertThat(root.hidden().excludes().hiddenPatterns())
+                .containsExactly("**/*.pyc", "**/__pycache__", "legacy");
+    }
+
+    @Test
     @DisplayName("the heavy folders keep their own rule: listed, dark, never entered")
     void heavyFoldersStayDark() throws Exception {
         fixture();
