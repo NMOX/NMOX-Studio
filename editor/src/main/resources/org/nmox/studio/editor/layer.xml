@@ -674,6 +674,17 @@
                         <attr name="position" intvalue="9993"/>
                         <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
                     </file>
+                    <!-- Shift+Opt+A (Shift+Alt+A) = toggle block comment; free here on every OS -->
+                    <file name="vscode-block-comment-keybindings.xml"
+                          url="vscode-block-comment-keybindings.xml">
+                        <attr name="position" intvalue="9992"/>
+                    </file>
+                    <!-- Linux: Ctrl+Shift+A = toggle block comment, VS Code's Linux chord; free there in all five -->
+                    <file name="vscode-block-comment-keybindings-linux.xml"
+                          url="vscode-block-comment-keybindings-linux.xml">
+                        <attr name="position" intvalue="9991"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_LINUX"/>
+                    </file>
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">
                         <attr name="position" intvalue="9999"/>
@@ -707,6 +718,18 @@
                         <attr name="position" intvalue="9993"/>
                         <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
                     </file>
+                    <!-- Shift+Opt+A (Shift+Alt+A) = toggle block comment; macOS only here: this profile binds Alt+Shift+A itself on Windows and Linux -->
+                    <file name="vscode-block-comment-keybindings.xml"
+                          url="vscode-block-comment-keybindings.xml">
+                        <attr name="position" intvalue="9992"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
+                    <!-- Linux: Ctrl+Shift+A = toggle block comment, VS Code's Linux chord; free there in all five -->
+                    <file name="vscode-block-comment-keybindings-linux.xml"
+                          url="vscode-block-comment-keybindings-linux.xml">
+                        <attr name="position" intvalue="9991"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_LINUX"/>
+                    </file>
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">
                         <attr name="position" intvalue="9999"/>
@@ -726,6 +749,17 @@
                           url="vscode-format-keybindings-mac.xml">
                         <attr name="position" intvalue="9993"/>
                         <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
+                    <!-- Shift+Opt+A (Shift+Alt+A) = toggle block comment; free here on every OS -->
+                    <file name="vscode-block-comment-keybindings.xml"
+                          url="vscode-block-comment-keybindings.xml">
+                        <attr name="position" intvalue="9992"/>
+                    </file>
+                    <!-- Linux: Ctrl+Shift+A = toggle block comment, VS Code's Linux chord; free there in all five -->
+                    <file name="vscode-block-comment-keybindings-linux.xml"
+                          url="vscode-block-comment-keybindings-linux.xml">
+                        <attr name="position" intvalue="9991"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_LINUX"/>
                     </file>
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">
@@ -749,6 +783,17 @@
                           url="vscode-editing-keybindings-mac.xml">
                         <attr name="position" intvalue="9995"/>
                         <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
+                    <!-- Shift+Opt+A (Shift+Alt+A) = toggle block comment; free here on every OS -->
+                    <file name="vscode-block-comment-keybindings.xml"
+                          url="vscode-block-comment-keybindings.xml">
+                        <attr name="position" intvalue="9992"/>
+                    </file>
+                    <!-- Linux: Ctrl+Shift+A = toggle block comment, VS Code's Linux chord; free there in all five -->
+                    <file name="vscode-block-comment-keybindings-linux.xml"
+                          url="vscode-block-comment-keybindings-linux.xml">
+                        <attr name="position" intvalue="9991"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_LINUX"/>
                     </file>
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">
@@ -783,6 +828,18 @@
                           url="vscode-format-keybindings-mac.xml">
                         <attr name="position" intvalue="9993"/>
                         <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
+                    <!-- Shift+Opt+A (Shift+Alt+A) = toggle block comment; macOS only here: this profile binds Alt+Shift+A itself on Windows and Linux -->
+                    <file name="vscode-block-comment-keybindings.xml"
+                          url="vscode-block-comment-keybindings.xml">
+                        <attr name="position" intvalue="9992"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
+                    <!-- Linux: Ctrl+Shift+A = toggle block comment, VS Code's Linux chord; free there in all five -->
+                    <file name="vscode-block-comment-keybindings-linux.xml"
+                          url="vscode-block-comment-keybindings-linux.xml">
+                        <attr name="position" intvalue="9991"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_LINUX"/>
                     </file>
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">

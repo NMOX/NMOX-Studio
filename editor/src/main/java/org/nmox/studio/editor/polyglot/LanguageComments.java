@@ -116,6 +116,17 @@ public final class LanguageComments {
         return mimeType == null ? null : LINE_COMMENT.get(mimeType);
     }
 
+    /**
+     * Every mime this table knows a comment for. The block-comment table
+     * ({@code editing.BlockComments}) must have decided each of them too,
+     * and its ledger test reads this to hold it to that.
+     */
+    public static java.util.Set<String> mimes() {
+        java.util.Set<String> all = new java.util.TreeSet<>(LINE_COMMENT.keySet());
+        all.addAll(BLOCK_COMMENT.keySet());
+        return all;
+    }
+
     /** The block-comment pair for a mime with no line comment, or null. */
     public static BlockComment blockCommentFor(String mimeType) {
         return mimeType == null ? null : BLOCK_COMMENT.get(mimeType);

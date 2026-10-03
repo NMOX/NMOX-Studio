@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN"
+                          "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
+<!--
+    Toggle Block Comment on VS Code's LINUX chord, Ctrl+Shift+A (VS Code
+    uses Shift+Alt+A on Windows and Shift+Opt+A on macOS; see
+    vscode-block-comment-keybindings.xml).
+
+    Linux only: the layer gives this file nbeditor-settings-targetOS=OS_LINUX.
+    The editor settings storage reads that attribute as the name of a
+    BaseUtilities field and loads the file when the field's bit is set in
+    getOperatingSystem() (SettingsType$DefaultLocator, RELEASE310 bytecode).
+
+    Measured in the assembled cluster: Ctrl+Shift+A is free on Linux in
+    all five profiles, editor and global, so the file rides all five. (On
+    macOS the Eclipse and NetBeans 5.5 profiles bind it, as O-S-A; this
+    file is not read there.)
+-->
+<bindings>
+    <bind actionName="nmox-toggle-block-comment" key="CS-A"/>
+</bindings>

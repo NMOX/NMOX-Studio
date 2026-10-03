@@ -155,6 +155,44 @@ class VsCodeCommandSearchProviderTest {
         assertThat(titles("format document", (c, id) -> null)).as("no editor, no row").isEmpty();
     }
 
+    /** The row VS Code's {@code title} names. */
+    private static VsCodeCommandSearchProvider.Cmd row(String title) {
+        return VsCodeCommandSearchProvider.COMMANDS.stream().filter(c -> c.title().equals(title)).findFirst().orElseThrow();
+    }
+
+    @Test
+    @DisplayName("Toggle Block Comment answers to VS Code's title, as an action of the focused editor's own kit")
+    void blockCommentRow() {
+        assertThat(titles("block comment", ALL)).containsExactly("Toggle Block Comment");
+        assertThat(row("Toggle Block Comment").category()).isEqualTo(VsCodeCommandSearchProvider.EDITOR_KIT);
+        assertThat(row("Toggle Block Comment").id()).isEqualTo("nmox-toggle-block-comment");
+    }
+
+    @Test
+    @DisplayName("an editor row that names one of the product's own kit actions names one the editor module registers")
+    void ownKitActionsExist() throws Exception {
+        // the platform's kit actions (format, goto) are its own; ours are named nmox-… and live in the editor
+        // module, which this module does not depend on: read its sources, as the keymap parity test reads its layer
+        StringBuilder editor = new StringBuilder();
+        try (java.util.stream.Stream<java.nio.file.Path> walk = java.nio.file.Files.walk(
+                java.nio.file.Path.of("../editor/src/main/java"))) {
+            for (java.nio.file.Path p : walk.filter(f -> f.toString().endsWith(".java")).toList()) {
+                editor.append(java.nio.file.Files.readString(p));
+            }
+        }
+        int own = 0;
+        for (VsCodeCommandSearchProvider.Cmd c : VsCodeCommandSearchProvider.COMMANDS) {
+            if (VsCodeCommandSearchProvider.EDITOR_KIT.equals(c.category()) && c.id().startsWith("nmox-")) {
+                own++;
+                assertThat(editor.toString())
+                        .as("%s names the kit action %s, which no @EditorActionRegistration declares", c.title(), c.id())
+                        .containsPattern("@EditorActionRegistration\\(name = \\w+\\.NAME\\)\\s+public class \\w+ extends BaseAction \\{"
+                                + "[^}]*?NAME = \"" + java.util.regex.Pattern.quote(c.id()) + "\"");
+            }
+        }
+        assertThat(own).as("the product's own kit rows were checked").isPositive();
+    }
+
     @Test
     @DisplayName("every title finds its own row, and no title appears twice")
     void everyRowIsReachable() {

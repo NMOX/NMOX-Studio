@@ -138,6 +138,8 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
             cmd("Help: Report Issue...", "Help", "org.nmox.studio.ui.report.ReportProblemAction"),
             inEditor("Format Document", "format"),
             inEditor("Toggle Line Comment", "toggle-comment"),
+            // the product's own kit actions, registered for every editor (editor module, editing package)
+            inEditor("Toggle Block Comment", "nmox-toggle-block-comment"),
             inEditor("Go to Line/Column...", "goto"),
             inEditor("Go to Definition", "goto-declaration"),
             inEditor("Delete Line", "remove-line"),
