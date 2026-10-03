@@ -284,8 +284,13 @@ class RealJsDebugIntegrationTest {
         nb.awaitEvent("initialized");
         nb.request("configurationDone", new JSONObject());
 
-        assertThat(nb.awaitOutput("EXEC=").getJSONObject("body").getString("output"))
-                .contains("EXEC=--stack-trace-limit=7").contains("ARGS=after");
+        // the adapter adds flags of its own on a newer Node
+        // (--experimental-network-inspection on 24): the runtimeArgs are
+        // among the runtime's arguments, not necessarily the only ones
+        String out = nb.awaitOutput("EXEC=").getJSONObject("body").getString("output").strip();
+        String exec = out.substring("EXEC=".length(), out.indexOf(" ARGS="));
+        assertThat(exec.split("\\|")).contains("--stack-trace-limit=7");
+        assertThat(out).endsWith("ARGS=after");
     }
 
     @Test
@@ -378,8 +383,10 @@ class RealJsDebugIntegrationTest {
                     .as("the question the launcher asks before it spawns an adapter").isTrue();
 
             Client nb = open();
+            // the address the launcher hands over: the loopback that answered
             nb.request("attach", new JSONObject(org.nmox.studio.editor.debug.DapDebugAction.nodeAttachRequest(
-                    "Attach", "localhost", port, SERVER_JS.getParentFile())));
+                    "Attach", org.nmox.studio.editor.debug.DapDebugAction.answeringAddress("localhost", port),
+                    port, SERVER_JS.getParentFile())));
             nb.awaitEvent("initialized");
             nb.request("setBreakpoints", breakpoints(script, 4));
             nb.awaitResponse("setBreakpoints");

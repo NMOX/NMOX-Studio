@@ -151,11 +151,12 @@ public class DapDebugAction extends BaseAction {
      */
     static void attachNode(String name, String address, int port, File workingDir, File workspace) {
         gated(() -> workspace, () -> {
-            if (!listening(address, port)) {
+            String answering = answeringAddress(address, port);
+            if (answering == null) {
                 throw new Spoken(org.openide.util.NbBundle.getMessage(DapDebugAction.class,
                         "DapDebugAction_nothingListening", address, Integer.toString(port)));
             }
-            debugNode(nodeAttachRequest(name, address, port, workingDir), "Node: " + name, true);
+            debugNode(nodeAttachRequest(name, answering, port, workingDir), "Node: " + name, true);
         });
     }
 
@@ -208,24 +209,40 @@ public class DapDebugAction extends BaseAction {
 
     /** Whether anything accepts a connection at {@code address}:{@code port}; a loopback question, bounded. */
     public static boolean listening(String address, int port) {
+        return answeringAddress(address, port) != null;
+    }
+
+    /**
+     * The address to hand the adapter for an attach: the one that answered,
+     * or null when nothing did. Node's inspector listens on {@code
+     * 127.0.0.1} by default, and the adapter's Node resolves {@code
+     * localhost} to {@code ::1} first on a machine that prefers IPv6, then
+     * retries a refused connection until the session gives up (3.6.0's
+     * macOS lane, Node 24: dozens of {@code ECONNREFUSED ::1}). So a NAME
+     * whose IPv4 loopback is the one listening is handed over as {@code
+     * 127.0.0.1}; an IPv6 answer and a literal pass as written.
+     */
+    public static String answeringAddress(String address, int port) {
         InetAddress[] candidates;
         try {
             candidates = InetAddress.getAllByName(address);
         } catch (java.net.UnknownHostException unknown) {
-            return false;
+            return null;
         }
+        boolean literal = address.indexOf(':') >= 0 || address.chars().allMatch(c -> c == '.' || Character.isDigit(c));
         for (InetAddress candidate : candidates) {
             if (!candidate.isLoopbackAddress()) {
                 continue;
             }
             try (Socket probe = new Socket()) {
                 probe.connect(new InetSocketAddress(candidate, port), 1_000);
-                return true;
+                return !literal && candidate instanceof java.net.Inet4Address
+                        ? candidate.getHostAddress() : address;
             } catch (IOException refused) {
                 // the next spelling of this machine, if there is one
             }
         }
-        return false;
+        return null;
     }
 
     /** The MIME types whose launch honours a caller-chosen working directory. */

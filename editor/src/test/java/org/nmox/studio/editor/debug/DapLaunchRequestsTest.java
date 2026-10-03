@@ -103,4 +103,19 @@ class DapLaunchRequestsTest {
         assertThat(DapDebugAction.listening("192.0.2.1", port)).as("a literal address that is not this machine is never dialed")
                 .isFalse();
     }
+    @Test
+    @DisplayName("an attach to localhost names the IPv4 loopback when that is the one listening; a literal passes as written")
+    void attachNamesTheLoopbackThatAnswered() throws Exception {
+        try (java.net.ServerSocket v4 = new java.net.ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"))) {
+            int port = v4.getLocalPort();
+            // node's inspector listens here; the adapter's Node may resolve localhost to ::1 first
+            assertThat(DapDebugAction.answeringAddress("localhost", port)).isEqualTo("127.0.0.1");
+            assertThat(DapDebugAction.answeringAddress("127.0.0.1", port)).isEqualTo("127.0.0.1");
+        }
+        try (java.net.ServerSocket closed = new java.net.ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"))) {
+            int port = closed.getLocalPort();
+            closed.close();
+            assertThat(DapDebugAction.answeringAddress("localhost", port)).as("nobody listening").isNull();
+        }
+    }
 }
