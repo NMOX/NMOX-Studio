@@ -394,7 +394,16 @@ class RealJsDebugIntegrationTest {
 
             // an --inspect-brk process may first report its wait at the
             // entry; whatever stops come before, the breakpoint's is the one
-            JSONObject stopped = nb.awaitEvent("stopped");
+            JSONObject stopped;
+            try {
+                stopped = nb.awaitEvent("stopped");
+            } catch (AssertionError none) {
+                // the macOS lane (Node 24.20) once saw the thread exit right after the
+                // breakpoint verified: say what became of the program, not only the frames
+                throw new AssertionError("no stop; program alive=" + node.isAlive()
+                        + (node.isAlive() ? "" : " exit=" + node.exitValue())
+                        + " stderr=" + NODE_STDERR, none);
+            }
             while (!"breakpoint".equals(stopped.getJSONObject("body").optString("reason"))) {
                 nb.request("continue", new JSONObject().put("threadId", stopped.getJSONObject("body").getInt("threadId")));
                 stopped = nb.awaitEvent("stopped");
@@ -419,7 +428,11 @@ class RealJsDebugIntegrationTest {
     }
 
     /** The port node's inspector chose ({@code --inspect-brk=0}), read from the line it prints on stderr. */
+    /** What the attached program printed on stderr, kept so a failure can say why the program went away. */
+    private static final List<String> NODE_STDERR = new java.util.concurrent.CopyOnWriteArrayList<>();
+
     private static int inspectorPort(Process node) throws Exception {
+        NODE_STDERR.clear();
         BlockingQueue<Integer> found = new LinkedBlockingQueue<>();
         Thread reader = new Thread(() -> {
             java.util.regex.Pattern listening = java.util.regex.Pattern.compile("ws://[^/]*:(\\d+)/");
@@ -428,6 +441,9 @@ class RealJsDebugIntegrationTest {
                 String line;
                 // read to the end: a full stderr pipe would stall the program
                 while ((line = err.readLine()) != null) {
+                    if (NODE_STDERR.size() < 200) {
+                        NODE_STDERR.add(line);
+                    }
                     java.util.regex.Matcher m = listening.matcher(line);
                     if (m.find()) {
                         found.add(Integer.parseInt(m.group(1)));
