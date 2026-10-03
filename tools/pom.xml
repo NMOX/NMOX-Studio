@@ -164,15 +164,16 @@
             <version>${netbeans.version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- The platform's own search walk (SearchInfoUtils + its default
-             Sharability/Visibility filters), so FindInProjectsIgnoresTest
-             measures what Find in Projects enumerates rather than a model
-             of it; at runtime the platform cluster provides it -->
+        <!-- The platform's search API. A WebProject answers Find in Projects
+             with its own SearchInfoDefinition (WebProjectSearch: the default
+             walk plus the project's search.exclude), and
+             FindInProjectsIgnoresTest measures what that walk enumerates
+             through the platform's own SearchInfoUtils rather than a model
+             of it -->
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-api-search</artifactId>
             <version>${netbeans.version}</version>
-            <scope>test</scope>
         </dependency>
         <!-- ProjectManager.<clinit> needs the ProjectManagerImplementation
              projectapi-nb registers; FileOwnerQuery -> WebProjectFactory is
