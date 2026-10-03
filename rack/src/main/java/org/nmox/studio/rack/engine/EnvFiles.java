@@ -38,31 +38,44 @@ public final class EnvFiles {
     }
 
     static Map<String, String> parse(File file) {
-        Map<String, String> env = new LinkedHashMap<>();
         if (!file.isFile() || file.length() > MAX_BYTES) {
-            return env;
+            return new LinkedHashMap<>();
         }
         try {
-            for (String raw : Files.readAllLines(file.toPath())) {
-                String line = raw.strip();
-                if (line.isEmpty() || line.startsWith("#")) {
-                    continue;
-                }
-                if (line.startsWith("export ")) {
-                    line = line.substring("export ".length()).strip();
-                }
-                int eq = line.indexOf('=');
-                if (eq <= 0) {
-                    continue;
-                }
-                String key = line.substring(0, eq).strip();
-                if (key.isEmpty() || key.chars().anyMatch(Character::isWhitespace)) {
-                    continue;
-                }
-                env.put(key, unquote(line.substring(eq + 1).strip()));
-            }
+            return parseLines(Files.readAllLines(file.toPath()));
         } catch (IOException ex) {
             // unreadable env file: commands still run, just without it
+            return new LinkedHashMap<>();
+        }
+    }
+
+    /**
+     * The dialect itself, over lines somebody else read: the one reader of
+     * KEY=VALUE text in the product. A caller with its own rule about the
+     * FILE - a {@code .vscode/launch.json} configuration's {@code envFile},
+     * which is refused out loud when it is missing or too large rather than
+     * skipped - reads the file its own way and hands the lines here, so what
+     * a line means has one home.
+     */
+    public static Map<String, String> parseLines(Iterable<String> lines) {
+        Map<String, String> env = new LinkedHashMap<>();
+        for (String raw : lines) {
+            String line = raw.strip();
+            if (line.isEmpty() || line.startsWith("#")) {
+                continue;
+            }
+            if (line.startsWith("export ")) {
+                line = line.substring("export ".length()).strip();
+            }
+            int eq = line.indexOf('=');
+            if (eq <= 0) {
+                continue;
+            }
+            String key = line.substring(0, eq).strip();
+            if (key.isEmpty() || key.chars().anyMatch(Character::isWhitespace)) {
+                continue;
+            }
+            env.put(key, unquote(line.substring(eq + 1).strip()));
         }
         return env;
     }
