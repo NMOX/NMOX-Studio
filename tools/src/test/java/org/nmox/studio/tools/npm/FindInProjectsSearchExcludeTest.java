@@ -122,6 +122,17 @@ class FindInProjectsSearchExcludeTest {
     }
 
     @Test
+    @DisplayName("the settings add to what git ignores, they do not replace it: both are skipped")
+    void gitignoreStillApplies(@TempDir Path dir) throws IOException {
+        fixture(dir, SETTINGS);
+        write(dir, ".gitignore", "docs/\n");
+        assertThat(hits(dir, false)).as("docs is git's to skip, vendor and the rest the settings'")
+                .containsExactly("src/a.js");
+        assertThat(SharabilityQuery.getSharability(root(dir).getFileObject("docs")))
+                .as("and git's own answer is still git's").isEqualTo(SharabilityQuery.Sharability.NOT_SHARABLE);
+    }
+
+    @Test
     @DisplayName("the control: without the settings every copy is listed")
     void control(@TempDir Path dir) throws IOException {
         fixture(dir, null);
