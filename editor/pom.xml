@@ -110,6 +110,13 @@
             <version>${netbeans.version}</version>
         </dependency>
         <dependency>
+            <!-- Symbols in This File: a Quick Search category of the
+                 active editor's outline (symbols.search) -->
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-spi-quicksearch</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-editor-mimelookup</artifactId>
             <version>${netbeans.version}</version>

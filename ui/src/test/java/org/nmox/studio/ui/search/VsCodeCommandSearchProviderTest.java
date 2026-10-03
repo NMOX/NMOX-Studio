@@ -184,6 +184,15 @@ class VsCodeCommandSearchProviderTest {
     }
 
     @Test
+    @DisplayName("Go to Symbol in Editor... answers to VS Code's title, on the action that opens Quick Search at the file's symbols")
+    void symbolInEditorRow() {
+        assertThat(titles("symbol in editor", ALL)).containsExactly("Go to Symbol in Editor...");
+        assertThat(row("Go to Symbol in Editor...").id()).endsWith(".symbols.search.GoToSymbolInFileAction");
+        // the project-wide twin keeps its own row
+        assertThat(titles("go to symbol", ALL)).containsExactly("Go to Symbol in Workspace...", "Go to Symbol in Editor...");
+    }
+
+    @Test
     @DisplayName("an editor row that names one of the product's own kit actions names one the editor module registers")
     void ownKitActionsExist() throws Exception {
         // the platform's kit actions (format, goto) are its own; ours are named nmox-… and live in the editor

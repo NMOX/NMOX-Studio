@@ -30,6 +30,24 @@
         </folder>
     </folder>
 
+    <!-- Quick Search into the file being edited: VS Code's Go to Symbol in
+         Editor. Position 220 sits right under VS Code's command titles
+         (210) and above the live servers (275); the QuickSearch folder's
+         categories, read from every module of the assembled cluster, hold
+         -1, 100, 200, 210, 275 to 279, 300 to 360 and 400.
+         The command is the platform's way to search this category alone:
+         a WORD and a space (CommandEvaluator's pattern is \w+ \s+ .+), so
+         it cannot be VS Code's "@". "m name" is that form (a, o, p, r, s
+         and t are taken); "@name" is understood by the provider itself. -->
+    <folder name="QuickSearch">
+        <folder name="FileSymbols">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.editor.symbols.search.Bundle"/>
+            <attr name="position" intvalue="220"/>
+            <attr name="command" stringvalue="m"/>
+            <file name="org-nmox-studio-editor-symbols-search-FileSymbolSearchProvider.instance"/>
+        </folder>
+    </folder>
+
     <folder name="Editors">
         <!-- v2.59.0 the minimap: an East, non-scrollable side bar on EVERY
              editor (root folder). Same registration shape as the platform's

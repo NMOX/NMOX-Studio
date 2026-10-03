@@ -65,6 +65,8 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
             cmd("File: Save All", "System", "org.openide.actions.SaveAllAction"),
             cmd("Go to File...", "Tools", "org.netbeans.modules.jumpto.file.FileSearchAction"),
             cmd("Go to Symbol in Workspace...", "Edit", "org.netbeans.modules.jumpto.symbol.GoToSymbol"),
+            // opens Quick Search with @ typed: the file's symbols, as VS Code's palette does
+            cmd("Go to Symbol in Editor...", "Edit", "org.nmox.studio.editor.symbols.search.GoToSymbolInFileAction"),
             cmd("Search: Find in Files", "Edit", "org.netbeans.modules.search.FindInFilesAction"),
             cmd("Search: Replace in Files", "Edit", "org.netbeans.modules.search.ReplaceInFilesAction"),
             cmd("Preferences: Open Settings", "Window", "org.netbeans.modules.options.OptionsWindowAction"),
