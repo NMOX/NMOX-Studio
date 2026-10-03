@@ -40,7 +40,15 @@ import org.openide.filesystems.FileUtil;
  *     never translated;</li>
  * <li>{@code files.eol}, when it is {@code "\n"} or {@code "\r\n"}, is
  *     the line ending files are written with ({@code "auto"} says
- *     nothing).</li>
+ *     nothing);</li>
+ * <li>{@code editor.rulers}: the FIRST ruler is the column of the editor's
+ *     one right-margin line ({@link EditorConfigMargin}), as
+ *     EditorConfig's {@code max_line_length}. A ruler is a whole number,
+ *     or an object whose {@code column} is one (its {@code color} is not
+ *     read); an empty list is the project saying "no ruler", and the line
+ *     is not drawn. Later rulers are not drawn: the platform has one line.
+ *     A first ruler that is anything else says nothing, rather than
+ *     promoting the second.</li>
  * </ul>
  * One more is answered as a question rather than translated:
  * {@code editor.formatOnSave} ({@link #formatOnSave(File)}). A project
@@ -218,7 +226,37 @@ public final class VsCodeSettings {
         } else if ("\r\n".equals(eol)) {
             out.put("end_of_line", "crlf");
         }
+        String ruler = firstRuler(values.get("editor.rulers"));
+        if (ruler != null) {
+            out.put("max_line_length", ruler);
+        }
         return out;
+    }
+
+    /**
+     * The first of {@code editor.rulers} as an EditorConfig
+     * {@code max_line_length}: a column, {@code "off"} for an empty list,
+     * or null when the setting is absent, is not a list, or begins with
+     * something that is not a column this can draw.
+     */
+    static String firstRuler(Object rulers) {
+        if (!(rulers instanceof org.json.JSONArray list)) {
+            return null;
+        }
+        if (list.isEmpty()) {
+            return "off";
+        }
+        Object first = list.opt(0);
+        if (first instanceof JSONObject withColour) {
+            first = withColour.opt("column");
+        }
+        if (first instanceof Number n) {
+            double d = n.doubleValue();
+            if (d == Math.rint(d) && d >= 1 && d <= EditorConfigMargin.MAX_COLUMN) {
+                return Integer.toString((int) d);
+            }
+        }
+        return null;
     }
 
     /**
