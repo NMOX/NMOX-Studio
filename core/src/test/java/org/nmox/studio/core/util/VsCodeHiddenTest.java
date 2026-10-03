@@ -152,14 +152,23 @@ class VsCodeHiddenTest {
         long[] now = {1_000_000};
         VsCodeHidden.clock = () -> now[0];
         List<File> asked = new CopyOnWriteArrayList<>();
+        // the first read waits until the first answer is taken: on a fast
+        // lane it could otherwise land before the EDT reads the answer
+        java.util.concurrent.CountDownLatch answered = new java.util.concurrent.CountDownLatch(1);
         VsCodeHidden hidden = new VsCodeHidden(root, dir -> {
             readOnEdt.add(SwingUtilities.isEventDispatchThread());
             asked.add(dir);
+            try {
+                answered.await(10, java.util.concurrent.TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
             return excludes;
         });
 
         AtomicReference<Boolean> first = new AtomicReference<>();
         SwingUtilities.invokeAndWait(() -> first.set(hidden.acceptFileObject(dist)));
+        answered.countDown();
         assertThat(first.get()).as("nothing is known yet, so nothing is hidden").isTrue();
         VsCodeHidden.awaitIdle();
         assertThat(readOnEdt).as("the first ask queued one read, off the EDT").containsExactly(false);
