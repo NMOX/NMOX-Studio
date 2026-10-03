@@ -773,14 +773,19 @@ official client.
   each save applies `trim_trailing_whitespace` and
   `insert_final_newline`. An edit to `.editorconfig` reaches open
   editors within a couple of seconds. A literal tab character already
-  in the file is still drawn at the tab width set in Options, and
-  `charset` and `end_of_line` are not applied. Your formatter devices
-  (GLOSS et al.) handle the rest.
+  in the file is still drawn at the tab width set in Options.
+  `end_of_line` (`lf`, `crlf`) is the line ending every file is saved
+  with, a file that arrived with the other one included; `charset` is
+  not applied. Your formatter devices (GLOSS et al.) handle the rest.
 - **A repository's `.vscode/settings.json` is honored the same way**:
   `editor.tabSize`, `editor.insertSpaces` and `editor.indentSize` decide
   the indentation, `files.trimTrailingWhitespace` and
-  `files.insertFinalNewline` (when `true`) apply on save, and a language
-  block such as `"[typescript]": {…}` overrides them for its language.
+  `files.insertFinalNewline` (when `true`) apply on save, `files.eol`
+  (`"\n"` or `"\r\n"`) is the line ending files are saved with, and a
+  language block such as `"[typescript]": {…}` overrides them for its
+  language. A project that says `"editor.formatOnSave": false` is not
+  reformatted by Prettier when you save, whatever Prettier configuration
+  it carries (Format, ⇧⌥F, still formats on request).
   Where the project also has an `.editorconfig`, the `.editorconfig`
   wins wherever both say something. VS Code's
   `editor.detectIndentation`, which lets a file's own indentation win,

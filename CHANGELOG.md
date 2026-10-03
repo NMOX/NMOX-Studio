@@ -4,6 +4,83 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.13] - 2026-10-02
+
+**3.5.12 mirrored too much.** In Hebrew and Arabic it exchanged the sides
+of every horizontal split pane, the platform's own included, and the
+platform addresses a side by its slot. A hostile review of the release,
+hours after it shipped, replayed the platform's calls against the shipped
+class and found Find in Projects removing its results where it meant to
+remove its preview. This release mirrors only the panes the product
+builds, fixes what a second review found in 3.5.10's trust code, and
+adds three things a team's repository asks of an editor.
+
+### Fixed
+
+- **Hebrew and Arabic: Find in Projects, the refactoring preview and the
+  diff view work again.** Switching Show Preview off removed the list of
+  matches and kept the preview; selecting a usage replaced the list of
+  usages; the diff view's connectors pointed at the wrong sides; and a
+  divider the IDE remembers flipped sides each time it was used. Only the
+  fourteen split panes the product itself builds change sides now
+  (`TextDirection.sidesFollowReader`), and a gate reads every split pane
+  in the product's sources so that each one has decided
+  (`SplitSidesDecidedGateTest`).
+- **A mirrored pane keeps its sidebar's width.** The divider had been
+  computed once, at whatever width the pane had when it was mirrored: a
+  studio opened in a tab that had not been shown yet, or mirrored while
+  its window was still opening, came out with a sidebar hundreds of pixels
+  too wide or too narrow, and a language switched back before the tab was
+  shown left the pane mirrored in English. Each mirrored pane now keeps
+  the width of its leading side through resizes, drags and the way back.
+- **The Standup ran `git log` in a repository nobody had trusted**, when
+  the board's own folder was a trusted project inside it. 3.5.7's rule is
+  that git waits for the REPOSITORY's root, where the configuration git
+  honours is; the chip and line blame asked that, the Standup asked about
+  its folder. All three ask one question now.
+- **A home folder kept in git no longer asks for trust in the whole home
+  folder at every start.** A repository rooted at home, or above it, is
+  the user's own, as `~/.gitconfig` is. Before, every folder under home
+  that was not a repository of its own resolved to it, the notice asked
+  to trust home, and a yes would have covered every clone beneath it.
+- **A clone under a folder that had already been announced got no trust
+  notice**, for git or for its language servers. A folder's notice now
+  stands for its own repository's sub-folders and no other repository's.
+- **A control character in a folder's name made its trust notice
+  vanish** (the platform builds markup from the text and throws). Names
+  reach a notice as one line of ordinary characters.
+- **Trusting a project starts its eslint and stylelint servers** for the
+  files already open, as it does every other server. They had kept gates
+  of their own and started only on the next edit.
+- **Trusting a repository from the git chip's menu ran `git status`
+  twice.**
+- **The ship gate could merge a pull request whose checks never
+  finished.** Its loop fell through after half an hour of "pending", and
+  the fast path then tagged that head as verified. It is refused by name
+  now, the merge is read back rather than assumed, and a working-note
+  title is refused in every spelling. (No release went out this way.)
+- **A test of the rack's Stop failed on Windows once in a while** (and on
+  the 3.5.12 commit): its scratch folder was deleted the instant the test
+  ended, while a shell the tree kill cannot reach there was still letting
+  go of it. The folder is deleted with a short wait.
+
+### Added
+
+- **`end_of_line` is honoured.** A project's `.editorconfig`
+  (`end_of_line = lf | crlf`) or `.vscode/settings.json` (`files.eol`)
+  now decides the line ending of every file saved, a file that arrived
+  with the other ending included. It was the one common `.editorconfig`
+  property the save path ignored: a Windows contributor to an `lf`
+  repository saved new files with CRLF.
+- **`"editor.formatOnSave": false` is honoured.** A project that carries a
+  Prettier configuration and formats in a commit hook says so with that
+  line, top level or per language, and saving a file here reformatted it
+  anyway. Format on request (⇧⌥F) still formats.
+- **File ▸ Autosave.** The platform's autosave has always been in the
+  product, under Options ▸ Editor ▸ Autosave, with a toggle that was on no
+  menu. It is in the File menu now, after Save All, where a VS Code user
+  looks for Auto Save, and its name is translated in fourteen languages.
+
 ## [3.5.12] - 2026-10-02
 
 **Split panes change sides for a right-to-left reader.** Ledger 127 asked
@@ -25520,6 +25597,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.5.13]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.12...v3.5.13
 [3.5.12]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.11...v3.5.12
 [3.5.11]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.10...v3.5.11
 [3.5.10]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.9...v3.5.10

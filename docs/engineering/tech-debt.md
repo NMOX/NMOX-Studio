@@ -22,7 +22,7 @@ guess. These are decisions.
 
 ## Open — added by 3.5.0 (the Windows and Linux release)
 
-### 127. ~~Should a horizontal split mirror for a right-to-left reader?~~ — DECIDED and CLOSED by 3.5.12: yes
+### 127. ~~Should a horizontal split mirror for a right-to-left reader?~~ — DECIDED by 3.5.12: yes; CORRECTED by 3.5.13: the product's own panes only
 
 The runtime the product bundles (JDK 25.0.4) answers yes on its own:
 `JSplitPane.setComponentOrientation` exchanges the two children when the
@@ -100,6 +100,43 @@ patch is gone; the pictures above stay as the record of what was chosen
 between. What is still not mirrored is the window system's own docking,
 the explorer modes on the window's left edge: a different and larger
 piece of work, and a separate question.
+
+**Corrected, 3.5.13: 3.5.12 mirrored too much, and broke the platform's
+own panes in Hebrew and Arabic.** The decision above was about the
+studios; the code exchanged every horizontal `JSplitPane` in the JVM. The
+platform addresses a side by its slot, and a hostile review of 3.5.12,
+hours after it shipped, replayed the platform's own calls against the
+shipped class: Find in Projects switches its preview off with
+`setRightComponent(null)`, which removed the results tree and kept the
+preview; the refactoring preview replaced the list of usages on every
+selection; the diff view draws its connectors from the two editors by
+identity, so base stood right of a divider that still drew it on the left;
+and a divider the platform saves and applies again (search results,
+refactoring, the git repository browser) flipped sides on each use and
+carried the flipped number into the next left-to-right session. None of
+it was reachable in the walks 3.5.12 took, which opened the studios and
+no platform dialog.
+
+Mirroring is a MARK now (`TextDirection.sidesFollowReader`), on the
+fourteen horizontal panes the product builds, and
+`SplitSidesDecidedGateTest` reads every `new JSplitPane(` in the product's
+sources so that each is marked, vertical, or says why it stays. An
+unmarked pane is put back as it was built, as in 3.5.0 to 3.5.11. The same
+review found the mirror itself fragile: the divider was computed once, at
+whatever width the pane had, and came out hundreds of pixels wrong for a
+pane mirrored before its final size (a tab never shown, a window still
+opening); a sweep back before the first resize left a listener that
+mirrored a left-to-right pane; and the leading side's share of new space
+was lost whenever the split-pane UI fell back to absolute locations. A
+mirrored pane now has one controller that holds the leading side's WIDTH
+and derives the divider from it on every resize, tells a drag from the
+UI's own arithmetic, and is removed on the way back. Not fixed, and small:
+a pane mirrored before it has any width is laid out once with its author's
+divider read from the left, until its first resize (a nested pane whose
+divider nobody set can take a squeezed width from that one pass).
+
+*A decision about the studios was implemented as a rule about a class, and
+the class has other owners. The walk proved the panes it opened.*
 
 ### 128. ~~AltGr and the Ctrl+Alt chords, on a keyboard nobody here has~~ — CLOSED by 3.5.1, by measurement
 
@@ -361,6 +398,22 @@ Decided in 3.5.6 and written here so that each can be decided again.
   if a platform bump moves it, and at run time a miss falls back to the old
   sentence.
 
+- **3.5.13.** eslint's and stylelint's servers had kept gates of their own
+  that returned before joining the waiters, so a grant did not start them
+  for the files already open (they started on the next edit); they ask
+  `ServerTrust` now, after the check that the project has a configuration
+  at all. **pyright's READS verdict is measured on macOS only**: on
+  Windows a bare `python` is looked for in the working directory before
+  PATH, and whether pyright has moved its working directory by then has
+  not been measured here. A `python.exe` committed to a repository's root
+  is the case to try on a Windows runner before calling it closed there.
+- **Not bounded, and the platform's own exposure too:** the restart a
+  grant asks for runs on one lane and calls the client's own method, which
+  waits for a server's `initialize` answer for as long as the process
+  lives. A server that starts and never answers holds that lane, and the
+  client's class monitor with it, exactly as it would for a file opened by
+  hand.
+
 ### 135. Git and trust: what 3.5.7 gated and what it left (3.5.7)
 
 - **Gated:** the status-line chip's nine spawns (`git status`, `gh`), line
@@ -394,6 +447,18 @@ Decided in 3.5.6 and written here so that each can be decided again.
   walked.
 
 ## Open — added by 3.4.0 (the second developer, things going wrong, no mouse)
+
+- **3.5.13, a review's corrections.** The Standup asked whether the
+  board's own folder was trusted, not the repository's root, so a trusted
+  project inside an untrusted repository still ran `git log` under that
+  repository's config: all three sites now ask one question,
+  `WorkspaceTrust.gitMayRun`, anchored at the root. A repository rooted at
+  the home folder or above it (dotfiles kept in git) is the user's own,
+  as `~/.gitconfig` is: without that rule every non-repository folder
+  under home resolved to it, each start asked for trust in the whole home
+  folder, and a yes would have trusted every clone beneath. And the
+  notice for a folder no longer silences a different repository nested
+  under it.
 
 ### 126. ~~The Services window's rows are spoken with their markup~~ — CLOSED by 3.5.1, for trees
 
