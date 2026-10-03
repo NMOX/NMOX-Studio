@@ -62,8 +62,25 @@ public final class NpmLaneRun {
                 .handle((output, failed) -> exitOf(walled, failed));
     }
 
-    /** The exit a lane run ended with: the code of a failure, {@link #NOT_RUN} behind a wall, else zero. */
+    /**
+     * The user stopped the script — the toolbar ■, its row, its Cancel —
+     * whatever code it then left with: 143 from its TERM is not a failure,
+     * and 0 from a script that catches TERM and exits cleanly is not a
+     * success for whatever waits for it.
+     */
+    public static final int STOPPED = Integer.MIN_VALUE + 1;
+
+    /**
+     * The exit a lane run ended with: {@link #STOPPED} when the user
+     * stopped it, the code of a failure, {@link #NOT_RUN} behind a wall,
+     * else zero.
+     */
     static int exitOf(boolean walled, Throwable failed) {
+        Throwable cause = failed instanceof java.util.concurrent.CompletionException wrapped
+                && wrapped.getCause() != null ? wrapped.getCause() : failed;
+        if (cause instanceof NpmService.StoppedByUser) {
+            return STOPPED;
+        }
         if (failed != null) {
             Matcher m = EXIT.matcher(String.valueOf(failed.getMessage()));
             if (m.find()) {

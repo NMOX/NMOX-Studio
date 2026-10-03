@@ -43,7 +43,8 @@ public final class StartDebuggingAction implements ActionListener {
         }
     }, () -> new VsCodeMenuDoor.Words(
             message("StartDebuggingAction_title"), message("StartDebuggingAction_debug"),
-            message("StartDebuggingAction_noProject"), message("StartDebuggingAction_nothing")),
+            message("StartDebuggingAction_noProject"), message("StartDebuggingAction_nothing"),
+            message("StartDebuggingAction_aimMoved")),
             s -> VsCodeLaunchSearchProvider.statusSink.accept(s));
 
     /** {@code Launch Program — ${workspaceFolder}/server.js}: the name, then what it debugs as the file wrote it. */

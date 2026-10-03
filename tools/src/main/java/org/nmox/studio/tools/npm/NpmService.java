@@ -300,7 +300,11 @@ public class NpmService {
                     synchronized (output) {
                         text = output.toString();
                     }
-                    if (exit == 0) {
+                    if (LiveRuns.wasStoppedByUser(runId)) {
+                        // the user's stop, whatever the code: a script that
+                        // exits 0 on its TERM did not finish, and 143 is no failure
+                        done.completeExceptionally(new StoppedByUser(exit));
+                    } else if (exit == 0) {
                         done.complete(text);
                     } else {
                         done.completeExceptionally(new RuntimeException(
@@ -315,6 +319,29 @@ public class NpmService {
 
     private static final java.util.concurrent.atomic.AtomicLong RUN_SEQ =
             new java.util.concurrent.atomic.AtomicLong();
+
+    /**
+     * How a run's future ends when the user stopped it (the toolbar ■, its
+     * row, its Cancel): exceptionally, with this, whatever code the process
+     * left with — so a caller that waits ({@link NpmLaneRun}) can tell a
+     * stop from a failure and from a success.
+     */
+    public static final class StoppedByUser extends RuntimeException {
+
+        private static final long serialVersionUID = 1L;
+
+        private final int exit;
+
+        StoppedByUser(int exit) {
+            super("Stopped by the user (exit code " + exit + ")", null, false, false);
+            this.exit = exit;
+        }
+
+        /** The code the process left with after the stop. */
+        public int exit() {
+            return exit;
+        }
+    }
 
     /** The id prefix every run of {@code dir} through this service carries. */
     static String runIdPrefix(File dir) {

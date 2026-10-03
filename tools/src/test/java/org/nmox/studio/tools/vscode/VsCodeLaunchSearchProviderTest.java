@@ -344,6 +344,54 @@ class VsCodeLaunchSearchProviderTest {
     }
 
     @Test
+    @DisplayName("with a preLaunchTask only a MISSING path waits for it: a folder or env file outside the project is refused before the task")
+    void onlyMissingWaitsForTheTask() throws Exception {
+        org.junit.jupiter.api.Assumptions.assumeFalse(
+                System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win"),
+                "the outside paths are POSIX paths");
+        tasks("{\"tasks\":[{\"label\":\"build\",\"type\":\"shell\",\"command\":\"make\"}]}");
+        VsCodeLaunch.clearCache();
+        Files.writeString(project.resolve(".vscode/launch.json"), """
+                {"configurations":[
+                  {"type":"node","request":"launch","name":"Built, run outside",
+                   "program":"${workspaceFolder}/dist/server.js","cwd":"/","preLaunchTask":"build"},
+                  {"type":"node","request":"launch","name":"Built, env outside",
+                   "program":"${workspaceFolder}/dist/server.js","envFile":"/etc/hosts","preLaunchTask":"build"},
+                  {"type":"node","request":"launch","name":"Built, not yet",
+                   "program":"${workspaceFolder}/dist/server.js","envFile":"${workspaceFolder}/dist/.env",
+                   "cwd":"${workspaceFolder}/dist","preLaunchTask":"build"}
+                ]}
+                """);
+        enter("Built, run outside");
+        enter("Built, env outside");
+        assertThat(tasksRun).as("neither task ran").isEmpty();
+        assertThat(asked).as("and nobody was asked to trust anything").isEmpty();
+        assertThat(said).containsExactly(
+                "Configuration \"Built, run outside\" points at /, outside the project; NMOX Studio will not debug it there.",
+                "Configuration \"Built, env outside\" points at /etc/hosts, outside the project; "
+                        + "NMOX Studio will not debug it there.");
+
+        said.clear();
+        enter("Built, not yet");
+        assertThat(tasksRun).as("everything it names is missing until the task builds it: the task runs")
+                .containsExactly("build");
+        assertThat(said.get(said.size() - 1)).as("and the second look, after the task, refuses what is still missing")
+                .isEqualTo("Configuration \"Built, not yet\" points at ${workspaceFolder}/dist/server.js, which is not there.");
+    }
+
+    @Test
+    @DisplayName("a preLaunchTask that would be refused is refused BEFORE the trust question")
+    void aRefusedTaskAsksNoTrust() throws Exception {
+        tasks("{\"tasks\":[{\"label\":\"build\",\"type\":\"shell\",\"command\":\"make ${config:mode}\"},"
+                + "{\"label\":\"test\",\"type\":\"shell\",\"command\":\"make\",\"dependsOn\":[\"nope\"]}]}");
+        enter("Launch after a build");
+        assertThat(asked).as("no trust question for a run that cannot happen").isEmpty();
+        assertThat(tasksRun).isEmpty();
+        assertThat(handed).isEmpty();
+        assertThat(said).containsExactly("This task asks VS Code for ${config:mode}; NMOX Studio cannot supply it.");
+    }
+
+    @Test
     @DisplayName("a program the preLaunchTask builds is looked for again after the task; still missing is still a refusal")
     void theTaskBuildsTheProgram() throws Exception {
         tasks("{\"tasks\":[{\"label\":\"build\",\"type\":\"shell\",\"command\":\"make\"}]}");

@@ -283,8 +283,21 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
      * null {@code then} this IS Enter on the task, whose own exit nobody
      * waits for.
      */
-    static void executeThen(File project, TaskDef task, EditorContext editor, Consumer<RunEnd> then) {
-        Outcome outcome = VsCodeTaskPlan.check(task, VsCodeTasks.readFile(project), project, host,
+    static void executeThen(File project, TaskDef listed, EditorContext editor, Consumer<RunEnd> then) {
+        // the file is read again here, and the task with it: the row (or
+        // the launch configuration) was built from the file as it was, and
+        // what runs is what the file says NOW — a command edited since is
+        // the edited one, a task deleted since runs nothing
+        VsCodeTasks.TasksFile file = VsCodeTasks.readFile(project);
+        List<TaskDef> named = file.tasks().stream().filter(t -> t.label().equals(listed.label())).toList();
+        if (named.size() != 1) {
+            statusSink.accept(message(named.isEmpty() ? "VsCodeTaskSearchProvider_refuseGone"
+                    : "VsCodeTaskSearchProvider_refuseNowAmbiguous", listed.label()));
+            tell(then, RunEnd.NOT_STARTED);
+            return;
+        }
+        TaskDef task = named.get(0);
+        Outcome outcome = VsCodeTaskPlan.check(task, file, project, host,
                 editor, System.getProperty("user.home", ""));
         if (outcome instanceof Refusal refusal) {
             statusSink.accept(refusal(task.label(), refusal));
@@ -336,6 +349,20 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
         new Chain(task.label(), project, (Ready) prepared, then).start();
     }
 
+    /**
+     * How an npm-lane script ended, as a task's {@link Exit}: the lane's
+     * {@link NpmLaneRun#STOPPED} is the user's stop, whatever code the
+     * script left with — a script that exits 0 on its TERM must not hand
+     * over to what waits for it, and one that exits 143 has not failed.
+     */
+    static Exit npmExit(int code) {
+        return code == NpmLaneRun.STOPPED ? new Exit(1, true) : new Exit(code, false);
+    }
+
+    /** Test seam: runs on the lane as each stage is about to start, after the one before it ended. */
+    static volatile Runnable beforeStage = () -> {
+    };
+
     private static void tell(Consumer<RunEnd> then, RunEnd end) {
         if (then != null) {
             then.accept(end);
@@ -375,6 +402,14 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
         private final String runId;
         /** Set by the toolbar ■ (or the run's own row): no further stage starts. */
         private final AtomicBoolean stopped = new AtomicBoolean();
+        /**
+         * The live-run ids of every task this run started, so that a stop
+         * of the RUN stops the task that is running — the ■ stops every
+         * run anyway, but the run's own row (and its waiter's stop) reach
+         * only this entry. Guarded by {@code this}, with {@link #stopped}:
+         * a stop either sees an id here or the id's owner sees the stop.
+         */
+        private final List<String> started = new ArrayList<>();
         /** Who waits for the whole run, the root task included; null when nobody does. */
         private final Consumer<RunEnd> then;
 
@@ -398,9 +433,34 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
                 // otherwise hand over to the next stage
                 LiveRuns.add(new LiveRuns.Run(runId,
                         message("VsCodeTaskSearchProvider_chain", root, project.getName()),
-                        () -> stopped.set(true)));
+                        this::stop));
             }
             stage(0);
+        }
+
+        /** The run's own stop: no further stage starts, and the tasks it started are stopped. */
+        private void stop() {
+            List<String> running;
+            synchronized (this) {
+                stopped.set(true);
+                running = new ArrayList<>(started);
+            }
+            // a task that has already ended is no longer live: LiveRuns ignores it
+            running.forEach(LiveRuns::stop);
+        }
+
+        /** A task of this run joined the live runs (on the lane, inside {@link #begin}). */
+        private void joined(String id) {
+            boolean late;
+            synchronized (this) {
+                started.add(id);
+                late = stopped.get();
+            }
+            if (late) {
+                // the stop came after begin() looked and before the task was
+                // live: it is stopped now, as if it had been running already
+                LiveRuns.stop(id);
+            }
         }
 
         private void stage(int index) {
@@ -408,6 +468,7 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
                 end(RunEnd.DONE);
                 return;
             }
+            beforeStage.run();
             List<Step> steps = stages.get(index);
             List<CompletableFuture<Exit>> exits = new ArrayList<>();
             for (Step step : steps) {
@@ -425,6 +486,16 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
         }
 
         private CompletableFuture<Exit> begin(Step step) {
+            if (stopped.get()) {
+                // stopped between the stage before and this one: start nothing
+                return CompletableFuture.completedFuture(new Exit(0, true));
+            }
+            // every live run the start below adds — on this thread, before it
+            // returns — is this run's to stop
+            return LiveRuns.watchingAdds(this::joined, () -> start(step));
+        }
+
+        private CompletableFuture<Exit> start(Step step) {
             String label = step.task().label();
             if (step.resolved() instanceof Launch launch) {
                 CompletableFuture<Exit> watcher = watching(label, launch.matching());
@@ -441,7 +512,7 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
                 }
                 statusSink.accept(message("VsCodeTaskSearchProvider_running", label));
                 return npm.matching().isEmpty()
-                        ? npmRunner.apply(npm.dir(), npm.script()).thenApply(code -> new Exit(code, false))
+                        ? npmRunner.apply(npm.dir(), npm.script()).thenApply(VsCodeTaskSearchProvider::npmExit)
                         : read(label, npm);
             }
             return CompletableFuture.completedFuture(new Exit(0, false)); // a group: nothing of its own
@@ -483,8 +554,8 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
             ended.whenComplete((code, failed) -> {
                 int exit = failed != null || code == null ? 1 : code;
                 // a script the lane refused did not start: nothing it "found" replaces what is there
-                problems.exited(exit == NpmLaneRun.NOT_RUN ? -1 : exit);
-                done.complete(new Exit(exit, false));
+                problems.exited(exit == NpmLaneRun.NOT_RUN ? -1 : exit == NpmLaneRun.STOPPED ? 1 : exit);
+                done.complete(npmExit(exit));
             });
             return done;
         }
@@ -584,6 +655,11 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
             case SHELL_MISSING -> message("VsCodeTaskSearchProvider_refuseShellMissing", taskLabel, refused.detail());
             case SHELL_UNSUPPORTED -> message("VsCodeTaskSearchProvider_refuseShellUnsupported",
                     taskLabel, refused.detail());
+            case UNQUOTED_VALUE -> message("VsCodeTaskSearchProvider_refuseUnquotedValue",
+                    taskLabel, refused.detail());
+            case ENV_INVALID -> message("VsCodeTaskSearchProvider_refuseEnvInvalid", taskLabel, refused.detail());
+            case BATCH_ARGUMENT -> message("VsCodeTaskSearchProvider_refuseBatchArgument",
+                    taskLabel, refused.detail());
         };
     }
 
@@ -627,6 +703,9 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
         try {
             handle = start(runId, label, taskLabel, launch, ph, announced, problems, done);
         } catch (RuntimeException notStarted) {
+            // the bar's end is the exit callback's, which a throw before it never reaches:
+            // finished here, so no progress bar spins for a run that never began
+            ph.finish();
             problems.exited(-1); // every reader hears its end: a watcher that never ran is not one to hand on
             throw notStarted;
         }

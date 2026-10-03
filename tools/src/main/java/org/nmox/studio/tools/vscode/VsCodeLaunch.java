@@ -433,6 +433,31 @@ public final class VsCodeLaunch {
      */
     static Resolved resolve(Config config, File project, UnaryOperator<String> env, Path editorFile,
             boolean tasksRun) {
+        return resolve(config, project, env, editorFile, tasksRun, false);
+    }
+
+    /**
+     * What a configuration with a {@link #preLaunchTask} would do, asked
+     * BEFORE that task runs: every refusal but one is final now — a field
+     * the debugger cannot pass on, a path outside the project, an env file
+     * with a line VS Code would read differently — and is said before
+     * anything is asked or run. The one that is not is a path that is not
+     * there yet ({@link Reason#MISSING}): the task may build it, so it is
+     * passed over here, and the configuration is resolved again, for
+     * real, once the task has ended. Never handed to a debugger as it is.
+     */
+    static Resolved resolveBeforeTask(Config config, File project, UnaryOperator<String> env, Path editorFile) {
+        return resolve(config, project, env, editorFile, true, true);
+    }
+
+    /**
+     * {@link #resolve(Config, File, UnaryOperator, Path, boolean)}; with
+     * {@code missingWaits} a path that names nothing is not refused (and
+     * an env file that is not there yet adds nothing), so every other
+     * check is made — see {@link #resolveBeforeTask}.
+     */
+    private static Resolved resolve(Config config, File project, UnaryOperator<String> env, Path editorFile,
+            boolean tasksRun, boolean missingWaits) {
         if (config.compound()) {
             return new Refused(Reason.COMPOUND, "");
         }
@@ -511,9 +536,10 @@ public final class VsCodeLaunch {
         }
         UnaryOperator<String> sub = s -> VsCodeEditorVariables.substitute(s, project, env, editorFile);
         if (attach) {
-            return attach(config, project, sub);
+            return attach(config, project, sub, missingWaits);
         }
-        return kind == Kind.CHROME ? page(config, project, sub) : program(kind, config, project, sub);
+        return kind == Kind.CHROME ? page(config, project, sub, missingWaits)
+                : program(kind, config, project, sub, missingWaits);
     }
 
     /**
@@ -527,9 +553,10 @@ public final class VsCodeLaunch {
         return label == null || label.isBlank() ? null : label;
     }
 
-    private static Resolved program(Kind kind, Config config, File project, UnaryOperator<String> sub) {
+    private static Resolved program(Kind kind, Config config, File project, UnaryOperator<String> sub,
+            boolean missingWaits) {
         String runtimeField = kind == Kind.NODE ? "runtimeExecutable" : "python";
-        Object runtime = runtime(config.strings().get(runtimeField), runtimeField, sub);
+        Object runtime = runtime(config.strings().get(runtimeField), runtimeField, sub, missingWaits);
         if (runtime instanceof Refused r) {
             return r;
         }
@@ -546,7 +573,7 @@ public final class VsCodeLaunch {
             if (program == null) {
                 return new Refused(Reason.OUTSIDE, written);
             }
-            if (!program.isFile()) {
+            if (!program.isFile() && !missingWaits) {
                 return new Refused(Reason.MISSING, written);
             }
             if (!runs(kind, program.getName())) {
@@ -554,11 +581,11 @@ public final class VsCodeLaunch {
             }
         }
         // VS Code's own default for both adapters is ${workspaceFolder}
-        Object cwd = folder(project, config.strings().get("cwd"), sub);
+        Object cwd = folder(project, config.strings().get("cwd"), sub, missingWaits);
         if (cwd instanceof Refused r) {
             return r;
         }
-        Object env = environment(kind, config, project, sub);
+        Object env = environment(kind, config, project, sub, missingWaits);
         if (env instanceof Refused r) {
             return r;
         }
@@ -574,7 +601,7 @@ public final class VsCodeLaunch {
      * absolute path to pass on, or a {@link Refused}. See the class comment
      * for why a relative path is refused.
      */
-    private static Object runtime(String written, String field, UnaryOperator<String> sub) {
+    private static Object runtime(String written, String field, UnaryOperator<String> sub, boolean missingWaits) {
         if (written == null) {
             return null;
         }
@@ -595,7 +622,7 @@ public final class VsCodeLaunch {
             return new Refused(Reason.FIELDS, field);
         }
         File file = path.normalize().toFile();
-        if (!executableThere(file, Os.current())) {
+        if (!executableThere(file, Os.current()) && !missingWaits) {
             return new Refused(Reason.MISSING, written);
         }
         return file.getPath();
@@ -631,7 +658,8 @@ public final class VsCodeLaunch {
      * Refused} naming the file (and, for a line VS Code would read
      * differently, its number; never a value).
      */
-    private static Object environment(Kind kind, Config config, File project, UnaryOperator<String> sub) {
+    private static Object environment(Kind kind, Config config, File project, UnaryOperator<String> sub,
+            boolean missingWaits) {
         Map<String, String> merged = new TreeMap<>();
         String written = config.strings().get("envFile");
         if (written != null) {
@@ -643,6 +671,11 @@ public final class VsCodeLaunch {
                 return new Refused(Reason.OUTSIDE, written);
             }
             if (!file.isFile()) {
+                if (missingWaits) {
+                    // the task may write it; read for real after the task
+                    config.env().forEach((k, v) -> merged.put(k, sub.apply(v)));
+                    return Collections.unmodifiableMap(merged);
+                }
                 return new Refused(Reason.MISSING, written);
             }
             VsCodeEnvFile.Result read = VsCodeEnvFile.read(file, kind == Kind.PYTHON);
@@ -659,7 +692,7 @@ public final class VsCodeLaunch {
         return Collections.unmodifiableMap(merged);
     }
 
-    private static Resolved attach(Config config, File project, UnaryOperator<String> sub) {
+    private static Resolved attach(Config config, File project, UnaryOperator<String> sub, boolean missingWaits) {
         String address = "localhost";
         String writtenAddress = config.strings().get("address");
         if (writtenAddress != null) {
@@ -679,7 +712,7 @@ public final class VsCodeLaunch {
                 return new Refused(Reason.FIELDS, "port");
             }
         }
-        Object cwd = folder(project, config.strings().get("cwd"), sub);
+        Object cwd = folder(project, config.strings().get("cwd"), sub, missingWaits);
         if (cwd instanceof Refused r) {
             return r;
         }
@@ -695,8 +728,8 @@ public final class VsCodeLaunch {
         return port >= 1 && port <= 65535 ? port : -1;
     }
 
-    private static Resolved page(Config config, File project, UnaryOperator<String> sub) {
-        Object webRoot = folder(project, config.strings().get("webRoot"), sub);
+    private static Resolved page(Config config, File project, UnaryOperator<String> sub, boolean missingWaits) {
+        Object webRoot = folder(project, config.strings().get("webRoot"), sub, missingWaits);
         if (webRoot instanceof Refused r) {
             return r;
         }
@@ -710,7 +743,7 @@ public final class VsCodeLaunch {
             if (page == null) {
                 return new Refused(Reason.OUTSIDE, file);
             }
-            if (!page.isFile()) {
+            if (!page.isFile() && !missingWaits) {
                 return new Refused(Reason.MISSING, file);
             }
             return new DebugPage(page.toURI().toString(), (File) webRoot);
@@ -741,7 +774,7 @@ public final class VsCodeLaunch {
                 if (page == null) {
                     return new Refused(Reason.OUTSIDE, url);
                 }
-                if (!page.isFile()) {
+                if (!page.isFile() && !missingWaits) {
                     return new Refused(Reason.MISSING, url);
                 }
                 return new DebugPage(page.toURI().toString(), (File) webRoot);
@@ -753,7 +786,7 @@ public final class VsCodeLaunch {
     }
 
     /** A folder field ({@code cwd}, {@code webRoot}): blank means the project, VS Code's default. */
-    private static Object folder(File project, String written, UnaryOperator<String> sub) {
+    private static Object folder(File project, String written, UnaryOperator<String> sub, boolean missingWaits) {
         if (written == null || written.isBlank()) {
             return project;
         }
@@ -761,7 +794,7 @@ public final class VsCodeLaunch {
         if (dir == null) {
             return new Refused(Reason.OUTSIDE, written);
         }
-        if (!dir.isDirectory()) {
+        if (!dir.isDirectory() && !(missingWaits && !dir.exists())) {
             return new Refused(Reason.MISSING, written);
         }
         return dir;

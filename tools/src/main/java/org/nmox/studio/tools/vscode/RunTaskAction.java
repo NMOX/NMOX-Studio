@@ -42,7 +42,8 @@ public final class RunTaskAction implements ActionListener {
         }
     }, () -> new VsCodeMenuDoor.Words(
             message("RunTaskAction_title"), message("RunTaskAction_run"),
-            message("RunTaskAction_noProject"), message("RunTaskAction_nothing")),
+            message("RunTaskAction_noProject"), message("RunTaskAction_nothing"),
+            message("RunTaskAction_aimMoved")),
             s -> VsCodeTaskSearchProvider.statusSink.accept(s));
 
     /** {@code build — make all}: the task's label, then its command as the file wrote it, on one line. */

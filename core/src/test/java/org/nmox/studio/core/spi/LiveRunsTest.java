@@ -205,4 +205,31 @@ class LiveRunsTest {
                 .as("only the LEADING position is the sniff (BasicHTML.isHTMLString, decompiled)")
                 .isEqualTo("Run — <html>inside");
     }
+
+    @Test
+    @DisplayName("watchingAdds tells its sink every run added on this thread inside it, and nothing outside it or withdrawn")
+    void watchingAdds() throws Exception {
+        List<String> heard = new ArrayList<>();
+        LiveRuns.remove("withdrawn"); // its exit came first
+        String answer = LiveRuns.watchingAdds(heard::add, () -> {
+            LiveRuns.add(new LiveRuns.Run("a", "a", () -> { }));
+            LiveRuns.add(new LiveRuns.Run("withdrawn", "w", () -> { }));
+            List<String> inner = new ArrayList<>();
+            LiveRuns.watchingAdds(inner::add, () -> LiveRuns.add(new LiveRuns.Run("b", "b", () -> { })));
+            assertThat(inner).as("the inner sink hears the inner add").containsExactly("b");
+            Thread other = new Thread(() -> LiveRuns.add(new LiveRuns.Run("elsewhere", "e", () -> { })));
+            other.start();
+            try {
+                other.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            LiveRuns.add(new LiveRuns.Run("c", "c", () -> { }));
+            return "done";
+        });
+        LiveRuns.add(new LiveRuns.Run("after", "after", () -> { }));
+        assertThat(answer).isEqualTo("done");
+        assertThat(heard).as("this thread's adds while it watched; the outer sink is back after the inner one")
+                .containsExactly("a", "c");
+    }
 }

@@ -259,6 +259,13 @@ public final class VsCodeTasks {
     record EditorContext(Path file, int line, int column, String selectedText) {
 
         static final EditorContext NONE = new EditorContext(null, 0, 0, null);
+
+        /** The selection's length, never its text: the selection is the user's own. */
+        @Override
+        public String toString() {
+            return "EditorContext[file=" + file + ", line=" + line + ", column=" + column + ", selected="
+                    + (selectedText == null ? "none" : selectedText.length() + " chars") + "]";
+        }
     }
 
     /**
@@ -275,6 +282,18 @@ public final class VsCodeTasks {
         /** No editor, no inputs: what a task resolves against when it is asked about alone. */
         static Vars none() {
             return new Vars(EditorContext.NONE, System.getProperty("user.home", ""), Map.of(), Map.of());
+        }
+
+        /**
+         * The answers' ids and the editor, never an answer or the
+         * selection: an answer may be a password, and a record's own
+         * {@code toString} would print it into any log or assertion
+         * message that names this value.
+         */
+        @Override
+        public String toString() {
+            return "Vars[editor=" + editor + ", userHome=" + userHome + ", inputs=" + inputs.keySet()
+                    + ", answers=" + (answers == null ? "not asked" : answers.keySet()) + "]";
         }
     }
 
@@ -328,6 +347,18 @@ public final class VsCodeTasks {
         /** A launch whose argv may be shown as it is. */
         Launch(List<String> argv, File dir, Map<String, String> env) {
             this(argv, dir, env, null);
+        }
+
+        /**
+         * The line a reader may see and the variables' names, never the
+         * argv of a launch that has a {@link #shown} line nor an
+         * environment value: either may carry a password, a token from the
+         * user's environment or the selection.
+         */
+        @Override
+        public String toString() {
+            return "Launch[" + (shown != null ? "shown=" + shown : "argv=" + argv) + ", dir=" + dir
+                    + ", env=" + env.keySet() + ", matching=" + matching + "]";
         }
     }
 
@@ -410,7 +441,31 @@ public final class VsCodeTasks {
          * faithfully (anything but PowerShell with {@code -Command} or
          * cmd.exe with {@code /c}); detail = the shell as written.
          */
-        SHELL_UNSUPPORTED
+        SHELL_UNSUPPORTED,
+        /**
+         * A {@code shell} task's {@code command} line holds a value nobody
+         * in the file chose — the editor's file name, the selection, an
+         * input's answer — that the shell would read as more than text (a
+         * space, a quote, {@code $(…)}); only {@code args} are quoted, so
+         * the line would run a different command. Detail = the variable as
+         * written, never its value.
+         */
+        UNQUOTED_VALUE,
+        /**
+         * An {@code options.env} entry no process can be handed: a name
+         * that is empty or holds {@code =} or a NUL, or a value that holds
+         * a NUL. Detail = the name (control characters shown as U+FFFD),
+         * never the value.
+         */
+        ENV_INVALID,
+        /**
+         * On Windows, a {@code process} task whose program is a batch file
+         * ({@code .cmd}, {@code .bat}) and one of whose arguments holds a
+         * character cmd.exe reads as syntax ({@code & | < > ^ % !}, a quote,
+         * a line break): Windows runs a batch file through cmd.exe, which
+         * parses the arguments again. Detail = the program as written.
+         */
+        BATCH_ARGUMENT
     }
 
     /* ------------------------------------------------------------------ reading */
@@ -878,23 +933,41 @@ public final class VsCodeTasks {
                 }
                 Map<String, String> environment = new LinkedHashMap<>();
                 task.env().forEach((k, v) -> environment.put(k, sub.apply(v)));
-                Object argv = argvOf(task, host, project, sub);
+                // a name or value no process can be handed: ProcessBuilder
+                // throws past every launch path's IOException catch, so it is
+                // refused here, by its name (never its value)
+                for (Map.Entry<String, String> e : environment.entrySet()) {
+                    if (!environmentEntryValid(e.getKey(), e.getValue())) {
+                        return new Refused(Reason.ENV_INVALID, printable(e.getKey()));
+                    }
+                }
+                if ("shell".equals(task.type())) {
+                    String unquoted = unquotedValue(task.command().text(), project, env, vars, host.os());
+                    if (unquoted != null) {
+                        return new Refused(Reason.UNQUOTED_VALUE, unquoted);
+                    }
+                }
+                Object argv = argvOf(task, host, project, sub, false);
                 if (argv instanceof Refused r) {
                     // a shell the file named is named back as the file (and a reader) may see it
                     return task.shell() != null && task.shell().executable() != null
                             ? new Refused(r.reason(), written.apply(task.shell().executable()))
                             : r;
                 }
-                String shown = null;
-                if (used.stream().anyMatch(s -> sensitive(s, vars))) {
-                    Object readable = argvOf(task, host, project, written);
-                    @SuppressWarnings("unchecked")
-                    String line = readable instanceof List<?> ? String.join(" ", (List<String>) readable)
-                            : display(task);
-                    shown = line;
-                }
                 @SuppressWarnings("unchecked")
                 List<String> built = (List<String>) argv;
+                if ("process".equals(task.type()) && batchArgument(host, project, built)) {
+                    return new Refused(Reason.BATCH_ARGUMENT, written.apply(task.command().text()));
+                }
+                // the line a reader is shown: a password, the selection and
+                // the user's environment left as the file wrote them, and on
+                // Windows the PowerShell line itself rather than its base64.
+                // Null only when that line IS the argv joined.
+                Object readable = argvOf(task, host, project, written, true);
+                @SuppressWarnings("unchecked")
+                String line = readable instanceof List<?> ? String.join(" ", (List<String>) readable)
+                        : display(task);
+                String shown = line.equals(String.join(" ", built)) ? null : line;
                 return new Launch(List.copyOf(built), (File) dir, Collections.unmodifiableMap(environment), shown,
                         matching(task, project, env));
             }
@@ -944,8 +1017,13 @@ public final class VsCodeTasks {
         return used;
     }
 
-    /** The argv of a {@code shell} or {@code process} task with {@code sub} applied, or a {@link Refused}. */
-    private static Object argvOf(TaskDef task, Host host, File project, UnaryOperator<String> sub) {
+    /**
+     * The argv of a {@code shell} or {@code process} task with {@code sub}
+     * applied, or a {@link Refused}; {@code forReader} as for {@link
+     * #shellArgv(Host, ShellOpt, File, String, List, List, boolean)}.
+     */
+    private static Object argvOf(TaskDef task, Host host, File project, UnaryOperator<String> sub,
+            boolean forReader) {
         String command = sub.apply(task.command().text());
         List<String> args = new ArrayList<>();
         for (Value a : task.args()) {
@@ -958,7 +1036,108 @@ public final class VsCodeTasks {
                 task.shell().executable() == null ? null : sub.apply(task.shell().executable()),
                 task.shell().args() == null ? null
                         : task.shell().args().stream().map(sub).toList());
-        return shellArgv(host, declared, project, command, args, task.args());
+        return shellArgv(host, declared, project, command, args, task.args(), forReader);
+    }
+
+    /**
+     * The variables whose value nobody in the file chose: the editor's
+     * file and its family, the selection, an input's answer. In a {@code
+     * shell} task's {@code command} — which reaches the shell as written,
+     * unquoted — such a value must be plain text to the shell.
+     */
+    private static boolean foreignValue(String name) {
+        return FILE_VARIABLES.contains(name) || "selectedText".equals(name) || inputId(name) != null;
+    }
+
+    /** What a value in a POSIX shell line may hold and still be one plain word. */
+    private static final Pattern POSIX_WORD = Pattern.compile("[A-Za-z0-9_@%+=:,./-]*");
+
+    /**
+     * What a value in a PowerShell or cmd.exe line may hold and still be
+     * one plain word: a Windows path's backslash and drive colon, and
+     * neither {@code %} (cmd expands it), {@code @} nor {@code ,}
+     * (PowerShell syntax).
+     */
+    private static final Pattern WINDOWS_WORD = Pattern.compile("[A-Za-z0-9_+=:./\\\\-]*");
+
+    /**
+     * The first variable in a {@code shell} task's command line, as
+     * written, whose value is one nobody in the file chose and that the
+     * shell would read as more than one plain word; null when there is
+     * none. A file named {@code x$(touch PWNED).js} opened from anywhere
+     * is the case: VS Code itself pastes it into the line unquoted, and
+     * the shell runs what it says. In {@code args} the same value is
+     * quoted for the shell and is safe, which the refusal says.
+     */
+    static String unquotedValue(String command, File project, UnaryOperator<String> env, Vars vars, Os os) {
+        Pattern word = os == Os.WINDOWS ? WINDOWS_WORD : POSIX_WORD;
+        Matcher m = VARIABLE.matcher(command);
+        while (m.find()) {
+            if (!foreignValue(m.group(1))) {
+                continue;
+            }
+            String value = substitute(m.group(), project, env, vars, false);
+            if (!word.matcher(value).matches()) {
+                return m.group();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Whether {@code name}={@code value} can be handed to a process: the
+     * JDK refuses a name that is empty or holds {@code =} or a NUL, and a
+     * value that holds a NUL, with an {@link IllegalArgumentException}.
+     */
+    static boolean environmentEntryValid(String name, String value) {
+        return !name.isEmpty() && name.indexOf('=') < 0 && name.indexOf('\0') < 0
+                && (value == null || value.indexOf('\0') < 0);
+    }
+
+    /** {@code s} with every control character shown as U+FFFD, for a sentence that names it. */
+    static String printable(String s) {
+        StringBuilder out = new StringBuilder(s.length());
+        s.codePoints().forEach(c -> out.appendCodePoint(Character.isISOControl(c) ? 0xFFFD : c));
+        return out.toString();
+    }
+
+    /** The characters cmd.exe reads as syntax in a batch file's arguments. */
+    private static final String BATCH_SYNTAX = "&|<>^%!\"\r\n";
+
+    /**
+     * Whether a Windows {@code process} task's argv names a batch file and
+     * hands it an argument cmd.exe would parse as syntax. Windows starts a
+     * {@code .cmd} or {@code .bat} through cmd.exe, which reads the whole
+     * command line again; the JDK's quoting of each argument does not
+     * survive that (the "BatBadBut" class), so an {@code &} in a file name
+     * or an input's answer would end the argument and run what follows.
+     */
+    static boolean batchArgument(Host host, File project, List<String> argv) {
+        if (host.os() != Os.WINDOWS || argv.isEmpty()) {
+            return false;
+        }
+        String program = argv.get(0);
+        String resolved;
+        if (isAbsolute(Os.WINDOWS, program)) {
+            resolved = program;
+        } else if (program.indexOf('/') < 0 && program.indexOf('\\') < 0) {
+            resolved = host.onPath().apply(program);
+        } else {
+            File inProject = inside(project, program);
+            resolved = inProject == null ? program : inProject.getPath();
+        }
+        String name = (resolved == null ? program : resolved).toLowerCase(Locale.ROOT);
+        if (!name.endsWith(".cmd") && !name.endsWith(".bat")) {
+            return false;
+        }
+        for (String arg : argv.subList(1, argv.size())) {
+            for (int i = 0; i < arg.length(); i++) {
+                if (BATCH_SYNTAX.indexOf(arg.charAt(i)) >= 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /** The first {@code ${…}} in {@code s} this IDE cannot supply, as written, or null. */
@@ -1084,16 +1263,6 @@ public final class VsCodeTasks {
         return def != null && def.password();
     }
 
-    /** Whether {@code s} would carry text that is the user's own: a password's answer, or the selection. */
-    private static boolean sensitive(String s, Vars vars) {
-        Matcher m = VARIABLE.matcher(s);
-        while (m.find()) {
-            if ("selectedText".equals(m.group(1)) || passwordInput(m.group(1), vars)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     /**
      * Every supported variable replaced. {@code ${cwd}} is the project
@@ -1133,9 +1302,12 @@ public final class VsCodeTasks {
      * vars} — in ONE pass, so a value is never read for variables again.
      * Call it only on a string {@link #variableProblem} passed.
      *
-     * @param forReader true leaves a password input and {@code
-     *        ${selectedText}} as the file wrote them: the text for a
-     *        header, a log or a refusal, never for the process
+     * @param forReader true leaves a password input, {@code
+     *        ${selectedText}} and every {@code ${env:NAME}} as the file
+     *        wrote them: the text for a header, a log or a refusal, never
+     *        for the process. The user's environment holds tokens, and the
+     *        launch line reaches the Output window, the flight recorder's
+     *        journal, the Agent Port's run history and KVASIR
      */
     static String substitute(String s, File project, UnaryOperator<String> env, Vars vars, boolean forReader) {
         Matcher m = VARIABLE.matcher(s);
@@ -1143,7 +1315,8 @@ public final class VsCodeTasks {
         while (m.find()) {
             String name = m.group(1);
             String value;
-            if (forReader && ("selectedText".equals(name) || passwordInput(name, vars))) {
+            if (forReader && ("selectedText".equals(name) || passwordInput(name, vars)
+                    || name.startsWith("env:"))) {
                 value = m.group();
             } else if ("userHome".equals(name)) {
                 value = vars.userHome() == null ? "" : vars.userHome();
@@ -1263,6 +1436,19 @@ public final class VsCodeTasks {
         if (asPath.isAbsolute()) {
             Path base = project.getAbsoluteFile().toPath().normalize();
             Path target = asPath.normalize();
+            if (!target.startsWith(base)) {
+                // the two may be spellings of one place: a project opened
+                // through a symlink and a path written through its real
+                // location (or the other way round). Canonical to canonical
+                // decides; what is outside then is outside, and Containment
+                // still judges the relative path below.
+                try {
+                    base = project.getCanonicalFile().toPath();
+                    target = asPath.toFile().getCanonicalFile().toPath();
+                } catch (IOException | SecurityException unresolvable) {
+                    return null;
+                }
+            }
             if (target.equals(base)) {
                 return project;
             }
@@ -1322,6 +1508,18 @@ public final class VsCodeTasks {
      */
     static Object shellArgv(Host host, ShellOpt declared, File project, String command,
             List<String> args, List<Value> quoting) {
+        return shellArgv(host, declared, project, command, args, quoting, false);
+    }
+
+    /**
+     * {@link #shellArgv(Host, ShellOpt, File, String, List, List)}; with
+     * {@code forReader} the argv a READER is shown rather than the one
+     * that runs: on Windows PowerShell gets the line itself after
+     * {@code -Command} in place of its {@code -EncodedCommand} base64,
+     * which says nothing to a person reading the Output window's header.
+     */
+    static Object shellArgv(Host host, ShellOpt declared, File project, String command,
+            List<String> args, List<Value> quoting, boolean forReader) {
         String exe;
         List<String> shellArgs;
         String asWritten;
@@ -1367,6 +1565,11 @@ public final class VsCodeTasks {
             List<String> argv = new ArrayList<>();
             argv.add(exe);
             argv.addAll(before);
+            if (forReader) {
+                argv.add(last);
+                argv.add(line);
+                return argv;
+            }
             argv.add("-EncodedCommand");
             argv.add(Base64.getEncoder().encodeToString(line.getBytes(StandardCharsets.UTF_16LE)));
             return argv;
