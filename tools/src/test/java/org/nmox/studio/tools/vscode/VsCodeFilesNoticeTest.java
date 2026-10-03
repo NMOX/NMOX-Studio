@@ -94,7 +94,8 @@ class VsCodeFilesNoticeTest {
         File dir = project.toFile();
         VsCodeFilesNotice.check(dir, () -> dir);
         assertThat(told).hasSize(1);
-        assertThat(told.get(0)[1]).contains("2 VS Code extensions").doesNotContain("Quick Search");
+        assertThat(told.get(0)[1]).as("the file is named, like settings.json in its sentence")
+                .contains(".vscode/extensions.json recommends 2 VS Code extensions").doesNotContain("Quick Search");
         assertThat(clickOpens.get(0)).as("the click opens the sheet for the project the notice is about").isEqualTo(dir);
     }
 
