@@ -244,7 +244,7 @@ README 是在 GitHub 上读的，里面一个哪儿也去不了的链接，会�
 
 ### 用真正的断点调试
 
-在左侧边栏点击，选择**调试文件（断点）**，程序就会停在那里 — 带调用栈、变量和表达式求值。JavaScript 与 TypeScript 依靠内置适配器开箱即用；Python 使用 debugpy，Go 使用 delve，这两个需要你自己安装。**在 Chrome 中调试**对网页做同样的事：你源码里的断点会在 IDE 内停下，而浏览器跑在一个用完即弃的配置文件上。所有这些都要先经过工作区信任确认。带有 `.vscode/launch.json` 的仓库还有第三扇门：在快速搜索里输入某个配置的名字，回车就会在它的 `cwd` 里、带着它的 `args` 和 `env` 启动该配置的 Node 或 Python `program`，或者用它的 `webRoot` 打开 Chrome 配置的 `url`；设置了 `envFile`、`runtimeExecutable` 或其他任何调试器无法传递的字段的配置，会在状态栏上按名字被拒绝，而不是缺了它们照样启动。
+在左侧边栏点击，选择**调试文件（断点）**，程序就会停在那里 — 带调用栈、变量和表达式求值。JavaScript 与 TypeScript 依靠内置适配器开箱即用；Python 使用 debugpy，Go 使用 delve，这两个需要你自己安装。**在 Chrome 中调试**对网页做同样的事：你源码里的断点会在 IDE 内停下，而浏览器跑在一个用完即弃的配置文件上。所有这些都要先经过工作区信任确认。带有 `.vscode/launch.json` 的仓库还有第三扇门：在快速搜索里输入某个配置的名字，回车就会在它的 `cwd` 里启动该配置的 Node 或 Python `program`，带着它的 `args`、它的 `env` 和 `envFile`，以及它指定的运行时（`runtimeExecutable` 和 `runtimeArgs`，所以 `npm run dev` 或 `tsx` 这样的配置会照写好的样子启动），或者附加到本机上的一个 `node --inspect` 进程，或者用它的 `webRoot` 打开 Chrome 配置的 `url`。`"program": "${file}"` 就是编辑器显示着的文件，而指定了 `.vscode/tasks.json` 里某个任务的 `preLaunchTask` 会先运行：任务成功之后，调试器才启动。设置了任何调试器无法传递的字段的配置，会在状态栏上按名字被拒绝，而不是缺了它们照样启动。
 
 ### 在浏览器里调试
 
