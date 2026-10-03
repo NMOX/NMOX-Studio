@@ -112,6 +112,17 @@ public class NpmService {
         return runCommand(projectDir, getCommand(manager), "run", scriptName);
     }
 
+    /**
+     * {@link #runScript(File, String, PackageManager)} with a listener on
+     * every line the script prints, called on the output pump's thread
+     * (3.6.0: a VS Code npm task's problem matcher reads them). The same
+     * lane, gate and walls; {@code tap} hears nothing when they refuse.
+     */
+    public CompletableFuture<String> runScript(File projectDir, String scriptName, PackageManager manager,
+            java.util.function.Consumer<String> tap) {
+        return runCommand(projectDir, tap, getCommand(manager), "run", scriptName);
+    }
+
     public boolean isAvailable(PackageManager manager) {
         try {
             Process process = org.nmox.studio.core.process.ProcessSupport
@@ -157,6 +168,11 @@ public class NpmService {
     private static final int MAX_OUTPUT_CHARS = 4 * 1024 * 1024;
 
     CompletableFuture<String> runCommand(File workingDir, String... command) {
+        return runCommand(workingDir, null, command);
+    }
+
+    /** {@code tap}, when not null, hears every output line on the pump's thread; it must be quick and must not throw. */
+    CompletableFuture<String> runCommand(File workingDir, java.util.function.Consumer<String> tap, String... command) {
         // npm install runs pre/postinstall lifecycle scripts and
         // `npm run <script>` runs the package.json script body — all
         // PROJECT-controlled, i.e. attacker code in a cloned repo.
@@ -254,6 +270,9 @@ public class NpmService {
                         if (output.length() < MAX_OUTPUT_CHARS) {
                             output.append(line).append('\n');
                         }
+                    }
+                    if (tap != null) {
+                        tap.accept(line);
                     }
                     if (!serves) {
                         return;

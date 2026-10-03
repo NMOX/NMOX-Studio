@@ -41,13 +41,24 @@ public final class NpmLaneRun {
      * prompt, so call it off the EDT.
      */
     public static CompletableFuture<Integer> runScript(File dir, String script) {
+        return runScript(dir, script, null);
+    }
+
+    /**
+     * {@link #runScript(File, String)} with a listener on every line the
+     * script prints (3.6.0): a VS Code npm task that declares a problem
+     * matcher has its output read as it comes. {@code lines} is called on
+     * the lane's output thread, and never when the script did not run.
+     */
+    public static CompletableFuture<Integer> runScript(File dir, String script,
+            java.util.function.Consumer<String> lines) {
         // the lane's own first question, asked here so a No is known as a No
         if (!WorkspaceTrust.requestTrust(dir)) {
             return CompletableFuture.completedFuture(NOT_RUN);
         }
         boolean walled = InstallGuard.installing(dir) || InstallGuard.needsInstall(dir);
         NpmService npm = NpmService.getDefault();
-        return npm.runScript(dir, script, npm.detectPackageManager(dir))
+        return npm.runScript(dir, script, npm.detectPackageManager(dir), lines)
                 .handle((output, failed) -> exitOf(walled, failed));
     }
 

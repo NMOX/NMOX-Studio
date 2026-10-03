@@ -338,8 +338,8 @@ class VsCodeLaunchSearchProviderTest {
                         + "does not define. Nothing was started.",
                 "Configuration \"Launch after a build\" names the preLaunchTask \"build\", a label more than one task "
                         + "in .vscode/tasks.json carries. Nothing was started.",
-                "Configuration \"Launch after a build\" names the background task \"build\" as its preLaunchTask. "
-                        + "VS Code waits for such a task to report that it is ready, which NMOX Studio cannot read; "
+                "Configuration \"Launch after a build\" names the background task \"build\" as its preLaunchTask, "
+                        + "and that task has no problem matcher that can tell NMOX Studio when it is ready; "
                         + "nothing was started.");
     }
 

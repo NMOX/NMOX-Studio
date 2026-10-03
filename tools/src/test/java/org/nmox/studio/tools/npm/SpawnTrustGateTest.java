@@ -54,8 +54,15 @@ class SpawnTrustGateTest {
     void npmServiceGatesBeforeSpawn() throws Exception {
         String src = read("src/main/java/org/nmox/studio/tools/npm/NpmService.java");
         // package-private since v2.70.0: the lane test spawns through it for real
-        int m = src.indexOf("    CompletableFuture<String> runCommand(File workingDir, String... command) {");
-        assertThat(m).as("runCommand exists").isPositive();
+        // 3.6.0: the body took a line listener; the form without one only hands over
+        int plain = src.indexOf("    CompletableFuture<String> runCommand(File workingDir, String... command) {");
+        assertThat(plain).as("runCommand exists").isPositive();
+        assertThat(src.substring(plain, src.indexOf("\n    }\n", plain)))
+                .as("the form without a listener spawns nothing itself")
+                .contains("return runCommand(workingDir, null, command);").doesNotContain("CommandExecutor.run(");
+        int m = src.indexOf("    CompletableFuture<String> runCommand(File workingDir, "
+                + "java.util.function.Consumer<String> tap, String... command) {");
+        assertThat(m).as("the one body every npm run goes through").isPositive();
         String body = src.substring(m, src.indexOf("\n    }\n", m));
         // v1.114.0: the spawn is CommandExecutor.run (streams via its own
         // pump threads — no RP pin, no drain-before-waitFor), not pb.start()

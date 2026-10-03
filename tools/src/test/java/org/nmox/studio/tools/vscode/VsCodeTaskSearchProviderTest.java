@@ -341,7 +341,7 @@ class VsCodeTaskSearchProviderTest {
         // a task is started in one place only, and that place is the run execute() started
         int chain = code.indexOf("private static final class Chain");
         assertThat(chain).isGreaterThan(m);
-        for (String call : new String[] {"spawner.spawn(", "npmRunner.apply("}) {
+        for (String call : new String[] {"spawner.spawn(", "npmRunner.apply(", "npmReader.run("}) {
             assertThat(code.indexOf(call)).as(call + " is called inside Chain").isGreaterThan(chain);
             assertThat(code.indexOf(call)).as(call + " is called once")
                     .isEqualTo(code.lastIndexOf(call));

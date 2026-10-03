@@ -16,6 +16,14 @@
  * family; {@code VsCodeTaskPrompts} puts the file's {@code ${input:…}}
  * questions. Both are thin Swing over values the pure half defines.
  *
+ * <p>A task's {@code problemMatcher} turns its output into findings:
+ * {@code VsCodeProblemMatchers} (pure) holds VS Code's built-in matchers,
+ * reads inline ones, runs VS Code's line machine over the output with
+ * the work bounded, and knows when a background task's matcher says
+ * "ready"; {@code VsCodeTaskProblems} feeds it from the output pump and
+ * publishes each batch to the rack's {@code DiagnosticsBus} — Action
+ * Items, squiggles and the Agent Port read it there.
+ *
  * <p>{@code .vscode/launch.json} is the sibling pair: {@code VsCodeLaunch}
  * (pure, sharing the tasks half's JSONC, per-OS merge, variables and
  * containment) and {@code VsCodeLaunchSearchProvider}, which spawns

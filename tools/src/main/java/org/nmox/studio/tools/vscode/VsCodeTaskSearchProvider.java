@@ -90,10 +90,22 @@ import org.openide.util.RequestProcessor;
  * to run, the run itself is in {@link LiveRuns}, so the toolbar ■ ends
  * the chain and not just the task of the moment.
  *
+ * <p><b>A task's output is read for problems</b> when it declares a
+ * {@code problemMatcher} (3.6.0): {@link VsCodeProblemMatchers} is the
+ * pure half, {@link VsCodeTaskProblems} publishes what it finds to the
+ * diagnostics bus under the task's own name, so a run replaces the run
+ * before it. A matcher this IDE cannot apply does not stop the task: the
+ * status line names it once, as VS Code warns and carries on. And a
+ * <em>background</em> task whose matcher has a {@code background} block
+ * is "finished", for what waits for it, when the matcher first says a
+ * cycle has ended — its process runs on, in the live runs, and is not
+ * started a second time while it lives.
+ *
  * <p><b>Refusals speak.</b> A task that uses a variable nothing here can
  * fill, needs a file or a selection the editor does not have, depends on
  * a task the file does not define (or on itself, or on a background
- * task), names a working folder outside the project, or has an
+ * task no problem matcher can call ready), names a working folder
+ * outside the project, or has an
  * extension's type, is still LISTED (so a user can see we read their
  * file) and on Enter says why on the status line, spawning nothing and
  * asking nothing.
@@ -124,6 +136,18 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
      */
     static volatile BiFunction<File, String, CompletableFuture<Integer>> npmRunner = NpmLaneRun::runScript;
 
+    /**
+     * An npm-type task whose output is read for problems, as a seam: the
+     * same lane as {@link #npmRunner}, with a listener on every line the
+     * script prints.
+     */
+    @FunctionalInterface
+    interface NpmReader {
+        CompletableFuture<Integer> run(File dir, String script, Consumer<String> lines);
+    }
+
+    static volatile NpmReader npmReader = NpmLaneRun::runScript;
+
     /** Where refusals and progress are said, as a seam. */
     static volatile Consumer<String> statusSink = VsCodeTaskSearchProvider::status;
 
@@ -136,11 +160,24 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
     /** One {@code ${input:…}} question put to the user, as a seam: (the task, the input) → the answer, empty for Cancel. */
     static volatile BiFunction<String, InputDef, Optional<String>> asker = VsCodeTaskPrompts::ask;
 
-    /** How one task ended: its exit code (-1 when it did not start), and whether the user stopped it. */
+    /**
+     * How one task ended: its exit code (-1 when it did not start), and
+     * whether the user stopped it. A background task whose problem
+     * matcher can say when it is ready "ends", for whoever waits for it,
+     * at that moment — with code 0, as VS Code hands on — while its
+     * process runs on.
+     */
     record Exit(int code, boolean stopped) {
+
+        /** A background task that has reported ready and is still running. */
+        static final Exit READY = new Exit(0, false);
     }
 
-    /** Starts one resolved task; completes with how it ended. */
+    /**
+     * Starts one resolved task; completes with how it ended — or, for a
+     * background task whose matcher can tell, with {@link Exit#READY}
+     * when it first reports ready.
+     */
     @FunctionalInterface
     interface Spawner {
         CompletableFuture<Exit> spawn(String taskLabel, Launch launch, File project);
@@ -390,14 +427,66 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
         private CompletableFuture<Exit> begin(Step step) {
             String label = step.task().label();
             if (step.resolved() instanceof Launch launch) {
+                CompletableFuture<Exit> watcher = watching(label, launch.matching());
+                if (watcher != null) {
+                    return watcher;
+                }
                 statusSink.accept(message("VsCodeTaskSearchProvider_running", label));
                 return spawner.spawn(label, launch, project);
             }
             if (step.resolved() instanceof NpmLaunch npm) {
+                CompletableFuture<Exit> watcher = watching(label, npm.matching());
+                if (watcher != null) {
+                    return watcher;
+                }
                 statusSink.accept(message("VsCodeTaskSearchProvider_running", label));
-                return npmRunner.apply(npm.dir(), npm.script()).thenApply(code -> new Exit(code, false));
+                return npm.matching().isEmpty()
+                        ? npmRunner.apply(npm.dir(), npm.script()).thenApply(code -> new Exit(code, false))
+                        : read(label, npm);
             }
             return CompletableFuture.completedFuture(new Exit(0, false)); // a group: nothing of its own
+        }
+
+        /**
+         * A background task whose watcher already runs in this project
+         * is not started a second time: the run is handed the one that
+         * runs — when it is next ready, which is now if it is between
+         * cycles. Null when the task is to be started.
+         */
+        private CompletableFuture<Exit> watching(String label, VsCodeProblemMatchers.Applied matching) {
+            CompletableFuture<Exit> live = matching.watches()
+                    ? VsCodeTaskProblems.alreadyWatching(project, label) : null;
+            if (live != null) {
+                statusSink.accept(message("VsCodeTaskSearchProvider_alreadyWatching", label));
+            }
+            return live;
+        }
+
+        /**
+         * An npm-type task that declares a problem matcher: the same
+         * lane, with its output read line by line — and, for a watch
+         * script whose matcher can tell, done for its waiters when it
+         * reports ready.
+         */
+        private CompletableFuture<Exit> read(String label, NpmLaunch npm) {
+            CompletableFuture<Exit> done = new CompletableFuture<>();
+            VsCodeTaskProblems problems = VsCodeTaskProblems.of(project, label, npm.matching(),
+                    () -> done.complete(Exit.READY));
+            problems.started();
+            CompletableFuture<Integer> ended;
+            try {
+                ended = npmReader.run(npm.dir(), npm.script(), problems::line);
+            } catch (RuntimeException notStarted) {
+                problems.exited(-1); // every reader hears its end: a watcher that never ran is not one to hand on
+                throw notStarted;
+            }
+            ended.whenComplete((code, failed) -> {
+                int exit = failed != null || code == null ? 1 : code;
+                // a script the lane refused did not start: nothing it "found" replaces what is there
+                problems.exited(exit == NpmLaneRun.NOT_RUN ? -1 : exit);
+                done.complete(new Exit(exit, false));
+            });
+            return done;
         }
 
         private void after(int index, List<Step> steps, List<CompletableFuture<Exit>> exits) {
@@ -511,6 +600,14 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
      * Launch#shown} when the launch has one: the argv of a task that was
      * handed a password, or the editor's selection, is for the process
      * alone.
+     *
+     * <p>The output is also read for problems when the task declares a
+     * problem matcher ({@link VsCodeTaskProblems}): on the pump thread,
+     * line by line, published when the process ends — or, for a
+     * background task whose matcher has a {@code background} block, at
+     * the end of each of its cycles, the first of which completes the
+     * returned future with {@link Exit#READY} while the process stays in
+     * the live runs for the toolbar ■.
      */
     static CompletableFuture<Exit> launch(String taskLabel, Launch launch, File project) {
         String label = taskLabel + " — " + project.getName();
@@ -523,7 +620,25 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
         });
         ph.start();
         CommandExecutor.showOutput(label);
-        CommandExecutor.Handle handle = CommandExecutor.run(label, launch.dir(), launch.env(), launch.argv(),
+        VsCodeTaskProblems problems = VsCodeTaskProblems.of(project, taskLabel, launch.matching(),
+                () -> done.complete(Exit.READY));
+        problems.started();
+        CommandExecutor.Handle handle;
+        try {
+            handle = start(runId, label, taskLabel, launch, ph, announced, problems, done);
+        } catch (RuntimeException notStarted) {
+            problems.exited(-1); // every reader hears its end: a watcher that never ran is not one to hand on
+            throw notStarted;
+        }
+        LiveRuns.add(new LiveRuns.Run(runId, label, handle::kill));
+        return done;
+    }
+
+    /** The spawn itself, with the run's output pump and its exit. */
+    private static CommandExecutor.Handle start(String runId, String label, String taskLabel, Launch launch,
+            ProgressHandle ph, AtomicReference<String> announced, VsCodeTaskProblems problems,
+            CompletableFuture<Exit> done) {
+        return CommandExecutor.run(label, launch.dir(), launch.env(), launch.argv(),
                 launch.shown(),
                 line -> {
                     // a printed local address IS a server (v2.69.16), registered
@@ -534,6 +649,7 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
                         ServingRegistry.getDefault().register(new ServingRegistry.Serving(
                                 runId, label, url, ServingRegistry.Kind.WEB, launch.dir()));
                     }
+                    problems.line(line);
                 },
                 exit -> {
                     ph.finish();
@@ -546,12 +662,11 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
                         // friendly reason in the Output tab; the status line points there
                         statusSink.accept(message("VsCodeTaskSearchProvider_failedToStart", taskLabel));
                     }
+                    problems.exited(exit);
                     // a stop through any surface — the ■, the row, this run's
                     // Cancel — is the user's, whatever code the process left with
                     done.complete(new Exit(exit, LiveRuns.wasStoppedByUser(runId)));
                 });
-        LiveRuns.add(new LiveRuns.Run(runId, label, handle::kill));
-        return done;
     }
 
     private static void status(String message) {

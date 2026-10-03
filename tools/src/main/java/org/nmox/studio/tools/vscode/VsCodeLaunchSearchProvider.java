@@ -62,9 +62,12 @@ import org.openide.util.RequestProcessor;
  * {@code .vscode/tasks.json} has it run first, as Enter on that task would
  * run it — its dependencies, its questions, its Output tab — and the
  * debugger starts when the task has exited zero. A task that fails, is
- * stopped or is refused starts no debugger, and a background task is
- * refused by name: VS Code waits for its problem matcher, which nothing
- * here reads.
+ * stopped or is refused starts no debugger. A background task (a
+ * watcher) is waited for as VS Code waits: until its problem matcher's
+ * {@code background} block says a cycle has ended — the watcher then
+ * runs on beside the debugger, and the toolbar ■ stops it; one with no
+ * such matcher is refused by name, because nothing could say when it is
+ * ready.
  *
  * <p><b>Refusals speak.</b> A configuration the debugger cannot start as
  * written — a field it cannot pass on, an attach to another machine, a
@@ -223,10 +226,10 @@ public class VsCodeLaunchSearchProvider implements SearchProvider {
                 return;
             }
             task = named.get(0);
-            if (task.background()) {
+            if (task.background() && !VsCodeProblemMatchers.read(task.problemMatchers()).watching()) {
                 // VS Code waits for a background task's problem matcher to
-                // say "ready"; nothing here reads one, and waiting for the
-                // task to EXIT would wait for a watcher forever
+                // say "ready"; this one has none that could, and waiting
+                // for the task to EXIT would wait for a watcher forever
                 statusSink.accept(message("VsCodeLaunchSearchProvider_refusePreLaunchBackground",
                         config.name(), preLaunch));
                 return;
