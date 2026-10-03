@@ -19,6 +19,7 @@ import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
+import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -92,7 +93,12 @@ class FindInProjectsIgnoresTest {
         Project p = ProjectManager.getDefault().findProject(root);
         assertThat(p).as("the fixture is a WebProject").isInstanceOf(WebProject.class);
 
-        SearchInfo info = SearchInfoUtils.createSearchInfoForRoots(new FileObject[]{root});
+        // 3.5.13: the scopes ask the project's lookup for its own definition
+        // before building the default walk, and a WebProject now has one
+        // (WebProjectSearch) - the same walk, plus the settings' exclusions
+        SearchInfoDefinition own = p.getLookup().lookup(SearchInfoDefinition.class);
+        assertThat(own).as("the project answers the search itself").isNotNull();
+        SearchInfo info = SearchInfoUtils.createForDefinition(own);
         SearchScopeOptions options = SearchScopeOptions.create();
         options.setSearchInGenerated(searchInGenerated);
         List<String> found = new ArrayList<>();

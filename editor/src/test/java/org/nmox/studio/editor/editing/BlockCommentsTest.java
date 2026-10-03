@@ -240,4 +240,80 @@ class BlockCommentsTest {
         assertThat(toggled("abc", 3, 0, C)).isEqualTo("/* abc */");
         assertThat(toggled("abc", -5, 99, C)).isEqualTo("/* abc */");
     }
+
+    /** The text after a toggle in a whole document of {@code mime}, the range given as offsets into it. */
+    private static Outcome inDocument(String mime, String doc, int s, int e) {
+        // the action hands the rule the text before the line the range starts on, and the lines it touches
+        int base = doc.lastIndexOf('\n', Math.max(0, Math.min(s, e) - 1)) + 1;
+        if (s == e) {
+            int end = doc.indexOf('\n', s);
+            String line = doc.substring(base, end < 0 ? doc.length() : end + 1);
+            return BlockComments.toggle(mime, doc.substring(0, base), line, s - base, e - base);
+        }
+        return BlockComments.toggle(mime, doc.substring(0, s), doc.substring(s, e), 0, e - s);
+    }
+
+    @Test
+    @DisplayName("a markup range that ends inside a script block is refused: its --> would land mid-script")
+    void markupRangeEndingInsideAScript() {
+        String html = "<p>intro</p>\n<script>\nlet a = 1;\nlet b = 2;\n</script>\n";
+        assertThat(inDocument("text/html", html, 0, html.indexOf("let b"))).isEqualTo(new Refusal("<script>"));
+        // a style block the same
+        String css = "<p>x</p>\n<style>\np { color: red }\n</style>\n";
+        assertThat(inDocument("text/html", css, 0, css.indexOf("p {") + 1)).isEqualTo(new Refusal("<style>"));
+        // stopping inside the opening tag itself is refused too
+        String tag = "<p>x</p>\n<script src=\"a.js\"></script>\n";
+        assertThat(inDocument("text/html", tag, 0, tag.indexOf("src"))).isEqualTo(new Refusal("<script>"));
+        // starting inside the opening tag and ending in the script: only the state at the end can tell
+        String attrs = "<script src=\"a.js\">\nlet a;\n</script>\n";
+        assertThat(inDocument("text/html", attrs, attrs.indexOf("a.js"), attrs.indexOf("let a") + 3))
+                .isEqualTo(new Refusal("<script>"));
+        // a whole script element is markup, and <!-- --> around it is sound
+        Outcome whole = inDocument("text/html", tag, tag.indexOf("<script"), tag.indexOf("<script"));
+        assertThat(((Edit) whole).applyTo(tag.substring(tag.indexOf("<script"))))
+                .startsWith("<!-- <script src=\"a.js\"></script> -->");
+    }
+
+    @Test
+    @DisplayName("a commented-out <script> opens no block: the markup after it is still markup")
+    void commentedOutScriptOpensNothing() {
+        String doc = "<!-- <script> -->\n<p>hello</p>\n";
+        int p = doc.indexOf("<p>");
+        Outcome out = inDocument("text/html", doc, p, p);
+        assertThat(((Edit) out).applyTo("<p>hello</p>\n")).isEqualTo("<!-- <p>hello</p> -->\n");
+        assertThat(BlockComments.blockAt("<!-- <script> -->\n<p>")).isNull();
+        // a <!-- inside a script is the script's text, not a comment that hides the block's end
+        assertThat(BlockComments.blockAt("<script>s = '<!--';</script>\n<p>")).isNull();
+        assertThat(BlockComments.blockAt("<script>s = '<!--';\n")).isEqualTo("script");
+        // an unclosed comment is markup
+        assertThat(BlockComments.blockAt("<!-- <script>\n")).isNull();
+    }
+
+    @Test
+    @DisplayName("Astro's frontmatter is TypeScript: /* */ between the fences, refused on a fence, markup after it")
+    void astroFrontmatter() {
+        String astro = "---\nconst title = 'Hi';\n---\n<h1>{title}</h1>\n";
+        int line = astro.indexOf("const");
+        Outcome ts = inDocument("text/x-astro", astro, line, line);
+        assertThat(((Edit) ts).applyTo("const title = 'Hi';\n")).isEqualTo("/* const title = 'Hi'; */\n");
+        // a selection of the script's whole lines, ending where the closing fence starts
+        Outcome lines = inDocument("text/x-astro", astro, line, astro.indexOf("---", 3));
+        assertThat(((Edit) lines).applyTo("const title = 'Hi';\n")).isEqualTo("/* const title = 'Hi'; */\n");
+        // on a fence, or across one, neither pair is sound
+        assertThat(inDocument("text/x-astro", astro, 0, 0)).isEqualTo(new Refusal("---"));
+        assertThat(inDocument("text/x-astro", astro, line, astro.indexOf("<h1>"))).isEqualTo(new Refusal("---"));
+        // after the closing fence the component's markup is markup
+        int h1 = astro.indexOf("<h1>");
+        assertThat(((Edit) inDocument("text/x-astro", astro, h1, h1)).applyTo("<h1>{title}</h1>\n"))
+                .isEqualTo("<!-- <h1>{title}</h1> -->\n");
+        // a <script> written in the frontmatter's TypeScript opens no markup block
+        String tricky = "---\nconst s = '<script>';\n---\n<p>x</p>\n";
+        int px = tricky.indexOf("<p>");
+        assertThat(((Edit) inDocument("text/x-astro", tricky, px, px)).applyTo("<p>x</p>\n"))
+                .isEqualTo("<!-- <p>x</p> -->\n");
+        // a file with no frontmatter is markup from the top
+        assertThat(BlockComments.frontmatter("<h1>x</h1>\n---\n")).isNull();
+        // an unclosed fence runs to the end
+        assertThat(BlockComments.frontmatter("\n---\nlet a;\n")).containsExactly(1, 5, 12, 12);
+    }
 }

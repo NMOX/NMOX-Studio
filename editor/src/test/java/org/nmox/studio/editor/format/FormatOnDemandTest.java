@@ -106,4 +106,80 @@ class FormatOnDemandTest {
                 .isFalse();
         assertThat(doc.getText(0, doc.getLength())).isEqualTo(now);
     }
+    /** A project that carries its own Prettier and has NOT been trusted (and a machine with none on its PATH). */
+    private static File untrustedProject(Path root) throws Exception {
+        Path bin = Files.createDirectories(root.resolve("node_modules/.bin"));
+        Path prettier = bin.resolve("prettier");
+        Files.writeString(prettier, "#!/bin/sh\ncat\n");
+        assertThat(prettier.toFile().setExecutable(true)).isTrue();
+        Files.writeString(bin.resolve("prettier.cmd"), "@echo off\r\n");
+        Files.createDirectory(root.resolve(".git"));
+        org.nmox.studio.rack.service.WorkspaceTrust.clearForTest();
+        return root.toFile();
+    }
+
+    @Test
+    @DisplayName("The gesture asks for trust when the project's own Prettier is the one that would run; Keep Safe runs nothing and says which it was")
+    void theGestureAsksForTrust(@TempDir Path root) throws Exception {
+        org.junit.jupiter.api.Assumptions.assumeTrue(
+                !org.nmox.studio.core.process.ToolLocator.resolve("prettier").contains(File.separator),
+                "a Prettier on this machine's PATH answers before the question is needed");
+        untrustedProject(root);
+        java.util.function.Predicate<File> real = PrettierFormatter.trustAsk;
+        java.util.List<File> asked = new java.util.ArrayList<>();
+        try {
+            PrettierFormatter.trustAsk = dir -> {
+                asked.add(dir);
+                return false;
+            };
+            OnDemand kept = new PrettierFormatter((cmd, dir, stdin) -> {
+                throw new AssertionError("Keep Safe must spawn nothing");
+            }).formatOnDemand("const x=1", new File(root.toFile(), "src/a.js"));
+            assertThat(kept.outcome()).as("not NO_PRETTIER: the project has one").isEqualTo(OnDemandOutcome.UNTRUSTED);
+            assertThat(asked).as("asked about the folder whose node_modules holds the binary")
+                    .extracting(File::getCanonicalFile).containsExactly(root.toFile().getCanonicalFile());
+
+            // the save hook never asks: silence, and nothing run
+            assertThat(new PrettierFormatter((cmd, dir, stdin) -> {
+                throw new AssertionError("an untrusted project is not formatted on save");
+            }).format("const x=1", new File(root.toFile(), "src/a.js"))).isNull();
+            assertThat(asked).hasSize(1);
+
+            PrettierFormatter.trustAsk = dir -> {
+                org.nmox.studio.rack.service.WorkspaceTrust.trust(dir);
+                return true;
+            };
+            java.util.List<String> ran = new java.util.ArrayList<>();
+            OnDemand trusted = new PrettierFormatter((cmd, dir, stdin) -> {
+                ran.add(cmd.get(0));
+                return new PrettierFormatter.Result(0, "const x = 1;\n");
+            }).formatOnDemand("const x=1", new File(root.toFile(), "src/a.js"));
+            assertThat(trusted.outcome()).isEqualTo(OnDemandOutcome.FORMATTED);
+            assertThat(ran.get(0)).as("the project's own binary, once trusted").contains("node_modules");
+        } finally {
+            PrettierFormatter.trustAsk = real;
+            org.nmox.studio.rack.service.WorkspaceTrust.clearForTest();
+        }
+    }
+
+    @Test
+    @DisplayName("No Prettier in the project and none on the PATH is NO_PRETTIER, and nobody is asked anything")
+    void nothingToAskAbout(@TempDir Path root) throws Exception {
+        org.junit.jupiter.api.Assumptions.assumeTrue(
+                !org.nmox.studio.core.process.ToolLocator.resolve("prettier").contains(File.separator),
+                "a Prettier on this machine's PATH would be found");
+        Files.createDirectory(root.resolve(".git"));
+        java.util.function.Predicate<File> real = PrettierFormatter.trustAsk;
+        try {
+            PrettierFormatter.trustAsk = dir -> {
+                throw new AssertionError("there is no project binary to ask about");
+            };
+            OnDemand r = new PrettierFormatter((cmd, dir, stdin) -> {
+                throw new AssertionError("nothing to run");
+            }).formatOnDemand("const x=1", new File(root.toFile(), "a.js"));
+            assertThat(r.outcome()).isEqualTo(OnDemandOutcome.NO_PRETTIER);
+        } finally {
+            PrettierFormatter.trustAsk = real;
+        }
+    }
 }

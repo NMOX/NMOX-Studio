@@ -30,9 +30,23 @@ public final class FileSymbols {
     private FileSymbols() {
     }
 
+    /**
+     * Whether {@code typed} could find anything at all: {@code @} with or
+     * without a name, or two characters or more. The search's own gate,
+     * asked before the file is read, since a query that cannot match is
+     * answered without its outline.
+     */
+    public static boolean asks(String typed) {
+        if (typed == null) {
+            return false;
+        }
+        String query = typed.strip();
+        return query.startsWith("@") || query.length() >= 2;
+    }
+
     /** The items {@code typed} finds, best first, at most {@link #MAX_RESULTS}. */
     public static List<OutlineModel.Item> matching(String typed, List<OutlineModel.Item> items) {
-        if (typed == null) {
+        if (!asks(typed)) {
             return List.of();
         }
         String query = typed.strip();

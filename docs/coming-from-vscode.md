@@ -138,13 +138,58 @@ recenter.
 
 A language with no block comment, Python for one, says so on the status
 line. In an HTML, Vue or Svelte file a `<script>` or `<style>` block is
-commented as its own language. With no selection the chord toggles the
+commented as its own language, and so is an Astro component's
+frontmatter; a selection that would carry a comment into or out of such
+a block is refused by name rather than breaking the file. With no selection the chord toggles the
 line; it does not look for a comment that merely surrounds the caret, so
 to remove a comment of several lines, select it.
 
 In Quick Search the file's symbols are the category **Symbols in This
 File**. Typing `@` alone lists them from the top of the file; `m name`
 (the letter, a space, then the name) searches that category and no other.
+
+### The VS Code keymap profile
+
+The tables above are the default profile, where a chord NetBeans users
+rely on keeps its meaning. If your hands would rather have VS Code's
+keymap whole, switch the profile: type *Use the VS Code Keymap* into
+Quick Search (⇧⌘P or ⌘I; the row is *Preferences: Use the VS Code
+Keymap*), or choose **VS Code** under Tools ▸ Options ▸ Keymap ▸ Profile
+(on macOS, NMOX Studio ▸ Settings… ▸ Keymap ▸ Profile). The status line
+says which profile you are in and the way back; nothing ever switches it
+for you.
+
+In that profile VS Code's default chords do what they do in VS Code, on
+macOS and on Windows and Linux alike, wherever this product has the
+action: ⌥↑ / ⌥↓ move the line, ⇧⌘K deletes it, ⌘L expands the line
+selection, ⇧⌘L selects every occurrence, ⌘[ / ⌘] outdent and indent,
+⌘↩ inserts a line below, ⇧⌘\\ jumps to the bracket, ⌥⌘[ / ⌥⌘] fold and
+unfold, ⌘K ⌘0 / ⌘K ⌘J fold and unfold everything, ⌘K ⌘X trims trailing
+whitespace, ⌘J shows the Output window, ⌘\\ splits the editor, ⌘T and
+⇧⌘O go to a symbol in the project and in the file, ⇧⌘M shows Action
+Items, ⇧⌘D the debugger's window, ⌘K ⌘S the Keyboard Shortcuts sheet,
+⌘K ⌘W closes every editor, ⌘K ⌘O opens a folder, ⌃R opens a recent
+project, ⇧⌘B builds, F1 is the command palette, and the debugger's keys
+are VS Code's: F5 starts debugging the project or continues a paused
+one, ⇧F5 stops, ⌃F5 runs without debugging, F9 toggles a breakpoint, F10,
+F11 and ⇧F11 step over, into and out. Every product chord VS Code does not
+claim (the ⌥⌘ windows, Emmet's ⌥⌘E, ⌥⌘G) stays where it is.
+
+What is still different in the VS Code profile, by name:
+
+- **No chord at all**, because nothing here is that action: ⌘B (*Toggle
+  Primary Side Bar*), ⇧⌘W (*Close Window*), ⇧⌘F5 (*Restart* debugging),
+  F8 / ⇧F8 (*Go to Next / Previous Problem in Files*), ⌥F12 (*Peek
+  Definition*), ⇧⌘↩ (*Insert Line Above*) and ⌘U (*Cursor Undo*). The
+  keys do nothing rather than something else.
+- **Save All has no chord on Windows and Linux** (VS Code's Ctrl+K S);
+  on macOS it is ⌥⌘S.
+- **What VS Code's chords took from NetBeans.** F1 no longer opens help,
+  ⌘B no longer goes to the declaration (F12 does), ⌘U's case conversions,
+  ⌘K / ⇧⌘K word completion, ⌘T transpose and ⇧⌘D clipboard history have
+  no chord in this profile, and neither have Debug File, Toggle Bookmark,
+  Show Editor Only and Open Project. The complete list, every OS, is
+  `scripts/vscode-keymap/displaced.txt` in the source.
 
 
 ## From the terminal
@@ -204,10 +249,10 @@ shows the one-line link.
 | **Explorer** | **Project Studio** (⇧⌘E) — the file tree (right-click a file for Copy Path, Copy Relative Path and Reveal in Finder), templates, and the project's `package.json` editor. The **Workbench** (⌥⌘0) is the home base: open files, recent files, recent projects, and everything running. |
 | **Command Palette** | **Quick Search** (⇧⌘P or ⌘I) — actions, files, recent projects, rack devices, live servers, API Studio requests, symbols. VS Code's own command names work too: *Format Document*, *Toggle Terminal*, *Git: Commit* or *Open Settings* lists the action that does the same thing here, under **VS Code commands**, with its own name and chord. |
 | **Extensions** | **Tools ▸ Plugins** installs and updates modules, NMOX's own updates included. VS Code extensions do not install here, so **Tools ▸ Recommended VS Code Extensions…** answers the question a repository's `.vscode/extensions.json` raises: for each extension it recommends, what does that job in NMOX Studio — a built-in feature, a window it can open, a rack device, a language server (and whether that server is installed), or nothing — and an extension it does not know is said to be unknown rather than guessed at. Much of what an extension adds in VS Code is a **rack device** here — and you can write one as a JSON file in `~/.nmox/devices.d` ([device files](device-files.md)). |
-| **`tasks.json`** | Your repository's `.vscode/tasks.json` is read: type a task's name into Quick Search (⇧⌘P or ⌘I) and Enter on *Run task: build — make all* runs it — or pick it from the list **Run ▸ Run Task…** shows — with Workspace Trust asking first on a project you have not trusted, its output in the Output window and the toolbar ■ to stop it. The tasks it `dependsOn` run first, `${file}` is the file open in the editor, and `${input:…}` asks you before anything starts. Beside it, the project's own scripts run the way they are written: the toolbar's Run / Build / Test (F6, F11, ⌃F6), **Run Script** on a `package.json` scripts line, the **NPM Explorer**, and the **Task Rack** (⌘9), where tasks are devices you wire together. |
+| **`tasks.json`** | Your repository's `.vscode/tasks.json` is read: type a task's name into Quick Search (⇧⌘P or ⌘I) and Enter on *Run task: build — make all* runs it — or pick it from the list **Run ▸ Run Task…** shows — with Workspace Trust asking first on a project you have not trusted, its output in the Output window and the toolbar ■ to stop it. The tasks it `dependsOn` run first, `${file}` is the file open in the editor, and `${input:…}` asks you before anything starts. A task's `problemMatcher` turns its output into problems in Action Items and squiggles in the editor (`$tsc`, `$eslint-stylish` and VS Code's other built-in matchers by name, or one written inline), and a background watcher such as `tsc -w` is waited for until its matcher says a cycle has finished. Beside it, the project's own scripts run the way they are written: the toolbar's Run / Build / Test (F6, F11, ⌃F6), **Run Script** on a `package.json` scripts line, the **NPM Explorer**, and the **Task Rack** (⌘9), where tasks are devices you wire together. |
 | **`launch.json`** | Your repository's `.vscode/launch.json` is read: type a configuration's name into Quick Search (⇧⌘P or ⌘I) and Enter on *Debug: Launch Program — ${workspaceFolder}/server.js* starts the breakpoint debugger on that program — **Debug ▸ Start Debugging…** lists the same configurations — with Workspace Trust asking first. Node (`node`, `pwa-node`) configurations debug their `program` in their `cwd`, with their `args`, their `env` and `envFile`, under their `runtimeExecutable` and `runtimeArgs` — so an `npm run dev`, a `tsx` or an `--experimental-strip-types` configuration starts as it is written — and a Node `"request": "attach"` attaches to a `node --inspect` process on this machine. Python (`python`, `debugpy`) configurations debug their `program` with `args`, `env`, `envFile` and the interpreter their `python` names; Chrome (`chrome`, `pwa-chrome`) configurations open their `url` (or `file`) with their `webRoot`. `"program": "${file}"` debugs the file your editor shows, and a `preLaunchTask` that names a task of your `tasks.json` runs first: the debugger starts when the task has succeeded. Without a `launch.json`, **Debug File** (⇧⌘F5) and the toolbar's debug button work out what to launch from the project itself — the `start` script's entry, `main`, `index.js` — and the **INSPECTOR** rack device launches a debugger as a step in a pipeline. |
 | **Integrated terminal** | The **Terminal** window (⌃\`): the first press starts a shell in the project folder, later presses bring it back. |
-| **`settings.json`** | Tools ▸ Options (on macOS, NMOX Studio ▸ Settings…). A repository's `.vscode/settings.json` is read too: `editor.tabSize`, `editor.insertSpaces` and `editor.indentSize` set its indentation as you type, `files.trimTrailingWhitespace` and `files.insertFinalNewline` (when `true`) apply when you save, `files.eol` is the line ending files are written with, `"editor.formatOnSave": false` keeps a save from reformatting the file, and a language block such as `"[typescript]"` overrides them for its language. Where the repository also has an `.editorconfig`, the `.editorconfig` wins wherever both speak. |
+| **`settings.json`** | Tools ▸ Options (on macOS, NMOX Studio ▸ Settings…). A repository's `.vscode/settings.json` is read too: `editor.tabSize`, `editor.insertSpaces` and `editor.indentSize` set its indentation as you type, `files.trimTrailingWhitespace` and `files.insertFinalNewline` (when `true`) apply when you save, `files.eol` is the line ending files are written with, `"editor.formatOnSave": false` keeps a save from reformatting the file, the first of `editor.rulers` is where the editor draws its right-margin line (an empty list draws none), `editor.wordWrap` `"on"` or `"off"` wraps that project's files or keeps them unwrapped, `files.exclude` hides what it names from the project trees, and **Find in Projects** skips what `files.exclude` and `search.exclude` name; a language block such as `"[typescript]"` overrides them for its language. Where the repository also has an `.editorconfig`, the `.editorconfig` wins wherever both speak. Your own VS Code settings come across once, when you ask: **Tools ▸ Import VS Code Settings…** |
 | **Problems panel** | **Action Items** (⌘6), or click the **✕ ⚠** count on the status line: the language servers' errors and warnings, and the lint and type findings from the rack's PURITY and TYPEGUARD devices. As in VS Code, some servers report only on the files you have open; gopls reports on the whole package. |
 | **Search view** (`search.useIgnoreFiles`) | **Find in Projects** (⇧⌘F). As in VS Code, it skips what the repository's `.gitignore` files and `.git/info/exclude` ignore, so `node_modules` and `dist/` stay out of the results when the `.gitignore` lists them; outside a repository it skips `node_modules`, `dist`, `build` and the other build folders by name. Tick **Search in Generated Sources** in its dialog to search them too. Your global git excludes file is not read. |
 | **Outline** | The **Navigator** (⌘7). |
@@ -218,7 +263,7 @@ shows the one-line link.
 | **Breadcrumbs** | **View ▸ Show Breadcrumbs**. |
 | **Source Control** | The git chip on the status line (branch and changes, one click to history) and the **Team** menu. |
 | **Workspace Trust** | The same idea, enforced before anything a repository chose is run: opening a cloned project runs nothing until you trust it. |
-| **Keyboard Shortcuts editor** | Tools ▸ Options ▸ Keymap (on macOS, Settings… ▸ Keymap) — edit any chord, or switch the whole profile to Eclipse, Emacs or IntelliJ. |
+| **Keyboard Shortcuts editor** | Tools ▸ Options ▸ Keymap (on macOS, Settings… ▸ Keymap) — edit any chord, or switch the whole profile to VS Code, Eclipse, Emacs or IntelliJ. |
 
 The first time you open a repository that carries `.vscode/tasks.json`,
 `launch.json`, `settings.json` or `extensions.json`, a notice says what
@@ -265,10 +310,12 @@ once per project.
     *Debug Anyway?* after a failed task, here the status line says the
     configuration was not started. A `program` the task builds
     (`dist/server.js`) is looked for after the task, not before. A label
-    `tasks.json` does not define, a label two tasks share, the object
-    form (`{"type": "npm", "script": "build"}`) and a background task
-    (`"isBackground": true`, a watcher that never ends) are refused by
-    name before anything runs.
+    `tasks.json` does not define, a label two tasks share and the object
+    form (`{"type": "npm", "script": "build"}`) are refused by name before
+    anything runs. A background task (`"isBackground": true`, a watcher
+    that never ends) is waited for until its problem matcher reports a
+    finished cycle, then keeps running, and pressing Debug again reuses it;
+    one with no matcher that can say when it is ready is refused by name.
   - **An `envFile` that is not there is refused**, where VS Code starts
     the program without it. Its variables are added to the environment
     and an `env` entry wins over the file, as in VS Code. The file is read
@@ -306,8 +353,8 @@ once per project.
   anything starts. The whole run is decided first: if one task of it
   cannot run as written, nothing runs, and Enter says which task and why
   on the status line. That covers a `dependsOn` label the file does not
-  define, a dependency that is a background task (problem matchers are
-  not read, so nothing says when it is ready), `${file}` with no file
+  define, a dependency that is a background task with no problem matcher
+  that can say when it is ready, `${file}` with no file
   open, and a question you cancel. A dependency that fails stops the run
   there. Still refused by name: a value only VS Code can supply
   (`${config:…}`, `${command:…}`, an input of `"type": "command"`), a
@@ -322,6 +369,41 @@ once per project.
   and named in the log rather than inserted half done. Typing a prefix
   does not open the list by itself: ⌃Space does. Snippets with no
   `prefix`, user-level snippets and `isFileTemplate` are not read.
+  Snippet files are read only for files inside the repository that holds
+  them, and a snippet that would insert more than a million characters is
+  not inserted.
+- **A task's `problemMatcher` is read.** Each run replaces that task's
+  previous problems, and a clean run clears them. VS Code's built-in
+  matchers work by name (`$tsc`, `$tsc-watch`, `$tsgo-watch`,
+  `$eslint-stylish`, `$eslint-compact`, `$jshint`, `$jshint-stylish`,
+  `$msCompile`, `$lessCompile`, `$gulp-tsc`, `$go`, `$lessc`), and so do
+  `$gcc` and `$rustc` from the C/C++ and rust-analyzer extensions; inline
+  matchers and `{"base": "$tsc", …}` work too, multi-line patterns with
+  `loop` included, with every `fileLocation` except `"search"`. A matcher
+  this IDE does not have, or whose regular expression means something
+  different here, does not stop the task: it runs, and the status line
+  names the matcher that was not applied, once.
+- **Format formats JavaScript and TypeScript with the project's
+  Prettier.** Source ▸ Format (⇧⌥F) runs the Prettier your project
+  configures, asking for Workspace Trust first when that Prettier is the
+  project's own; a project with no Prettier configuration says so on the
+  status line rather than leaving the file as it was without a word.
+- **Your own settings come across once, when you ask.** **Tools ▸ Import
+  VS Code Settings…** (or *import vs code settings* in Quick Search) reads
+  your personal VS Code `settings.json` — from VS Code, Insiders or
+  VSCodium — and lists each setting it recognises with what it becomes
+  here: tab size and spaces, word wrap, rulers, whitespace display,
+  trimming on save, Format on Save, the minimap, Sticky Scroll and
+  autosave. Settings that mean exactly the same here start checked; the
+  near ones say how they differ and start unchecked. Apply writes the
+  checked ones and they take effect at once; Cancel writes nothing. The
+  editor font is set in the Fonts & Colors settings, and keyboard
+  shortcuts are the keymap profiles. Anything else in your file — tokens,
+  paths, extension settings — is only counted, never shown or copied.
+- **`files.associations` is not read.** The platform decides a file's
+  type once and keeps it, so a mapping in `settings.json` could not be
+  honoured exactly; a conditional exclude (`"when"`), rulers after the
+  first and their colours, and wrapping at a column are not read either.
 - **A `"type": "shell"` task runs in the shell VS Code would use.** On
   macOS and Linux that is your `$SHELL` with `-c` (a macOS zsh, bash or
   fish starts as a login shell, `-l`, as VS Code's default profiles do);
@@ -330,9 +412,16 @@ once per project.
   exactly the `args` you give, so a bash needs `"args": ["-c"]`. On
   Windows only PowerShell (args ending in `-Command`) and `cmd.exe`
   (args ending in `/c`) are run; any other shell there is refused by
-  name rather than handed a command line quoted by guesswork.
-- **There is no "VS Code" keymap profile.** The chords above ride the
-  default profile and the other four. One deliberate exception: in the
+  name rather than handed a command line quoted by guesswork. A file
+  name, the selection or an input answer in a shell task's `command` is
+  quoted for that shell, so `"command": "python ${file}"` works for any
+  file name, a space or a `$` in it included; in `cmd.exe` a value
+  holding `%`, `!`, a double quote or a line break is refused by name,
+  because no quoting makes those inert there.
+- **The tables above describe the default keymap profile.** In the
+  **VS Code** profile (see *The VS Code keymap profile* above) VS Code's
+  own chords win wherever this product has the action. The four chords
+  at the top of this page (⇧⌘P, ⇧⌘E, ⇧⌘X, ⌃\`) work in every profile. One deliberate exception: in the
   **Eclipse** profile ⇧⌘E stays Eclipse's own *Switch to Editor*, and
   inside the editor ⇧⌘P and ⇧⌘X keep Eclipse's meanings (matching
   brace, upper case) — someone who picked Eclipse expects Eclipse.

@@ -103,6 +103,6 @@ class FileTreeExplorerActionsTest {
                 .contains("actionDelete(manager, true)");
         assertThat(panel)
                 .as("the resolver must mark the root, or the guard guards nothing")
-                .contains("getNodeDelegate(), true)");
+                .contains("hidden.nodeFor(DataFolder.findFolder(fo)), true, hidden)");
     }
 }

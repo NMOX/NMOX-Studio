@@ -194,4 +194,36 @@ class VsCodeExtensionsTest {
         Files.createDirectories(dir.resolve(".vscode/extensions.json"));
         assertThat(VsCodeExtensions.read(dir.toFile())).isEqualTo(Recommendations.NONE);
     }
+
+    /** A symbolic link, or the test is skipped where links cannot be made (Windows without the privilege). */
+    private static void link(Path from, Path to) {
+        try {
+            Files.createSymbolicLink(from, to);
+        } catch (UnsupportedOperationException | java.io.IOException noLinks) {
+            org.junit.jupiter.api.Assumptions.assumeTrue(false, "no symbolic links here: " + noLinks);
+        }
+    }
+
+    @Test
+    @DisplayName("an extensions.json, or a .vscode folder, that links out of the project is not read")
+    void linksOutAreNotRead(@TempDir Path dir) throws Exception {
+        Path outside = Files.createDirectories(dir.resolve("outside"));
+        Files.writeString(outside.resolve("extensions.json"), "{\"recommendations\": [\"golang.go\"]}");
+        Path fileLink = Files.createDirectories(dir.resolve("a/.vscode"));
+        link(fileLink.resolve("extensions.json"), outside.resolve("extensions.json"));
+        Path folderLink = Files.createDirectories(dir.resolve("b"));
+        link(folderLink.resolve(".vscode"), outside);
+        for (Path project : List.of(dir.resolve("a"), folderLink)) {
+            Recommendations r = VsCodeExtensions.read(project.toFile());
+            assertThat(r.entries()).as(project.toString()).isEmpty();
+            assertThat(r.unreadable()).as("refused, not mistaken for an empty file").isTrue();
+        }
+        // a link that stays inside the project is the project's own file
+        Path inside = Files.createDirectories(dir.resolve("c"));
+        Files.createDirectories(inside.resolve("config"));
+        Files.writeString(inside.resolve("config/extensions.json"), "{\"recommendations\": [\"golang.go\"]}");
+        Files.createDirectories(inside.resolve(".vscode"));
+        link(inside.resolve(".vscode/extensions.json"), inside.resolve("config/extensions.json"));
+        assertThat(ids(VsCodeExtensions.read(inside.toFile()))).containsExactly("golang.go");
+    }
 }

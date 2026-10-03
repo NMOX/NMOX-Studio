@@ -153,12 +153,61 @@ class VsCodeFilesNoticeTest {
     }
 
     @Test
-    @DisplayName("a settings.json that says nothing about indentation is not announced as setting it")
-    void settingsWithoutIndentationSayNothing() throws Exception {
-        vscode("settings.json", "{\"search.exclude\": {\"dist\": true}}");
+    @DisplayName("a settings.json that holds nothing this IDE reads is not announced as applying")
+    void settingsWithNothingReadSayNothing() throws Exception {
+        vscode("settings.json", "{\"workbench.colorTheme\": \"Monokai\",\n"
+                + "  // \"editor.tabSize\": 2,\n"
+                + "  \"[markdown]\": {\"editor.fontSize\": 14}}");
         File dir = project.toFile();
         VsCodeFilesNotice.check(dir, () -> dir);
-        assertThat(told).isEmpty();
+        assertThat(told).as("a commented-out setting is not a setting").isEmpty();
+    }
+
+    @Test
+    @DisplayName("every setting the product reads from settings.json is announced: excludes, rulers, wrap, not only indentation")
+    void everySettingReadIsAnnounced() throws Exception {
+        Path settings = project.resolve(".vscode/settings.json");
+        Files.createDirectories(settings.getParent());
+        for (String key : VsCodeFilesNotice.SETTINGS_KEYS) {
+            Files.writeString(settings, "{\"" + key + "\": true}");
+            assertThat(VsCodeFilesNotice.setsSomethingRead(settings.toFile())).as(key).isTrue();
+            Files.writeString(settings, "{\"[typescript]\": {\"" + key + "\": true}}");
+            assertThat(VsCodeFilesNotice.setsSomethingRead(settings.toFile())).as("[typescript] " + key).isTrue();
+        }
+        Files.writeString(settings, "{not json");
+        assertThat(VsCodeFilesNotice.setsSomethingRead(settings.toFile())).isFalse();
+    }
+
+    /** The settings keys a source file reads, as the string literals it names them by. */
+    private static java.util.Set<String> keysReadBy(String path) throws Exception {
+        java.util.Set<String> keys = new java.util.TreeSet<>();
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("\"((?:editor|files|search)\\.[A-Za-z]+)\"")
+                .matcher(Files.readString(Path.of("..").resolve(path)));
+        while (m.find()) {
+            keys.add(m.group(1));
+        }
+        return keys;
+    }
+
+    @Test
+    @DisplayName("the notice's list is every key the editor's and the trees' readers of settings.json name")
+    void theListIsTheReadersKeys() throws Exception {
+        java.util.Set<String> read = new java.util.TreeSet<>();
+        read.addAll(keysReadBy("editor/src/main/java/org/nmox/studio/editor/standards/VsCodeSettings.java"));
+        read.addAll(keysReadBy("core/src/main/java/org/nmox/studio/core/util/VsCodeExcludes.java"));
+        assertThat(read).as("the readers were found").contains("editor.tabSize", "files.exclude");
+        assertThat(VsCodeFilesNotice.SETTINGS_KEYS).containsExactlyInAnyOrderElementsOf(read);
+    }
+
+    @Test
+    @DisplayName("a folder name with a control character reaches the title as one line of ordinary characters")
+    void titleIsOneLine() {
+        String title = VsCodeFilesNotice.title(new File("/work/odd\u0007name\nhere"));
+        assertThat(title).isEqualTo("VS Code files in odd name here");
+        assertThat(title.chars()).noneMatch(Character::isISOControl);
+        String longName = "x".repeat(200);
+        assertThat(VsCodeFilesNotice.title(new File(longName)).codePointCount(0, VsCodeFilesNotice.title(new File(longName)).length()))
+                .isLessThan(100);
     }
 
     @Test

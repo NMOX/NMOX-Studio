@@ -38,7 +38,14 @@ import java.util.regex.Pattern;
  * document a range inside a {@code <script>} or {@code <style>} block is
  * commented as that block's language ({@link #toggle(String, CharSequence,
  * CharSequence, int, int)}); {@code <!-- -->} around JavaScript would be
- * broken code. A range that crosses the block's own tag is refused.
+ * broken code. A range that crosses the block's own tag is refused, from
+ * either side: the state is read at the range's start AND its end, and a
+ * markup range that opens a block, or ends inside one, would put the
+ * {@code -->} in the middle of the script. Markup is read the way a
+ * browser reads it for these two elements: a commented-out
+ * {@code <script>} opens nothing. An Astro component's frontmatter (the
+ * script between the leading {@code ---} fences) is TypeScript and takes
+ * {@code /* *}{@code /}; a range on or across a fence is refused.
  *
  * <p>Pure: no Swing, no platform. Offsets are in the text handed in, so a
  * caller may pass only the lines it needs.
@@ -219,25 +226,205 @@ public final class BlockComments {
             return new NoBlockComment();
         }
         if (EMBEDDING.contains(mime)) {
-            int s = Math.clamp(Math.min(selStart, selEnd), 0, text.length());
-            int e = Math.clamp(Math.max(selStart, selEnd), 0, text.length());
-            String tag = blockAt(before.toString() + text.subSequence(0, s));
-            if (tag != null) {
-                if (tag.startsWith("style") && INDENTED_SASS.matcher(tag).find()) {
-                    return new NoBlockComment();
-                }
-                // a range that leaves the block cannot be commented as the block's language
-                String body = s == e
-                        ? text.subSequence(lineStart(text, s), lineEnd(text, s)).toString()
-                        : text.subSequence(s, e).toString();
-                String boundary = blockBoundary(body);
-                if (boundary != null) {
-                    return new Refusal(boundary);
-                }
-                style = C;
+            Outcome embedded = embedded(mime, before.toString(), text, selStart, selEnd);
+            if (embedded != null) {
+                return embedded;
             }
         }
         return toggle(text, selStart, selEnd, style);
+    }
+
+    /**
+     * The answer inside markup that holds other languages, or null when the
+     * range is plain markup and the markup's own pair applies. Every
+     * position is decided in the document's text ({@code head}, then
+     * {@code text}), so the state at the range's start and at its end are
+     * read from the same characters.
+     */
+    private static Outcome embedded(String mime, String head, CharSequence text, int selStart, int selEnd) {
+        int s = Math.clamp(Math.min(selStart, selEnd), 0, text.length());
+        int e = Math.clamp(Math.max(selStart, selEnd), 0, text.length());
+        boolean caretOnly = s == e;
+        String all = head + text;
+        int offset = head.length();
+        int rangeStart = offset + (caretOnly ? lineStart(text, s) : s);
+        int rangeEnd = offset + (caretOnly ? lineEnd(text, s) : e);
+        String body = text.subSequence(rangeStart - offset, rangeEnd - offset).toString();
+        int markupFrom = 0;
+        if ("text/x-astro".equals(mime)) {
+            int[] fence = frontmatter(all);
+            if (fence != null) {
+                if (rangeStart >= fence[1] && rangeEnd <= fence[2]) {
+                    // the component script: TypeScript, between the fences
+                    return toggle(text, selStart, selEnd, C);
+                }
+                if (rangeStart < fence[3]) {
+                    // a fence line, or a range across one: neither pair can wrap it
+                    return new Refusal(FENCE);
+                }
+                markupFrom = fence[3];
+            }
+        }
+        Block start = scan(all, markupFrom, rangeStart).open();
+        Block end = scan(all, markupFrom, rangeEnd).open();
+        if (start == null) {
+            // plain markup: <!-- --> holds only markup, so a range that opens
+            // a script or style block, or stops inside one, is refused
+            Scan inside = scan(body, 0, body.length());
+            String opened = inside.open() != null ? inside.open().name()
+                    : inside.unfinished() != null ? inside.unfinished() : end != null ? end.name() : null;
+            return opened == null ? null : new Refusal("<" + opened + ">");
+        }
+        if (start.tag().startsWith("style") && INDENTED_SASS.matcher(start.tag()).find()) {
+            return new NoBlockComment();
+        }
+        // a range that leaves the block cannot be commented as the block's language
+        String boundary = blockBoundary(body);
+        if (boundary != null) {
+            return new Refusal(boundary);
+        }
+        if (!start.equals(end)) {
+            return new Refusal("</" + start.name() + ">");
+        }
+        return toggle(text, selStart, selEnd, C);
+    }
+
+    /** What an Astro refusal names: the component script's fence. */
+    static final String FENCE = "---";
+
+    /**
+     * An Astro component's frontmatter: the script between two {@code ---}
+     * lines at the top of the file (blank lines may come first). The
+     * answer is {opening fence, script start, script end, end of the
+     * closing fence}, the script running to the end when no fence closes
+     * it; null when the file does not open with a fence.
+     */
+    static int[] frontmatter(CharSequence all) {
+        int i = 0;
+        while (i < all.length() && Character.isWhitespace(all.charAt(i))) {
+            i++;
+        }
+        if (i >= all.length()) {
+            return null;
+        }
+        int open = lineStart(all, i);
+        if (!isFence(all, open)) {
+            return null;
+        }
+        int bodyStart = nextLine(all, open);
+        int at = bodyStart;
+        while (at < all.length()) {
+            if (isFence(all, at)) {
+                return new int[] {open, bodyStart, at, lineEnd(all, at)};
+            }
+            at = nextLine(all, at);
+        }
+        return new int[] {open, bodyStart, all.length(), all.length()};
+    }
+
+    /** The start of the line after the one starting at {@code at}, or the end of the text. */
+    private static int nextLine(CharSequence all, int at) {
+        int i = at;
+        while (i < all.length() && all.charAt(i) != '\n') {
+            i++;
+        }
+        return Math.min(all.length(), i + 1);
+    }
+
+    /** Whether the line starting at {@code at} is {@code ---} and nothing else but blanks. */
+    private static boolean isFence(CharSequence all, int at) {
+        return all.subSequence(at, lineEnd(all, at)).toString().strip().equals(FENCE);
+    }
+
+    /**
+     * A script or style block that is open: where its opening tag starts,
+     * and that tag's text ({@code script …}, lower-cased, without brackets).
+     */
+    record Block(int open, String tag) {
+
+        /** The element's name: {@code script} or {@code style}. */
+        String name() {
+            return tag.startsWith("script") ? "script" : "style";
+        }
+    }
+
+    /**
+     * Markup read from {@code from} to {@code to}: the block open at
+     * {@code to} (null in plain markup), and the name of a script or style
+     * opening tag that {@code to} falls inside, before its {@code >}.
+     */
+    private record Scan(Block open, String unfinished) {
+    }
+
+    /**
+     * Reads markup the way a browser does for these two elements: an HTML
+     * comment hides what it holds (a commented-out {@code <script>} opens
+     * nothing), and inside a script or style block only its own end tag
+     * means anything (a {@code <!--} in a script's string is not a
+     * comment). Case-insensitive, without copying the text.
+     */
+    private static Scan scan(CharSequence all, int from, int to) {
+        int end = Math.min(to, all.length());
+        int i = from;
+        while (i < end) {
+            int lt = indexOf(all, '<', i, end);
+            if (lt < 0) {
+                break;
+            }
+            if (regionMatches(all, lt, "<!--", false)) {
+                int close = indexOf(all, "-->", lt + 4, end, false);
+                if (close < 0) {
+                    return new Scan(null, null); // inside a comment: markup
+                }
+                i = close + 3;
+                continue;
+            }
+            String tag = tagAt(all, lt, end);
+            if (tag == null) {
+                i = lt + 1;
+                continue;
+            }
+            int gt = indexOf(all, '>', lt, end);
+            if (gt < 0) {
+                return new Scan(null, tag); // inside the opening tag itself
+            }
+            int close = indexOf(all, "</" + tag, gt, end, true);
+            if (close < 0) {
+                return new Scan(new Block(lt, all.subSequence(lt + 1, gt).toString().toLowerCase(Locale.ROOT)), null);
+            }
+            i = close + 2 + tag.length();
+        }
+        return new Scan(null, null);
+    }
+
+    /** The block tag whose whole name starts at {@code lt} ({@code <script} but not {@code <scripted}), or null. */
+    private static String tagAt(CharSequence all, int lt, int end) {
+        for (String tag : BLOCK_TAGS) {
+            int after = lt + 1 + tag.length();
+            if (after <= all.length() && regionMatches(all, lt + 1, tag, true)
+                    && (after >= end || all.charAt(after) == '>' || Character.isWhitespace(all.charAt(after)))) {
+                return tag;
+            }
+        }
+        return null;
+    }
+
+    private static int indexOf(CharSequence all, char c, int from, int end) {
+        for (int i = from; i < end; i++) {
+            if (all.charAt(i) == c) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static int indexOf(CharSequence all, String what, int from, int end, boolean ignoreCase) {
+        for (int i = from; i + what.length() <= end; i++) {
+            if (regionMatches(all, i, what, ignoreCase)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
@@ -374,42 +561,8 @@ public final class BlockComments {
      * {@code head}, or null in plain markup.
      */
     static String blockAt(String head) {
-        String lower = head.toLowerCase(Locale.ROOT);
-        int best = -1;
-        String found = null;
-        for (String tag : BLOCK_TAGS) {
-            int open = lastOpening(lower, tag);
-            if (open < 0) {
-                continue;
-            }
-            int gt = lower.indexOf('>', open);
-            if (gt < 0 || lower.indexOf("</" + tag, gt) >= 0) {
-                continue; // still inside the opening tag itself, or the block closed before here
-            }
-            if (open > best) {
-                best = open;
-                found = lower.substring(open + 1, gt);
-            }
-        }
-        return found;
-    }
-
-    /** The last {@code <tag} that is a whole tag name, not the head of a longer one. */
-    private static int lastOpening(String lower, String tag) {
-        int from = lower.length();
-        while (from >= 0) {
-            int at = lower.lastIndexOf("<" + tag, from);
-            if (at < 0) {
-                return -1;
-            }
-            int after = at + 1 + tag.length();
-            if (after >= lower.length() || lower.charAt(after) == '>'
-                    || Character.isWhitespace(lower.charAt(after))) {
-                return at;
-            }
-            from = at - 1;
-        }
-        return -1;
+        Block open = scan(head, 0, head.length()).open();
+        return open == null ? null : open.tag();
     }
 
     /** The script or style tag inside {@code body}, as it is written there, or null. */
@@ -464,11 +617,17 @@ public final class BlockComments {
     }
 
     private static boolean regionMatches(CharSequence text, int at, String what) {
+        return regionMatches(text, at, what, false);
+    }
+
+    private static boolean regionMatches(CharSequence text, int at, String what, boolean ignoreCase) {
         if (at < 0 || at + what.length() > text.length()) {
             return false;
         }
         for (int i = 0; i < what.length(); i++) {
-            if (text.charAt(at + i) != what.charAt(i)) {
+            char c = text.charAt(at + i);
+            char w = what.charAt(i);
+            if (c != w && !(ignoreCase && Character.toLowerCase(c) == Character.toLowerCase(w))) {
                 return false;
             }
         }

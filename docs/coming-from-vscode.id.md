@@ -142,8 +142,10 @@ dan Linux hanya di profil IntelliJ; di profil Emacs, Ctrl+L di sana tetap
 
 Bahasa yang tidak punya komentar blok, Python misalnya, mengatakannya di
 baris status. Di berkas HTML, Vue, atau Svelte, blok `<script>` atau
-`<style>` dikomentari sebagai bahasanya sendiri. Tanpa seleksi, pintasan
-ini mengalihkan komentar pada baris itu; ia tidak mencari komentar yang
+`<style>` dikomentari sebagai bahasanya sendiri, begitu pula frontmatter
+komponen Astro; seleksi yang akan membawa komentar masuk ke atau keluar dari
+blok semacam itu ditolak dengan menyebut namanya alih-alih merusak berkas.
+Tanpa seleksi, pintasan ini mengalihkan komentar pada baris itu; ia tidak mencari komentar yang
 sekadar mengelilingi kursor, jadi untuk menghapus komentar yang terdiri
 atas beberapa baris, seleksi komentar itu.
 
@@ -151,6 +153,53 @@ Di Pencarian Cepat, simbol berkas adalah kategori **Simbol di berkas
 ini**. Mengetik `@` saja mendaftar simbol-simbol itu dari awal berkas;
 `m name` (hurufnya, sebuah spasi, lalu namanya) mencari di kategori itu dan
 tidak di kategori lain.
+
+### Profil peta tombol VS Code
+
+Tabel-tabel di atas adalah profil bawaan, tempat pintasan yang diandalkan
+pengguna NetBeans tetap mempertahankan artinya. Jika tangan Anda lebih suka
+peta tombol VS Code secara utuh, ganti profilnya: ketik *Gunakan Peta Tombol
+VS Code* di Pencarian Cepat (⇧⌘P atau ⌘I; barisnya adalah *Preferences: Use
+the VS Code Keymap*), atau pilih **VS Code** di Alat ▸ Opsi ▸ Pintasan
+keyboard ▸ Profile (di macOS, NMOX Studio ▸ Settings… ▸ Pintasan keyboard ▸
+Profile). Baris status mengatakan profil mana yang sedang Anda pakai dan
+jalan kembalinya; tidak ada yang pernah menggantinya untuk Anda.
+
+Di profil itu, pintasan bawaan VS Code melakukan apa yang dilakukannya di
+VS Code, di macOS maupun di Windows dan Linux, di mana pun produk ini punya
+tindakannya: ⌥↑ / ⌥↓ memindahkan baris, ⇧⌘K menghapusnya, ⌘L memperluas
+seleksi baris, ⇧⌘L menyeleksi setiap kemunculan, ⌘[ / ⌘] mengurangi dan
+menambah indentasi, ⌘↩ menyisipkan baris di bawah, ⇧⌘\\ melompat ke kurung
+pasangannya, ⌥⌘[ / ⌥⌘] melipat dan membuka lipatan, ⌘K ⌘0 / ⌘K ⌘J melipat
+dan membuka semua lipatan, ⌘K ⌘X memangkas spasi putih di akhir baris, ⌘J
+menampilkan jendela Output, ⌘\\ membelah editor, ⌘T dan ⇧⌘O pergi ke
+simbol di proyek dan di berkas, ⇧⌘M menampilkan Item tindakan, ⇧⌘D jendela
+pengawakutu, ⌘K ⌘S lembar Pintasan Papan Ketik, ⌘K ⌘W menutup setiap
+editor, ⌘K ⌘O membuka folder, ⌃R membuka proyek terkini, ⇧⌘B membangun, F1
+adalah palet perintah, dan tombol-tombol pengawakutu adalah milik VS Code:
+F5 mulai men-debug proyek atau melanjutkan yang sedang dijeda, ⇧F5
+menghentikan, ⌃F5 menjalankan tanpa debug, F9 mengalihkan titik henti, F10,
+F11, dan ⇧F11 melangkahi, masuk ke, dan keluar dari. Setiap pintasan produk
+yang tidak diklaim VS Code (jendela-jendela ⌥⌘, ⌥⌘E milik Emmet, ⌥⌘G) tetap
+di tempatnya.
+
+Yang masih berbeda di profil VS Code, disebut satu per satu:
+
+- **Sama sekali tanpa pintasan**, karena tidak ada apa pun di sini yang
+  merupakan tindakan itu: ⌘B (*Toggle Primary Side Bar*), ⇧⌘W (*Close
+  Window*), ⇧⌘F5 (*Restart* debugging), F8 / ⇧F8 (*Go to Next / Previous
+  Problem in Files*), ⌥F12 (*Peek Definition*), ⇧⌘↩ (*Insert Line Above*),
+  dan ⌘U (*Cursor Undo*). Tombol-tombol itu tidak melakukan apa-apa alih-alih
+  melakukan hal lain.
+- **Simpan Semua tidak punya pintasan di Windows dan Linux** (Ctrl+K S
+  milik VS Code); di macOS pintasannya ⌥⌘S.
+- **Apa yang diambil pintasan VS Code dari NetBeans.** F1 tidak lagi
+  membuka bantuan, ⌘B tidak lagi pergi ke deklarasi (F12 yang
+  melakukannya), konversi huruf ⌘U, pelengkapan kata ⌘K / ⇧⌘K, penukaran
+  huruf ⌘T, dan riwayat papan klip ⇧⌘D tidak punya pintasan di profil ini,
+  begitu pula Awakutu berkas, Alihkan markah, Show Editor Only, dan Buka
+  Proyek. Daftar lengkapnya, untuk setiap OS, ada di
+  `scripts/vscode-keymap/displaced.txt` di kode sumber.
 
 
 <a id="from-the-terminal"></a>
@@ -212,10 +261,10 @@ baris itu.
 | **Explorer** | **Studio Proyek** (⇧⌘E) — pohon berkas (klik kanan sebuah berkas untuk Salin Jalur, Salin Jalur Relatif, dan Tampilkan di Finder), templat, dan penyunting `package.json` proyek. **Meja Kerja** (⌥⌘0) adalah pangkalan: berkas yang terbuka, berkas terkini, proyek terkini, dan semua yang sedang berjalan. |
 | **Command Palette** | **Pencarian Cepat** (⇧⌘P atau ⌘I) — tindakan, berkas, proyek terkini, perangkat rak, server aktif, permintaan Studio API, simbol. Nama perintah VS Code sendiri juga berfungsi: *Format Document*, *Toggle Terminal*, *Git: Commit*, atau *Open Settings* menampilkan tindakan yang melakukan hal yang sama di sini, di bawah **Perintah VS Code**, dengan nama dan pintasannya sendiri. |
 | **Extensions** | **Alat ▸ Plugin** memasang dan memperbarui modul, termasuk pembaruan NMOX sendiri. Ekstensi VS Code tidak bisa dipasang di sini, jadi **Alat ▸ Ekstensi VS Code yang Direkomendasikan…** menjawab pertanyaan yang dimunculkan `.vscode/extensions.json` sebuah repositori: untuk setiap ekstensi yang direkomendasikannya, apa yang melakukan pekerjaan itu di NMOX Studio — fitur bawaan, jendela yang bisa dibukanya, perangkat rak, server bahasa (dan apakah server itu terpasang), atau tidak ada — dan ekstensi yang tidak dikenalnya disebut tidak dikenal alih-alih ditebak. Banyak hal yang ditambahkan sebuah ekstensi di VS Code adalah sebuah **perangkat rak** di sini — dan Anda bisa menulisnya sebagai berkas JSON di `~/.nmox/devices.d` ([berkas perangkat](device-files.md)). |
-| **`tasks.json`** | `.vscode/tasks.json` di repositori Anda dibaca: ketik nama sebuah tugas di Pencarian Cepat (⇧⌘P atau ⌘I), dan Enter pada *Jalankan tugas: build — make all* menjalankannya — atau pilih tugas itu dari daftar yang ditampilkan **Jalankan ▸ Jalankan Tugas…** — dengan Kepercayaan Ruang Kerja bertanya lebih dulu pada proyek yang belum Anda percayai, keluarannya di jendela Output, dan ■ di bilah alat untuk menghentikannya. Tugas-tugas yang menjadi `dependsOn`-nya berjalan lebih dulu, `${file}` adalah berkas yang terbuka di editor, dan `${input:…}` bertanya kepada Anda sebelum apa pun dimulai. Di sampingnya, skrip proyek Anda sendiri dijalankan sebagaimana ditulis: Jalankan / Bangun / Uji di bilah alat (F6, F11, ⌃F6), **Jalankan Skrip** pada baris `scripts` di `package.json`, **Penjelajah NPM**, dan **Rak Tugas** (⌘9), tempat tugas adalah perangkat yang Anda rangkai bersama. |
+| **`tasks.json`** | `.vscode/tasks.json` di repositori Anda dibaca: ketik nama sebuah tugas di Pencarian Cepat (⇧⌘P atau ⌘I), dan Enter pada *Jalankan tugas: build — make all* menjalankannya — atau pilih tugas itu dari daftar yang ditampilkan **Jalankan ▸ Jalankan Tugas…** — dengan Kepercayaan Ruang Kerja bertanya lebih dulu pada proyek yang belum Anda percayai, keluarannya di jendela Output, dan ■ di bilah alat untuk menghentikannya. Tugas-tugas yang menjadi `dependsOn`-nya berjalan lebih dulu, `${file}` adalah berkas yang terbuka di editor, dan `${input:…}` bertanya kepada Anda sebelum apa pun dimulai. `problemMatcher` sebuah tugas mengubah keluarannya menjadi masalah di Item tindakan dan garis berlekuk di editor (`$tsc`, `$eslint-stylish`, dan matcher bawaan VS Code lainnya menurut namanya, atau matcher yang ditulis langsung di tugas itu), dan pengamat latar belakang seperti `tsc -w` ditunggu sampai matcher-nya mengatakan satu siklus telah selesai. Di sampingnya, skrip proyek Anda sendiri dijalankan sebagaimana ditulis: Jalankan / Bangun / Uji di bilah alat (F6, F11, ⌃F6), **Jalankan Skrip** pada baris `scripts` di `package.json`, **Penjelajah NPM**, dan **Rak Tugas** (⌘9), tempat tugas adalah perangkat yang Anda rangkai bersama. |
 | **`launch.json`** | `.vscode/launch.json` di repositori Anda dibaca: ketik nama sebuah konfigurasi di Pencarian Cepat (⇧⌘P atau ⌘I), dan Enter pada *Debug: Launch Program — ${workspaceFolder}/server.js* memulai pengawakutu titik henti pada program itu — **Debug ▸ Mulai Debug…** mendaftar konfigurasi yang sama — dengan Kepercayaan Ruang Kerja bertanya lebih dulu. Konfigurasi Node (`node`, `pwa-node`) mengawakutu `program`-nya di dalam `cwd`-nya, dengan `args`-nya, `env` dan `envFile`-nya, di bawah `runtimeExecutable` dan `runtimeArgs`-nya — sehingga konfigurasi `npm run dev`, `tsx`, atau `--experimental-strip-types` dimulai sebagaimana ditulis — dan `"request": "attach"` untuk Node menyambung ke proses `node --inspect` di mesin ini. Konfigurasi Python (`python`, `debugpy`) mengawakutu `program`-nya dengan `args`, `env`, `envFile`, dan interpreter yang disebut `python`-nya; konfigurasi Chrome (`chrome`, `pwa-chrome`) membuka `url` (atau `file`) miliknya dengan `webRoot`-nya. `"program": "${file}"` mengawakutu berkas yang ditampilkan editor Anda, dan `preLaunchTask` yang menyebut sebuah tugas di `tasks.json` Anda berjalan lebih dulu: pengawakutu dimulai setelah tugas itu berhasil. Tanpa `launch.json`, **Awakutu berkas** (⇧⌘F5) dan tombol awakutu di bilah alat menentukan apa yang diluncurkan dari proyek itu sendiri — titik masuk skrip `start`, `main`, `index.js` — dan perangkat rak **INSPECTOR** meluncurkan pengawakutu sebagai satu langkah di sebuah alur. |
 | **Terminal terpadu** | Jendela **Terminal** (⌃\`): tekanan pertama memulai shell di folder proyek, tekanan berikutnya memunculkannya kembali. |
-| **`settings.json`** | Alat ▸ Opsi (di macOS, NMOX Studio ▸ Settings…). `.vscode/settings.json` sebuah repositori juga dibaca: `editor.tabSize`, `editor.insertSpaces`, dan `editor.indentSize` mengatur indentasi berkas-berkasnya saat Anda mengetik, `files.trimTrailingWhitespace` dan `files.insertFinalNewline` (bila bernilai `true`) diterapkan saat menyimpan, `files.eol` adalah akhir baris yang dipakai saat berkas ditulis, `"editor.formatOnSave": false` mencegah penyimpanan memformat ulang berkas, dan blok bahasa seperti `"[typescript]"` menimpanya untuk bahasa itu. Jika repositori itu juga punya `.editorconfig`, `.editorconfig` itulah yang menang di mana pun keduanya mengatur hal yang sama. |
+| **`settings.json`** | Alat ▸ Opsi (di macOS, NMOX Studio ▸ Settings…). `.vscode/settings.json` sebuah repositori juga dibaca: `editor.tabSize`, `editor.insertSpaces`, dan `editor.indentSize` mengatur indentasi berkas-berkasnya saat Anda mengetik, `files.trimTrailingWhitespace` dan `files.insertFinalNewline` (bila bernilai `true`) diterapkan saat menyimpan, `files.eol` adalah akhir baris yang dipakai saat berkas ditulis, `"editor.formatOnSave": false` mencegah penyimpanan memformat ulang berkas, yang pertama dari `editor.rulers` adalah tempat editor menggambar garis margin kanannya (daftar kosong tidak menggambar apa pun), `editor.wordWrap` `"on"` atau `"off"` membungkus berkas-berkas proyek itu atau membiarkannya tidak terbungkus, `files.exclude` menyembunyikan apa yang disebutnya dari pohon proyek, dan **Cari di proyek** melewati apa yang disebut `files.exclude` dan `search.exclude`; blok bahasa seperti `"[typescript]"` menimpanya untuk bahasa itu. Jika repositori itu juga punya `.editorconfig`, `.editorconfig` itulah yang menang di mana pun keduanya mengatur hal yang sama. Pengaturan VS Code Anda sendiri dibawa sekali, saat Anda memintanya: **Alat ▸ Impor Pengaturan VS Code…** |
 | **Panel Problems** | **Item tindakan** (⌘6), atau klik hitungan **✕ ⚠** di baris status: galat dan peringatan dari server bahasa, serta temuan lint dan tipe dari perangkat PURITY dan TYPEGUARD di rak. Seperti di VS Code, sebagian server hanya melaporkan berkas yang sedang Anda buka; gopls melaporkan seluruh paket. |
 | **Search view** (`search.useIgnoreFiles`) | **Cari di proyek** (⇧⌘F). Seperti di VS Code, pencarian melewati apa yang diabaikan berkas `.gitignore` repositori dan `.git/info/exclude`, jadi `node_modules` dan `dist/` tidak masuk hasil bila `.gitignore` mencantumkannya; di luar repositori, pencarian melewati `node_modules`, `dist`, `build`, dan folder build lainnya menurut namanya. Centang **Cari di sumber hasil generate** di dialognya untuk mencari di sana juga. Berkas pengecualian git global Anda tidak dibaca. |
 | **Outline** | **Navigator** (⌘7). |
@@ -226,7 +275,7 @@ baris itu.
 | **Breadcrumbs** | **Tampilan ▸ Tampilkan breadcrumb**. |
 | **Source Control** | Tanda git di baris status (cabang dan perubahan, sekali klik ke riwayat) dan menu **Tim**. |
 | **Workspace Trust** | Gagasan yang sama, **Kepercayaan Ruang Kerja**, ditegakkan sebelum apa pun yang dipilih sebuah repositori dijalankan: membuka proyek hasil klon tidak menjalankan apa pun sampai Anda memercayainya. |
-| **Keyboard Shortcuts editor** | Alat ▸ Opsi ▸ Pintasan keyboard (di macOS, Settings… ▸ Pintasan keyboard) — sunting pintasan apa pun, atau ganti seluruh profil ke Eclipse, Emacs, atau IntelliJ. |
+| **Keyboard Shortcuts editor** | Alat ▸ Opsi ▸ Pintasan keyboard (di macOS, Settings… ▸ Pintasan keyboard) — sunting pintasan apa pun, atau ganti seluruh profil ke VS Code, Eclipse, Emacs, atau IntelliJ. |
 
 Pertama kali Anda membuka repositori yang membawa `.vscode/tasks.json`,
 `launch.json`, `settings.json`, atau `extensions.json`, sebuah pemberitahuan
@@ -278,10 +327,14 @@ menggantikan masing-masing). Pemberitahuan itu muncul sekali per proyek.
     sebuah tugas gagal, di sini baris status mengatakan bahwa konfigurasi
     itu tidak dimulai. `program` yang dibangun tugas itu (`dist/server.js`)
     dicari setelah tugas selesai, bukan sebelumnya. Label yang tidak
-    didefinisikan `tasks.json`, label yang dipakai dua tugas, bentuk objek
-    (`{"type": "npm", "script": "build"}`), dan tugas latar belakang
-    (`"isBackground": true`, pengamat yang tidak pernah berakhir) ditolak
-    dengan menyebut namanya sebelum apa pun berjalan.
+    didefinisikan `tasks.json`, label yang dipakai dua tugas, dan bentuk
+    objek (`{"type": "npm", "script": "build"}`) ditolak dengan menyebut
+    namanya sebelum apa pun berjalan. Tugas latar belakang
+    (`"isBackground": true`, pengamat yang tidak pernah berakhir) ditunggu
+    sampai problem matcher-nya melaporkan satu siklus yang selesai, lalu
+    tetap berjalan, dan menekan Debug lagi memakainya kembali; tugas latar
+    belakang tanpa matcher yang bisa mengatakan kapan ia siap ditolak dengan
+    menyebut namanya.
   - **`envFile` yang tidak ada ditolak**, sedangkan VS Code memulai program
     tanpanya. Variabel-variabelnya ditambahkan ke lingkungan dan sebuah
     entri `env` menang atas berkas itu, seperti di VS Code. Berkas itu
@@ -322,8 +375,8 @@ menggantikan masing-masing). Pemberitahuan itu muncul sekali per proyek.
   dalamnya tidak bisa berjalan sebagaimana ditulis, tidak ada yang
   berjalan, dan Enter menyebutkan tugas yang mana dan mengapa di baris
   status. Itu mencakup label `dependsOn` yang tidak didefinisikan berkas
-  itu, dependensi yang merupakan tugas latar belakang (problem matcher
-  tidak dibaca, jadi tidak ada yang mengatakan kapan tugas itu siap),
+  itu, dependensi yang merupakan tugas latar belakang tanpa problem matcher
+  yang bisa mengatakan kapan tugas itu siap,
   `${file}` tanpa berkas yang terbuka, dan pertanyaan yang Anda batalkan.
   Dependensi yang gagal menghentikan jalannya di situ. Yang tetap ditolak
   dengan menyebut namanya: nilai yang hanya bisa diberikan VS Code
@@ -340,7 +393,45 @@ menggantikan masing-masing). Pemberitahuan itu muncul sekali per proyek.
   henti) ditinggalkan dan disebutkan di log alih-alih disisipkan setengah
   jadi. Mengetik sebuah prefiks tidak dengan sendirinya membuka daftar:
   ⌃Space yang membukanya. Cuplikan tanpa `prefix`, cuplikan tingkat
-  pengguna, dan `isFileTemplate` tidak dibaca.
+  pengguna, dan `isFileTemplate` tidak dibaca. Berkas cuplikan hanya
+  dibaca untuk berkas di dalam repositori yang memuatnya, dan cuplikan yang
+  akan menyisipkan lebih dari sejuta karakter tidak disisipkan.
+- **`problemMatcher` sebuah tugas dibaca.** Setiap jalan menggantikan
+  masalah tugas itu dari jalan sebelumnya, dan jalan yang bersih
+  menghapusnya. Matcher bawaan VS Code bekerja menurut namanya (`$tsc`,
+  `$tsc-watch`, `$tsgo-watch`, `$eslint-stylish`, `$eslint-compact`,
+  `$jshint`, `$jshint-stylish`, `$msCompile`, `$lessCompile`, `$gulp-tsc`,
+  `$go`, `$lessc`), begitu pula `$gcc` dan `$rustc` dari ekstensi C/C++ dan
+  rust-analyzer; matcher yang ditulis langsung dan `{"base": "$tsc", …}`
+  juga bekerja, termasuk pola multibaris dengan `loop`, dengan setiap
+  `fileLocation` kecuali `"search"`. Matcher yang tidak dimiliki IDE ini,
+  atau yang ekspresi regulernya berarti lain di sini, tidak menghentikan
+  tugas: tugas itu berjalan, dan baris status menyebut matcher yang tidak
+  diterapkan, sekali.
+- **Format memformat JavaScript dan TypeScript dengan Prettier proyek.**
+  Kode Sumber ▸ Format (⇧⌥F) menjalankan Prettier yang dikonfigurasi proyek
+  Anda, dengan meminta Kepercayaan Ruang Kerja lebih dulu bila Prettier itu
+  milik proyek sendiri; proyek tanpa konfigurasi Prettier mengatakannya di
+  baris status alih-alih membiarkan berkas seperti semula tanpa sepatah kata
+  pun.
+- **Pengaturan Anda sendiri dibawa sekali, saat Anda memintanya.** **Alat ▸
+  Impor Pengaturan VS Code…** (atau *import vs code settings* di Pencarian
+  Cepat) membaca `settings.json` VS Code pribadi Anda — dari VS Code,
+  Insiders, atau VSCodium — dan mendaftar setiap pengaturan yang dikenalinya
+  beserta wujudnya di sini: ukuran tab dan spasi, bungkus kata, penggaris,
+  tampilan spasi putih, pemangkasan saat menyimpan, Format saat menyimpan,
+  minimap, Gulir lengket, dan simpan otomatis. Pengaturan yang artinya persis
+  sama di sini mulai dalam keadaan dicentang; yang mirip menjelaskan bedanya
+  dan mulai tidak dicentang. Terapkan menulis yang dicentang dan langsung
+  berlaku; Batal tidak menulis apa pun. Font editor diatur di pengaturan
+  Font dan warna, dan pintasan keyboard adalah profil peta tombol. Apa pun
+  yang lain di berkas Anda — token, jalur, pengaturan ekstensi — hanya
+  dihitung, tidak pernah ditampilkan atau disalin.
+- **`files.associations` tidak dibaca.** Platform menentukan tipe sebuah
+  berkas sekali dan mempertahankannya, jadi pemetaan di `settings.json`
+  tidak bisa dihormati dengan tepat; pengecualian bersyarat (`"when"`),
+  penggaris setelah yang pertama beserta warnanya, dan pembungkusan di
+  sebuah kolom juga tidak dibaca.
 - **Tugas `"type": "shell"` berjalan di shell yang akan dipakai VS Code.** Di
   macOS dan Linux itu adalah `$SHELL` Anda dengan `-c` (zsh, bash, atau fish
   di macOS dimulai sebagai shell login, `-l`, seperti profil bawaan VS Code);
@@ -350,9 +441,17 @@ menggantikan masing-masing). Pemberitahuan itu muncul sekali per proyek.
   Windows hanya PowerShell (argumen yang diakhiri `-Command`) dan `cmd.exe`
   (argumen yang diakhiri `/c`) yang dijalankan; shell lain apa pun di sana
   ditolak dengan menyebut namanya alih-alih diberi baris perintah yang
-  dikutip secara tebak-tebakan.
-- **Tidak ada profil peta tombol “VS Code”.** Pintasan di atas menumpang pada
-  profil bawaan dan keempat profil lainnya. Satu pengecualian disengaja: di
+  dikutip secara tebak-tebakan. Nama berkas, seleksi, atau jawaban masukan
+  di `command` sebuah tugas shell dikutip untuk shell itu, sehingga
+  `"command": "python ${file}"` bekerja untuk nama berkas apa pun, termasuk
+  yang memuat spasi atau `$`; di `cmd.exe`, nilai yang memuat `%`, `!`,
+  tanda kutip ganda, atau pemisah baris ditolak dengan menyebut namanya,
+  karena tidak ada cara mengutip yang membuat karakter itu tidak berbahaya
+  di sana.
+- **Tabel-tabel di atas menggambarkan profil peta tombol bawaan.** Di
+  profil **VS Code** (lihat *Profil peta tombol VS Code* di atas), pintasan
+  VS Code sendiri menang di mana pun produk ini punya tindakannya. Empat
+  pintasan pertama menumpang pada setiap profil. Satu pengecualian disengaja: di
   profil **Eclipse**, ⇧⌘E tetap *Switch to Editor* milik Eclipse sendiri, dan di
   dalam penyunting ⇧⌘P dan ⇧⌘X mempertahankan arti Eclipse-nya (kurung yang
   berpasangan, huruf besar) — orang yang memilih Eclipse mengharapkan Eclipse.

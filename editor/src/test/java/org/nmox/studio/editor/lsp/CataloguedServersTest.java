@@ -82,4 +82,51 @@ class CataloguedServersTest {
         Files.writeString(project.resolve("node_modules/.bin/vue-language-server.cmd"), "@echo off\r\n");
         assertThat(servers.server("vue-language-server", project.toFile()).installed()).isTrue();
     }
+
+    @Test
+    @DisplayName("a rust-analyzer on the PATH is installed only when it answers: rustup's proxy alone is not a server")
+    void rustupProxyIsNotAServer() {
+        java.util.List<String> probed = new java.util.ArrayList<>();
+        CataloguedServers.onPath = b -> true;
+        CataloguedServers.answers = b -> {
+            probed.add(b);
+            return !CataloguedServers.RUST_ANALYZER.equals(b);
+        };
+        ServerCatalog.Server rust = servers.server("rust-analyzer", null);
+        assertThat(rust).isNotNull();
+        assertThat(rust.installed()).as("the proxy exits non-zero without the component").isFalse();
+        assertThat(rust.install()).as("the catalog's way to add it still shows").isNotBlank();
+        CataloguedServers.answers = b -> true;
+        assertThat(servers.server("rust-analyzer", null).installed()).isTrue();
+        // a binary that is not on the PATH is not probed at all
+        CataloguedServers.onPath = b -> false;
+        probed.clear();
+        CataloguedServers.answers = b -> {
+            probed.add(b);
+            return true;
+        };
+        assertThat(servers.server("rust-analyzer", null).installed()).isFalse();
+        assertThat(probed).isEmpty();
+    }
+
+    @Test
+    @DisplayName("only rust-analyzer is run to be believed; every other binary is what its name says")
+    void onlyRustAnalyzerIsProbed() {
+        assertThat(CataloguedServers.answers("gopls")).isTrue();
+        assertThat(CataloguedServers.answers("pyright-langserver")).isTrue();
+        java.util.List<java.util.List<String>> asked = new java.util.ArrayList<>();
+        try {
+            LanguageServers.RustServer.resetProbeForTest();
+            LanguageServers.RustServer.versionProbe = command -> {
+                asked.add(command);
+                return false;
+            };
+            assertThat(CataloguedServers.answers("rust-analyzer")).as("a proxy without the component").isFalse();
+            assertThat(asked).containsExactly(java.util.List.of("rust-analyzer", "--version"));
+            LanguageServers.RustServer.versionProbe = command -> true;
+            assertThat(CataloguedServers.answers("rust-analyzer")).isTrue();
+        } finally {
+            LanguageServers.RustServer.resetProbeForTest();
+        }
+    }
 }

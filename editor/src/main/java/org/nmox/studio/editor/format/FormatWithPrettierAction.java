@@ -65,7 +65,8 @@ import org.openide.util.RequestProcessor;
     "FormatWithPrettierAction_alreadyFormatted=Already formatted.",
     "FormatWithPrettierAction_tooLarge=File too large for Prettier — saved size limit applies here too.",
     "FormatWithPrettierAction_noPrettier=Prettier not found — install it in the project or globally on PATH.",
-    "FormatWithPrettierAction_failed=Prettier could not format this file (syntax error?)."
+    "FormatWithPrettierAction_failed=Prettier could not format this file (syntax error?).",
+    "FormatWithPrettierAction_untrusted=Nothing was formatted: this project\u2019s own Prettier was not run, because the workspace is not trusted."
 })
 public final class FormatWithPrettierAction implements ActionListener {
 
@@ -101,27 +102,33 @@ public final class FormatWithPrettierAction implements ActionListener {
     }
 
     private static void report(Document doc, String snapshot, OnDemand result) {
+        report(doc, snapshot, result, FormatWithPrettierAction::status);
+    }
+
+    /** Applies and says the outcome of one on-demand format; event thread. Shared with {@link PrettierReformat}. */
+    static void report(Document doc, String snapshot, OnDemand result, java.util.function.Consumer<String> say) {
         switch (result.outcome()) {
             case FORMATTED -> {
                 boolean applied;
                 try {
                     applied = applyIfUnchanged(doc, snapshot, result.text());
                 } catch (BadLocationException ex) {
-                    status(Bundle.FormatWithPrettierAction_couldNotApply());
+                    say.accept(Bundle.FormatWithPrettierAction_couldNotApply());
                     return;
                 }
                 if (!applied) {
-                    status(Bundle.FormatWithPrettierAction_changed());
+                    say.accept(Bundle.FormatWithPrettierAction_changed());
                 } else if (result.optedIn()) {
-                    status(Bundle.FormatWithPrettierAction_formatted());
+                    say.accept(Bundle.FormatWithPrettierAction_formatted());
                 } else {
-                    status(Bundle.FormatWithPrettierAction_formattedDefaults());
+                    say.accept(Bundle.FormatWithPrettierAction_formattedDefaults());
                 }
             }
-            case ALREADY_FORMATTED -> status(Bundle.FormatWithPrettierAction_alreadyFormatted());
-            case TOO_LARGE -> status(Bundle.FormatWithPrettierAction_tooLarge());
-            case NO_PRETTIER -> status(Bundle.FormatWithPrettierAction_noPrettier());
-            case FAILED -> status(Bundle.FormatWithPrettierAction_failed());
+            case ALREADY_FORMATTED -> say.accept(Bundle.FormatWithPrettierAction_alreadyFormatted());
+            case TOO_LARGE -> say.accept(Bundle.FormatWithPrettierAction_tooLarge());
+            case NO_PRETTIER -> say.accept(Bundle.FormatWithPrettierAction_noPrettier());
+            case FAILED -> say.accept(Bundle.FormatWithPrettierAction_failed());
+            case UNTRUSTED -> say.accept(Bundle.FormatWithPrettierAction_untrusted());
         }
     }
 

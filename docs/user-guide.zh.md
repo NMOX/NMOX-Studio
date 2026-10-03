@@ -196,13 +196,19 @@ KVASIR 会用 NMOX Studio 当前设置的语言回答。
 - **缩略图** — 每个编辑器滚动条旁的整份文件轮廓；点击或拖动即可滚动。整份文档始终能装进这条窄带：文件越长，每行越细。视图 ▸ 缩略图可一次性为所有打开的编辑器开关它。
 - **粘性滚动** — 包住视图顶部的那些声明（先是类，然后是你滚进去的那个方法）会钉在正文上方，最多三行源码本身；点击其中一行即可跳过去。当没有任何东西包住最上面那行时，这条栏就消失。
 - **转到符号（⌥⇧⌘O）**只需输入名字，就能跳到整个项目中的任意函数、类、规则或标题 — 支持按前缀、按词中大写、按通配符匹配。索引是有界而诚实的：`node_modules` 会被跳过；在非常大的项目里，对话框会说它只索引了前 2000 个文件，而不是假装全都读过。
+- **此文件中的符号** — 导航 ▸ 转到此文件中的符号… 会在快速搜索里填上 `@`，列出这个文件自己的函数、类和规则以及它们所在的行；在 `@` 后面接着输入可以缩小范围，回车即可跳转。它就是导航器显示的那份大纲，只是变成了可以搜索的。
+- **格式化**（源代码 ▸ 格式化；在 macOS 上是 VS Code 的组合键 ⇧⌥F）用编辑器自己的格式化工具格式化 HTML、CSS、JSON 和 YAML；对 JavaScript、TypeScript、Vue、Svelte、Astro 或 GraphQL 文件，如果项目配置了 Prettier，就用项目自己的 Prettier。没有配置的项目会在状态栏上得到说明，并点出用 Prettier 默认设置格式化的入口（编辑器右键菜单中的“使用 Prettier 格式化”）；Prettier 运行期间你输入的文字绝不会被覆盖。
+- **切换块注释**（⇧⌥A；Shift+Alt+A，在 Linux 上还有 Ctrl+Shift+A）用该语言的块注释符号把选区或光标所在的行包起来，再按一次就去掉。本身已经含有注释符号的范围会被拒绝，而不会被弄坏；没有块注释的语言会这样说明。**视图 ▸ 自动换行**（⌥Z / Alt+Z）为该文件所属语言的每个编辑器折行显示长行，并记住这一选择。
+- **你的团队的代码片段** — 仓库带着的 `.vscode/*.code-snippets` 文件会出现在补全里：输入一个前缀，按 ⌃Space，这一行会写成 *前缀 — 名称 (描述)*，旁边是片段文件。接受它会插入片段正文，连同其中的制表位（Tab 在它们之间移动）、镜像、变量和变换。片段只在它的 `scope` 指定的语言里出现。
 - **测试窗口（⌥⌘2）**在*任何东西运行之前*就列出项目中的每一个测试，并可运行单个测试、单个文件或全部。
 - **LSP**：打开一个已安装语言服务器的文件（typescript、gopls、rust-analyzer、pyright 等），就有诊断、悬停提示和转到定义。服务器报告的错误和警告也会作为行出现在**操作项**（⌘6）里，以服务器命名（`[lsp:gopls]`），覆盖服务器报告过的每一个文件。有些服务器只报告你打开着的文件；gopls 报告整个包。缺服务器？IDE 会给出安装命令，而不是悄无声息地失败。
 
   ![操作项列出两条 gopls 错误，其中一条来自从未打开过的文件，状态栏上是 ✕ 2 ⚠ 0 计数](images/lsp-action-items.png)
 
 - **`.editorconfig` 会被遵守** —— 输入时和保存时都是。`indent_style`、`indent_size` 和 `tab_width` 决定 Tab、回车和重新缩进写出什么，所以用制表符的项目得到制表符，用四个空格的项目得到四个空格，按文件、按通配符小节分别生效；每次保存都会应用 `trim_trailing_whitespace` 和 `insert_final_newline`。对 `.editorconfig` 的修改会在几秒钟内到达已打开的编辑器。文件里已有的字面制表符仍按选项中设置的制表符宽度显示，`charset` 和 `end_of_line` 不会被应用。其余的交给你的格式化设备（GLOSS 等）。
-- **仓库的 `.vscode/settings.json` 也以同样的方式被遵守**：`editor.tabSize`、`editor.insertSpaces` 和 `editor.indentSize` 决定缩进，`files.trimTrailingWhitespace` 和 `files.insertFinalNewline`（为 `true` 时）在保存时生效，而像 `"[typescript]": {…}` 这样的语言块会为它的语言覆盖这些设置。如果项目同时还有 `.editorconfig`，凡是两者都有规定的地方，以 `.editorconfig` 为准。VS Code 的 `editor.detectIndentation`（让文件自己的缩进说了算）在这里没有对应的设置。
+- **仓库的 `.vscode/settings.json` 也以同样的方式被遵守**：`editor.tabSize`、`editor.insertSpaces` 和 `editor.indentSize` 决定缩进，`files.trimTrailingWhitespace` 和 `files.insertFinalNewline`（为 `true` 时）在保存时生效，而像 `"[typescript]": {…}` 这样的语言块会为它的语言覆盖这些设置。如果项目同时还有 `.editorconfig`，凡是两者都有规定的地方，以 `.editorconfig` 为准。VS Code 的 `editor.detectIndentation`（让文件自己的缩进说了算）在这里没有对应的设置。它的 `editor.rulers` 的第一项是编辑器画右边距线的位置，`editor.wordWrap` 为 `"on"` 或 `"off"` 时让该项目的文件自动换行或不换行，`files.exclude` 把它列出的内容从项目树中隐藏（隐藏的文件仍然可以按名字打开，也仍然会被提交），而**在项目中查找**会跳过 `files.exclude` 和 `search.exclude` 列出的内容。
+- **你自己的 VS Code 设置**会在你要求时导入一次：**工具 ▸ 导入 VS Code 设置…** 会读取你个人的 VS Code `settings.json`（VS Code、Insiders 或 VSCodium），列出它认识的每一项设置，以及它在这里会变成什么 —— 缩进、自动换行、标尺、空白字符显示、保存时删除行尾空白、保存时格式化、缩略图、粘性滚动和自动保存。在这里含义完全相同的设置一开始是勾选的，相近的设置会说明差别在哪里，“应用”只写入勾选的设置；文件里的其他任何内容只会被计数，绝不会显示或复制。
+- **仓库推荐的扩展** — VS Code 扩展在这里装不上，所以 **工具 ▸ 推荐的 VS Code 扩展…** 回答的是 `.vscode/extensions.json` 提出的那个问题：对每个推荐的扩展，NMOX Studio 里由什么来做那件事（一项内置功能、一个窗口、一台机架设备、一个语言服务器以及它装没装），或者没有任何东西来做。它不认识的扩展会明说不认识，绝不去猜。
 
 ### 展开缩写（⌥⌘E）
 
@@ -352,7 +358,7 @@ Docker 标签页是一块控制面板：引擎状态、容器、镜像、卷和�
 
 ### ⌘I，万能查找
 
-一个输入框就够到：你的项目（最近的和已知的）、机架上的每个设备（直接跳到它的旋钮）、**正在跑的服务器**（回车就在浏览器里打开）、API 工作室的请求、数据库工作室的连接和表、合约、基础设施节点，任务板的卡片（命中还会说出卡片所在的那一列），**VS Code 的命令名**（*Format Document*、*Toggle Terminal*、*Git: Commit*、*Open Settings* —— 每一个都列在 *VS Code 命令* 下，挨着在这里做同一件事的操作，所以下次你输入的就是它在这里的名字），以及瞄准的项目的 **npm 脚本**：输入 `dev` 或 `test`，命中会写成 *运行脚本：dev — vite*；回车就用项目自己的包管理器（npm、yarn 或 pnpm）运行它，和在 NPM 浏览器里双击完全一样 —— 对还没信任的项目，工作区信任会先问你，这次运行归工具栏的 ■ 管，它打印出的开发服务器会点亮 ⇄ 标记。在单体仓库里，列出的脚本就是 NPM 浏览器显示的那些。带有 `.vscode/tasks.json` 的仓库以同样的方式列出它的任务 —— *运行任务：build — make all* —— 回车就在同样的信任询问之后运行该任务，输出在 Output 窗口，归工具栏的 ■ 管；shell 任务在 VS Code 会使用的那个 shell 里运行（你的 `$SHELL`，在 macOS 上是登录 shell；Windows 上是 PowerShell），或者在它的 `options.shell` 指定的那个 shell 里运行；它 `dependsOn` 的任务会先运行，`${file}` 是编辑器里的文件，`${input:…}` 的提问会在任何东西启动之前问完；需要某个只有 VS Code 才能提供的值的任务，会在状态栏上说明原因，而不会运行。该仓库的 `.vscode/launch.json` 把它的配置列在旁边 —— *调试：Launch Program — ${workspaceFolder}/server.js* —— 回车会在同样的信任询问之后，对该配置启动断点调试器。这两份列表在菜单里也有：**运行 ▸ 运行任务…** 和 **调试 ▸ 开始调试…**。
+一个输入框就够到：你的项目（最近的和已知的）、机架上的每个设备（直接跳到它的旋钮）、**正在跑的服务器**（回车就在浏览器里打开）、API 工作室的请求、数据库工作室的连接和表、合约、基础设施节点，任务板的卡片（命中还会说出卡片所在的那一列），**VS Code 的命令名**（*Format Document*、*Toggle Terminal*、*Git: Commit*、*Open Settings* —— 每一个都列在 *VS Code 命令* 下，挨着在这里做同一件事的操作，所以下次你输入的就是它在这里的名字），以及瞄准的项目的 **npm 脚本**：输入 `dev` 或 `test`，命中会写成 *运行脚本：dev — vite*；回车就用项目自己的包管理器（npm、yarn 或 pnpm）运行它，和在 NPM 浏览器里双击完全一样 —— 对还没信任的项目，工作区信任会先问你，这次运行归工具栏的 ■ 管，它打印出的开发服务器会点亮 ⇄ 标记。在单体仓库里，列出的脚本就是 NPM 浏览器显示的那些。带有 `.vscode/tasks.json` 的仓库以同样的方式列出它的任务 —— *运行任务：build — make all* —— 回车就在同样的信任询问之后运行该任务，输出在 Output 窗口，归工具栏的 ■ 管；shell 任务在 VS Code 会使用的那个 shell 里运行（你的 `$SHELL`，在 macOS 上是登录 shell；Windows 上是 PowerShell），或者在它的 `options.shell` 指定的那个 shell 里运行；它 `dependsOn` 的任务会先运行，`${file}` 是编辑器里的文件，`${input:…}` 的提问会在任何东西启动之前问完；需要某个只有 VS Code 才能提供的值的任务，会在状态栏上说明原因，而不会运行。任务的 `problemMatcher` 会把它的输出变成操作项里的问题和编辑器里的波浪线；依赖某个后台监视任务（`tsc -w`）的任务或调试配置，会在监视任务的匹配器说一轮已经结束时立即启动。shell 任务命令行里的文件名、选中的文本或回答会按那个 shell 的规则加上引号。该仓库的 `.vscode/launch.json` 把它的配置列在旁边 —— *调试：Launch Program — ${workspaceFolder}/server.js* —— 回车会在同样的信任询问之后，对该配置启动断点调试器。这两份列表在菜单里也有：**运行 ▸ 运行任务…** 和 **调试 ▸ 开始调试…**。
 
 **在项目中查找（⇧⌘F）搜索的是你的代码，而不是仓库忽略的东西。**在 git 仓库中，它会跳过仓库自己的 `.gitignore` 文件（根目录的那个以及任何嵌套在子目录里的）和 `.git/info/exclude` 所忽略的一切，还有 `.git` 本身——所以搜索一个函数名，找到的是 `src/`，而不是模板的 `.gitignore` 所列出的 `node_modules` 和 `dist/` 里的副本。它从不越过 git 所忽略的范围：你的仓库跟踪的文件夹，无论叫什么名字，都会被搜索。在仓库之外，它还会跳过产品中每次遍历都会跳过的构建和包文件夹（`node_modules`、`dist`、`build`、`out`、`target`、`coverage`、`.next`、`.nuxt`、`.svelte-kit`、`.angular`、`.venv`、`__pycache__`）。这些文件夹仍然留在项目树里；只是搜索从它们旁边经过。如果仍要搜索它们，请在“在项目中查找”对话框中勾选**在生成的源代码中搜索**（这个选择会被记住，直到你取消勾选）；“在项目中替换”没有这个复选框，也从不改写仓库忽略的内容。你的全局 git 排除文件不会被读取，所以只被它忽略的路径仍会被搜索。
 
@@ -367,6 +373,8 @@ Docker 标签页是一块控制面板：引擎状态、容器、镜像、卷和�
 ### Emacs（还有 Eclipse、IntelliJ）的快捷键
 
 工具 ▸ 选项 ▸ 键盘映射（macOS 上是 NMOX Studio ▸ Settings… ▸ 键盘映射）可以整套切换：每个编辑器里都用 Emacs 的移动和剪切粘贴，或者换成 Eclipse、IDEA 那一套 — 看你的手记得哪一种。NMOX 的每个快捷键（⌥⌘ 窗口一族、⌘P 转到文件、Emmet 的 ⌥⌘E，以及 VS Code 的那些组合键）在五套配置里都注册过，所以换配置从不让你丢掉工作室的那些键。有一个例外是有意的：在 Eclipse 配置里，⇧⌘E 仍然是 Eclipse 自己的“切换到编辑器”，因为选了 Eclipse 的人期待的就是它。
+
+**VS Code 键盘映射配置：**在同一个键盘映射设置的 Profile 下选择 **VS Code**，或者在快速搜索里输入 *使用 VS Code 键盘映射*，那么只要本产品有对应的操作，就以 VS Code 自己的组合键为准：F5 开始调试或继续，⌘P 打开文件；而在这里找不到对应操作的组合键（比如 ⌘B）不绑定任何东西。NMOX 的每个操作在这套配置里也都有组合键。
 
 <a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
 ## 10. 安全网（你什么都不用做就有的东西）

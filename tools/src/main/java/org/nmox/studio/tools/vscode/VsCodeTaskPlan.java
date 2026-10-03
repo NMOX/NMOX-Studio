@@ -44,8 +44,10 @@ import org.nmox.studio.tools.vscode.VsCodeTasks.Vars;
  * refuses the WHOLE run, naming the task and the reason, when the graph
  * names a label the file does not define (or defines twice), loops back
  * on itself, holds VS Code's task-identifier object form, waits for a
- * background task (it never "finishes", and the problem matcher that
- * tells VS Code it is ready is not implemented here), grows past
+ * background task that has no problem matcher with a {@code background}
+ * block (it never "finishes", and nothing could say when it is ready —
+ * with one, the task counts as finished for its waiters when {@link
+ * VsCodeProblemMatchers.Signal#ENDED} first comes, and runs on), grows past
  * {@link #MAX_TASKS}, or holds any task that would itself be refused.
  * Running the tasks before a refused one would leave the project in a
  * state the file's author never asked for. What needs an answer the user
@@ -193,7 +195,9 @@ final class VsCodeTaskPlan {
                     return refuse(dependency.label(),
                             new Refused(Reason.DEPENDENCY_CYCLE, String.join(", ", labels)));
                 }
-                if (dependency.background()) {
+                if (dependency.background()
+                        && !VsCodeProblemMatchers.read(dependency.problemMatchers()).watching()) {
+                    // nothing could say when it is ready, and waiting for a watcher to exit waits forever
                     return refuse(dependency.label(),
                             new Refused(Reason.DEPENDENCY_BACKGROUND, task.label()));
                 }

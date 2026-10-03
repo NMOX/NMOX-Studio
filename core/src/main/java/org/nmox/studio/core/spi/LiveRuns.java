@@ -99,7 +99,38 @@ public final class LiveRuns {
             STARTED.put(run.id(), clock.getAsLong());
         }
         notifyListeners();
+        java.util.function.Consumer<String> watcher = ADDS_WATCHED.get();
+        if (watcher != null) {
+            watcher.accept(run.id());
+        }
         return true;
+    }
+
+    /** Who hears the runs added on this thread, inside {@link #watchingAdds}; null outside one. */
+    private static final ThreadLocal<java.util.function.Consumer<String>> ADDS_WATCHED = new ThreadLocal<>();
+
+    /**
+     * Runs {@code body} and tells {@code sink} the id of every run {@link
+     * #add added} on THIS thread while it runs, once that run is live —
+     * so that a caller that starts work through another lane (a VS Code
+     * task chain starting a task, which the npm lane may spawn) can stop
+     * exactly what it started without that lane handing its ids back.
+     * A run withdrawn before it was added was never live and is not told.
+     * Nests: the inner sink hears what the inner body adds.
+     */
+    public static <T> T watchingAdds(java.util.function.Consumer<String> sink,
+            java.util.function.Supplier<T> body) {
+        java.util.function.Consumer<String> outer = ADDS_WATCHED.get();
+        ADDS_WATCHED.set(sink);
+        try {
+            return body.get();
+        } finally {
+            if (outer == null) {
+                ADDS_WATCHED.remove();
+            } else {
+                ADDS_WATCHED.set(outer);
+            }
+        }
     }
 
     private static void markStopped(String id) {

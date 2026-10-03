@@ -23,7 +23,11 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * Makes the editor indent the way the project's {@code .editorconfig}
  * says: {@code indent_style}, {@code indent_size} and {@code tab_width},
- * the settings people write the file for.
+ * the settings people write the file for - and draw its right-margin line
+ * where the project states one ({@code max_line_length}, or the first of
+ * {@code .vscode/settings.json}'s {@code editor.rulers}), and wrap its
+ * lines when the project says to ({@code editor.wordWrap};
+ * {@link EditorConfigMargin} for both).
  *
  * <p>The platform asks every registered
  * {@link CodeStylePreferences.Provider} in lookup order and takes the
@@ -49,6 +53,19 @@ import org.openide.util.lookup.ServiceProvider;
  * Off the EDT the file is resolved in place. The {@code .editorconfig}
  * files themselves are read through {@link EditorConfig}'s bounded,
  * mtime-cached parse.
+ *
+ * <p><b>The margin is read once, so it is told.</b> Indentation is asked
+ * for on every Tab press; the right-margin column is read by the editor's
+ * view when it is built, and again only when the document says its
+ * {@code text-limit-width} property changed. So when a resolution finds
+ * that what a file's project says about the margin is not what was last
+ * answered, the open documents of that file are told ({@link #retell(Document)}):
+ * the view asks again and gets the answer now in memory. And because
+ * nothing else re-asks about a file nobody is typing in, an editor that
+ * gains focus is asked about ({@link #onFocus}) - which is how an edit to
+ * {@code settings.json} or {@code .editorconfig} reaches the editor one
+ * comes back to. Nothing here writes a preference: the user's own
+ * right margin is untouched, and every other file keeps it.
  */
 @ServiceProvider(service = CodeStylePreferences.Provider.class, position = 100)
 public final class EditorConfigCodeStyle implements CodeStylePreferences.Provider {
@@ -79,6 +96,7 @@ public final class EditorConfigCodeStyle implements CodeStylePreferences.Provide
         if (file == null) {
             return null;
         }
+        watchFocus();
         return answer(file, () -> nextProvider(p -> p.forDocument(doc, mimeType)), mimeType);
     }
 
@@ -102,12 +120,18 @@ public final class EditorConfigCodeStyle implements CodeStylePreferences.Provide
                     .lookup(Preferences.class);
         }
         Preferences editor = base;
-        Map<String, String> over = EditorConfigIndentation.overrides(props,
-                () -> editor == null ? 8 : editor.getInt(EditorConfigIndentation.TAB_SIZE, 8));
+        Map<String, String> over = new java.util.LinkedHashMap<>(EditorConfigIndentation.overrides(props,
+                () -> editor == null ? 8 : editor.getInt(EditorConfigIndentation.TAB_SIZE, 8)));
+        over.putAll(view(props));
         if (over.isEmpty()) {
-            return null; // the file speaks, but not about indentation
+            return null; // the file speaks, but not about anything the editor reads here
         }
         return new OverlayPreferences(base, over);
+    }
+
+    /** What the properties say that an editor's VIEW reads once: the right margin, and whether lines wrap. */
+    static Map<String, String> view(Map<String, String> props) {
+        return EditorConfigMargin.overrides(props);
     }
 
     /**
@@ -155,8 +179,84 @@ public final class EditorConfigCodeStyle implements CodeStylePreferences.Provide
         if (CACHE.size() >= CACHE_CAP) {
             CACHE.clear();
         }
-        CACHE.put(key, new Resolved(props, clock.getAsLong()));
+        Resolved before = CACHE.put(key, new Resolved(props, clock.getAsLong()));
+        // the view read its answer when it was built (or was answered null
+        // on the EDT a moment ago): if that answer is no longer the one in
+        // memory, the open documents of this file are told to ask again
+        if (!view(props).equals(before == null ? Map.of() : view(before.props()))) {
+            tellOpenDocuments.accept(file);
+        }
         return props;
+    }
+
+    /** Tells the open documents of a file that what their view reads has changed; a seam for tests. */
+    static volatile java.util.function.Consumer<File> tellOpenDocuments = EditorConfigCodeStyle::retellOpenDocuments;
+
+    private static void retellOpenDocuments(File file) {
+        SwingUtilities.invokeLater(() -> retellAmong(org.netbeans.api.editor.EditorRegistry.componentList(), file));
+    }
+
+    /** Tells the documents of {@code file} among {@code editors}, and no other. */
+    static void retellAmong(Iterable<? extends javax.swing.text.JTextComponent> editors, File file) {
+        for (javax.swing.text.JTextComponent c : editors) {
+            Document doc = c.getDocument();
+            if (file.equals(fileOf(doc))) {
+                retell(doc);
+            }
+        }
+    }
+
+    /**
+     * Makes {@code doc} announce its view properties again. On an editor
+     * document each is computed on every read (from the code-style
+     * preferences, so from this provider), and putting ANY value fires the
+     * property's change without storing it ({@code BaseDocument}'s lazy
+     * property map, read from RELEASE310): the view re-reads, and gets
+     * what is in memory now. On a plain document the same line stores back
+     * the value it just read.
+     */
+    static void retell(Document doc) {
+        for (String property : VIEW_PROPERTIES) {
+            Object now = doc.getProperty(property);
+            if (now != null) {
+                doc.putProperty(property, now);
+            }
+        }
+    }
+
+    /** The document properties an editor's view reads once and then only on a change. */
+    static final java.util.List<String> VIEW_PROPERTIES =
+            java.util.List.of(EditorConfigMargin.TEXT_LIMIT_WIDTH, EditorConfigMargin.TEXT_LINE_WRAP);
+
+    private static final java.util.concurrent.atomic.AtomicBoolean WATCHING_FOCUS =
+            new java.util.concurrent.atomic.AtomicBoolean();
+
+    /**
+     * Starts asking about an editor when it gains focus. Installed by the
+     * first document this provider is asked about - never at boot - and
+     * kept for the life of the IDE: one listener, on the editor registry.
+     */
+    private static void watchFocus() {
+        if (WATCHING_FOCUS.compareAndSet(false, true)) {
+            org.netbeans.api.editor.EditorRegistry.addPropertyChangeListener(evt -> {
+                if (org.netbeans.api.editor.EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
+                    javax.swing.text.JTextComponent c = org.netbeans.api.editor.EditorRegistry.lastFocusedComponent();
+                    onFocus(c == null ? null : c.getDocument());
+                }
+            });
+        }
+    }
+
+    /**
+     * An editor gained focus: if what is known about its file has aged, a
+     * fresh read is queued (and {@link #retell(Document)} follows when the margin
+     * moved). On the EDT, so from memory.
+     */
+    static void onFocus(Document doc) {
+        File file = fileOf(doc);
+        if (file != null) {
+            propertiesFor(file);
+        }
     }
 
     /** What the next provider in the platform's order would answer. */
@@ -201,5 +301,6 @@ public final class EditorConfigCodeStyle implements CodeStylePreferences.Provide
         CACHE.clear();
         IN_FLIGHT.clear();
         clock = System::currentTimeMillis;
+        tellOpenDocuments = EditorConfigCodeStyle::retellOpenDocuments;
     }
 }

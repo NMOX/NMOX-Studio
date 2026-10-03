@@ -88,8 +88,19 @@ public final class PrettierFormatter {
 
     /** What an explicit Format-with-Prettier request found. */
     public enum OnDemandOutcome {
-        FORMATTED, ALREADY_FORMATTED, TOO_LARGE, NO_PRETTIER, FAILED
+        FORMATTED, ALREADY_FORMATTED, TOO_LARGE, NO_PRETTIER, FAILED,
+        /** The project carries its own Prettier, nobody trusted the project, and the question was answered Keep Safe. */
+        UNTRUSTED
     }
+
+    /**
+     * Asks for Workspace Trust in the folder whose {@code node_modules}
+     * holds the Prettier a gesture wants to run (a seam; the real one is
+     * the product's trust prompt). Only the explicit gesture asks: the
+     * save hook never prompts.
+     */
+    static volatile java.util.function.Predicate<File> trustAsk =
+            dir -> org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(dir);
 
     /**
      * {@code text} is non-null only for FORMATTED; {@code optedIn} says
@@ -118,7 +129,23 @@ public final class PrettierFormatter {
         boolean optedIn = projectOptedIn(dir);
         String binary = resolveBinary(dir);
         if (binary == null) {
-            return new OnDemand(OnDemandOutcome.NO_PRETTIER, null, optedIn);
+            // "Prettier not found" was the answer for a project that HAS
+            // one in its node_modules and has not been trusted (3.7.0):
+            // true of the PATH and false of the project. A gesture is the
+            // moment to ask, as Run asks; Keep Safe runs nothing and the
+            // outcome says which of the two it was.
+            String local = findLocalBinary(dir);
+            if (local == null) {
+                return new OnDemand(OnDemandOutcome.NO_PRETTIER, null, optedIn);
+            }
+            File owner = new File(local).getParentFile().getParentFile().getParentFile();
+            if (!trustAsk.test(owner)) {
+                return new OnDemand(OnDemandOutcome.UNTRUSTED, null, optedIn);
+            }
+            binary = resolveBinary(dir);
+            if (binary == null) {
+                return new OnDemand(OnDemandOutcome.NO_PRETTIER, null, optedIn);
+            }
         }
         String formatted = runPrettier(text, file, dir, binary);
         if (formatted == null) {

@@ -148,4 +148,41 @@ class FileSymbolSearchProviderTest {
         SwingUtilities.invokeAndWait(() -> { });
         assertThat(field.getText()).isEmpty();
     }
+
+    @Test
+    @DisplayName("a query this category cannot answer touches no editor and reads no document")
+    void aQueryThatCannotMatchReadsNothing() {
+        int[] asked = {0};
+        int[] read = {0};
+        PlainDocument counting = new PlainDocument() {
+            @Override
+            public void render(Runnable r) {
+                read[0]++;
+                super.render(r);
+            }
+        };
+        JTextArea area = new JTextArea(counting);
+        area.setText(SOURCE);
+        counting.putProperty("mimeType", "text/javascript");
+        java.util.function.Supplier<javax.swing.text.JTextComponent> real = FileSymbolSearchProvider.activeEditor;
+        FileSymbolSearchProvider.activeEditor = () -> {
+            asked[0]++;
+            return area;
+        };
+        try {
+            // what Quick Search hands every category while a command name is being typed
+            for (String typed : new String[] {null, "", " ", "c", " c "}) {
+                assertThat(FileSymbolSearchProvider.hits(typed)).as("[" + typed + "]").isNull();
+            }
+            assertThat(asked[0]).isZero();
+            assertThat(read[0]).isZero();
+            // a query it does answer reads the file once
+            assertThat(FileSymbolSearchProvider.hits("@").items()).extracting(Item::name).contains("checkout");
+            assertThat(FileSymbolSearchProvider.hits("checkout").items()).extracting(Item::name)
+                    .containsExactly("checkout");
+            assertThat(read[0]).isEqualTo(2);
+        } finally {
+            FileSymbolSearchProvider.activeEditor = real;
+        }
+    }
 }

@@ -142,6 +142,9 @@ class PluralCopyGateTest {
         m.put("ShareDialog_fits",
                 "NOT A COUNT: {0} is a ProjectKind NAME — the bundle's own comment says "
                 + "\"e.g. RUST\", so the row reads \"Suggest it for RUST projects\"");
+        m.put("VsCodeExtensions_noteClaudeCode",
+                "NOT A COUNT: {0} is a door's NAME (the Agent Port, Door.AGENT_PORT), so the "
+                + "row reads \"The Agent Port lets it read what the IDE knows\"");
         m.put("TasksTopComponent_columnCardsA11y",
                 "NOT A COUNT: {0} is the COLUMN's name — the list's accessible name reads "
                 + "\"To Do cards\" (the shape the concatenation law above also excludes)");

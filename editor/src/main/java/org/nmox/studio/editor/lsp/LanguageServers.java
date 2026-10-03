@@ -836,6 +836,9 @@ public final class LanguageServers {
 
         private static volatile Boolean analyzerAnswers;
 
+        /** How a version is asked for; a seam so a test runs nothing. */
+        static volatile java.util.function.Predicate<List<String>> versionProbe = RustServer::versionExitsZero;
+
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
             if (!analyzerAnswers()) {
@@ -857,7 +860,7 @@ public final class LanguageServers {
             if (cached != null && cached) {
                 return true;
             }
-            boolean now = versionExitsZero(List.of("rust-analyzer", "--version"));
+            boolean now = versionProbe.test(List.of("rust-analyzer", "--version"));
             if (now) {
                 analyzerAnswers = true;
             }
@@ -877,6 +880,7 @@ public final class LanguageServers {
 
         static void resetProbeForTest() {
             analyzerAnswers = null;
+            versionProbe = RustServer::versionExitsZero;
         }
     }
 

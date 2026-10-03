@@ -140,13 +140,60 @@ pozostaje tam własnym poleceniem recenter Emacsa.
 
 Język bez komentarza blokowego, na przykład Python, mówi o tym na pasku
 stanu. W pliku HTML, Vue albo Svelte blok `<script>` albo `<style>` jest
-komentowany jako własny język. Bez zaznaczenia skrót przełącza wiersz; nie
-szuka komentarza, który tylko otacza kursor, więc aby usunąć komentarz
+komentowany jako własny język, podobnie jak frontmatter komponentu Astro;
+zaznaczenie, które wniosłoby komentarz do takiego bloku albo z niego
+wyniosło, zostaje odrzucone z nazwy, zamiast zepsuć plik. Bez zaznaczenia
+skrót przełącza wiersz; nie szuka komentarza, który tylko otacza kursor, więc aby usunąć komentarz
 obejmujący kilka wierszy, zaznacz go.
 
 W Szybkim wyszukiwaniu symbole pliku to kategoria **Symbole w tym pliku**.
 Wpisanie samego `@` wymienia je od początku pliku; `m name` (litera,
 spacja, potem nazwa) przeszukuje tę kategorię i żadną inną.
+
+### Profil mapy klawiszy VS Code
+
+Powyższe tabele opisują profil domyślny, w którym skrót, na którym polegają
+użytkownicy NetBeans, zachowuje swoje znaczenie. Jeśli twoje ręce wolą
+całą mapę klawiszy VS Code, przełącz profil: wpisz *Użyj mapy klawiszy
+VS Code* w Szybkim wyszukiwaniu (⇧⌘P albo ⌘I; wiersz brzmi *Preferences:
+Use the VS Code Keymap*) albo wybierz **VS Code**
+w Narzędzia ▸ Opcje ▸ Skróty klawiszowe ▸ Profile
+(w macOS: NMOX Studio ▸ Settings… ▸ Skróty klawiszowe ▸ Profile). Pasek stanu mówi, w którym profilu jesteś i jak
+wrócić; nic nigdy nie przełącza go za ciebie.
+
+W tym profilu domyślne skróty VS Code robią to samo co w VS Code, w macOS
+tak samo jak w Windows i Linuksie, wszędzie tam, gdzie ten produkt ma daną
+akcję: ⌥↑ / ⌥↓ przesuwają wiersz, ⇧⌘K go usuwa, ⌘L rozszerza zaznaczenie
+o wiersz, ⇧⌘L zaznacza wszystkie wystąpienia, ⌘[ / ⌘] zmniejszają
+i zwiększają wcięcie, ⌘↩ wstawia wiersz poniżej, ⇧⌘\\ skacze do nawiasu,
+⌥⌘[ / ⌥⌘] zwijają i rozwijają, ⌘K ⌘0 / ⌘K ⌘J zwijają i rozwijają
+wszystko, ⌘K ⌘X usuwa końcowe odstępy, ⌘J pokazuje okno Output, ⌘\\
+dzieli edytor, ⌘T i ⇧⌘O przechodzą do symbolu w projekcie i w pliku, ⇧⌘M
+pokazuje Elementy do zrobienia, ⇧⌘D okno debugera, ⌘K ⌘S zestawienie
+Skróty klawiszowe, ⌘K ⌘W zamyka wszystkie edytory, ⌘K ⌘O otwiera folder,
+⌃R otwiera ostatni projekt, ⇧⌘B buduje, F1 to paleta poleceń, a klawisze
+debugera są takie jak w VS Code: F5 rozpoczyna debugowanie projektu albo
+wznawia wstrzymany program, ⇧F5 zatrzymuje, ⌃F5 uruchamia bez
+debugowania, F9 przełącza punkt przerwania, F10, F11 i ⇧F11 wykonują krok
+z pominięciem, do wnętrza i na zewnątrz. Każdy skrót produktu, którego
+VS Code nie zajmuje (okna ⌥⌘, ⌥⌘E Emmeta, ⌥⌘G), zostaje tam, gdzie jest.
+
+Co w profilu VS Code nadal działa inaczej, z nazwy:
+
+- **Żadnego skrótu**, bo nic tutaj nie jest tą akcją: ⌘B (*Toggle
+  Primary Side Bar*), ⇧⌘W (*Close Window*), ⇧⌘F5 (*Restart* debugowania),
+  F8 / ⇧F8 (*Go to Next / Previous Problem in Files*), ⌥F12 (*Peek
+  Definition*), ⇧⌘↩ (*Insert Line Above*) i ⌘U (*Cursor Undo*). Te
+  klawisze nic nie robią, zamiast robić coś innego.
+- **Zapisz wszystko nie ma skrótu w Windows i Linuksie** (w VS Code
+  Ctrl+K S); w macOS to ⌥⌘S.
+- **Co skróty VS Code zabrały NetBeans.** F1 nie otwiera już pomocy, ⌘B
+  nie przechodzi już do deklaracji (robi to F12), a zmiana wielkości liter
+  pod ⌘U, uzupełnianie słów pod ⌘K / ⇧⌘K, zamiana liter ⌘T i historia
+  schowka ⇧⌘D nie mają w tym profilu skrótu; nie mają go też Debuguj plik,
+  Przełącz zakładkę, Otwórz projekt i pokazanie samego edytora. Pełna
+  lista dla każdego systemu to `scripts/vscode-keymap/displaced.txt`
+  w źródłach.
 
 
 <a id="from-the-terminal"></a>
@@ -208,10 +255,10 @@ dowiązanie.
 | **Explorer** | **Studio projektu** (⇧⌘E) — drzewo plików (prawy przycisk na pliku daje Kopiuj ścieżkę, Kopiuj ścieżkę względną i Pokaż w Finderze), szablony i edytor `package.json` projektu. **Stanowisko pracy** (⌥⌘0) to baza: otwarte pliki, ostatnie pliki, ostatnie projekty i wszystko, co działa. |
 | **Command Palette** | **Szybkie wyszukiwanie** (⇧⌘P albo ⌘I) — akcje, pliki, ostatnie projekty, urządzenia stojaka, aktywne serwery, żądania Studia API, symbole. Działają też nazwy poleceń z samego VS Code: *Format Document*, *Toggle Terminal*, *Git: Commit* albo *Open Settings* pokazuje akcję, która robi tu to samo, pod **Polecenia VS Code**, z jej własną nazwą i skrótem. |
 | **Extensions** | **Narzędzia ▸ Wtyczki** instaluje i aktualizuje moduły, łącznie z aktualizacjami samego NMOX. Rozszerzenia VS Code się tu nie instalują, więc **Narzędzia ▸ Zalecane rozszerzenia VS Code…** odpowiada na pytanie, które stawia plik `.vscode/extensions.json` repozytorium: co w NMOX Studio wykonuje pracę każdego zalecanego przez niego rozszerzenia — wbudowana funkcja, okno, które można otworzyć, urządzenie stojaka, serwer języka (i czy ten serwer jest zainstalowany) albo nic — a o rozszerzeniu, którego nie zna, mówi, że jest nieznane, zamiast zgadywać. Wiele z tego, co w VS Code dodaje rozszerzenie, jest tu **urządzeniem stojaka** — a jedno możesz napisać jako plik JSON w `~/.nmox/devices.d` ([pliki urządzeń](device-files.md)). |
-| **`tasks.json`** | Plik `.vscode/tasks.json` twojego repozytorium jest czytany: wpisz nazwę zadania w Szybkim wyszukiwaniu (⇧⌘P albo ⌘I), a Enter na *Uruchom zadanie: build — make all* je uruchamia (możesz też wybrać je z listy, którą pokazuje **Uruchom ▸ Uruchom zadanie…**); w projekcie, któremu jeszcze nie ufasz, najpierw pojawia się pytanie o zaufanie do obszaru roboczego, wynik trafia do okna Output, a ■ na pasku narzędzi je zatrzymuje. Zadania z jego `dependsOn` uruchamiają się najpierw, `${file}` to plik otwarty w edytorze, a `${input:…}` pyta cię, zanim cokolwiek wystartuje. Obok tego własne skrypty projektu, uruchamiane tak, jak są napisane: Uruchom / Zbuduj / Testuj na pasku narzędzi (F6, F11, ⌃F6), **Uruchom skrypt** na wierszu `scripts` w `package.json`, **Eksplorator NPM** i **Stojak zadań** (⌘9), gdzie zadania są urządzeniami, które łączysz kablami. |
+| **`tasks.json`** | Plik `.vscode/tasks.json` twojego repozytorium jest czytany: wpisz nazwę zadania w Szybkim wyszukiwaniu (⇧⌘P albo ⌘I), a Enter na *Uruchom zadanie: build — make all* je uruchamia (możesz też wybrać je z listy, którą pokazuje **Uruchom ▸ Uruchom zadanie…**); w projekcie, któremu jeszcze nie ufasz, najpierw pojawia się pytanie o zaufanie do obszaru roboczego, wynik trafia do okna Output, a ■ na pasku narzędzi je zatrzymuje. Zadania z jego `dependsOn` uruchamiają się najpierw, `${file}` to plik otwarty w edytorze, a `${input:…}` pyta cię, zanim cokolwiek wystartuje. `problemMatcher` zadania zamienia jego wyjście w problemy w oknie Elementy do zrobienia i podkreślenia w edytorze (`$tsc`, `$eslint-stylish` i inne wbudowane wzorce VS Code z nazwy albo wzorzec zapisany bezpośrednio w zadaniu), a na obserwatora w tle, takiego jak `tsc -w`, IDE czeka, aż jego wzorzec powie, że cykl się zakończył. Obok tego własne skrypty projektu, uruchamiane tak, jak są napisane: Uruchom / Zbuduj / Testuj na pasku narzędzi (F6, F11, ⌃F6), **Uruchom skrypt** na wierszu `scripts` w `package.json`, **Eksplorator NPM** i **Stojak zadań** (⌘9), gdzie zadania są urządzeniami, które łączysz kablami. |
 | **`launch.json`** | Plik `.vscode/launch.json` twojego repozytorium jest czytany: wpisz nazwę konfiguracji w Szybkim wyszukiwaniu (⇧⌘P albo ⌘I), a Enter na *Debuguj: Launch Program — ${workspaceFolder}/server.js* uruchamia debuger z pułapkami na tym programie (te same konfiguracje wymienia **Debuguj ▸ Rozpocznij debugowanie…**), po pytaniu o zaufanie do obszaru roboczego. Konfiguracje Node (`node`, `pwa-node`) debugują swój `program` w swoim `cwd`, ze swoimi `args`, swoim `env` i `envFile`, pod swoim `runtimeExecutable` i `runtimeArgs` — więc konfiguracja z `npm run dev`, `tsx` albo `--experimental-strip-types` startuje tak, jak jest napisana — a `"request": "attach"` dla Node dołącza do procesu `node --inspect` na tym komputerze. Konfiguracje Pythona (`python`, `debugpy`) debugują swój `program` z `args`, `env`, `envFile` i interpreterem, który wskazuje ich `python`; konfiguracje Chrome (`chrome`, `pwa-chrome`) otwierają swój `url` (albo `file`) ze swoim `webRoot`. `"program": "${file}"` debuguje plik, który pokazuje twój edytor, a `preLaunchTask` wskazujący zadanie z twojego `tasks.json` uruchamia się najpierw: debuger startuje, gdy zadanie się powiedzie. Bez `launch.json` **Debuguj plik** (⇧⌘F5) i przycisk debugowania na pasku narzędzi same ustalają, co uruchomić, z samego projektu — wejście skryptu `start`, `main`, `index.js` — a urządzenie stojaka **INSPECTOR** uruchamia debuger jako krok potoku. |
 | **Integrated terminal** | Okno **Terminal** (⌃\`): pierwsze naciśnięcie uruchamia powłokę w katalogu projektu, kolejne przywracają ją na wierzch. |
-| **`settings.json`** | Narzędzia ▸ Opcje (w macOS: NMOX Studio ▸ Settings…). Plik `.vscode/settings.json` repozytorium też jest czytany: `editor.tabSize`, `editor.insertSpaces` i `editor.indentSize` ustalają wcięcia jego plików podczas pisania, `files.trimTrailingWhitespace` i `files.insertFinalNewline` (gdy mają wartość `true`) działają przy zapisie, `files.eol` to zakończenie wiersza, z którym zapisywane są pliki, `"editor.formatOnSave": false` nie pozwala, aby zapis przeformatował plik, a blok języka, taki jak `"[typescript]"`, nadpisuje je dla swojego języka. Tam, gdzie repozytorium ma też `.editorconfig`, to `.editorconfig` wygrywa wszędzie, gdzie oba coś mówią. |
+| **`settings.json`** | Narzędzia ▸ Opcje (w macOS: NMOX Studio ▸ Settings…). Plik `.vscode/settings.json` repozytorium też jest czytany: `editor.tabSize`, `editor.insertSpaces` i `editor.indentSize` ustalają wcięcia jego plików podczas pisania, `files.trimTrailingWhitespace` i `files.insertFinalNewline` (gdy mają wartość `true`) działają przy zapisie, `files.eol` to zakończenie wiersza, z którym zapisywane są pliki, `"editor.formatOnSave": false` nie pozwala, aby zapis przeformatował plik, pierwsza wartość `editor.rulers` to miejsce, w którym edytor rysuje linię prawego marginesu (pusta lista nie rysuje żadnej), `editor.wordWrap` z wartością `"on"` albo `"off"` zawija pliki tego projektu albo zostawia je niezawinięte, `files.exclude` ukrywa to, co wymienia, w drzewach projektu, a **Znajdź w projektach** pomija to, co wymieniają `files.exclude` i `search.exclude`; blok języka, taki jak `"[typescript]"`, nadpisuje je dla swojego języka. Tam, gdzie repozytorium ma też `.editorconfig`, to `.editorconfig` wygrywa wszędzie, gdzie oba coś mówią. Twoje własne ustawienia VS Code przenosi się raz, na żądanie: **Narzędzia ▸ Importuj ustawienia VS Code…** |
 | **Problems panel** | **Elementy do zrobienia** (⌘6) albo kliknięcie licznika **✕ ⚠** na pasku stanu: błędy i ostrzeżenia serwerów języka oraz wyniki lintowania i typów z urządzeń PURITY i TYPEGUARD na stojaku. Tak jak w VS Code, niektóre serwery zgłaszają tylko otwarte pliki; gopls zgłasza cały pakiet. |
 | **Search view** (`search.useIgnoreFiles`) | **Znajdź w projektach** (⇧⌘F). Tak jak w VS Code, wyszukiwanie pomija to, co ignorują pliki `.gitignore` repozytorium i `.git/info/exclude`, więc `node_modules` i `dist/` nie trafiają do wyników, gdy wymienia je `.gitignore`; poza repozytorium pomija po nazwie `node_modules`, `dist`, `build` i pozostałe foldery kompilacji. Zaznacz **Szukaj w źródłach generowanych** w jego oknie, aby przeszukać i je. Globalny plik wykluczeń git nie jest czytany. |
 | **Outline** | **Nawigator** (⌘7). |
@@ -222,7 +269,7 @@ dowiązanie.
 | **Breadcrumbs** | **Widok ▸ Pokaż ścieżkę nawigacji**. |
 | **Source Control** | Wskaźnik gałęzi git na pasku stanu (gałąź i zmiany, jedno kliknięcie do historii) oraz menu **Zespół**. |
 | **Workspace Trust** | Ten sam pomysł, egzekwowany przed uruchomieniem czegokolwiek, co wybrało repozytorium: otwarcie sklonowanego projektu nie uruchamia niczego, dopóki mu nie zaufasz. |
-| **Keyboard Shortcuts editor** | Narzędzia ▸ Opcje ▸ Skróty klawiszowe (w macOS: NMOX Studio ▸ Settings… ▸ Skróty klawiszowe) — zmień dowolny skrót albo przełącz cały profil na Eclipse, Emacs lub IntelliJ. |
+| **Keyboard Shortcuts editor** | Narzędzia ▸ Opcje ▸ Skróty klawiszowe (w macOS: NMOX Studio ▸ Settings… ▸ Skróty klawiszowe) — zmień dowolny skrót albo przełącz cały profil na VS Code, Eclipse, Emacs lub IntelliJ. |
 
 Gdy po raz pierwszy otworzysz repozytorium z `.vscode/tasks.json`,
 `launch.json`, `settings.json` albo `extensions.json`, powiadomienie mówi,
@@ -273,10 +320,14 @@ zastępuje każde z nich). Mówi to raz na projekt.
     pasek stanu mówi, że konfiguracja nie została uruchomiona. `program`,
     który zadanie buduje (`dist/server.js`), jest szukany po zadaniu, a nie
     przed nim. Etykieta, której `tasks.json` nie definiuje, etykieta
-    wspólna dla dwóch zadań, forma obiektowa
-    (`{"type": "npm", "script": "build"}`) i zadanie w tle
-    (`"isBackground": true`, obserwator, który nigdy się nie kończy) są
-    odrzucane z nazwy, zanim cokolwiek się uruchomi.
+    wspólna dla dwóch zadań i forma obiektowa
+    (`{"type": "npm", "script": "build"}`) są odrzucane z nazwy, zanim
+    cokolwiek się uruchomi. Na zadanie w tle (`"isBackground": true`,
+    obserwator, który nigdy się nie kończy) IDE czeka, aż jego wzorzec
+    dopasowania problemów zgłosi zakończony cykl; potem zadanie działa
+    dalej, a ponowne naciśnięcie Debuguj używa go ponownie. Zadanie bez
+    wzorca, który potrafi powiedzieć, kiedy jest gotowe, zostaje odrzucone
+    z nazwy.
   - **`envFile`, którego nie ma, zostaje odrzucony**, podczas gdy VS Code
     uruchamia program bez niego. Jego zmienne są dodawane do środowiska,
     a wpis w `env` wygrywa z plikiem, tak jak w VS Code. Plik jest czytany
@@ -317,9 +368,8 @@ zastępuje każde z nich). Mówi to raz na projekt.
   może się uruchomić tak, jak napisano, nie uruchamia się nic, a Enter mówi
   na pasku stanu, które zadanie i dlaczego. Dotyczy to etykiety
   w `dependsOn`, której plik nie definiuje, zależności będącej zadaniem
-  w tle (wzorce dopasowania problemów, czyli problem matchers, nie są
-  czytane, więc nic nie mówi, kiedy jest gotowe), `${file}` bez otwartego
-  pliku oraz pytania, które anulujesz. Zależność, która się nie powiedzie,
+  w tle bez wzorca dopasowania problemów (problem matcher), który potrafi
+  powiedzieć, kiedy jest gotowe, `${file}` bez otwartego pliku oraz pytania, które anulujesz. Zależność, która się nie powiedzie,
   zatrzymuje uruchomienie w tym miejscu. Nadal odrzucane z nazwy: wartość,
   którą może dostarczyć tylko VS Code (`${config:…}`, `${command:…}`, dane
   wejściowe o `"type": "command"`), zależność zapisana jako obiekt
@@ -334,6 +384,46 @@ zastępuje każde z nich). Mówi to raz na projekt.
   pominięty i wymieniony w dzienniku, zamiast zostać wstawiony w połowie.
   Wpisanie prefiksu nie otwiera listy samo z siebie: robi to ⌃Space.
   Fragmenty bez `prefix`, fragmenty użytkownika i `isFileTemplate` nie są
+  czytane. Pliki fragmentów są czytane tylko dla plików wewnątrz
+  repozytorium, które je zawiera, a fragment, który wstawiłby więcej niż
+  milion znaków, nie zostaje wstawiony.
+- **`problemMatcher` zadania jest czytany.** Każde uruchomienie zastępuje
+  poprzednie problemy tego zadania, a czyste uruchomienie je usuwa.
+  Wbudowane wzorce VS Code działają z nazwy (`$tsc`, `$tsc-watch`,
+  `$tsgo-watch`, `$eslint-stylish`, `$eslint-compact`, `$jshint`,
+  `$jshint-stylish`, `$msCompile`, `$lessCompile`, `$gulp-tsc`, `$go`,
+  `$lessc`), podobnie jak `$gcc` i `$rustc` z rozszerzeń C/C++
+  i rust-analyzer; działają też wzorce zapisane bezpośrednio w zadaniu
+  i `{"base": "$tsc", …}`, łącznie z wzorcami wielowierszowymi z `loop`,
+  z każdym `fileLocation` poza `"search"`. Wzorzec, którego to IDE nie ma
+  albo którego wyrażenie regularne znaczy tu co innego, nie zatrzymuje
+  zadania: zadanie się uruchamia, a pasek stanu raz wymienia wzorzec,
+  który nie został zastosowany.
+- **Formatuj formatuje JavaScript i TypeScript przy użyciu Prettier
+  projektu.** Źródło ▸ Formatuj (⇧⌥F) uruchamia Prettier skonfigurowany
+  w projekcie, najpierw pytając o zaufanie do obszaru roboczego, gdy ten
+  Prettier jest własnym Prettier projektu; projekt bez konfiguracji
+  Prettier mówi o tym na pasku stanu, zamiast bez słowa zostawić plik
+  taki, jaki był.
+- **Twoje własne ustawienia przenosi się raz, na żądanie.** **Narzędzia ▸ Importuj ustawienia VS Code…**
+  (albo *import vs code settings*
+  w Szybkim wyszukiwaniu) czyta twój osobisty `settings.json` z VS Code —
+  z VS Code, Insiders albo VSCodium — i wymienia każde rozpoznane
+  ustawienie razem z tym, czym staje się tutaj: szerokość tabulacji
+  i spacje, zawijanie wierszy, linijki, pokazywanie odstępów, usuwanie
+  końcowych odstępów przy zapisie, formatowanie przy zapisie, minimapa,
+  przypięte nagłówki i automatyczny zapis. Ustawienia, które znaczą tu
+  dokładnie to samo, są od początku zaznaczone; te bliskie mówią, czym się
+  różnią, i są niezaznaczone. Zastosuj zapisuje zaznaczone, a one od razu
+  zaczynają działać; Anuluj niczego nie zapisuje. Czcionkę edytora
+  ustawia się w ustawieniach Czcionki i kolory, a skróty klawiszowe to
+  profile mapy klawiszy. Wszystko inne w twoim pliku — tokeny, ścieżki,
+  ustawienia rozszerzeń — jest tylko liczone, nigdy pokazywane ani
+  kopiowane.
+- **`files.associations` nie jest czytane.** Platforma ustala typ pliku
+  raz i go zachowuje, więc mapowania z `settings.json` nie dałoby się
+  uszanować dokładnie; wykluczenie warunkowe (`"when"`), linijki po
+  pierwszej i ich kolory oraz zawijanie w określonej kolumnie też nie są
   czytane.
 - **Zadanie `"type": "shell"` działa w powłoce, której użyłby VS Code.**
   W macOS i Linuksie to twój `$SHELL` z `-c` (zsh, bash albo fish w macOS
@@ -344,9 +434,16 @@ zastępuje każde z nich). Mówi to raz na projekt.
   potrzebuje `"args": ["-c"]`. W Windows uruchamiane są tylko PowerShell
   (argumenty kończące się na `-Command`) i `cmd.exe` (argumenty kończące
   się na `/c`); każda inna powłoka jest tam odrzucana z nazwy, zamiast
-  dostać wiersz poleceń zacytowany na chybił trafił.
-- **Nie ma profilu skrótów „VS Code”.** Powyższe skróty jadą na
-  domyślnym profilu i na pozostałych czterech. Jeden celowy wyjątek: w profilu
+  dostać wiersz poleceń zacytowany na chybił trafił. Nazwa pliku,
+  zaznaczenie albo odpowiedź na pytanie w `command` zadania powłoki są
+  cytowane dla tej powłoki, więc `"command": "python ${file}"` działa dla
+  każdej nazwy pliku, także ze spacją albo `$`; w `cmd.exe` wartość
+  zawierająca `%`, `!`, cudzysłów podwójny albo podział wiersza zostaje
+  odrzucona z nazwy, bo tam żadne cytowanie nie czyni ich nieszkodliwymi.
+- **Powyższe tabele opisują domyślny profil mapy klawiszy.** W profilu
+  **VS Code** (zob. *Profil mapy klawiszy VS Code* wyżej) własne skróty
+  VS Code wygrywają wszędzie tam, gdzie ten produkt ma daną akcję. Cztery
+  pierwsze skróty są w każdym profilu. Jeden celowy wyjątek: w profilu
   **Eclipse** ⇧⌘E pozostaje własnym *Switch to Editor* Eclipse’a, a
   w edytorze ⇧⌘P i ⇧⌘X zachowują znaczenia z Eclipse’a (pasujący
   nawias, wielkie litery) — kto wybrał Eclipse, spodziewa się Eclipse’a.

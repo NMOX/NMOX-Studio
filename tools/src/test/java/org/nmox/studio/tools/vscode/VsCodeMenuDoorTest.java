@@ -52,7 +52,8 @@ class VsCodeMenuDoorTest {
             public void start(File dir, String item, EditorContext ctx) {
                 started.add(item + " in " + dir.getName() + " with " + ctx.file().getFileName());
             }
-        }, () -> new VsCodeMenuDoor.Words("Run Task", "Run", "no project", "nothing to run"), said::add);
+        }, () -> new VsCodeMenuDoor.Words("Run Task", "Run", "no project", "nothing to run", "aim moved"),
+                said::add);
         door.aimed = () -> aimed;
         door.editorProbe = () -> {
             events.add("editor read");
@@ -108,6 +109,19 @@ class VsCodeMenuDoorTest {
         queued.forEach(Runnable::run);
         assertThat(shown.get()).isNull();
         assertThat(started).isEmpty();
+    }
+
+    @Test
+    @DisplayName("the aim moving while the list is open starts nothing, and says why (the v2.178.0 rule)")
+    void theAimMovedUnderTheList() {
+        door.picker = (title, start, rows) -> {
+            // the list is modal and pumps events: a project opened meanwhile moves the aim
+            aimed = new File("another").getAbsoluteFile();
+            return OptionalInt.of(0);
+        };
+        door.press().waitFinished();
+        assertThat(started).as("the row belonged to storefront, which is no longer aimed").isEmpty();
+        assertThat(said).containsExactly("aim moved");
     }
 
     @Test

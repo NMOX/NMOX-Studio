@@ -274,7 +274,9 @@ class VsCodeTaskVariablesTest {
                 + "\"options\":{\"env\":{\"TOKEN\":\"${input:token}\"}}}]}", Os.LINUX).get(0);
         Launch env = (Launch) resolve(inEnv, answered(Map.of("token", "hunter2"), null));
         assertThat(env.env()).containsEntry("TOKEN", "hunter2");
-        assertThat(env.shown()).isEqualTo("deploy");
+        assertThat(env.shown()).as("the password is in the environment, not the line: the argv is the line")
+                .isNull();
+        assertThat(String.join(" ", env.argv())).isEqualTo("deploy");
     }
 
     @Test

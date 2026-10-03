@@ -16,6 +16,7 @@ import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.nmox.studio.core.util.VsCodeHidden;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -41,9 +42,11 @@ import javax.swing.Action;
  * node wrapped so it shows the web icon and the Run/Build/Test/Clean +
  * common project actions), {@link WebProjectActionProvider} (the
  * toolchain-aware command routing), the opened hook that aims the rack,
- * the recommended-template scoping, and the sharability answer that
+ * the recommended-template scoping, the sharability answer that
  * keeps Find in Projects out of what the repository ignores
- * ({@link WebProjectSharability}). No mutable state — a project
+ * ({@link WebProjectSharability}), and the search walk that also skips
+ * what the project's {@code .vscode/settings.json} excludes
+ * ({@link WebProjectSearch}). No mutable state — a project
  * instance is a value the platform caches per directory.
  */
 public class WebProject implements Project {
@@ -67,6 +70,7 @@ public class WebProject implements Project {
             new WebProjectOpenedHook(this),
             new WebProjectRecommendedTemplates(),
             new WebProjectSharability(projectDir),
+            new WebProjectSearch(projectDir),
             new WebProjectAuxiliary(projectDir)
         });
     }
@@ -158,8 +162,19 @@ public class WebProject implements Project {
             FileObject projectDirectory = project.getProjectDirectory();
             DataFolder projectFolder = DataFolder.findFolder(projectDirectory);
             if (projectFolder != null) {
-                Node nodeOfProjectFolder = projectFolder.getNodeDelegate();
-                return new ProjectNode(nodeOfProjectFolder, project);
+                // the project's files.exclude (.vscode/settings.json) hides
+                // from this view too. The settings are read off the EDT -
+                // here, when the view is asked for off it, else on the
+                // filter's own lane - and re-read when a listing finds the
+                // answer older than two seconds; until a read lands nothing
+                // is hidden
+                VsCodeHidden hidden = new VsCodeHidden(projectDirectory);
+                if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+                    hidden.refreshLater();
+                } else {
+                    hidden.refresh();
+                }
+                return new ProjectNode(hidden.nodeFor(projectFolder), project);
             } else {
                 return new AbstractNode(Children.LEAF);
             }

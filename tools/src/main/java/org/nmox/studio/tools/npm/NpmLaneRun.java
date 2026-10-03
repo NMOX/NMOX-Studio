@@ -41,18 +41,46 @@ public final class NpmLaneRun {
      * prompt, so call it off the EDT.
      */
     public static CompletableFuture<Integer> runScript(File dir, String script) {
+        return runScript(dir, script, null);
+    }
+
+    /**
+     * {@link #runScript(File, String)} with a listener on every line the
+     * script prints (3.6.0): a VS Code npm task that declares a problem
+     * matcher has its output read as it comes. {@code lines} is called on
+     * the lane's output thread, and never when the script did not run.
+     */
+    public static CompletableFuture<Integer> runScript(File dir, String script,
+            java.util.function.Consumer<String> lines) {
         // the lane's own first question, asked here so a No is known as a No
         if (!WorkspaceTrust.requestTrust(dir)) {
             return CompletableFuture.completedFuture(NOT_RUN);
         }
         boolean walled = InstallGuard.installing(dir) || InstallGuard.needsInstall(dir);
         NpmService npm = NpmService.getDefault();
-        return npm.runScript(dir, script, npm.detectPackageManager(dir))
+        return npm.runScript(dir, script, npm.detectPackageManager(dir), lines)
                 .handle((output, failed) -> exitOf(walled, failed));
     }
 
-    /** The exit a lane run ended with: the code of a failure, {@link #NOT_RUN} behind a wall, else zero. */
+    /**
+     * The user stopped the script — the toolbar ■, its row, its Cancel —
+     * whatever code it then left with: 143 from its TERM is not a failure,
+     * and 0 from a script that catches TERM and exits cleanly is not a
+     * success for whatever waits for it.
+     */
+    public static final int STOPPED = Integer.MIN_VALUE + 1;
+
+    /**
+     * The exit a lane run ended with: {@link #STOPPED} when the user
+     * stopped it, the code of a failure, {@link #NOT_RUN} behind a wall,
+     * else zero.
+     */
     static int exitOf(boolean walled, Throwable failed) {
+        Throwable cause = failed instanceof java.util.concurrent.CompletionException wrapped
+                && wrapped.getCause() != null ? wrapped.getCause() : failed;
+        if (cause instanceof NpmService.StoppedByUser) {
+            return STOPPED;
+        }
         if (failed != null) {
             Matcher m = EXIT.matcher(String.valueOf(failed.getMessage()));
             if (m.find()) {

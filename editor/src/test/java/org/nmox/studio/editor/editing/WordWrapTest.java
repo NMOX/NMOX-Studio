@@ -210,7 +210,7 @@ class WordWrapTest {
         assertThat(ToggleWordWrapAction.wrapsNow(tsEditor)).isTrue();
         assertThat(ToggleWordWrapAction.wrapsNow(mdEditor)).isFalse();
         assertThat(ts.pokes).isEqualTo(1);
-        assertThat(md.pokes).isEqualTo(1);
+        assertThat(md.pokes).as("another language's editor is not laid out again").isZero();
         // a document nothing reads the setting from is left alone
         assertThat(plain.getDocument().getProperty(WordWrap.KEY)).isNull();
         assertThat(said).containsExactly("Word wrap is on for every typescript editor");
@@ -228,8 +228,9 @@ class WordWrapTest {
         ToggleWordWrapAction.editors = () -> List.of(editor);
         int before = editor.getKeyListeners().length;
         ToggleWordWrapKeyAction key = new ToggleWordWrapKeyAction();
-        key.actionPerformed(new java.awt.event.ActionEvent(editor, java.awt.event.ActionEvent.ACTION_PERFORMED,
-                ToggleWordWrapKeyAction.NAME, java.awt.event.ActionEvent.ALT_MASK), editor);
+        TypedEchoTest.pressing(editor, () -> key.actionPerformed(new java.awt.event.ActionEvent(editor,
+                java.awt.event.ActionEvent.ACTION_PERFORMED, ToggleWordWrapKeyAction.NAME,
+                java.awt.event.ActionEvent.ALT_MASK), editor));
         assertThat(ToggleWordWrapAction.wrapsNow(editor)).isTrue();
         assertThat(editor.getKeyListeners()).hasSize(before + 1);
         assertThat(said).containsExactly("Word wrap is on for every typescript editor");
@@ -282,5 +283,24 @@ class WordWrapTest {
         assertThat(ToggleWordWrapAction.languageName("text/typescript")).isEqualTo("typescript");
         assertThat(ToggleWordWrapAction.languageName("text/x-python")).isEqualTo("python");
         assertThat(ToggleWordWrapAction.languageName("plain")).as("no id: the mime as it is").isEqualTo("plain");
+    }
+
+    @Test
+    @DisplayName("a toggle tells the editors that read that language's setting, and an all-languages change tells every one")
+    void whoIsTold() {
+        assertThat(ToggleWordWrapAction.readsFrom("text/typescript", "text/typescript")).isTrue();
+        assertThat(ToggleWordWrapAction.readsFrom("text/x-markdown", "text/typescript")).isFalse();
+        // a +xml type reads text/xml's preferences, so it hears a text/xml toggle
+        assertThat(ToggleWordWrapAction.readsFrom("text/x-ant+xml", "text/xml")).isTrue();
+        assertThat(ToggleWordWrapAction.readsFrom("text/xml", "text/x-ant+xml")).isFalse();
+        // a document whose language is unknown is told rather than left stale
+        assertThat(ToggleWordWrapAction.readsFrom(null, "text/typescript")).isTrue();
+
+        LazyDoc ts = new LazyDoc("text/typescript", store.effective("text/typescript"));
+        LazyDoc md = new LazyDoc("text/x-markdown", store.effective("text/x-markdown"));
+        ToggleWordWrapAction.editors = () -> List.of(new JTextArea(ts), new JTextArea(md));
+        ToggleWordWrapAction.refreshEditors();
+        assertThat(ts.pokes).isEqualTo(1);
+        assertThat(md.pokes).isEqualTo(1);
     }
 }

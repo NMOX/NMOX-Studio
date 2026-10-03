@@ -64,7 +64,12 @@ class VsCodeTaskRunTest {
                 { "label": "prepare", "type": "process", "command": "prep", "args": ["${input:name}", "${input:env}"] },
                 { "label": "secret", "type": "process", "command": "sh",
                   "args": ["-c", "test \\"$(printf %s \\"$1\\" | tr a-z b-za)\\" = ivoufs2 && echo got-it",
-                           "sh", "${input:token}"] }
+                           "sh", "${input:token}"] },
+                { "label": "from env", "type": "process", "command": "sh",
+                  "args": ["-c", "test \\"$(printf %s \\"$1\\" | tr a-z b-za)\\" = tfdsfu && echo env-arrived",
+                           "sh", "${env:NMOX_R1_TOKEN}"] },
+                { "label": "slow", "type": "process", "command": "sleep", "args": ["30"] },
+                { "label": "after slow", "type": "process", "command": "x", "dependsOn": ["slow"] }
               ],
               "inputs": [
                 { "id": "env", "type": "pickString", "description": "Environment", "options": ["dev", "prod"] },
@@ -83,6 +88,8 @@ class VsCodeTaskRunTest {
     private final Consumer<String> realStatus = VsCodeTaskSearchProvider.statusSink;
     private final Supplier<EditorContext> realEditor = VsCodeTaskSearchProvider.editorProbe;
     private final BiFunction<String, InputDef, Optional<String>> realAsker = VsCodeTaskSearchProvider.asker;
+    private final VsCodeTasks.Host realHost = VsCodeTaskSearchProvider.host;
+    private final Runnable realBeforeStage = VsCodeTaskSearchProvider.beforeStage;
 
     /** Everything that happened, in order: "trust?", "ask env", "start build", "say …". */
     private final List<String> events = Collections.synchronizedList(new ArrayList<>());
@@ -118,6 +125,8 @@ class VsCodeTaskRunTest {
 
     @AfterEach
     void restore() {
+        VsCodeTaskSearchProvider.host = realHost;
+        VsCodeTaskSearchProvider.beforeStage = realBeforeStage;
         VsCodeTaskSearchProvider.trustCheck = realTrust;
         VsCodeTaskSearchProvider.spawner = realSpawner;
         VsCodeTaskSearchProvider.npmRunner = realNpm;
@@ -499,5 +508,137 @@ class VsCodeTaskRunTest {
         assertThat(waited("gen")).isEqualTo(RunEnd.NOT_STARTED);
         assertThat(waited("deploy")).as("Keep Safe before the file's questions").isEqualTo(RunEnd.NOT_STARTED);
         assertThat(started()).isEmpty();
+    }
+
+    /* ------------------------------------------------- the review (3.6.0) */
+
+    private static void assumePosix() {
+        org.junit.jupiter.api.Assumptions.assumeFalse(
+                System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win"),
+                "the fixture is a POSIX sh");
+    }
+
+    private static List<LiveRuns.Run> taskRuns() {
+        return LiveRuns.live().stream().filter(r -> r.id().startsWith("vscode-task:")).toList();
+    }
+
+    @Test
+    @DisplayName("the real spawn: a value from the user's environment reaches the process, and neither the Output header nor the bus carries it")
+    void environmentNeverReachesTheHeaderOrTheLog() throws Exception {
+        assumePosix();
+        VsCodeTaskSearchProvider.spawner = realSpawner;
+        VsCodeTaskSearchProvider.host = VsCodeTasks.Host.of(VsCodeTasks.Os.current(),
+                name -> "NMOX_R1_TOKEN".equals(name) ? "secret" : System.getenv(name));
+        List<String> bus = Collections.synchronizedList(new ArrayList<>());
+        RackBus.Listener tap = (device, line, err) -> bus.add(line);
+        RackBus.subscribe(tap);
+        try {
+            enter("from env");
+            await("the process ran to its end", () -> bus.stream().anyMatch(l -> l.startsWith("[exit ")));
+            await("its run is gone", () -> taskRuns().isEmpty());
+        } finally {
+            RackBus.unsubscribe(tap);
+        }
+        synchronized (bus) {
+            assertThat(bus).as("the process was handed the value: its own test of it passed")
+                    .contains("env-arrived", "[exit 0]");
+            assertThat(bus).as("the launch line names the variable, as the file wrote it")
+                    .anyMatch(l -> l.startsWith("$ sh -c ") && l.endsWith(" sh ${env:NMOX_R1_TOKEN}"));
+            assertThat(bus).as("and nothing that is read or recorded carries the value")
+                    .noneMatch(l -> l.contains("secret"));
+        }
+    }
+
+    @Test
+    @DisplayName("Stop on the chain's OWN row (not the ■) stops the task it is running, and nothing after it starts")
+    void stoppingTheChainStopsItsRunningStage() throws Exception {
+        assumePosix();
+        VsCodeTaskSearchProvider.spawner = (label, launch, dir) -> {
+            events.add("start " + label);
+            return realSpawner.spawn(label, launch, dir);
+        };
+        enter("after slow");
+        await("the first stage is a live process", () -> taskRuns().size() == 1);
+        String chain = LiveRuns.live().stream().map(LiveRuns.Run::id)
+                .filter(id -> id.startsWith("vscode-task-chain:")).findFirst().orElseThrow();
+
+        assertThat(LiveRuns.stop(chain)).as("the chain's own row").isNotNull();
+
+        await("the sleeping stage was stopped, not left to run its 30 seconds", () -> taskRuns().isEmpty());
+        await("the run ends", () -> !chainIsLive());
+        assertThat(started()).as("nothing after the stop").containsExactly("slow");
+        assertThat(said()).last().isEqualTo("Task \"after slow\" was not run: the tasks before it were stopped.");
+    }
+
+    @Test
+    @DisplayName("a stop that lands while a task is being started stops that task the moment it is live")
+    void aStopDuringTheStartStopsTheTask() throws Exception {
+        assumePosix();
+        VsCodeTaskSearchProvider.spawner = (label, launch, dir) -> {
+            events.add("start " + label);
+            // the run's stop arrives after begin() looked and before the process is live
+            LiveRuns.live().stream().filter(r -> r.id().startsWith("vscode-task-chain:"))
+                    .forEach(r -> LiveRuns.stop(r.id()));
+            return realSpawner.spawn(label, launch, dir);
+        };
+        enter("after slow");
+        await("the run ends", () -> !chainIsLive());
+        await("the task started under the stop was stopped, not left to run its 30 seconds", () -> taskRuns().isEmpty());
+        assertThat(started()).containsExactly("slow");
+        assertThat(said()).last().isEqualTo("Task \"after slow\" was not run: the tasks before it were stopped.");
+    }
+
+    @Test
+    @DisplayName("a stop that lands between two stages starts nothing more")
+    void aStopBetweenStagesStartsNothing() throws Exception {
+        java.util.concurrent.atomic.AtomicInteger stage = new java.util.concurrent.atomic.AtomicInteger();
+        VsCodeTaskSearchProvider.beforeStage = () -> {
+            if (stage.incrementAndGet() == 2) {
+                // the first stage has ended and been judged; the second has not begun
+                LiveRuns.live().stream().filter(r -> r.id().startsWith("vscode-task-chain:"))
+                        .forEach(r -> LiveRuns.stop(r.id()));
+            }
+        };
+        enter("release");
+        await("the run ends", () -> !chainIsLive());
+        assertThat(started()).as("gen ran; build, test and release did not").containsExactly("gen");
+        assertThat(said()).last().isEqualTo("Task \"release\" was not run: the tasks before it were stopped.");
+    }
+
+    @Test
+    @DisplayName("an npm step the user stopped ends the chain as a stop — not a failure, and never a hand-over")
+    void aStoppedNpmStepIsAStop() throws Exception {
+        VsCodeTaskSearchProvider.npmRunner = (dir, script) -> {
+            events.add("npm " + script);
+            return CompletableFuture.completedFuture(NpmLaneRun.STOPPED);
+        };
+        enter("site");
+        await("the run ends", () -> !chainIsLive());
+        assertThat(started()).as("the task after the script never starts").containsExactly("docs");
+        assertThat(said()).last().isEqualTo("Task \"site\" was not run: the tasks before it were stopped.");
+        assertThat(waited("site")).isEqualTo(RunEnd.STOPPED);
+    }
+
+    @Test
+    @DisplayName("Enter runs the task as the file says it NOW: an edited command runs edited, a deleted task runs nothing")
+    void theFileIsReadAgainAtEnter() throws Exception {
+        TaskDef listed = task("gen");
+        Files.writeString(project.resolve(".vscode/tasks.json"), TASKS.replace("\"command\": \"codegen\"",
+                "\"command\": \"codegen-v2\""));
+        VsCodeTaskSearchProvider.run(project.toFile(), listed).waitFinished();
+        await("the task starts", () -> started().contains("gen"));
+        assertThat(launches.get(0).argv()).containsExactly("codegen-v2");
+
+        events.clear();
+        Files.writeString(project.resolve(".vscode/tasks.json"), "{\"tasks\":[{\"label\":\"other\",\"command\":\"x\"}]}");
+        VsCodeTaskSearchProvider.run(project.toFile(), listed).waitFinished();
+        assertThat(events).containsExactly("say Task \"gen\" is no longer in .vscode/tasks.json; nothing was run.");
+
+        events.clear();
+        Files.writeString(project.resolve(".vscode/tasks.json"),
+                "{\"tasks\":[{\"label\":\"gen\",\"command\":\"a\"},{\"label\":\"gen\",\"command\":\"b\"}]}");
+        VsCodeTaskSearchProvider.run(project.toFile(), listed).waitFinished();
+        assertThat(events).containsExactly(
+                "say .vscode/tasks.json now defines more than one task named \"gen\"; nothing was run.");
     }
 }

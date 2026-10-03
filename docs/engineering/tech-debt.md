@@ -20,6 +20,60 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — added by 3.6.0 (the VS Code repository release)
+
+### 136. The debugger's windows have two names in a translated build
+
+Found by the 3.6.0 translators, three of them independently. Since
+v2.143.0 the Window ▸ Debugging rows are translated (`CTL_SessionsAction`
+reads *Sitzungen*, *Sesiones*, *会话*), and the windows those rows open
+keep the platform's English titles: `CTL_Sessions_view`,
+`CTL_Breakpoints_view`, `CTL_Call_stack_view`, `CTL_Variables_view`,
+`CTL_Watches_view`, `CTL_Threads_view`, `CTL_Sources_view` in
+`org/netbeans/modules/debugger/ui/views/Bundle.properties` have no
+overlay. A German reader presses *Sitzungen* and gets a tab titled
+*Sessions*: the v2.118.0 defect, one window with two names, in fourteen
+languages and seven windows. The Output window is the same shape
+(`IOWindow` is overlaid for the menu row; the window's own title is not).
+
+**Why it is not fixed in the release that found it.** The documents and
+the bundles name these windows in English ON PURPOSE:
+`WayfindingVocabularyTest` holds "Output", "Sessions", "Breakpoints" as
+the names a translated build paints, and every guide and every hint in
+fourteen languages says so. Overlaying the titles is seven keys times
+fourteen languages; the sweep that must ride with it is every sentence
+that names one of those windows, and the vocabulary the gate derives.
+That is a unit of its own, not a rider on a feature release.
+
+**The fix, when it is taken:** overlay the `views` bundle with each
+language's own menu-row word (no mnemonic), move those windows out of the
+gate's untranslated list in the same commit, and let the gate name every
+sentence that still says the English word.
+
+### 137. A narrow-pane hint is budgeted in characters, and a character is not a width
+
+The Hebrew walk on Windows and Linux (3.5.13's code, the Platform walk
+workflow with `--locale he`) showed Contract Studio's empty-tree hint
+cut at the pane's edge, and on Linux DB Studio's hint the same, each
+with a horizontal scrollbar under it. Both values are inside their
+budgets (`NarrowPaneHintBudgetTest`: 48 characters against 68). The
+budget was measured in the macOS font; the Windows and Linux fonts set
+Hebrew wider. English fits on all three.
+
+Not fixed: the honest fix measures pixels against the fonts each OS
+ships, which the gate cannot do on one machine, or stops putting a
+sentence in a tree row. Recorded with ledger 129's reading: *what a
+runner shows that a gate on one machine cannot.*
+
+### 127, addendum (3.6.0): the mirrored panes, seen on Windows and Linux
+
+3.5.13's opt-in mirror was walked in Hebrew on both runners
+(`walk/he-splits`, the Platform walk workflow with `NMOX_WALK_ARGS:
+--locale he`): DB Studio's connection tree, API Studio's collections and
+Contract Studio's tree stand on the right at their authored widths, on
+Windows and on Linux, with zero SEVERE lines in either log. The branch
+and its worktree are deleted; the recipe is this paragraph.
+
 ## Open — added by 3.5.0 (the Windows and Linux release)
 
 ### 127. ~~Should a horizontal split mirror for a right-to-left reader?~~ — DECIDED by 3.5.12: yes; CORRECTED by 3.5.13: the product's own panes only

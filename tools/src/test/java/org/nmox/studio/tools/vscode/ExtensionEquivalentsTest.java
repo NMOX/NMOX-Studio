@@ -214,6 +214,12 @@ class ExtensionEquivalentsTest {
                 .as("a grammar is syntax colouring and no more").isEqualTo("Syntax colouring");
         assertThat(ExtensionEquivalents.sentence(of("eamodio.gitlens"), NOTHING)).as("a subset, said plainly")
                 .startsWith("Built in, in part");
+        // the Agent Port is a read-only MCP endpoint, not a coding agent: nothing here is Claude Code
+        Equivalent claude = of("anthropic.claude-code");
+        assertThat(claude.kind()).isEqualTo(Kind.NO_EQUIVALENT);
+        assertThat(ExtensionEquivalents.sentence(claude, everything(true))).startsWith("No equivalent")
+                .contains("<AGENT_PORT>").contains("read-only").doesNotStartWith("See");
+        assertThat(ExtensionEquivalents.sentence(claude, NOTHING)).isEqualTo("No equivalent in NMOX Studio");
     }
 
     @Test

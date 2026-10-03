@@ -31,7 +31,7 @@ public class ToggleWordWrapKeyAction extends BaseAction {
         if (target == null) {
             return;
         }
-        if (evt != null && TypedEcho.follows(evt.getModifiers())) {
+        if (TypedEcho.arms(evt)) {
             TypedEcho.swallowNext(target);
         }
         ToggleWordWrapAction.press(target);

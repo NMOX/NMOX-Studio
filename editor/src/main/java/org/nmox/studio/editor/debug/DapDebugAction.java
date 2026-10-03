@@ -102,13 +102,24 @@ public class DapDebugAction extends BaseAction {
      * honour a working directory take them in their launch request.
      */
     static void launch(File file, String mime, File workingDir, List<String> args, Map<String, String> env) {
+        launch(file, mime, workingDir, args, env, null);
+    }
+
+    /**
+     * {@link #launch(File, String, File, List, Map)} with the folder trust
+     * is asked on (3.6.0: a {@code .vscode/launch.json} configuration's own
+     * workspace, as {@link #launchNode} asks it); null asks on the file's
+     * project root, the right-click's question.
+     */
+    static void launch(File file, String mime, File workingDir, List<String> args, Map<String, String> env,
+            File trustRoot) {
         if (file == null || !supportsMime(mime)) {
             return;
         }
         if (workingDir != null && !supportsWorkingDir(mime)) {
             return;
         }
-        gated(() -> projectRoot(file), () -> {
+        gated(() -> trustRoot != null ? trustRoot : projectRoot(file), () -> {
             switch (mime) {
                 case "text/x-python" -> debugPython(file, workingDir, args, env, null);
                 case "text/x-go" -> debugGo(file);

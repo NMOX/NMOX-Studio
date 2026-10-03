@@ -54,8 +54,12 @@ final class VsCodeMenuDoor<T> {
         void start(File project, T item, EditorContext editor);
     }
 
-    /** The sentences and labels of one door, already in the reader's language. */
-    record Words(String title, String start, String noProject, String nothing) {
+    /**
+     * The sentences and labels of one door, already in the reader's
+     * language; {@code moved} is said when the aim moved while the list
+     * was open, and the chosen row is then not started.
+     */
+    record Words(String title, String start, String noProject, String nothing, String moved) {
     }
 
     /** Shows the list and answers with the chosen index (a seam: a test needs no dialog). */
@@ -107,9 +111,18 @@ final class VsCodeMenuDoor<T> {
                     return; // the aim moved while the file was read: this list is another project's
                 }
                 OptionalInt chosen = picker.pick(w.title(), w.start(), rows);
-                if (chosen.isPresent()) {
-                    source.start(project, items.get(chosen.getAsInt()), editor);
+                if (chosen.isEmpty()) {
+                    return;
                 }
+                // the list is modal and pumps events: a project opened while
+                // it was up (the Projects window, --open) moved the aim, and
+                // the row belongs to the project that is no longer aimed
+                // (the v2.178.0 rule: re-check after the modal, refuse by name)
+                if (!project.equals(aimed.get())) {
+                    statusSink.accept(w.moved());
+                    return;
+                }
+                source.start(project, items.get(chosen.getAsInt()), editor);
             });
         });
     }

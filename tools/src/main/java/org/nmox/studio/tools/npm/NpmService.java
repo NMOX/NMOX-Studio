@@ -112,6 +112,17 @@ public class NpmService {
         return runCommand(projectDir, getCommand(manager), "run", scriptName);
     }
 
+    /**
+     * {@link #runScript(File, String, PackageManager)} with a listener on
+     * every line the script prints, called on the output pump's thread
+     * (3.6.0: a VS Code npm task's problem matcher reads them). The same
+     * lane, gate and walls; {@code tap} hears nothing when they refuse.
+     */
+    public CompletableFuture<String> runScript(File projectDir, String scriptName, PackageManager manager,
+            java.util.function.Consumer<String> tap) {
+        return runCommand(projectDir, tap, getCommand(manager), "run", scriptName);
+    }
+
     public boolean isAvailable(PackageManager manager) {
         try {
             Process process = org.nmox.studio.core.process.ProcessSupport
@@ -157,6 +168,11 @@ public class NpmService {
     private static final int MAX_OUTPUT_CHARS = 4 * 1024 * 1024;
 
     CompletableFuture<String> runCommand(File workingDir, String... command) {
+        return runCommand(workingDir, null, command);
+    }
+
+    /** {@code tap}, when not null, hears every output line on the pump's thread; it must be quick and must not throw. */
+    CompletableFuture<String> runCommand(File workingDir, java.util.function.Consumer<String> tap, String... command) {
         // npm install runs pre/postinstall lifecycle scripts and
         // `npm run <script>` runs the package.json script body — all
         // PROJECT-controlled, i.e. attacker code in a cloned repo.
@@ -255,6 +271,9 @@ public class NpmService {
                             output.append(line).append('\n');
                         }
                     }
+                    if (tap != null) {
+                        tap.accept(line);
+                    }
                     if (!serves) {
                         return;
                     }
@@ -281,7 +300,11 @@ public class NpmService {
                     synchronized (output) {
                         text = output.toString();
                     }
-                    if (exit == 0) {
+                    if (LiveRuns.wasStoppedByUser(runId)) {
+                        // the user's stop, whatever the code: a script that
+                        // exits 0 on its TERM did not finish, and 143 is no failure
+                        done.completeExceptionally(new StoppedByUser(exit));
+                    } else if (exit == 0) {
                         done.complete(text);
                     } else {
                         done.completeExceptionally(new RuntimeException(
@@ -296,6 +319,29 @@ public class NpmService {
 
     private static final java.util.concurrent.atomic.AtomicLong RUN_SEQ =
             new java.util.concurrent.atomic.AtomicLong();
+
+    /**
+     * How a run's future ends when the user stopped it (the toolbar ■, its
+     * row, its Cancel): exceptionally, with this, whatever code the process
+     * left with — so a caller that waits ({@link NpmLaneRun}) can tell a
+     * stop from a failure and from a success.
+     */
+    public static final class StoppedByUser extends RuntimeException {
+
+        private static final long serialVersionUID = 1L;
+
+        private final int exit;
+
+        StoppedByUser(int exit) {
+            super("Stopped by the user (exit code " + exit + ")", null, false, false);
+            this.exit = exit;
+        }
+
+        /** The code the process left with after the stop. */
+        public int exit() {
+            return exit;
+        }
+    }
 
     /** The id prefix every run of {@code dir} through this service carries. */
     static String runIdPrefix(File dir) {

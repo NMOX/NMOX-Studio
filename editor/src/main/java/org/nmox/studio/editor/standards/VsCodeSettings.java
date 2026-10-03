@@ -14,6 +14,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.nmox.studio.core.util.BoundedReads;
 import org.nmox.studio.core.util.Jsonc;
+import org.nmox.studio.core.util.VsCodeSettingsFile;
 import org.nmox.studio.editor.lsp.LspLanguageIds;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -39,7 +40,23 @@ import org.openide.filesystems.FileUtil;
  *     never translated;</li>
  * <li>{@code files.eol}, when it is {@code "\n"} or {@code "\r\n"}, is
  *     the line ending files are written with ({@code "auto"} says
- *     nothing).</li>
+ *     nothing);</li>
+ * <li>{@code editor.rulers}: the FIRST ruler is the column of the editor's
+ *     one right-margin line ({@link EditorConfigMargin}), as
+ *     EditorConfig's {@code max_line_length}. A ruler is a whole number,
+ *     or an object whose {@code column} is one (its {@code color} is not
+ *     read); an empty list is the project saying "no ruler", and the line
+ *     is not drawn. Later rulers are not drawn: the platform has one line.
+ *     A first ruler that is anything else says nothing, rather than
+ *     promoting the second;</li>
+ * <li>{@code editor.wordWrap}, when it is {@code "on"} or {@code "off"}:
+ *     whether the file's lines wrap at the edge of the editor
+ *     ({@link EditorConfigMargin}). VS Code's two other values wrap at a
+ *     COLUMN ({@code "wordWrapColumn"}, {@code "bounded"}), which the
+ *     platform editor cannot do, so they say nothing. EditorConfig has no
+ *     word for this, and the key is handed on under VS Code's own name
+ *     ({@link #WORD_WRAP}), which an {@code .editorconfig} - whose keys
+ *     are read in lower case - can never spell.</li>
  * </ul>
  * One more is answered as a question rather than translated:
  * {@code editor.formatOnSave} ({@link #formatOnSave(File)}). A project
@@ -63,10 +80,7 @@ public final class VsCodeSettings {
     private static final Logger LOG = Logger.getLogger(VsCodeSettings.class.getName());
 
     /** A settings file larger than this is not a settings file. */
-    static final long MAX_BYTES = 1024L * 1024;
-
-    /** Folders walked above the edited file. */
-    static final int MAX_DEPTH = 16;
+    static final long MAX_BYTES = VsCodeSettingsFile.MAX_BYTES;
 
     /** Parsed files kept; past it the map starts over rather than grow. */
     static final int CACHE_CAP = 256;
@@ -95,27 +109,20 @@ public final class VsCodeSettings {
 
     /**
      * The nearest {@code .vscode/settings.json} above {@code file} inside
-     * its repository, or null. Only a file under a repository's root (the
-     * folder holding {@code .git}) is read: walking on towards the
-     * filesystem root would apply a {@code /tmp/.vscode} anyone on the
-     * machine can write (the 3.1.0 review). The nearest wins, as opening
-     * that folder in VS Code would.
+     * its repository, or null. The rule - never above the repository's
+     * root, never the home folder's - has one home, shared with the
+     * readers of {@code files.exclude} and {@code search.exclude}:
+     * {@link VsCodeSettingsFile#nearest(File)}.
      */
     static File settingsFor(File file) {
-        for (File dir : directoriesToRepositoryRoot(file)) {
-            File candidate = new File(new File(dir, ".vscode"), "settings.json");
-            if (candidate.isFile()) {
-                return candidate;
-            }
-        }
-        return null;
+        return VsCodeSettingsFile.nearest(file);
     }
 
     /**
      * The folders whose {@code .vscode} speaks for {@code file}: its own
      * folder and each one above it, nearest first, ending with its
      * repository's root (the folder holding {@code .git}). Empty when no
-     * repository is around the file within {@link #MAX_DEPTH} levels, or
+     * repository is around the file within {@link VsCodeSettingsFile#MAX_DEPTH} levels, or
      * the home folder comes first: a {@code .vscode} that is not inside
      * a repository is nobody's project configuration.
      *
@@ -125,19 +132,8 @@ public final class VsCodeSettings {
      * have grown its own answer to "how far up".
      */
     public static List<File> directoriesToRepositoryRoot(File file) {
-        String home = System.getProperty("user.home");
-        List<File> dirs = new ArrayList<>();
-        File dir = file.getParentFile();
-        for (int depth = 0; dir != null && depth < MAX_DEPTH; depth++, dir = dir.getParentFile()) {
-            if (home != null && dir.getAbsolutePath().equals(new File(home).getAbsolutePath())) {
-                return List.of(); // reached home with no repository around the file
-            }
-            dirs.add(dir);
-            if (new File(dir, ".git").exists()) {
-                return dirs; // the repository's root: a .vscode above it is somebody else's
-            }
-        }
-        return List.of();
+        File parent = file.getParentFile();
+        return parent == null ? List.of() : VsCodeSettingsFile.foldersToRepositoryRoot(parent);
     }
 
     private static JSONObject parse(File settings) {
@@ -227,7 +223,46 @@ public final class VsCodeSettings {
         } else if ("\r\n".equals(eol)) {
             out.put("end_of_line", "crlf");
         }
+        String ruler = firstRuler(values.get("editor.rulers"));
+        if (ruler != null) {
+            out.put("max_line_length", ruler);
+        }
+        Object wrap = values.get(WORD_WRAP);
+        if ("on".equals(wrap)) {
+            out.put(WORD_WRAP, "on");
+        } else if ("off".equals(wrap)) {
+            out.put(WORD_WRAP, "off");
+        }
         return out;
+    }
+
+    /** VS Code's word-wrap setting, and the key its {@code on}/{@code off} is handed on under. */
+    static final String WORD_WRAP = "editor.wordWrap";
+
+    /**
+     * The first of {@code editor.rulers} as an EditorConfig
+     * {@code max_line_length}: a column, {@code "off"} for an empty list,
+     * or null when the setting is absent, is not a list, or begins with
+     * something that is not a column this can draw.
+     */
+    static String firstRuler(Object rulers) {
+        if (!(rulers instanceof org.json.JSONArray list)) {
+            return null;
+        }
+        if (list.isEmpty()) {
+            return "off";
+        }
+        Object first = list.opt(0);
+        if (first instanceof JSONObject withColour) {
+            first = withColour.opt("column");
+        }
+        if (first instanceof Number n) {
+            double d = n.doubleValue();
+            if (d == Math.rint(d) && d >= 1 && d <= EditorConfigMargin.MAX_COLUMN) {
+                return Integer.toString((int) d);
+            }
+        }
+        return null;
     }
 
     /**

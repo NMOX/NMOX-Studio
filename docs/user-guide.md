@@ -744,6 +744,29 @@ official client.
   heavy siblings are skipped, and on a very large project the dialog
   says it indexed the first 2,000 files rather than pretending it read
   everything.
+- **Symbols in This File** — Navigate ▸ Go to Symbol in This File…
+  puts `@` in Quick Search and lists the file's own functions, classes
+  and rules with their lines; type after the `@` to narrow, Enter to
+  jump. It is the outline the Navigator shows, searched.
+- **Format** (Source ▸ Format; ⇧⌥F, VS Code's chord, on macOS) formats
+  HTML, CSS, JSON and YAML with the editor's own formatters, and a
+  JavaScript, TypeScript, Vue, Svelte, Astro or GraphQL file with the
+  project's own Prettier when the project configures one. A project
+  that does not is told so on the status line, with the door that
+  formats with Prettier's defaults (right-click ▸ Format with Prettier)
+  named; text you type while Prettier runs is never overwritten.
+- **Toggle Block Comment** (⇧⌥A; Shift+Alt+A, and Ctrl+Shift+A on
+  Linux) wraps the selection, or the caret's line, in the language's
+  block delimiters and takes them off again. A range that already holds
+  a delimiter is refused rather than broken, and a language with no
+  block comment says so. **View ▸ Word Wrap** (⌥Z / Alt+Z) wraps long
+  lines for every editor of the file's language, and remembers it.
+- **Your team's snippets** — the `.vscode/*.code-snippets` files a
+  repository carries are offered in completion: type a prefix, press
+  ⌃Space, and the row reads *prefix — Name (description)* with the
+  snippet file beside it. Accepting it inserts the body with its tab
+  stops (Tab moves between them), mirrors, variables and transforms. A
+  snippet is offered only in the languages its `scope` names.
 - **The Tests window (⌥⌘2**, or Window ▸ Tests**)** shows every test in
   the aimed project *before anything runs* — discovered with the same
   patterns Run Focused Test uses, so the window never lists a test it
@@ -789,7 +812,28 @@ official client.
   Where the project also has an `.editorconfig`, the `.editorconfig`
   wins wherever both say something. VS Code's
   `editor.detectIndentation`, which lets a file's own indentation win,
-  has no counterpart here.
+  has no counterpart here. The first of its `editor.rulers` is where the
+  editor draws its right-margin line, `editor.wordWrap` `"on"` or
+  `"off"` wraps that project's files or keeps them unwrapped,
+  `files.exclude` hides what it names from the project trees (a hidden
+  file still opens by name and is still committed), and **Find in
+  Projects** skips what `files.exclude` and `search.exclude` name.
+- **Your own VS Code settings** come across once, when you ask:
+  **Tools ▸ Import VS Code Settings…** reads your personal VS Code
+  `settings.json` (VS Code, Insiders or VSCodium) and lists each setting
+  it recognises with what it becomes here — indentation, word wrap,
+  rulers, whitespace display, trimming on save, Format on Save, the
+  minimap, Sticky Scroll and autosave. Settings that mean exactly the
+  same here start checked, the near ones say how they differ, and Apply
+  writes only the checked ones; anything else in the file is counted,
+  never shown or copied.
+- **The extensions a repository recommends** — VS Code extensions do
+  not install here, so **Tools ▸ Recommended VS Code Extensions…**
+  answers the question a `.vscode/extensions.json` raises: for each
+  recommended extension, what does that job in NMOX Studio (a built-in
+  feature, a window, a rack device, a language server and whether it is
+  installed) or that nothing does. An extension it does not know is
+  said to be unknown, never guessed at.
 - **Color literals show their color** in CSS, SCSS, and Less: every
   `#hex`, `rgb()`, `hsl()`, `hwb()`, `oklch()`, `oklab()`, `lab()`,
   `lch()`, and named color is painted as the color it names, right
@@ -1933,7 +1977,12 @@ shell on macOS; PowerShell on Windows) or the one its `options.shell`
 names; the tasks it `dependsOn` run first, `${file}` is the file in the
 editor and an `${input:…}` question is asked before anything starts; a
 task that needs a value only VS Code can supply says so on the status
-line instead of running. The repository's `.vscode/launch.json` lists
+line instead of running. A task's `problemMatcher` turns its output into
+problems in Action Items and squiggles in the editor, and a task or
+debug configuration that depends on a background watcher (`tsc -w`)
+starts as soon as the watcher's matcher says a cycle has finished. A
+file name, the selection or an answer in a shell task's command line is
+quoted for that shell. The repository's `.vscode/launch.json` lists
 its configurations beside them — *Debug: Launch Program —
 ${workspaceFolder}/server.js* — and Enter starts the breakpoint debugger
 on that configuration after the same trust question. Both lists are in
@@ -1988,6 +2037,13 @@ File, Emmet's ⌥⌘E, the VS Code chords) is registered in all five
 profiles, so switching keymaps never costs you the studio chords. One
 exception is deliberate: in the Eclipse profile ⇧⌘E stays Eclipse's
 own Switch to Editor, because a user who picked Eclipse expects it.
+
+**The VS Code keymap profile:** choose **VS Code** under the same
+Keymap ▸ Profile, or type *Use the VS Code Keymap* into Quick Search, and
+VS Code's own chords win wherever this product has the action: F5
+starts or continues debugging and ⌘P opens a file, while a chord with
+nothing here to match, ⌘B for one, is left unbound. Every NMOX action
+keeps a chord in that profile too.
 
 ## 10. The safety nets (things you don't have to do anything for)
 

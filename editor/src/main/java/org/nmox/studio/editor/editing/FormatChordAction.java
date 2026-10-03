@@ -43,7 +43,7 @@ public class FormatChordAction extends BaseAction {
         if (target == null) {
             return;
         }
-        if (evt != null && TypedEcho.follows(evt.getModifiers())) {
+        if (TypedEcho.arms(evt)) {
             TypedEcho.swallowNext(target);
         }
         Action format = formatOf(target);

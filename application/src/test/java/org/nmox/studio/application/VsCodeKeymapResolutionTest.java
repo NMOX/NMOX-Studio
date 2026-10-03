@@ -110,6 +110,24 @@ class VsCodeKeymapResolutionTest {
      * OS), and the jar that ships it.
      */
     private final List<String[]> editorBindings = new ArrayList<>();
+    /**
+     * Every bind of every editor keybinding file, removals included (action
+     * null): profile, folder, key, action, file name, targetOS, read order.
+     */
+    private final List<String[]> editorRecords = new ArrayList<>();
+    /** folder/file name of an editor keybinding file -> its position attribute (null when it has none). */
+    private final Map<String, Integer> positions = new LinkedHashMap<>();
+
+    private static Integer intAttr(Element file, String name) {
+        NodeList attrs = file.getElementsByTagName("attr");
+        for (int i = 0; i < attrs.getLength(); i++) {
+            Element a = (Element) attrs.item(i);
+            if (name.equals(a.getAttribute("name")) && a.hasAttribute("intvalue")) {
+                return Integer.valueOf(a.getAttribute("intvalue"));
+            }
+        }
+        return null;
+    }
 
     private void load() throws Exception {
         if (!files.isEmpty()) {
@@ -196,6 +214,7 @@ class VsCodeKeymapResolutionTest {
                 }
                 files.computeIfAbsent(path, k -> new LinkedHashMap<>()).put(name, original(e));
                 if (path.contains("/Keybindings/") && !e.getAttribute("url").isEmpty()) {
+                    positions.put(path + "/" + name, intAttr(e, "position"));
                     readKeybindings(jf, layer, path, name, e.getAttribute("url"), attr(e, "nbeditor-settings-targetOS"));
                 }
             }
@@ -246,6 +265,10 @@ class VsCodeKeymapResolutionTest {
         NodeList binds = root.getElementsByTagName("bind");
         for (int i = 0; i < binds.getLength(); i++) {
             Element b = (Element) binds.item(i);
+            // every bind, removals included, in file order: what the VS Code census replays
+            editorRecords.add(new String[] {profile, path, b.getAttribute("key"),
+                    "true".equals(b.getAttribute("remove")) ? null : b.getAttribute("actionName"), name, targetOs,
+                    String.valueOf(editorRecords.size())});
             if (b.hasAttribute("remove")) {
                 continue;
             }
@@ -630,16 +653,20 @@ class VsCodeKeymapResolutionTest {
     @DisplayName("every binding in a shipped vscode keybinding file is in the census, so a new chord cannot ship unmeasured")
     void theCensusCoversEveryVsCodeKeybindingFile() throws Exception {
         load();
+        // compared as keystrokes, not spellings: SA-A and AS-A are one chord (the
+        // platform reads modifier letters in any order), and the files and the census
+        // are written by different hands
         Set<String> census = new TreeSet<>();
         for (Chord c : EDITING) {
             if (c.where() == Where.EDITOR) {
-                census.add(c.name() + " -> " + c.action());
+                census.add(keystroke(c.name(), Os.MAC) + " -> " + c.action());
             }
         }
         Set<String> shipped = new TreeSet<>();
         for (String[] b : editorBindings) {
-            if (b[6].startsWith("org-nmox-") && b[4].contains("vscode")) {
-                shipped.add(b[2] + " -> " + b[3]);
+            // the VS Code PROFILE's generated files are not this census's: VsCodeProfileCensus holds them
+            if (b[6].startsWith("org-nmox-") && b[4].contains("vscode") && !VSCODE.equals(b[0])) {
+                shipped.add(keystroke(b[2], Os.MAC) + " -> " + b[3]);
             }
         }
         assertThat(shipped).as("the vscode keybinding files were read from the NMOX jars").isNotEmpty();
@@ -696,6 +723,341 @@ class VsCodeKeymapResolutionTest {
             assertThat(meta && key.equals("Q")).as(chord).isFalse();
             assertThat(meta && mods.length() == 1 && List.of("H", "SPACE", "TAB").contains(key)).as(chord).isFalse();
             assertThat(meta && mods.contains("A") && key.equals("D")).as(chord).isFalse();
+        }
+    }
+
+    // ---- the sixth profile, VS Code ---------------------------------------
+    //
+    // scripts/vscode-keymap/chords.txt is VS Code's default keymap as this
+    // product answers it; VsCodeKeymapProfile generates the profile from it and
+    // VsCodeKeymapProfileGateTest holds the committed files to the generator.
+    // This census does not trust the generator: it replays the assembled
+    // cluster with this test's own model of the platform - NbKeymap's
+    // name-keyed merge for the global half, the editor storage's per-file
+    // remove-then-add in position order with the targetOS switch for the
+    // editor half - and asks of every row, on every OS family, the question a
+    // keypress asks.
+
+    static final String VSCODE = "VSCode";
+
+    /** A whole key sequence ("D-K D-S", or the editor files' "M-K$M-X") on one OS: "meta|K meta|S". */
+    static String sequence(String name, Os os) {
+        List<String> out = new ArrayList<>();
+        for (String token : name.replace('$', ' ').trim().split("\\s+")) {
+            String ks = keystroke(token, os);
+            if (ks == null) {
+                return null;
+            }
+            out.add(ks);
+        }
+        return String.join(" ", out);
+    }
+
+    private static String sequence(List<String> strokes) {
+        return String.join(" ", strokes);
+    }
+
+    /** Every global binding of the profile, merged the NbKeymap way: upper-cased bare name -> {bare, target}. */
+    private Map<String, String[]> globalsOf(String profile) {
+        Map<String, String[]> byName = new LinkedHashMap<>();
+        for (String folder : List.of("Shortcuts", "Keymaps/" + profile)) {
+            visible(folder).forEach((n, o) -> {
+                int dot = n.lastIndexOf('.');
+                String bare = dot > 0 ? n.substring(0, dot) : n;
+                String key = bare.toUpperCase(java.util.Locale.ROOT);
+                if (n.endsWith(".removed")) {
+                    byName.remove(key);
+                } else {
+                    byName.put(key, new String[] {bare, o.isEmpty() ? folder + "/" + n : o});
+                }
+            });
+        }
+        return byName;
+    }
+
+    /** The targets the profile's global keymap fires for exactly this sequence on this OS. */
+    private List<String> globalFires(String profile, String seq, Os os) {
+        List<String> out = new ArrayList<>();
+        for (String[] b : globalsOf(profile).values()) {
+            if (seq.equals(sequence(b[0], os))) {
+                String t = target(b[1], os);
+                if (t != null) {
+                    out.add(t);
+                }
+            }
+        }
+        return out;
+    }
+
+    /** One editor keybinding folder resolved on an OS: sequence -> action, files in position order, each removing then adding. */
+    private Map<String, String> editorResolved(String folder, Os os) {
+        List<String> files = new ArrayList<>();
+        for (String[] r : editorRecords) {
+            if (r[1].equals(folder) && appliesOn(r[5], os) && !files.contains(r[4])) {
+                files.add(r[4]);
+            }
+        }
+        files.sort(java.util.Comparator.comparing((String f) -> {
+            Integer p = positions.get(folder + "/" + f);
+            return p == null ? Integer.MIN_VALUE : p;
+        }));
+        Map<String, String> out = new LinkedHashMap<>();
+        for (String file : files) {
+            for (String[] r : editorRecords) {
+                if (r[1].equals(folder) && r[4].equals(file) && r[3] == null) {
+                    out.remove(sequence(r[2], os));
+                }
+            }
+            for (String[] r : editorRecords) {
+                if (r[1].equals(folder) && r[4].equals(file) && r[3] != null && sequence(r[2], os) != null) {
+                    out.put(sequence(r[2], os), r[3]);
+                }
+            }
+        }
+        return out;
+    }
+
+    /** What an editor of the mime ("" for the base every editor shares) resolves on an OS: its own bindings over the base's. */
+    private Map<String, String> editorOf(String profile, String mime, Os os) {
+        Map<String, String> out = new LinkedHashMap<>(editorResolved("Editors/Keybindings/" + profile + "/Defaults", os));
+        if (!mime.isEmpty()) {
+            out.putAll(editorResolved("Editors/" + mime + "/Keybindings/" + profile + "/Defaults", os));
+        }
+        return out;
+    }
+
+    /** The mimes with keybindings of their own in the profile, and the base "". */
+    private Set<String> editorMimes(String profile) {
+        Set<String> out = new TreeSet<>(Set.of(""));
+        String tail = "/Keybindings/" + profile + "/Defaults";
+        for (String[] r : editorRecords) {
+            if (r[1].startsWith("Editors/") && r[1].endsWith(tail) && !r[1].equals("Editors" + tail)) {
+                out.add(r[1].substring("Editors/".length(), r[1].length() - tail.length()));
+            }
+        }
+        return out;
+    }
+
+    private static Os os(VsCodeChordTable.Os os) {
+        return Os.valueOf(os.name());
+    }
+
+    @Test
+    @DisplayName("VS Code profile: every row of chords.txt fires exactly its action, on every OS family, in every editor language - and an unbound row fires nothing")
+    void vsCodeProfileResolvesEveryRow() throws Exception {
+        load();
+        List<String> problems = new ArrayList<>();
+        Set<String> mimes = editorMimes(VSCODE);
+        List<VsCodeChordTable.Row> rows = VsCodeChordTable.read();
+        // a chord VS Code gives an editor meaning AND a global "nothing" (F7: the symbol
+        // highlight in an editor, nothing elsewhere) is the editor row's to answer there
+        Set<String> editorRowChords = new TreeSet<>();
+        for (VsCodeChordTable.Row r : rows) {
+            if (r.scope() == VsCodeChordTable.Scope.EDITOR) {
+                r.chords().forEach((o, s) -> editorRowChords.add(o + " " + sequence(s)));
+            }
+        }
+        for (VsCodeChordTable.Row r : rows) {
+            for (Map.Entry<VsCodeChordTable.Os, List<String>> c : r.chords().entrySet()) {
+                Os os = os(c.getKey());
+                String seq = sequence(c.getValue());
+                String at = r + " " + os + " " + seq;
+                List<String> global = globalFires(VSCODE, seq, os);
+                if (r.scope() == VsCodeChordTable.Scope.GLOBAL) {
+                    // two files naming one action for one keystroke are one answer (the
+                    // applemenu's Ctrl+G and the profile's both open Go to Line); a second
+                    // action is a conflict unless the default profile has the very same one
+                    // on that keystroke - the platform's own ambiguity, which the generator
+                    // keeps rather than resolves (Terminal Find beside Find in Files)
+                    Set<String> fired = new TreeSet<>(global);
+                    Set<String> extra = new TreeSet<>(fired);
+                    if (r.bound()) {
+                        extra.remove(r.target());
+                        extra.removeAll(globalFires("NetBeans", seq, os));
+                    }
+                    if ((r.bound() && !fired.contains(r.target())) || !extra.isEmpty()) {
+                        problems.add(at + ": the global keymap fires " + global + ", want "
+                                + (r.bound() ? List.of(r.target()) : List.of()));
+                    }
+                    if (editorRowChords.contains(c.getKey() + " " + seq)) {
+                        continue;
+                    }
+                    for (String mime : mimes) {
+                        String shadow = editorOf(VSCODE, mime, os).get(seq);
+                        if (shadow != null) {
+                            problems.add(at + ": an editor of " + (mime.isEmpty() ? "any language" : mime)
+                                    + " answers it first with " + shadow);
+                        }
+                    }
+                } else {
+                    for (String mime : mimes) {
+                        String fires = editorOf(VSCODE, mime, os).get(seq);
+                        String want = r.bound() ? r.targetFor(mime) : null;
+                        if (!java.util.Objects.equals(fires, want)) {
+                            problems.add(at + (mime.isEmpty() ? "" : " in " + mime) + ": the editor fires " + fires
+                                    + ", want " + want);
+                        }
+                    }
+                    if (!r.bound() && !global.isEmpty()) {
+                        problems.add(at + ": unbound in an editor, so a press falls through to the global " + global);
+                    }
+                }
+            }
+        }
+        assertThat(rows).as("chords.txt was read").hasSizeGreaterThan(60);
+        assertThat(problems).as("VS Code chords that do not do what chords.txt says").isEmpty();
+    }
+
+    @Test
+    @DisplayName("VS Code profile: no binding sits on the first stroke of a two-stroke chord, globally or in an editor")
+    void vsCodeProfileHasNoPrefixCollisions() throws Exception {
+        load();
+        List<String> problems = new ArrayList<>();
+        for (Os os : Os.values()) {
+            Set<String> globals = new TreeSet<>();
+            for (String[] b : globalsOf(VSCODE).values()) {
+                String s = sequence(b[0], os);
+                if (s != null && target(b[1], os) != null) {
+                    globals.add(s);
+                }
+            }
+            problems.addAll(prefixClashes("global " + os, globals));
+            for (String mime : editorMimes(VSCODE)) {
+                problems.addAll(prefixClashes("editor " + (mime.isEmpty() ? "" : mime + " ") + os,
+                        editorOf(VSCODE, mime, os).keySet()));
+            }
+        }
+        assertThat(problems).isEmpty();
+    }
+
+    private static List<String> prefixClashes(String where, Set<String> sequences) {
+        List<String> out = new ArrayList<>();
+        for (String a : sequences) {
+            for (String b : sequences) {
+                if (!a.equals(b) && b.startsWith(a + " ")) {
+                    out.add(where + ": " + a + " is bound and is also the start of " + b);
+                }
+            }
+        }
+        return out;
+    }
+
+    @Test
+    @DisplayName("VS Code profile: every action it names exists - the global targets in the cluster's Actions folders, the editor actions registered or platform-bound")
+    void vsCodeProfileNamesRealActions() throws Exception {
+        load();
+        Set<String> editorActionFiles = new TreeSet<>();
+        files.forEach((folder, names) -> {
+            if (folder.startsWith("Editors/") && folder.endsWith("/Actions")) {
+                names.keySet().forEach(n -> editorActionFiles.add(n.replaceFirst("\\.instance$", "")));
+            }
+        });
+        for (String[] b : editorBindings) {
+            if (!VSCODE.equals(b[0])) {
+                editorActionFiles.add(b[3]);
+            }
+        }
+        List<String> missing = new ArrayList<>();
+        visible("Keymaps/" + VSCODE).forEach((n, o) -> {
+            if (n.endsWith(".shadow")) {
+                String folder = o.substring(0, o.lastIndexOf('/'));
+                if (o.startsWith("method:") || !visible(folder).containsKey(o.substring(o.lastIndexOf('/') + 1))) {
+                    missing.add("Keymaps/" + VSCODE + "/" + n + " -> " + o);
+                }
+            }
+        });
+        for (String[] b : editorBindings) {
+            if (VSCODE.equals(b[0]) && !editorActionFiles.contains(b[3])) {
+                missing.add(b[1] + "/" + b[4] + ": " + b[2] + " -> " + b[3]);
+            }
+        }
+        assertThat(visible("Keymaps/" + VSCODE)).as("the VS Code profile's global folder is in the cluster")
+                .hasSizeGreaterThan(60);
+        assertThat(editorMimes(VSCODE)).as("the VS Code profile's editor files are in the cluster").isNotEmpty();
+        assertThat(missing).as("bindings to an action nothing registers - the key would do nothing").isEmpty();
+    }
+
+    /**
+     * An Option chord on macOS also types a character ({@code editing.TypedEcho}):
+     * every editor binding of the profile that holds Alt without Ctrl or Cmd on
+     * a key that types must go to an action that swallows that character.
+     */
+    private static final Set<String> SWALLOWS_ITS_ECHO = Set.of(
+            "nmox-format-on-option-chord", "nmox-toggle-block-comment", "nmox-toggle-word-wrap");
+
+    @Test
+    @DisplayName("VS Code profile: on macOS every Option-only chord on a typing key goes to an action that swallows the character it types")
+    void vsCodeOptionChordsSwallowTheirEcho() throws Exception {
+        load();
+        List<String> typing = new ArrayList<>();
+        for (String mime : editorMimes(VSCODE)) {
+            editorOf(VSCODE, mime, Os.MAC).forEach((seq, action) -> {
+                String first = seq.split(" ")[0];
+                String mods = first.substring(0, first.indexOf('|'));
+                String key = first.substring(first.indexOf('|') + 1);
+                boolean optionOnly = mods.contains("alt") && !mods.contains("ctrl") && !mods.contains("meta");
+                boolean types = key.length() == 1 || Set.of("MINUS", "EQUALS", "OPEN_BRACKET", "CLOSE_BRACKET",
+                        "SEMICOLON", "QUOTE", "COMMA", "PERIOD", "SLASH", "BACK_SLASH", "BACK_QUOTE").contains(key);
+                if (optionOnly && types && !SWALLOWS_ITS_ECHO.contains(action)) {
+                    typing.add((mime.isEmpty() ? "" : mime + " ") + seq + " -> " + action);
+                }
+            });
+        }
+        assertThat(typing).as("Option chords that would also type a character into the file").isEmpty();
+    }
+
+    @Test
+    @DisplayName("VS Code profile: the class and method the switch reaches by name exist in the cluster (Use the VS Code Keymap)")
+    void theSwitchReachesARealKeymapManager() throws Exception {
+        String src = Files.readString(Path.of("..", "ui", "src", "main", "java", "org", "nmox", "studio", "ui",
+                "keymap", "KeymapProfiles.java"));
+        java.util.regex.Matcher manager = java.util.regex.Pattern
+                .compile("static final String MANAGER = \"([^\"]+)\"").matcher(src);
+        java.util.regex.Matcher method = java.util.regex.Pattern
+                .compile("static final String SET_CURRENT = \"([^\"]+)\"").matcher(src);
+        assertThat(manager.find() && method.find()).as("KeymapProfiles names the class and the method").isTrue();
+        java.util.regex.Matcher id = java.util.regex.Pattern
+                .compile("static final String VSCODE = \"([^\"]+)\"").matcher(src);
+        assertThat(id.find() && id.group(1).equals(VSCODE)).as("the switch names this profile's id").isTrue();
+        String entry = manager.group(1).replace('.', '/') + ".class";
+        byte[] bytes = null;
+        try (Stream<Path> s = Files.walk(APP)) {
+            for (Path jar : s.filter(p -> p.toString().endsWith(".jar")).toList()) {
+                try (JarFile jf = new JarFile(jar.toFile())) {
+                    var e = jf.getEntry(entry);
+                    if (e != null) {
+                        bytes = jf.getInputStream(e).readAllBytes();
+                        break;
+                    }
+                } catch (java.util.zip.ZipException notAJar) {
+                    // not this gate's business
+                }
+            }
+        }
+        assertThat(bytes).as(manager.group(1) + " ships in the cluster").isNotNull();
+        String pool = new String(bytes, java.nio.charset.StandardCharsets.ISO_8859_1);
+        assertThat(pool).as(manager.group(1) + "." + method.group(1) + "(String)")
+                .contains(method.group(1)).contains("(Ljava/lang/String;)V");
+    }
+
+    @Test
+    @DisplayName("VS Code profile: Options lists it as \"VS Code\" - both halves carry the name bundle, and the bundle says so")
+    void vsCodeProfileIsNamed() throws Exception {
+        load();
+        Path ui = APP.resolve("nmoxstudio/modules/org-nmox-NMOX-Studio-ui.jar");
+        try (JarFile jf = new JarFile(ui.toFile())) {
+            var e = jf.getEntry("org/nmox/studio/ui/keymap/names/Bundle.properties");
+            assertThat(e).as("the profile-name bundle ships in the ui jar").isNotNull();
+            java.util.Properties p = new java.util.Properties();
+            try (InputStream in = jf.getInputStream(e)) {
+                p.load(in);
+            }
+            assertThat(p.getProperty("Keymaps/" + VSCODE)).isEqualTo("VS Code");
+            assertThat(p.getProperty("Editors/Keybindings/" + VSCODE)).isEqualTo("VS Code");
+            String layer = new String(jf.getInputStream(jf.getEntry("org/nmox/studio/ui/layer.xml")).readAllBytes(),
+                    java.nio.charset.StandardCharsets.UTF_8);
+            assertThat(layer.split("stringvalue=\"org.nmox.studio.ui.keymap.names.Bundle\"", -1))
+                    .as("both profile folders, global and editor, name the bundle").hasSize(3);
         }
     }
 }

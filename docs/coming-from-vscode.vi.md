@@ -139,14 +139,60 @@ recenter của chính Emacs.
 
 Một ngôn ngữ không có chú thích khối, Python chẳng hạn, sẽ nói điều đó trên
 thanh trạng thái. Trong một tệp HTML, Vue hoặc Svelte, một khối `<script>`
-hoặc `<style>` được chú thích theo ngôn ngữ của chính nó. Khi không có vùng
-chọn, tổ hợp phím bật/tắt chú thích cho dòng; nó không đi tìm một chú thích
+hoặc `<style>` được chú thích theo ngôn ngữ của chính nó, và phần frontmatter
+của một thành phần Astro cũng vậy; một vùng chọn sẽ mang một chú thích vào
+trong hoặc ra khỏi một khối như thế thì bị từ chối kèm tên thay vì làm hỏng
+tệp. Khi không có vùng chọn, tổ hợp phím bật/tắt chú thích cho dòng; nó không đi tìm một chú thích
 chỉ đơn thuần bao quanh con trỏ, nên để gỡ một chú thích dài nhiều dòng, hãy
 chọn nó.
 
 Trong Tìm kiếm nhanh, các ký hiệu của tệp là danh mục **Ký hiệu trong tệp
 này**. Chỉ gõ `@` sẽ liệt kê chúng từ đầu tệp; `m name` (chữ cái đó, một dấu
 cách, rồi tên) tìm trong danh mục đó và không danh mục nào khác.
+
+### Hồ sơ phím VS Code
+
+Các bảng ở trên là hồ sơ mặc định, nơi một tổ hợp phím mà người dùng
+NetBeans dựa vào vẫn giữ nghĩa của nó. Nếu đôi tay bạn muốn trọn sơ đồ phím
+của VS Code hơn, hãy đổi hồ sơ: gõ *Dùng sơ đồ phím VS Code* vào Tìm kiếm
+nhanh (⇧⌘P hoặc ⌘I; dòng kết quả là *Preferences: Use the VS Code Keymap*),
+hoặc chọn **VS Code** trong Công cụ ▸ Tùy chọn ▸ Phím tắt ▸ Profile
+(trên macOS là NMOX Studio ▸ Settings… ▸ Phím tắt ▸ Profile). Thanh trạng
+thái cho biết bạn đang ở hồ sơ nào và cách quay lại; không có gì tự đổi hồ
+sơ thay bạn.
+
+Trong hồ sơ đó, các tổ hợp phím mặc định của VS Code làm đúng việc chúng làm
+trong VS Code, trên macOS cũng như trên Windows và Linux, ở bất cứ đâu sản
+phẩm này có hành động tương ứng: ⌥↑ / ⌥↓ di chuyển dòng, ⇧⌘K xóa dòng, ⌘L mở
+rộng vùng chọn theo dòng, ⇧⌘L chọn mọi lần xuất hiện, ⌘[ / ⌘] bỏ thụt lề và
+thụt lề, ⌘↩ chèn một dòng bên dưới, ⇧⌘\\ nhảy tới dấu ngoặc, ⌥⌘[ / ⌥⌘] thu
+gọn và mở rộng, ⌘K ⌘0 / ⌘K ⌘J thu gọn và mở rộng tất cả, ⌘K ⌘X cắt khoảng
+trắng cuối dòng, ⌘J hiện cửa sổ Output, ⌘\\ chia đôi trình soạn thảo, ⌘T và
+⇧⌘O tới một ký hiệu trong dự án và trong tệp, ⇧⌘M hiện Mục cần xử lý, ⇧⌘D
+cửa sổ của trình gỡ lỗi, ⌘K ⌘S bảng Phím tắt bàn phím, ⌘K ⌘W đóng mọi trình
+soạn thảo, ⌘K ⌘O mở một thư mục, ⌃R mở một dự án gần đây, ⇧⌘B dựng, F1 là
+bảng lệnh, và các phím của trình gỡ lỗi là của VS Code: F5 bắt đầu gỡ lỗi dự
+án hoặc tiếp tục một lượt đang tạm dừng, ⇧F5 dừng, ⌃F5 chạy không gỡ lỗi, F9
+bật/tắt một điểm dừng, F10, F11 và ⇧F11 bước qua, bước vào và bước ra. Mọi
+tổ hợp phím của sản phẩm mà VS Code không dùng (họ ⌥⌘ mở cửa sổ, ⌥⌘E của
+Emmet, ⌥⌘G) vẫn nằm nguyên chỗ cũ.
+
+Những gì vẫn khác trong hồ sơ VS Code, nêu đích danh:
+
+- **Hoàn toàn không có tổ hợp phím**, vì ở đây không có gì là hành động đó:
+  ⌘B (*Toggle Primary Side Bar*), ⇧⌘W (*Close Window*), ⇧⌘F5 (*Restart*
+  gỡ lỗi), F8 / ⇧F8 (*Go to Next / Previous Problem in Files*), ⌥F12 (*Peek
+  Definition*), ⇧⌘↩ (*Insert Line Above*) và ⌘U (*Cursor Undo*). Các phím
+  này không làm gì cả, thay vì làm một việc khác.
+- **Lưu tất cả không có tổ hợp phím trên Windows và Linux** (Ctrl+K S của
+  VS Code); trên macOS nó là ⌥⌘S.
+- **Những gì các tổ hợp phím của VS Code lấy đi của NetBeans.** F1 không còn
+  mở trợ giúp, ⌘B không còn đi tới khai báo (F12 làm việc đó), các phép đổi
+  chữ hoa/thường của ⌘U, hoàn tất từ bằng ⌘K / ⇧⌘K, hoán đổi bằng ⌘T và
+  lịch sử khay nhớ tạm của ⇧⌘D không có tổ hợp phím trong hồ sơ này, và Gỡ
+  lỗi tệp, Bật/tắt dấu trang, Chỉ hiện trình soạn thảo và Mở dự án cũng vậy.
+  Danh sách đầy đủ, cho mọi hệ điều hành, là
+  `scripts/vscode-keymap/displaced.txt` trong mã nguồn.
 
 
 <a id="from-the-terminal"></a>
@@ -206,10 +252,10 @@ bằng một dòng lệnh.
 | **Explorer** | **Studio dự án** (⇧⌘E) — cây tệp (nhấp chuột phải vào một tệp để có Sao chép đường dẫn, Sao chép đường dẫn tương đối và Hiện trong Finder), các mẫu, và trình soạn `package.json` của dự án. **Bàn làm việc** (⌥⌘0) là cơ sở của bạn: tệp đang mở, tệp gần đây, dự án gần đây, và mọi thứ đang chạy. |
 | **Command Palette** | **Tìm kiếm nhanh** (⇧⌘P hoặc ⌘I) — hành động, tệp, dự án gần đây, thiết bị trên giá, máy chủ đang chạy, yêu cầu của Studio API, ký hiệu. Tên lệnh riêng của VS Code cũng dùng được: *Format Document*, *Toggle Terminal*, *Git: Commit* hoặc *Open Settings* liệt kê hành động làm cùng việc đó ở đây, dưới **Lệnh VS Code**, kèm tên và tổ hợp phím riêng của nó. |
 | **Extensions** | **Công cụ ▸ Plugin** cài và cập nhật các mô-đun, kể cả các bản cập nhật của chính NMOX. Tiện ích mở rộng của VS Code không cài được ở đây, nên **Công cụ ▸ Tiện ích mở rộng VS Code được khuyến nghị…** trả lời câu hỏi mà tệp `.vscode/extensions.json` của một kho mã đặt ra: với mỗi tiện ích mở rộng mà tệp khuyến nghị, thứ gì làm việc đó trong NMOX Studio — một tính năng có sẵn, một cửa sổ mà nó mở được, một thiết bị trên giá, một máy chủ ngôn ngữ (và máy chủ đó đã được cài hay chưa), hoặc không có gì — còn một tiện ích mở rộng mà nó không biết thì được nói rõ là không biết chứ không đoán mò. Phần lớn những gì một tiện ích mở rộng thêm vào VS Code thì ở đây là một **thiết bị trên giá** — và bạn có thể tự viết một thiết bị bằng một tệp JSON trong `~/.nmox/devices.d` ([tệp thiết bị](device-files.md)). |
-| **`tasks.json`** | Tệp `.vscode/tasks.json` của kho mã được đọc: gõ tên một tác vụ vào Tìm kiếm nhanh (⇧⌘P hoặc ⌘I) và Enter trên *Chạy tác vụ: build — make all* sẽ chạy nó — hoặc chọn nó từ danh sách mà **Chạy ▸ Chạy tác vụ…** hiển thị — với lời hỏi Tin cậy không gian làm việc đến trước ở một dự án bạn chưa tin cậy, đầu ra nằm trong cửa sổ Output và nút ■ trên thanh công cụ để dừng nó. Các tác vụ mà nó `dependsOn` chạy trước, `${file}` là tệp đang mở trong trình soạn thảo, và `${input:…}` hỏi bạn trước khi bất cứ thứ gì khởi động. Bên cạnh đó, các kịch bản của chính dự án chạy đúng như chúng được viết: Chạy / Dựng / Kiểm thử trên thanh công cụ (F6, F11, ⌃F6), **Chạy script** trên một dòng scripts của `package.json`, **Trình duyệt NPM**, và **Giá tác vụ** (⌘9), nơi tác vụ là các thiết bị mà bạn nối dây với nhau. |
+| **`tasks.json`** | Tệp `.vscode/tasks.json` của kho mã được đọc: gõ tên một tác vụ vào Tìm kiếm nhanh (⇧⌘P hoặc ⌘I) và Enter trên *Chạy tác vụ: build — make all* sẽ chạy nó — hoặc chọn nó từ danh sách mà **Chạy ▸ Chạy tác vụ…** hiển thị — với lời hỏi Tin cậy không gian làm việc đến trước ở một dự án bạn chưa tin cậy, đầu ra nằm trong cửa sổ Output và nút ■ trên thanh công cụ để dừng nó. Các tác vụ mà nó `dependsOn` chạy trước, `${file}` là tệp đang mở trong trình soạn thảo, và `${input:…}` hỏi bạn trước khi bất cứ thứ gì khởi động. `problemMatcher` của một tác vụ biến đầu ra của nó thành các vấn đề trong Mục cần xử lý và các đường gợn sóng trong trình soạn thảo (`$tsc`, `$eslint-stylish` và các matcher có sẵn khác của VS Code theo tên, hoặc một matcher viết trực tiếp), và một trình theo dõi chạy nền như `tsc -w` được chờ cho tới khi matcher của nó cho biết một chu kỳ đã xong. Bên cạnh đó, các kịch bản của chính dự án chạy đúng như chúng được viết: Chạy / Dựng / Kiểm thử trên thanh công cụ (F6, F11, ⌃F6), **Chạy script** trên một dòng scripts của `package.json`, **Trình duyệt NPM**, và **Giá tác vụ** (⌘9), nơi tác vụ là các thiết bị mà bạn nối dây với nhau. |
 | **`launch.json`** | Tệp `.vscode/launch.json` của kho mã được đọc: gõ tên một cấu hình vào Tìm kiếm nhanh (⇧⌘P hoặc ⌘I) và Enter trên *Gỡ lỗi: Launch Program — ${workspaceFolder}/server.js* sẽ khởi động trình gỡ lỗi với điểm dừng trên chương trình đó — **Gỡ lỗi ▸ Bắt đầu gỡ lỗi…** liệt kê cùng những cấu hình ấy — với lời hỏi Tin cậy không gian làm việc đến trước. Các cấu hình Node (`node`, `pwa-node`) gỡ lỗi `program` của chúng trong `cwd` của chúng, kèm `args`, `env` và `envFile` của chúng, dưới `runtimeExecutable` và `runtimeArgs` của chúng — nên một cấu hình `npm run dev`, `tsx` hay `--experimental-strip-types` khởi động đúng như nó được viết — và một `"request": "attach"` của Node gắn vào một tiến trình `node --inspect` trên máy này. Các cấu hình Python (`python`, `debugpy`) gỡ lỗi `program` của chúng với `args`, `env`, `envFile` và trình thông dịch mà `python` của chúng chỉ định; các cấu hình Chrome (`chrome`, `pwa-chrome`) mở `url` (hoặc `file`) của chúng với `webRoot` của chúng. `"program": "${file}"` gỡ lỗi tệp mà trình soạn thảo của bạn đang hiển thị, và một `preLaunchTask` nêu tên một tác vụ trong `tasks.json` của bạn sẽ chạy trước: trình gỡ lỗi khởi động khi tác vụ đã thành công. Khi không có `launch.json`, **Gỡ lỗi tệp** (⇧⌘F5) và nút gỡ lỗi trên thanh công cụ tự tìm ra thứ cần khởi chạy từ chính dự án — mục vào của kịch bản `start`, `main`, `index.js` — còn thiết bị **INSPECTOR** trên giá khởi chạy trình gỡ lỗi như một bước trong dây chuyền. |
 | **Integrated terminal** | Cửa sổ **Terminal** (⌃\`): lần bấm đầu tiên khởi động một shell trong thư mục dự án, những lần sau đưa nó trở lại. |
-| **`settings.json`** | Công cụ ▸ Tùy chọn (trên macOS là NMOX Studio ▸ Settings…). Tệp `.vscode/settings.json` của một kho mã cũng được đọc: `editor.tabSize`, `editor.insertSpaces` và `editor.indentSize` đặt cách thụt lề của nó khi bạn gõ, `files.trimTrailingWhitespace` và `files.insertFinalNewline` (khi là `true`) được áp dụng khi bạn lưu, `files.eol` là kiểu kết thúc dòng mà các tệp được ghi ra, `"editor.formatOnSave": false` ngăn một lần lưu định dạng lại tệp, và một khối ngôn ngữ như `"[typescript]"` ghi đè chúng cho ngôn ngữ của khối đó. Khi kho mã cũng có tệp `.editorconfig`, tệp `.editorconfig` thắng ở bất cứ chỗ nào cả hai cùng nói. |
+| **`settings.json`** | Công cụ ▸ Tùy chọn (trên macOS là NMOX Studio ▸ Settings…). Tệp `.vscode/settings.json` của một kho mã cũng được đọc: `editor.tabSize`, `editor.insertSpaces` và `editor.indentSize` đặt cách thụt lề của nó khi bạn gõ, `files.trimTrailingWhitespace` và `files.insertFinalNewline` (khi là `true`) được áp dụng khi bạn lưu, `files.eol` là kiểu kết thúc dòng mà các tệp được ghi ra, `"editor.formatOnSave": false` ngăn một lần lưu định dạng lại tệp, phần tử đầu tiên của `editor.rulers` là chỗ trình soạn thảo vẽ đường lề phải (một danh sách rỗng thì không vẽ đường nào), `editor.wordWrap` `"on"` hoặc `"off"` ngắt dòng các tệp của dự án đó hoặc giữ chúng không ngắt, `files.exclude` ẩn những gì nó nêu khỏi các cây dự án, và **Tìm trong dự án** bỏ qua những gì `files.exclude` và `search.exclude` nêu; một khối ngôn ngữ như `"[typescript]"` ghi đè chúng cho ngôn ngữ của khối đó. Khi kho mã cũng có tệp `.editorconfig`, tệp `.editorconfig` thắng ở bất cứ chỗ nào cả hai cùng nói. Cài đặt VS Code của riêng bạn được chuyển sang một lần, khi bạn yêu cầu: **Công cụ ▸ Nhập cài đặt VS Code…** |
 | **Problems panel** | **Mục cần xử lý** (⌘6), hoặc nhấp vào con số **✕ ⚠** trên thanh trạng thái: lỗi và cảnh báo của các máy chủ ngôn ngữ, cùng các phát hiện về lint và kiểu từ các thiết bị PURITY và TYPEGUARD của giá. Như trong VS Code, có máy chủ chỉ báo cáo các tệp bạn đang mở; gopls báo cáo cả gói. |
 | **Search view** (`search.useIgnoreFiles`) | **Tìm trong dự án** (⇧⌘F). Như trong VS Code, nó bỏ qua những gì các tệp `.gitignore` của kho và `.git/info/exclude` bỏ qua, nên `node_modules` và `dist/` nằm ngoài kết quả khi `.gitignore` liệt kê chúng; bên ngoài một kho, nó bỏ qua theo tên `node_modules`, `dist`, `build` và các thư mục build khác. Hãy đánh dấu **Tìm trong nguồn được sinh ra** trong hộp thoại của nó để tìm cả trong đó. Tệp loại trừ git toàn cục của bạn không được đọc. |
 | **Outline** | **Bộ điều hướng** (⌘7). |
@@ -220,7 +266,7 @@ bằng một dòng lệnh.
 | **Breadcrumbs** | **Xem ▸ Hiện đường dẫn điều hướng**. |
 | **Source Control** | Dấu git trên thanh trạng thái (nhánh và các thay đổi, một cú nhấp tới lịch sử) và trình đơn **Nhóm**. |
 | **Workspace Trust** | Cùng một ý tưởng, được áp dụng trước khi bất cứ thứ gì một kho mã chọn được chạy: mở một dự án vừa clone về thì không có gì chạy cho tới khi bạn tin cậy nó. |
-| **Keyboard Shortcuts editor** | Công cụ ▸ Tùy chọn ▸ Phím tắt (trên macOS là Settings… ▸ Phím tắt) — sửa bất kỳ tổ hợp phím nào, hoặc chuyển cả hồ sơ phím sang Eclipse, Emacs hoặc IntelliJ. |
+| **Keyboard Shortcuts editor** | Công cụ ▸ Tùy chọn ▸ Phím tắt (trên macOS là Settings… ▸ Phím tắt) — sửa bất kỳ tổ hợp phím nào, hoặc chuyển cả hồ sơ phím sang VS Code, Eclipse, Emacs hoặc IntelliJ. |
 
 Lần đầu bạn mở một kho mã có `.vscode/tasks.json`, `launch.json`,
 `settings.json` hoặc `extensions.json`, một thông báo cho biết đã tìm thấy gì
@@ -271,9 +317,12 @@ chỉ hiện một lần cho mỗi dự án.
     cấu hình đã không được khởi động. Một `program` do tác vụ dựng ra
     (`dist/server.js`) được tìm sau khi tác vụ chạy, chứ không phải trước.
     Một nhãn mà `tasks.json` không định nghĩa, một nhãn mà hai tác vụ dùng
-    chung, dạng đối tượng (`{"type": "npm", "script": "build"}`) và một tác
-    vụ nền (`"isBackground": true`, một trình theo dõi không bao giờ kết
-    thúc) bị từ chối kèm tên trước khi bất cứ thứ gì chạy.
+    chung và dạng đối tượng (`{"type": "npm", "script": "build"}`) bị từ
+    chối kèm tên trước khi bất cứ thứ gì chạy. Một tác vụ nền
+    (`"isBackground": true`, một trình theo dõi không bao giờ kết thúc) được
+    chờ cho tới khi problem matcher của nó báo một chu kỳ đã xong, rồi tiếp
+    tục chạy, và nhấn Gỡ lỗi lần nữa sẽ dùng lại nó; một tác vụ nền không có
+    matcher nào báo được khi nào nó sẵn sàng thì bị từ chối kèm tên.
   - **Một `envFile` không có ở đó thì bị từ chối**, trong khi VS Code khởi
     động chương trình mà không có nó. Các biến của nó được thêm vào môi
     trường và một mục `env` thắng tệp, như trong VS Code. Tệp được đọc thành
@@ -311,8 +360,8 @@ chỉ hiện một lần cho mỗi dự án.
   một tác vụ trong đó không chạy được đúng như đã viết thì không có gì chạy,
   và Enter cho biết tác vụ nào và vì sao trên thanh trạng thái. Điều đó bao
   gồm một nhãn `dependsOn` mà tệp không định nghĩa, một phụ thuộc là tác vụ
-  nền (các problem matcher không được đọc, nên không có gì cho biết khi nào
-  nó sẵn sàng), `${file}` khi không có tệp nào đang mở, và một câu hỏi mà bạn
+  nền không có problem matcher nào báo được khi nào nó sẵn sàng, `${file}`
+  khi không có tệp nào đang mở, và một câu hỏi mà bạn
   hủy. Một phụ thuộc thất bại sẽ dừng lượt chạy ngay tại đó. Vẫn bị từ chối
   kèm tên: một giá trị mà chỉ VS Code mới cung cấp được (`${config:…}`,
   `${command:…}`, một đầu vào có `"type": "command"`), một phụ thuộc viết
@@ -327,7 +376,44 @@ chỉ hiện một lần cho mỗi dự án.
   dịch được, hoặc một biểu thức có thể chạy mãi không dừng) bị loại ra và
   được nêu tên trong nhật ký thay vì bị chèn dở dang. Gõ một tiền tố không tự
   mở danh sách: ⌃Space mới mở. Các đoạn mã mẫu không có `prefix`, đoạn mã mẫu
-  cấp người dùng và `isFileTemplate` không được đọc.
+  cấp người dùng và `isFileTemplate` không được đọc. Các tệp đoạn mã mẫu chỉ
+  được đọc cho những tệp nằm trong kho mã chứa chúng, và một đoạn mã mẫu sẽ
+  chèn hơn một triệu ký tự thì không được chèn.
+- **`problemMatcher` của một tác vụ được đọc.** Mỗi lượt chạy thay thế các
+  vấn đề trước đó của tác vụ, và một lượt chạy sạch sẽ xóa chúng. Các matcher
+  có sẵn của VS Code dùng được theo tên (`$tsc`, `$tsc-watch`, `$tsgo-watch`,
+  `$eslint-stylish`, `$eslint-compact`, `$jshint`, `$jshint-stylish`,
+  `$msCompile`, `$lessCompile`, `$gulp-tsc`, `$go`, `$lessc`), và `$gcc`
+  cùng `$rustc` từ các tiện ích mở rộng C/C++ và rust-analyzer cũng vậy; các
+  matcher viết trực tiếp và `{"base": "$tsc", …}` cũng dùng được, kể cả các
+  mẫu nhiều dòng có `loop`, với mọi `fileLocation` trừ `"search"`. Một
+  matcher mà IDE này không có, hoặc có biểu thức chính quy mang nghĩa khác ở
+  đây, không chặn tác vụ: tác vụ vẫn chạy, và thanh trạng thái nêu tên
+  matcher không được áp dụng, một lần.
+- **Định dạng định dạng JavaScript và TypeScript bằng Prettier của dự án.**
+  Mã nguồn ▸ Định dạng (⇧⌥F) chạy Prettier mà dự án của bạn cấu hình, hỏi
+  Tin cậy không gian làm việc trước khi Prettier đó là của chính dự án; một
+  dự án không có cấu hình Prettier sẽ nói điều đó trên thanh trạng thái thay
+  vì để nguyên tệp mà không nói một lời.
+- **Cài đặt của riêng bạn được chuyển sang một lần, khi bạn yêu cầu.**
+  **Công cụ ▸ Nhập cài đặt VS Code…** (hoặc *import vs code settings* trong
+  Tìm kiếm nhanh) đọc `settings.json` cá nhân của VS Code — từ VS Code,
+  Insiders hoặc VSCodium — và liệt kê mỗi cài đặt mà nó nhận ra cùng với thứ
+  mà cài đặt đó trở thành ở đây: độ rộng tab và dấu cách, ngắt dòng, thước
+  lề, cách hiển thị khoảng trắng, cắt khoảng trắng khi lưu, Định dạng khi
+  lưu, bản đồ thu nhỏ, cuộn dính và tự động lưu. Những cài đặt mang đúng
+  cùng một nghĩa ở đây được đánh dấu sẵn; những cài đặt gần giống thì cho
+  biết chúng khác ở đâu và không được đánh dấu sẵn. Áp dụng ghi những cài
+  đặt được đánh dấu và chúng có hiệu lực ngay; Hủy không ghi gì. Phông chữ
+  của trình soạn thảo được đặt trong phần cài đặt Phông chữ và màu sắc, còn
+  phím tắt là các hồ sơ phím. Mọi thứ khác trong tệp của bạn — token, đường
+  dẫn, cài đặt của tiện ích mở rộng — chỉ được đếm, không bao giờ được hiển
+  thị hay sao chép.
+- **`files.associations` không được đọc.** Nền tảng quyết định kiểu của một
+  tệp một lần rồi giữ nguyên, nên một ánh xạ trong `settings.json` không thể
+  được tôn trọng đúng như viết; một mục loại trừ có điều kiện (`"when"`), các
+  thước lề sau thước đầu tiên cùng màu của chúng, và ngắt dòng tại một cột
+  cũng không được đọc.
 - **Một tác vụ `"type": "shell"` chạy trong shell mà VS Code sẽ dùng.** Trên
   macOS và Linux, đó là `$SHELL` của bạn với `-c` (zsh, bash hoặc fish trên
   macOS khởi động như một login shell, `-l`, như các hồ sơ mặc định của VS
@@ -337,9 +423,16 @@ chỉ hiện một lần cho mỗi dự án.
   `"args": ["-c"]`. Trên Windows, chỉ PowerShell (args kết thúc bằng
   `-Command`) và `cmd.exe` (args kết thúc bằng `/c`) được chạy; mọi shell khác
   ở đó bị từ chối kèm tên thay vì được trao một dòng lệnh được trích dẫn theo
-  kiểu đoán mò.
-- **Không có hồ sơ phím “VS Code”.** Các tổ hợp phím ở trên nằm trong hồ sơ
-  mặc định và bốn hồ sơ còn lại. Có một ngoại lệ có chủ ý: trong hồ sơ
+  kiểu đoán mò. Một tên tệp, vùng chọn hoặc một câu trả lời đầu vào nằm trong
+  `command` của một tác vụ shell được trích dẫn cho shell đó, nên
+  `"command": "python ${file}"` chạy được với mọi tên tệp, kể cả tên có dấu
+  cách hay dấu `$`; trong `cmd.exe`, một giá trị chứa `%`, `!`, dấu nháy kép
+  hoặc dấu xuống dòng bị từ chối kèm tên, vì ở đó không cách trích dẫn nào
+  làm những ký tự ấy vô hại.
+- **Các bảng ở trên mô tả hồ sơ phím mặc định.** Trong hồ sơ **VS Code**
+  (xem *Hồ sơ phím VS Code* ở trên), các tổ hợp phím riêng của VS Code thắng
+  ở bất cứ đâu sản phẩm này có hành động tương ứng. Bốn tổ hợp phím đầu tiên
+  có mặt trong mọi hồ sơ. Có một ngoại lệ có chủ ý: trong hồ sơ
   **Eclipse**, ⇧⌘E vẫn là *Switch to Editor* của chính Eclipse, và bên trong
   trình soạn thảo ⇧⌘P và ⇧⌘X giữ nghĩa của Eclipse (ngoặc tương ứng, chữ in
   hoa) — người đã chọn Eclipse mong đợi Eclipse.

@@ -1,10 +1,13 @@
 package org.nmox.studio.editor.editing;
 
+import java.awt.AWTEvent;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.function.Supplier;
 import javax.swing.JComponent;
 
 /**
@@ -29,6 +32,13 @@ import javax.swing.JComponent;
  * component's key bindings do, and it takes itself off at that event, at
  * the next key release, or when focus leaves, whichever comes first, so
  * it can never eat a character somebody meant to type.
+ *
+ * <p><b>Only a key press arms it.</b> The same action can run from a menu
+ * row, a toolbar or Quick Search, and a click made while Alt is held
+ * carries Alt in its modifiers too, with no typed character coming; armed
+ * then, the guard would wait for the user's next keystroke and eat it. So
+ * {@link #arms} asks the event being dispatched as well: the chord's own
+ * {@code KEY_PRESSED} is the only event that arms the guard.
  */
 final class TypedEcho {
 
@@ -46,6 +56,23 @@ final class TypedEcho {
     static boolean follows(int actionModifiers) {
         return (actionModifiers & ActionEvent.ALT_MASK) != 0
                 && (actionModifiers & (ActionEvent.CTRL_MASK | ActionEvent.META_MASK)) == 0;
+    }
+
+    /** The event the event thread is dispatching; a seam for tests, which run outside a key press. */
+    static volatile Supplier<AWTEvent> currentEvent = EventQueue::getCurrentEvent;
+
+    /**
+     * Whether an action fired by {@code evt} should arm the guard: its
+     * chord types ({@link #follows}) and it is being run by that chord's
+     * key press, not by a click or another action.
+     */
+    static boolean arms(ActionEvent evt) {
+        return evt != null && follows(evt.getModifiers()) && fromKeyPress(currentEvent.get());
+    }
+
+    /** Whether {@code dispatching} is a key being pressed. */
+    static boolean fromKeyPress(AWTEvent dispatching) {
+        return dispatching instanceof KeyEvent key && key.getID() == KeyEvent.KEY_PRESSED;
     }
 
     /** Consumes the next KEY_TYPED on {@code target}, once. */
