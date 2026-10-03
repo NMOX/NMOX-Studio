@@ -344,6 +344,49 @@ class RtlPlaceholderIsolationGateTest {
                 .isTrue();
     }
 
+    /**
+     * Two arguments joined by a colon are ONE token a reader retypes: a
+     * host and its port, a line and its column. Each argument being
+     * isolated is not enough (3.7.0): the colon between two isolates is a
+     * neutral in a right-to-left line, so the pair is laid out second
+     * argument first, and {@code irc.libera.chat:6697} is drawn {@code
+     * 6697:irc.libera.chat}. Measured by the Hebrew and the Arabic
+     * translator independently, on a new string, and then found in four
+     * shipped ones. A LEFT-TO-RIGHT MARK on each side of the pair gives
+     * the colon two strong left-to-right neighbours. (A dash or a slash
+     * between two numbers is prose, a range or a count, and reads in the
+     * line's own direction: this law is about the colon.)
+     */
+    @Test
+    @DisplayName("a pair of arguments joined by a colon is drawn first argument first")
+    void aColonJoinedPairKeepsItsOrder() throws IOException {
+        Pattern pair = Pattern.compile("\\{(\\d+)\\}" + PDI + ":" + LRI + "\\{(\\d+)\\}");
+        List<String> reversed = new ArrayList<>();
+        int pairs = 0;
+        for (Value v : rtlValues()) {
+            Matcher m = pair.matcher(v.text());
+            while (m.find()) {
+                pairs++;
+                Object[] args = new Object[10];
+                java.util.Arrays.fill(args, "x");
+                args[Integer.parseInt(m.group(1))] = "FIRST";
+                args[Integer.parseInt(m.group(2))] = "22";
+                String drawn;
+                try {
+                    drawn = visual(new MessageFormat(v.text(), Locale.forLanguageTag(v.lang())).format(args));
+                } catch (IllegalArgumentException notAPattern) {
+                    continue; // a value no MessageFormat reads is another gate's business
+                }
+                if (!drawn.replace("\u200e", "").replace("\u200f", "").contains("FIRST:22")) {
+                    reversed.add(v.lang() + " " + v.where() + " " + v.key());
+                }
+            }
+        }
+        assertThat(pairs).as("the population: colon-joined pairs in the right-to-left bundles").isGreaterThanOrEqualTo(10);
+        assertThat(reversed).as("drawn second argument first: put a LEFT-TO-RIGHT MARK (U+200E) before the first "
+                + "isolate and after the second").isEmpty();
+    }
+
     private static boolean requiresBidi(String s) {
         return Bidi.requiresBidi(s.toCharArray(), 0, s.length());
     }
