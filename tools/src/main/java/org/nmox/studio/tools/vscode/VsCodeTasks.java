@@ -443,12 +443,13 @@ public final class VsCodeTasks {
          */
         SHELL_UNSUPPORTED,
         /**
-         * A {@code shell} task's {@code command} line holds a value nobody
-         * in the file chose — the editor's file name, the selection, an
-         * input's answer — that the shell would read as more than text (a
-         * space, a quote, {@code $(…)}); only {@code args} are quoted, so
-         * the line would run a different command. Detail = the variable as
-         * written, never its value.
+         * A {@code shell} task run in cmd.exe whose {@code command} line
+         * holds a value nobody in the file chose — the editor's file name,
+         * the selection, an input's answer — with a character cmd.exe reads
+         * as part of the command even inside double quotes ({@code %},
+         * {@code !}, a double quote, a line break). Every other shell gets
+         * such a value quoted ({@link #quotedCommand}). Detail = the
+         * variable as written, never its value.
          */
         UNQUOTED_VALUE,
         /**
@@ -941,16 +942,12 @@ public final class VsCodeTasks {
                         return new Refused(Reason.ENV_INVALID, printable(e.getKey()));
                     }
                 }
-                if ("shell".equals(task.type())) {
-                    String unquoted = unquotedValue(task.command().text(), project, env, vars, host.os());
-                    if (unquoted != null) {
-                        return new Refused(Reason.UNQUOTED_VALUE, unquoted);
-                    }
-                }
-                Object argv = argvOf(task, host, project, sub, false);
+                Object argv = argvOf(task, host, project, env, vars, false);
                 if (argv instanceof Refused r) {
                     // a shell the file named is named back as the file (and a reader) may see it
-                    return task.shell() != null && task.shell().executable() != null
+                    boolean aboutTheShell = r.reason() == Reason.SHELL_MISSING
+                            || r.reason() == Reason.SHELL_UNSUPPORTED;
+                    return aboutTheShell && task.shell() != null && task.shell().executable() != null
                             ? new Refused(r.reason(), written.apply(task.shell().executable()))
                             : r;
                 }
@@ -963,7 +960,7 @@ public final class VsCodeTasks {
                 // the user's environment left as the file wrote them, and on
                 // Windows the PowerShell line itself rather than its base64.
                 // Null only when that line IS the argv joined.
-                Object readable = argvOf(task, host, project, written, true);
+                Object readable = argvOf(task, host, project, env, vars, true);
                 @SuppressWarnings("unchecked")
                 String line = readable instanceof List<?> ? String.join(" ", (List<String>) readable)
                         : display(task);
@@ -1022,66 +1019,108 @@ public final class VsCodeTasks {
      * applied, or a {@link Refused}; {@code forReader} as for {@link
      * #shellArgv(Host, ShellOpt, File, String, List, List, boolean)}.
      */
-    private static Object argvOf(TaskDef task, Host host, File project, UnaryOperator<String> sub,
+    private static Object argvOf(TaskDef task, Host host, File project, UnaryOperator<String> env, Vars vars,
             boolean forReader) {
-        String command = sub.apply(task.command().text());
+        UnaryOperator<String> sub = s -> substitute(s, project, env, vars, forReader);
         List<String> args = new ArrayList<>();
         for (Value a : task.args()) {
             args.add(sub.apply(a.text()));
         }
         if (!"shell".equals(task.type())) {
-            return processArgv(command, args);
+            return processArgv(sub.apply(task.command().text()), args);
         }
         ShellOpt declared = task.shell() == null ? null : new ShellOpt(
                 task.shell().executable() == null ? null : sub.apply(task.shell().executable()),
                 task.shell().args() == null ? null
                         : task.shell().args().stream().map(sub).toList());
-        return shellArgv(host, declared, project, command, args, task.args(), forReader);
+        String written = task.command().text();
+        return shellArgv(host, declared, project,
+                dialect -> quotedCommand(written, dialect, project, env, vars, forReader),
+                args, task.args(), forReader);
+    }
+
+    /** The three command-line languages a {@code shell} task can be handed to. */
+    enum Dialect {
+        /** sh, bash, zsh, fish and the rest on macOS and Linux. */
+        POSIX,
+        /** PowerShell 7 and Windows PowerShell. */
+        POWERSHELL,
+        /** cmd.exe. */
+        CMD
     }
 
     /**
      * The variables whose value nobody in the file chose: the editor's
      * file and its family, the selection, an input's answer. In a {@code
-     * shell} task's {@code command} — which reaches the shell as written,
-     * unquoted — such a value must be plain text to the shell.
+     * shell} task's {@code command} — a line the shell parses — such a
+     * value is quoted ({@link #quotedCommand}).
      */
     private static boolean foreignValue(String name) {
         return FILE_VARIABLES.contains(name) || "selectedText".equals(name) || inputId(name) != null;
     }
 
-    /** What a value in a POSIX shell line may hold and still be one plain word. */
-    private static final Pattern POSIX_WORD = Pattern.compile("[A-Za-z0-9_@%+=:,./-]*");
+    /** One plain word to a POSIX shell: left unquoted, so an ordinary line reads as written. */
+    private static final Pattern POSIX_WORD = Pattern.compile("[A-Za-z0-9_@%+=:,./-]+");
+
+    /** One plain word to PowerShell: a Windows path's backslash and drive colon, no {@code @} or {@code ,}. */
+    private static final Pattern POWERSHELL_WORD = Pattern.compile("[A-Za-z0-9_%+=:./\\\\-]+");
+
+    /** One plain word to cmd.exe: as PowerShell's, without the {@code %} cmd expands. */
+    private static final Pattern CMD_WORD = Pattern.compile("[A-Za-z0-9_+=:./\\\\-]+");
+
+    /** What cmd.exe reads as part of the command even inside double quotes. */
+    private static final String CMD_LIVE_IN_QUOTES = "%!\"\r\n";
 
     /**
-     * What a value in a PowerShell or cmd.exe line may hold and still be
-     * one plain word: a Windows path's backslash and drive colon, and
-     * neither {@code %} (cmd expands it), {@code @} nor {@code ,}
-     * (PowerShell syntax).
+     * A {@code shell} task's command line with its variables filled in, in
+     * the language of the shell that will read it, or a {@link Refused}.
+     *
+     * <p>The file's own text is the file's: {@code npm run build && echo
+     * done} keeps its {@code &&}. A value nobody in the file chose ({@link
+     * #foreignValue}) — a file named {@code x$(touch PWNED).js}, a
+     * selection, an answer — is QUOTED for that shell unless it is already
+     * one plain word, so {@code python ${file}} runs the file whatever its
+     * name holds, a space or {@code $(…)}: single quotes with {@code '}
+     * written {@code '\''} for a POSIX shell, single quotes with every
+     * single-quote delimiter doubled for PowerShell, double quotes for
+     * cmd.exe. VS Code itself pastes the value in as it is, which splits a
+     * path at its space and runs what a name says; quoting runs the same
+     * program on the same file and never the name. cmd.exe expands
+     * {@code %…%} and {@code !…!} and ends a quoted run at a double quote
+     * whatever surrounds them, so a value holding one there is refused by
+     * name ({@link Reason#UNQUOTED_VALUE}). The reader's line ({@code
+     * forReader}) carries the same quoting, with a password and the
+     * selection left as the file wrote them.
      */
-    private static final Pattern WINDOWS_WORD = Pattern.compile("[A-Za-z0-9_+=:./\\\\-]*");
-
-    /**
-     * The first variable in a {@code shell} task's command line, as
-     * written, whose value is one nobody in the file chose and that the
-     * shell would read as more than one plain word; null when there is
-     * none. A file named {@code x$(touch PWNED).js} opened from anywhere
-     * is the case: VS Code itself pastes it into the line unquoted, and
-     * the shell runs what it says. In {@code args} the same value is
-     * quoted for the shell and is safe, which the refusal says.
-     */
-    static String unquotedValue(String command, File project, UnaryOperator<String> env, Vars vars, Os os) {
-        Pattern word = os == Os.WINDOWS ? WINDOWS_WORD : POSIX_WORD;
+    static Object quotedCommand(String command, Dialect dialect, File project, UnaryOperator<String> env,
+            Vars vars, boolean forReader) {
         Matcher m = VARIABLE.matcher(command);
+        StringBuilder out = new StringBuilder();
         while (m.find()) {
-            if (!foreignValue(m.group(1))) {
-                continue;
+            String value = substitute(m.group(), project, env, vars, forReader);
+            boolean asWritten = forReader && value.equals(m.group());
+            if (foreignValue(m.group(1)) && !asWritten && !value.isEmpty()) {
+                switch (dialect) {
+                    case POSIX -> value = POSIX_WORD.matcher(value).matches() ? value : shQuote(value, "strong");
+                    case POWERSHELL -> value = POWERSHELL_WORD.matcher(value).matches()
+                            ? value : psQuote(value, "strong");
+                    case CMD -> {
+                        if (!CMD_WORD.matcher(value).matches()) {
+                            for (int i = 0; i < value.length(); i++) {
+                                if (CMD_LIVE_IN_QUOTES.indexOf(value.charAt(i)) >= 0) {
+                                    return new Refused(Reason.UNQUOTED_VALUE, m.group());
+                                }
+                            }
+                            // cmdQuote doubles a backslash run that ends at the closing quote
+                            value = cmdQuote(value, "strong");
+                        }
+                    }
+                }
             }
-            String value = substitute(m.group(), project, env, vars, false);
-            if (!word.matcher(value).matches()) {
-                return m.group();
-            }
+            m.appendReplacement(out, Matcher.quoteReplacement(value));
         }
-        return null;
+        m.appendTail(out);
+        return out.toString();
     }
 
     /**
@@ -1508,17 +1547,20 @@ public final class VsCodeTasks {
      */
     static Object shellArgv(Host host, ShellOpt declared, File project, String command,
             List<String> args, List<Value> quoting) {
-        return shellArgv(host, declared, project, command, args, quoting, false);
+        return shellArgv(host, declared, project, dialect -> command, args, quoting, false);
     }
 
     /**
-     * {@link #shellArgv(Host, ShellOpt, File, String, List, List)}; with
-     * {@code forReader} the argv a READER is shown rather than the one
-     * that runs: on Windows PowerShell gets the line itself after
+     * {@link #shellArgv(Host, ShellOpt, File, String, List, List)} with the
+     * command line asked for in the language of the shell this decides
+     * ({@link #quotedCommand}): a {@link Refused} from it is the answer.
+     * With {@code forReader} the argv a READER is shown rather than the
+     * one that runs: on Windows PowerShell gets the line itself after
      * {@code -Command} in place of its {@code -EncodedCommand} base64,
      * which says nothing to a person reading the Output window's header.
      */
-    static Object shellArgv(Host host, ShellOpt declared, File project, String command,
+    static Object shellArgv(Host host, ShellOpt declared, File project,
+            java.util.function.Function<Dialect, Object> commandFor,
             List<String> args, List<Value> quoting, boolean forReader) {
         String exe;
         List<String> shellArgs;
@@ -1551,17 +1593,25 @@ public final class VsCodeTasks {
         }
         String name = shellName(exe);
         if (host.os() != Os.WINDOWS) {
+            Object command = commandFor.apply(Dialect.POSIX);
+            if (command instanceof Refused r) {
+                return r;
+            }
             List<String> argv = new ArrayList<>();
             argv.add(exe);
             argv.addAll(shellArgs);
-            argv.add(line(command, args, quoting, VsCodeTasks::shQuote));
+            argv.add(line((String) command, args, quoting, VsCodeTasks::shQuote));
             return argv;
         }
         String last = shellArgs.isEmpty() ? "" : shellArgs.get(shellArgs.size() - 1);
         List<String> before = shellArgs.isEmpty() ? List.of() : shellArgs.subList(0, shellArgs.size() - 1);
         if (("pwsh".equals(name) || "powershell".equals(name))
                 && (last.equalsIgnoreCase("-Command") || last.equalsIgnoreCase("-c"))) {
-            String line = line(command, args, quoting, VsCodeTasks::psQuote);
+            Object command = commandFor.apply(Dialect.POWERSHELL);
+            if (command instanceof Refused r) {
+                return r;
+            }
+            String line = line((String) command, args, quoting, VsCodeTasks::psQuote);
             List<String> argv = new ArrayList<>();
             argv.add(exe);
             argv.addAll(before);
@@ -1575,7 +1625,11 @@ public final class VsCodeTasks {
             return argv;
         }
         if ("cmd".equals(name) && (last.equalsIgnoreCase("/c") || last.equalsIgnoreCase("/k"))) {
-            String line = line(command, args, quoting, VsCodeTasks::cmdQuote);
+            Object command = commandFor.apply(Dialect.CMD);
+            if (command instanceof Refused r) {
+                return r;
+            }
+            String line = line((String) command, args, quoting, VsCodeTasks::cmdQuote);
             List<String> argv = new ArrayList<>();
             argv.add(exe);
             argv.addAll(before);

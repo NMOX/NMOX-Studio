@@ -54,65 +54,114 @@ class VsCodeTaskReviewTest {
 
     /* ---------------------------------------- a value in the command line */
 
-    @Test
-    @DisplayName("${file} in a shell task's COMMAND line, naming a file the shell would read as code, is refused naming the variable")
-    void unquotedFileNameInTheCommandLine() throws Exception {
+    private static void assumePosix() {
         org.junit.jupiter.api.Assumptions.assumeFalse(
                 System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win"),
-                "the fixture's paths are POSIX paths, which a POSIX shell line holds as plain words");
-        Path hostile = Files.createTempDirectory("downloads").resolve("x$(touch PWNED).js");
-        TaskDef lint = task("{\"label\":\"lint\",\"type\":\"shell\",\"command\":\"eslint ${file}\"}");
-        assertThat(VsCodeTasks.resolve(lint, project.toFile(), LINUX, editing(hostile)))
-                .isEqualTo(new Refused(Reason.UNQUOTED_VALUE, "${file}"));
+                "the fixture is a POSIX shell");
+    }
 
-        // the same file in ARGS is quoted for the shell: it runs, as one word
-        TaskDef quoted = task("{\"label\":\"lint\",\"type\":\"shell\",\"command\":\"eslint\",\"args\":[\"${file}\"]}");
-        Launch launch = (Launch) VsCodeTasks.resolve(quoted, project.toFile(), LINUX, editing(hostile));
-        assertThat(launch.argv().get(2)).isEqualTo("eslint '" + hostile.toAbsolutePath().normalize() + "'");
-
-        // a file name that is one plain word runs in the command line as it always did
-        Path plain = project.resolve("src").resolve("app.js");
-        Launch ok = (Launch) VsCodeTasks.resolve(lint, project.toFile(), LINUX, editing(plain));
-        assertThat(ok.argv()).containsExactly("/bin/sh", "-c", "eslint " + plain.toAbsolutePath().normalize());
+    /** Runs {@code argv} in {@code dir} and answers with what it printed. */
+    private static String run(List<String> argv, Path dir) throws Exception {
+        Process p = new ProcessBuilder(argv).directory(dir.toFile()).redirectErrorStream(true).start();
+        p.getOutputStream().close();
+        String out = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(p.waitFor(30, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+        return out;
     }
 
     @Test
-    @DisplayName("an input's answer and the selection in the command line are judged the same way; the file's own text is not")
-    void answersAndSelectionInTheCommandLine() {
+    @DisplayName("the real spawn: ${file} in a shell task's COMMAND line reaches the program as its exact name — a space, $(…) and a quote included — and nothing in the name runs")
+    void fileNamesAreQuotedInTheCommandLine() throws Exception {
+        assumePosix();
+        Path downloads = Files.createTempDirectory("downloads");
+        Path cwd = Files.createTempDirectory("nmox-cwd");
+        TaskDef show = task("{\"label\":\"show\",\"type\":\"shell\",\"command\":\"printf '[%s]' ${file}\"}");
+        for (String name : new String[] {"x$(touch PWNED).js", "my notes.js", "it's `touch PWNED2`; touch PWNED3.js"}) {
+            Path file = downloads.resolve(name);
+            Launch launch = (Launch) VsCodeTasks.resolve(show, project.toFile(), LINUX, editing(file));
+            String exact = file.toAbsolutePath().normalize().toString();
+            assertThat(run(launch.argv(), cwd)).as(name + ": one argument, the exact name").isEqualTo("[" + exact + "]");
+            assertThat(launch.shown()).as("the reader is shown the line that runs, quoting and all").isNull();
+        }
+        try (var listed = Files.list(cwd)) {
+            assertThat(listed.toList()).as("no command in a file name ran").isEmpty();
+        }
+
+        // a name that is one plain word stays as written: an ordinary line reads as it did
+        Path plain = project.resolve("src").resolve("app.js");
+        Launch ok = (Launch) VsCodeTasks.resolve(show, project.toFile(), LINUX, editing(plain));
+        assertThat(ok.argv()).containsExactly("/bin/sh", "-c", "printf '[%s]' " + plain.toAbsolutePath().normalize());
+    }
+
+    @Test
+    @DisplayName("an input's answer and the selection are quoted the same way; the file's own text is the file's")
+    void answersAndSelectionInTheCommandLine() throws Exception {
+        assumePosix();
         Map<String, InputDef> inputs = Map.of("who", new InputDef("who", "promptString", "Who", null, false, List.of(), null));
-        TaskDef greet = task("{\"label\":\"g\",\"type\":\"shell\",\"command\":\"echo ${input:who} && ls\"}");
-        Vars evil = new Vars(EditorContext.NONE, "/h", inputs, Map.of("who", "a; rm -rf ~"));
-        assertThat(VsCodeTasks.resolve(greet, project.toFile(), LINUX, evil))
-                .isEqualTo(new Refused(Reason.UNQUOTED_VALUE, "${input:who}"));
-        Vars fine = new Vars(EditorContext.NONE, "/h", inputs, Map.of("who", "world"));
-        assertThat(((Launch) VsCodeTasks.resolve(greet, project.toFile(), LINUX, fine)).argv().get(2))
-                .as("the && is the FILE's, and stays the shell's").isEqualTo("echo world && ls");
+        TaskDef greet = task("{\"label\":\"g\",\"type\":\"shell\",\"command\":\"echo ${input:who} && echo after\"}");
+        Vars evil = new Vars(EditorContext.NONE, "/h", inputs, Map.of("who", "a; touch PWNED"));
+        Launch launch = (Launch) VsCodeTasks.resolve(greet, project.toFile(), LINUX, evil);
+        assertThat(launch.argv().get(2)).as("the && is the FILE's, and stays the shell's")
+                .isEqualTo("echo 'a; touch PWNED' && echo after");
+        Path cwd = Files.createTempDirectory("nmox-cwd");
+        assertThat(run(launch.argv(), cwd)).isEqualTo("a; touch PWNED\nafter\n");
+        try (var listed = Files.list(cwd)) {
+            assertThat(listed.toList()).isEmpty();
+        }
 
         TaskDef sel = task("{\"label\":\"s\",\"type\":\"shell\",\"command\":\"grep ${selectedText} .\"}");
         Vars selected = new Vars(new EditorContext(project.resolve("a.js"), 1, 1, "two words"), "/h", Map.of(), Map.of());
-        assertThat(VsCodeTasks.resolve(sel, project.toFile(), LINUX, selected))
-                .isEqualTo(new Refused(Reason.UNQUOTED_VALUE, "${selectedText}"));
+        Launch grep = (Launch) VsCodeTasks.resolve(sel, project.toFile(), LINUX, selected);
+        assertThat(grep.argv().get(2)).isEqualTo("grep 'two words' .");
+        assertThat(grep.shown()).as("the selection is still the user's own: the reader sees the variable")
+                .isEqualTo("/bin/sh -c grep ${selectedText} .");
+    }
+
+    private static final Host POWERSHELL = new Host(Os.WINDOWS, name -> null, f -> true,
+            name -> "pwsh".equals(name) ? "C:\\PS\\pwsh.exe" : null);
+
+    private static TaskDef inCmd(String command) {
+        return task("{\"label\":\"c\",\"type\":\"shell\",\"command\":\"" + command + "\","
+                + "\"options\":{\"shell\":{\"executable\":\"C:\\\\Windows\\\\System32\\\\cmd.exe\",\"args\":[\"/d\",\"/c\"]}}}");
     }
 
     @Test
-    @DisplayName("on Windows a drive path is one plain word; a cmd % or a space is not")
-    void windowsWords() {
-        Host win = new Host(Os.WINDOWS, name -> null, f -> true, name -> "pwsh".equals(name) ? "C:\\PS\\pwsh.exe" : null);
-        TaskDef lint = task("{\"label\":\"lint\",\"type\":\"shell\",\"command\":\"eslint ${relativeFile}\"}");
-        assertThat(VsCodeTasks.resolve(lint, project.toFile(), win, editing(project.resolve("src").resolve("a.js"))))
-                .isInstanceOf(Launch.class);
-        assertThat(VsCodeTasks.resolve(lint, project.toFile(), win, editing(project.resolve("100%PATH%.js"))))
-                .isEqualTo(new Refused(Reason.UNQUOTED_VALUE, "${relativeFile}"));
+    @DisplayName("PowerShell takes a value single-quoted with its quotes doubled; a plain path stays as written")
+    void powershellQuoting() {
+        TaskDef lint = task("{\"label\":\"lint\",\"type\":\"shell\",\"command\":\"eslint ${fileBasename}\"}");
+        assertThat(((Launch) VsCodeTasks.resolve(lint, project.toFile(), POWERSHELL, editing(project.resolve("a.js"))))
+                .shown()).isEqualTo("C:\\PS\\pwsh.exe -Command eslint a.js");
+        assertThat(((Launch) VsCodeTasks.resolve(lint, project.toFile(), POWERSHELL,
+                editing(project.resolve("it's $(calc) 100%.js")))).shown())
+                .isEqualTo("C:\\PS\\pwsh.exe -Command eslint 'it''s $(calc) 100%.js'");
     }
 
     @Test
-    @DisplayName("the plan refuses the hostile file name before anything is asked or run")
-    void refusedBeforeTrust() throws Exception {
-        Path hostile = Files.createTempDirectory("downloads").resolve("a b.js");
-        TaskDef lint = task("{\"label\":\"lint\",\"type\":\"shell\",\"command\":\"eslint ${file}\"}");
-        VsCodeTaskPlan.Outcome outcome = VsCodeTaskPlan.check(lint, new TasksFile(List.of(lint), Map.of()),
-                project.toFile(), LINUX, new EditorContext(hostile, 1, 1, null), "/h");
-        assertThat(outcome).isEqualTo(new VsCodeTaskPlan.Refusal("lint", new Refused(Reason.UNQUOTED_VALUE, "${file}")));
+    @DisplayName("cmd.exe takes a value double-quoted, and refuses by name only what quotes cannot make inert: % ! \" and a line break")
+    void cmdQuoting() {
+        Launch spaced = (Launch) VsCodeTasks.resolve(inCmd("type ${fileBasename}"), project.toFile(), POWERSHELL,
+                editing(project.resolve("my notes & more.txt")));
+        assertThat(spaced.argv()).containsExactly("C:\\Windows\\System32\\cmd.exe", "/d", "/s", "/c",
+                "\"type \"my notes & more.txt\"\"");
+        for (String name : new String[] {"100%PATH%.txt", "wow!.txt", "line\nbreak.txt"}) {
+            assertThat(VsCodeTasks.resolve(inCmd("type ${fileBasename}"), project.toFile(), POWERSHELL,
+                    editing(project.resolve(name)))).as(name).isEqualTo(new Refused(Reason.UNQUOTED_VALUE, "${fileBasename}"));
+        }
+        Map<String, InputDef> inputs = Map.of("q", new InputDef("q", "promptString", "Q", null, false, List.of(), null));
+        assertThat(VsCodeTasks.resolve(inCmd("echo ${input:q}"), project.toFile(), POWERSHELL,
+                new Vars(EditorContext.NONE, "/h", inputs, Map.of("q", "say \"hi\""))))
+                .as("a double quote ends cmd's quoted run").isEqualTo(new Refused(Reason.UNQUOTED_VALUE, "${input:q}"));
+        assertThat(VsCodeTasks.resolve(inCmd("echo %PATH% ${fileBasename}"), project.toFile(), POWERSHELL,
+                editing(project.resolve("a.txt")))).as("the FILE's own % is the file's").isInstanceOf(Launch.class);
+    }
+
+    @Test
+    @DisplayName("the plan refuses a cmd.exe value before anything is asked or run")
+    void refusedBeforeTrust() {
+        TaskDef type = inCmd("type ${fileBasename}");
+        VsCodeTaskPlan.Outcome outcome = VsCodeTaskPlan.check(type, new TasksFile(List.of(type), Map.of()),
+                project.toFile(), POWERSHELL, new EditorContext(project.resolve("50%.txt"), 1, 1, null), "/h");
+        assertThat(outcome).isEqualTo(new VsCodeTaskPlan.Refusal("c", new Refused(Reason.UNQUOTED_VALUE, "${fileBasename}")));
     }
 
     /* ------------------------------------------ the user's own environment */
@@ -233,10 +282,11 @@ class VsCodeTaskReviewTest {
     }
 
     @Test
-    @DisplayName("the refusal for a value in the command line names the variable and says where it belongs")
+    @DisplayName("the refusal for a cmd.exe value names the variable and the characters, never the value")
     void refusalSentence() {
         assertThat(VsCodeTaskSearchProvider.refusal("lint", new Refused(Reason.UNQUOTED_VALUE, "${file}")))
-                .isEqualTo("Task \"lint\" puts ${file} in its command line, where the shell would read its value as "
-                        + "more than plain text; nothing was run. Move ${file} into \"args\", which are quoted for the shell.");
+                .isEqualTo("Task \"lint\" runs in cmd.exe and puts ${file} in its command line, and that value holds "
+                        + "a character cmd.exe acts on even inside quotes (a %, a !, a double quote or a line break); "
+                        + "nothing was run.");
     }
 }
