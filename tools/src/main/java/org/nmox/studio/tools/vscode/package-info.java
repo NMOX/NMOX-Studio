@@ -9,6 +9,13 @@
  * the toolbar ■ stops it. An {@code npm}-type task goes to
  * {@code tools.npm.NpmService}'s own trust-gated lane instead.
  *
+ * <p>One Enter may be several tasks. {@code VsCodeTaskPlan} (pure) turns
+ * {@code dependsOn} / {@code dependsOrder} into the stages to run and
+ * decides the whole run before anything starts; {@code VsCodeTaskEditor}
+ * reads the editor on the event thread for {@code ${file}} and its
+ * family; {@code VsCodeTaskPrompts} puts the file's {@code ${input:…}}
+ * questions. Both are thin Swing over values the pure half defines.
+ *
  * <p>{@code .vscode/launch.json} is the sibling pair: {@code VsCodeLaunch}
  * (pure, sharing the tasks half's JSONC, per-OS merge, variables and
  * containment) and {@code VsCodeLaunchSearchProvider}, which spawns

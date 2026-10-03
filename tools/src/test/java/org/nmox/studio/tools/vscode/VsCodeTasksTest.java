@@ -219,32 +219,83 @@ class VsCodeTasksTest {
     @Test
     @DisplayName("a variable only VS Code can fill makes the task refuse, naming the variable as written")
     void unknownVariableRefuses() {
-        for (String variable : new String[] {"${input:target}", "${file}", "${config:editor.tabSize}",
-                "${command:pickProcess}", "${relativeFile}", "${env:}"}) {
+        for (String variable : new String[] {"${config:editor.tabSize}", "${command:pickProcess}",
+                "${env:}", "${input:}", "${defaultBuildTask}", "${execPath}", "${fileWorkspaceFolder}", "${nonsense}"}) {
             String json = "{\"tasks\":[{\"label\":\"x\",\"type\":\"shell\",\"command\":\"echo\",\"args\":[\"pre-"
                     + variable + "-post\"]}]}";
             assertThat(resolve(json, Os.LINUX)).as(variable)
                     .isEqualTo(new Refused(Reason.VARIABLE, variable));
         }
         // the same refusal wherever the variable sits
-        assertThat(resolve("{\"tasks\":[{\"label\":\"x\",\"command\":\"${input:cmd}\"}]}", Os.LINUX))
-                .isEqualTo(new Refused(Reason.VARIABLE, "${input:cmd}"));
-        assertThat(resolve("{\"tasks\":[{\"label\":\"x\",\"command\":\"make\",\"options\":{\"cwd\":\"${fileDirname}\"}}]}", Os.LINUX))
-                .isEqualTo(new Refused(Reason.VARIABLE, "${fileDirname}"));
-        assertThat(resolve("{\"tasks\":[{\"label\":\"x\",\"command\":\"make\",\"options\":{\"env\":{\"A\":\"${input:a}\"}}}]}", Os.LINUX))
-                .isEqualTo(new Refused(Reason.VARIABLE, "${input:a}"));
+        assertThat(resolve("{\"tasks\":[{\"label\":\"x\",\"command\":\"${command:a}\"}]}", Os.LINUX))
+                .isEqualTo(new Refused(Reason.VARIABLE, "${command:a}"));
+        assertThat(resolve("{\"tasks\":[{\"label\":\"x\",\"command\":\"make\",\"options\":{\"cwd\":\"${config:d}\"}}]}", Os.LINUX))
+                .isEqualTo(new Refused(Reason.VARIABLE, "${config:d}"));
+        assertThat(resolve("{\"tasks\":[{\"label\":\"x\",\"command\":\"make\",\"options\":{\"env\":{\"A\":\"${config:a}\"}}}]}", Os.LINUX))
+                .isEqualTo(new Refused(Reason.VARIABLE, "${config:a}"));
         assertThat(resolve("{\"tasks\":[{\"label\":\"x\",\"command\":\"echo ${unterminated\"}]}", Os.LINUX))
                 .isEqualTo(new Refused(Reason.VARIABLE, "${unterminated"));
         assertThat(VsCodeTasks.unsupportedVariable("${workspaceFolder} ${env:PATH} ${/}")).isNull();
+        // launch.json resolves with these two, and what it cannot fill has not changed
+        assertThat(VsCodeTasks.unsupportedVariable("node ${file}")).isEqualTo("${file}");
+        assertThat(VsCodeTasks.unsupportedVariable("${input:port}")).isEqualTo("${input:port}");
+        assertThat(VsCodeTasks.unsupportedVariable("${userHome}")).isEqualTo("${userHome}");
+        assertThat(VsCodeTasks.substitute("${file}|${workspaceFolderBasename}", project.toFile(), NO_ENV))
+                .isEqualTo("|" + project.getFileName());
     }
 
     @Test
-    @DisplayName("dependsOn refuses naming the dependency — string, array, or the npm-object form")
-    void dependsOnRefuses() {
+    @DisplayName("a task asked about alone has no editor and no inputs: what needs them refuses by name")
+    void aloneThereIsNoEditorAndNoInput() {
+        String template = "{\"tasks\":[{\"label\":\"x\",\"type\":\"shell\",\"command\":\"echo\",\"args\":[\"%s\"]}]}";
+        assertThat(resolve(template.formatted("${file}"), Os.LINUX))
+                .isEqualTo(new Refused(Reason.NEEDS_FILE, "${file}"));
+        assertThat(resolve(template.formatted("${relativeFile}"), Os.LINUX))
+                .isEqualTo(new Refused(Reason.NEEDS_FILE, "${relativeFile}"));
+        assertThat(resolve(template.formatted("${lineNumber}"), Os.LINUX))
+                .isEqualTo(new Refused(Reason.NEEDS_FILE, "${lineNumber}"));
+        assertThat(resolve(template.formatted("${input:target}"), Os.LINUX))
+                .isEqualTo(new Refused(Reason.INPUT_UNDEFINED, "target"));
+    }
+
+    @Test
+    @DisplayName("dependsOn is read — a string, an array of strings, the order — and the object form is kept apart")
+    void dependsOnIsRead() {
+        TaskDef one = only("{\"tasks\":[{\"label\":\"deploy\",\"command\":\"make\",\"dependsOn\":\"build\"}]}", Os.LINUX);
+        assertThat(one.dependsOn()).containsExactly("build");
+        assertThat(one.sequence()).as("VS Code's default order is parallel").isFalse();
+        assertThat(one.foreignDependency()).isNull();
+
+        TaskDef many = only("{\"tasks\":[{\"label\":\"all\",\"dependsOrder\":\"sequence\",\"dependsOn\":"
+                + "[\"lint\", 3, \" test \", {\"type\":\"npm\",\"script\":\"e2e\"}, {\"type\":\"x\"}]}]}", Os.LINUX);
+        assertThat(many.dependsOn()).as("the labels, in the file's order").containsExactly("lint", "test");
+        assertThat(many.sequence()).isTrue();
+        assertThat(many.foreignDependency()).as("the first task-identifier object, as JSON")
+                .isEqualTo("{\"script\": \"e2e\", \"type\": \"npm\"}");
+        assertThat(only("{\"tasks\":[{\"label\":\"o\",\"dependsOn\":{\"type\":\"gulp\",\"task\":\"x\"}}]}", Os.LINUX)
+                .foreignDependency()).isEqualTo("{\"task\": \"x\", \"type\": \"gulp\"}");
+        assertThat(only("{\"tasks\":[{\"label\":\"p\",\"dependsOrder\":\"PARALLEL\",\"dependsOn\":[\"a\"]}]}", Os.LINUX)
+                .sequence()).isFalse();
+        assertThat(only("{\"tasks\":[{\"label\":\"p\",\"dependsOrder\":\"serial\",\"dependsOn\":[\"a\"]}]}", Os.LINUX)
+                .sequence()).as("VS Code reads anything but \"sequence\" as parallel").isFalse();
+    }
+
+    @Test
+    @DisplayName("a task with dependsOn and no command is a group, not a refusal; with neither it still names no command")
+    void aggregate() {
+        assertThat(resolve("{\"tasks\":[{\"label\":\"all\",\"dependsOn\":[\"a\",\"b\"]}]}", Os.LINUX))
+                .isEqualTo(new VsCodeTasks.Aggregate());
+        assertThat(resolve("{\"tasks\":[{\"label\":\"all\",\"type\":\"shell\",\"command\":\" \",\"dependsOn\":\"a\"}]}", Os.LINUX))
+                .isEqualTo(new VsCodeTasks.Aggregate());
+        assertThat(resolve("{\"tasks\":[{\"label\":\"none\"}]}", Os.LINUX))
+                .isEqualTo(new Refused(Reason.NO_COMMAND, ""));
+        assertThat(resolve("{\"tasks\":[{\"label\":\"n\",\"type\":\"npm\",\"dependsOn\":\"a\"}]}", Os.LINUX))
+                .as("an npm task is its script").isEqualTo(new Refused(Reason.NO_COMMAND, ""));
+        assertThat(resolve("{\"tasks\":[{\"label\":\"g\",\"type\":\"gulp\",\"dependsOn\":\"a\"}]}", Os.LINUX))
+                .isEqualTo(new Refused(Reason.TYPE, "gulp"));
         assertThat(resolve("{\"tasks\":[{\"label\":\"deploy\",\"command\":\"make\",\"dependsOn\":\"build\"}]}", Os.LINUX))
-                .isEqualTo(new Refused(Reason.DEPENDS_ON, "build"));
-        assertThat(resolve("{\"tasks\":[{\"label\":\"all\",\"command\":\"make\",\"dependsOn\":[\"lint\",{\"type\":\"npm\",\"script\":\"test\"}]}]}", Os.LINUX))
-                .isEqualTo(new Refused(Reason.DEPENDS_ON, "lint, test"));
+                .as("a task's own launch does not wait on its dependsOn: the plan orders that")
+                .isInstanceOf(Launch.class);
     }
 
     @Test
