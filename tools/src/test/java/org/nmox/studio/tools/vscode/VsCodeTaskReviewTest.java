@@ -143,7 +143,12 @@ class VsCodeTaskReviewTest {
                 editing(project.resolve("my notes & more.txt")));
         assertThat(spaced.argv()).containsExactly("C:\\Windows\\System32\\cmd.exe", "/d", "/s", "/c",
                 "\"type \"my notes & more.txt\"\"");
-        for (String name : new String[] {"100%PATH%.txt", "wow!.txt", "line\nbreak.txt"}) {
+        // a Windows file name cannot hold a line break (the test's own Path
+        // would be refused there); the input case below covers the quote
+        String[] names = org.openide.util.Utilities.isWindows()
+                ? new String[] {"100%PATH%.txt", "wow!.txt"}
+                : new String[] {"100%PATH%.txt", "wow!.txt", "line\nbreak.txt"};
+        for (String name : names) {
             assertThat(VsCodeTasks.resolve(inCmd("type ${fileBasename}"), project.toFile(), POWERSHELL,
                     editing(project.resolve(name)))).as(name).isEqualTo(new Refused(Reason.UNQUOTED_VALUE, "${fileBasename}"));
         }
