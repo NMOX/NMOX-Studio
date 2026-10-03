@@ -67,6 +67,38 @@ class CommandExecutorTest {
 
     @Test
     @DisabledOnOs(OS.WINDOWS)
+    @DisplayName("a launch line written for the reader replaces the argv in the header; the process still gets the argv")
+    void shownLineReplacesTheArgvInTheHeader() throws Exception {
+        List<String> busLines = new java.util.concurrent.CopyOnWriteArrayList<>();
+        RackBus.Listener tap = (device, line, err) -> {
+            if ("shown".equals(device)) {
+                busLines.add(line);
+            }
+        };
+        RackBus.subscribe(tap);
+        try {
+            CountDownLatch done = new CountDownLatch(1);
+            CommandExecutor.run("shown", new File("."), Map.of(),
+                    List.of("sh", "-c", "test \"$1\" = hunter2 && echo arrived", "sh", "hunter2"),
+                    "sh -c check ${input:token}", line -> { }, code -> done.countDown());
+            assertThat(done.await(10, TimeUnit.SECONDS)).isTrue();
+            assertThat(busLines).as("the header is the line it was given, the argv reached the process")
+                    .containsExactly("$ sh -c check ${input:token}", "arrived", "[exit 0]");
+
+            busLines.clear();
+            CountDownLatch again = new CountDownLatch(1);
+            CommandExecutor.run("shown", new File("."), Map.of(), List.of("sh", "-c", "true"),
+                    null, line -> { }, code -> again.countDown());
+            assertThat(again.await(10, TimeUnit.SECONDS)).isTrue();
+            assertThat(busLines).as("no line given: the argv, as every caller before this had it")
+                    .containsExactly("$ sh -c true", "[exit 0]");
+        } finally {
+            RackBus.unsubscribe(tap);
+        }
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
     @DisplayName("A command that reads stdin must finish instantly, not hang")
     void shouldNotHangOnStdinReads() throws Exception {
         CountDownLatch done = new CountDownLatch(1);
