@@ -744,6 +744,29 @@ official client.
   heavy siblings are skipped, and on a very large project the dialog
   says it indexed the first 2,000 files rather than pretending it read
   everything.
+- **Symbols in This File** — Navigate ▸ Go to Symbol in This File…
+  puts `@` in Quick Search and lists the file's own functions, classes
+  and rules with their lines; type after the `@` to narrow, Enter to
+  jump. It is the outline the Navigator shows, searched.
+- **Format** (Source ▸ Format; ⇧⌥F, VS Code's chord, on macOS) formats
+  HTML, CSS, JSON and YAML with the editor's own formatters, and a
+  JavaScript, TypeScript, Vue, Svelte, Astro or GraphQL file with the
+  project's own Prettier when the project configures one. A project
+  that does not is told so on the status line, with the door that
+  formats with Prettier's defaults (right-click ▸ Format with Prettier)
+  named; text you type while Prettier runs is never overwritten.
+- **Toggle Block Comment** (⇧⌥A; Shift+Alt+A, and Ctrl+Shift+A on
+  Linux) wraps the selection, or the caret's line, in the language's
+  block delimiters and takes them off again. A range that already holds
+  a delimiter is refused rather than broken, and a language with no
+  block comment says so. **View ▸ Word Wrap** (⌥Z / Alt+Z) wraps long
+  lines for every editor of the file's language, and remembers it.
+- **Your team's snippets** — the `.vscode/*.code-snippets` files a
+  repository carries are offered in completion: type a prefix, press
+  ⌃Space, and the row reads *prefix — Name (description)* with the
+  snippet file beside it. Accepting it inserts the body with its tab
+  stops (Tab moves between them), mirrors, variables and transforms. A
+  snippet is offered only in the languages its `scope` names.
 - **The Tests window (⌥⌘2**, or Window ▸ Tests**)** shows every test in
   the aimed project *before anything runs* — discovered with the same
   patterns Run Focused Test uses, so the window never lists a test it
@@ -790,6 +813,13 @@ official client.
   wins wherever both say something. VS Code's
   `editor.detectIndentation`, which lets a file's own indentation win,
   has no counterpart here.
+- **The extensions a repository recommends** — VS Code extensions do
+  not install here, so **Tools ▸ Recommended VS Code Extensions…**
+  answers the question a `.vscode/extensions.json` raises: for each
+  recommended extension, what does that job in NMOX Studio (a built-in
+  feature, a window, a rack device, a language server and whether it is
+  installed) or that nothing does. An extension it does not know is
+  said to be unknown, never guessed at.
 - **Color literals show their color** in CSS, SCSS, and Less: every
   `#hex`, `rgb()`, `hsl()`, `hwb()`, `oklch()`, `oklab()`, `lab()`,
   `lch()`, and named color is painted as the color it names, right
