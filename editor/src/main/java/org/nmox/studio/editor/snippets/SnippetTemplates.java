@@ -97,6 +97,48 @@ public final class SnippetTemplates {
     }
 
     /**
+     * The most characters one accepted snippet may insert. VS Code has
+     * no such bound; a repository's snippet file is somebody else's, and
+     * a body of a few hundred characters can name its placeholders or
+     * the caret's line so often that the text runs to millions, all of
+     * it built on the event thread when the snippet is accepted.
+     */
+    public static final int MAX_INSERTED_CHARS = 1_000_000;
+
+    /**
+     * Everything one translation may build, counted across every piece
+     * of text it makes (the template, the plain text, each placeholder's
+     * default as it is read): what bounds the memory of a body whose
+     * defaults name one another, before any one piece is past
+     * {@link #MAX_INSERTED_CHARS}.
+     */
+    static final long MAX_BUILT_CHARS = 8L * MAX_INSERTED_CHARS;
+
+    /**
+     * The most times one translation may step into a body's nodes while
+     * reading placeholder defaults. A body is at most
+     * {@link SnippetBody#MAX_NODES} nodes and each default is read once
+     * (for each of the four ways its first line can sit); only defaults
+     * that name one another in a ring are read again, and this is where
+     * that stops.
+     */
+    static final int MAX_STEPS = 1_000_000;
+
+    /**
+     * The snippet would insert more than {@link #MAX_INSERTED_CHARS}
+     * characters; the status line names this refusal, since it is the one
+     * the user can understand without the log.
+     */
+    public static final class TooLarge extends Refused {
+
+        private static final long serialVersionUID = 1L;
+
+        TooLarge() {
+            super("it would insert more than " + MAX_INSERTED_CHARS + " characters");
+        }
+    }
+
+    /**
      * A parameter that is another one, transformed.
      *
      * @param source the parameter typed into
@@ -165,6 +207,12 @@ public final class SnippetTemplates {
         private final SnippetContext ctx;
         private final Map<Integer, List<Node>> defaults = new HashMap<>();
         private final Map<Integer, String> defaultText = new HashMap<>();
+        /** A stop's default as read at one kind of position, keyed (number, at start, after a break): each read once. */
+        private final Map<Long, String> flattened = new HashMap<>();
+        /** How many times a ring of defaults was cut short; a reading that cut one is not kept in {@link #flattened}. */
+        private int cuts;
+        private long built;
+        private int steps;
         private final Map<String, Integer> invented = new LinkedHashMap<>();
         private final Map<Integer, Integer> transformed = new HashMap<>();
         private final Set<Integer> masters = new HashSet<>();
@@ -289,29 +337,26 @@ public final class SnippetTemplates {
                 String shown = transform(ts.transform(), start);
                 parameter(target, shown, " editable=false");
                 lives.add(new Live(name, target, ts.transform()));
-                plain.append(shown);
+                plainText(shown);
             } else if (masters.add(number)) {
                 parameter(name, start, " ordering=" + number);
-                plain.append(start);
+                plainText(start);
             } else {
                 template.append("${").append(name).append('}');
-                plain.append(start);
+                plainText(start);
             }
         }
 
         private String defaultText(int number) throws Refused {
             String known = defaultText.get(number);
             if (known == null) {
-                List<Node> children = defaults.get(number);
-                Set<Integer> visiting = new HashSet<>();
-                visiting.add(number);
-                known = children == null ? "" : flat(children, atStart(), afterBreak(), visiting);
+                known = stopText(number, atStart(), afterBreak(), new HashSet<>());
                 defaultText.put(number, known);
             }
             return known;
         }
 
-        private void parameter(String name, String start, String hints) {
+        private void parameter(String name, String start, String hints) throws Refused {
             template.append("${").append(name);
             if (grammarCarries(start)) {
                 template.append(" default=\"").append(start).append('"');
@@ -319,10 +364,17 @@ public final class SnippetTemplates {
                 values.put(name, start);
             }
             template.append(hints).append('}');
+            spend(start.length() + name.length() + hints.length());
+        }
+
+        /** The plain text grown by one occurrence of a stop. */
+        private void plainText(String text) throws Refused {
+            plain.append(text);
+            spend(text.length());
         }
 
         /** Literal text: in the template every dollar is doubled, or the engine would read a parameter. */
-        private void literal(String text) {
+        private void literal(String text) throws Refused {
             for (int i = 0; i < text.length(); i++) {
                 char c = text.charAt(i);
                 if (c == '$') {
@@ -331,11 +383,28 @@ public final class SnippetTemplates {
                 template.append(c);
             }
             plain.append(text);
+            spend(2L * text.length());
+        }
+
+        /**
+         * Counts {@code chars} more built; refuses the snippet once what it
+         * inserts, or everything built for it, is past its bound.
+         */
+        private void spend(long chars) throws TooLarge {
+            built += chars;
+            if (plain.length() > MAX_INSERTED_CHARS || template.length() > 2L * MAX_INSERTED_CHARS
+                    || built > MAX_BUILT_CHARS) {
+                throw new TooLarge();
+            }
         }
 
         /** A variable's value, transformed when it carries a transform; null when it is not set. */
         private String value(Variable v) throws Refused {
             String raw = SnippetVariables.resolve(v.name(), ctx);
+            if (raw != null && raw.length() > SnippetVariables.MAX_VALUE_CHARS) {
+                throw new Refused("$" + v.name() + " holds " + raw.length() + " characters, over the "
+                        + SnippetVariables.MAX_VALUE_CHARS + " a snippet takes from a variable");
+            }
             if (v.transform() != null) {
                 return transform(v.transform(), raw == null ? "" : raw);
             }
@@ -347,27 +416,71 @@ public final class SnippetTemplates {
                 throws Refused {
             StringBuilder b = new StringBuilder();
             for (Node n : nodes) {
+                step();
                 boolean start = atStart && b.length() == 0;
                 boolean broke = b.length() == 0 ? afterBreak : b.charAt(b.length() - 1) == '\n';
+                String piece;
                 if (n instanceof Text t) {
-                    b.append(adjust(t.value(), start, broke));
+                    piece = adjust(t.value(), start, broke);
                 } else if (n instanceof Variable v) {
                     String value = value(v);
-                    b.append(value != null ? value : flat(v.children(), start, broke, visiting));
+                    piece = value != null ? value : flat(v.children(), start, broke, visiting);
                 } else if (n instanceof TabStop ts) {
-                    if (ts.number() == 0) {
-                        b.append(flat(ts.children(), start, broke, visiting));
-                    } else if (visiting.add(ts.number())) {
-                        // a stop inside its own default (${1:a ${1}}) reads as nothing rather than forever
-                        List<Node> inner = defaults.get(ts.number());
-                        if (inner != null) {
-                            b.append(flat(inner, start, broke, visiting));
-                        }
-                        visiting.remove(ts.number());
-                    }
+                    piece = ts.number() == 0 ? flat(ts.children(), start, broke, visiting)
+                            : stopText(ts.number(), start, broke, visiting);
+                } else {
+                    continue;
+                }
+                b.append(piece);
+                built += piece.length();
+                if (b.length() > MAX_INSERTED_CHARS || built > MAX_BUILT_CHARS) {
+                    throw new TooLarge();
                 }
             }
             return b.toString();
+        }
+
+        /**
+         * Stop {@code number}'s default as it reads at a position, each
+         * read once for each kind of position: a default that names another
+         * stop four times, which names another four times, sixteen deep,
+         * is read sixteen times and not four billion. A stop inside its
+         * own default ({@code ${1:a ${1}}}) reads as nothing there rather
+         * than forever, and a reading cut short that way depends on where
+         * it began, so it is not kept.
+         */
+        private String stopText(int number, boolean start, boolean broke, Set<Integer> visiting) throws Refused {
+            long key = ((long) number << 2) | (start ? 2 : 0) | (broke ? 1 : 0);
+            String known = flattened.get(key);
+            if (known != null) {
+                return known;
+            }
+            if (!visiting.add(number)) {
+                cuts++;
+                return "";
+            }
+            try {
+                List<Node> inner = defaults.get(number);
+                int before = cuts;
+                String text = inner == null ? "" : flat(inner, start, broke, visiting);
+                if (cuts == before) {
+                    flattened.put(key, text);
+                }
+                return text;
+            } finally {
+                visiting.remove(number);
+            }
+        }
+
+        /** One step into a default; refuses a body whose defaults are read without end, or past the clock. */
+        private void step() throws Refused {
+            if (++steps > MAX_STEPS) {
+                throw new Refused("its placeholders name one another more than " + MAX_STEPS + " times over");
+            }
+            if ((steps & 0xFF) == 0 && System.nanoTime() - deadline > 0) {
+                throw new Refused("its placeholders were not read within "
+                        + (budgetNanos / 1_000_000L) + " ms");
+            }
         }
 
         /**

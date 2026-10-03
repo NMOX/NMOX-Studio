@@ -30,12 +30,15 @@ import org.openide.util.RequestProcessor;
  * {@code <language>.json} is a USER snippet file, which lives in VS
  * Code's own settings folder and is not project configuration.)
  *
- * <p><b>Where.</b> In the {@code .vscode} of the project's root
- * ({@link ProjectRoot}) and of every folder between the edited file and
- * its repository's root ({@link VsCodeSettings#directoriesToRepositoryRoot},
- * the walk the settings reader uses): a monorepo keeps its
- * {@code .vscode} at the top while the nearest {@code package.json} is
- * three folders down. Never the home folder's.
+ * <p><b>Where.</b> In the {@code .vscode} of every folder between the
+ * edited file and its repository's root
+ * ({@link VsCodeSettings#directoriesToRepositoryRoot}, the walk the
+ * settings reader uses): a monorepo keeps its {@code .vscode} at the top
+ * while the nearest {@code package.json} is three folders down. A file
+ * in no repository gets no project snippets at all, as it gets no
+ * settings: a {@code package.json} and a {@code .vscode} in a shared
+ * folder such as {@code /tmp} are whoever planted them. Never the home
+ * folder's.
  *
  * <p><b>The files are data and are never executed</b>, so reading them
  * asks for no Workspace Trust: nothing here spawns, loads code or
@@ -74,7 +77,8 @@ public final class ProjectSnippets {
     /** Parsed files kept; past it the map starts over rather than grow. */
     static final int CACHE_CAP = 64;
 
-    private static final RequestProcessor RP = new RequestProcessor("nmox-project-snippets", 1);
+    /** The reading lane; package-visible so a test can hold it busy. */
+    static final RequestProcessor RP = new RequestProcessor("nmox-project-snippets", 1);
 
     private record Loaded(long modified, long length, List<Snippet> snippets) {
     }
@@ -83,6 +87,9 @@ public final class ProjectSnippets {
 
     /** The last complete answer for a folder: what a caller that could not wait is given. */
     private static final Map<String, Found> LAST = new ConcurrentHashMap<>();
+
+    /** The read queued or running for a folder, so a folder never has two. */
+    private static final Map<String, Future<Found>> PENDING = new ConcurrentHashMap<>();
 
     /** Things already said to the log, so each is said once. */
     private static final Set<String> SAID = ConcurrentHashMap.newKeySet();
@@ -113,7 +120,7 @@ public final class ProjectSnippets {
             return NOTHING;
         }
         String key = file.getParentFile().getPath();
-        Future<Found> reading = RP.submit(() -> read(file));
+        Future<Found> reading = pending(key, file);
         try {
             return reading.get(millis, TimeUnit.MILLISECONDS);
         } catch (TimeoutException slow) {
@@ -130,6 +137,23 @@ public final class ProjectSnippets {
         }
     }
 
+    /**
+     * The read for {@code key}'s folder: the one already queued or running
+     * when there is one, else a new one. A completion query asks for every
+     * keystroke and the lane reads one folder at a time, so without this a
+     * slow disk would queue a read per keystroke; with it a folder has at
+     * most one, and every caller waiting on that folder waits on it.
+     */
+    static Future<Found> pending(String key, File file) {
+        return PENDING.computeIfAbsent(key, k -> RP.submit(() -> {
+            try {
+                return read(file);
+            } finally {
+                PENDING.remove(k);
+            }
+        }));
+    }
+
     /** Reads on the calling thread: disk. Tests call it directly; everything else goes through {@link #within}. */
     static Found read(File file) {
         File parent = file.getParentFile();
@@ -137,10 +161,15 @@ public final class ProjectSnippets {
             return NOTHING;
         }
         Set<File> roots = new LinkedHashSet<>(VsCodeSettings.directoriesToRepositoryRoot(file));
-        File project = ProjectRoot.above(parent);
-        if (project != null) {
-            roots.add(project);
+        if (roots.isEmpty()) {
+            // no repository around the file: a .vscode beside a package.json in a
+            // shared folder (/tmp) is whoever put it there, not this project's team
+            return NOTHING;
         }
+        // the project root is never added to the walk: it is inside it already (the
+        // repository root holds .git, which ends ProjectRoot's climb too); here it is
+        // only the workspace when no folder has snippets
+        File project = ProjectRoot.above(parent);
         String home = System.getProperty("user.home");
         List<Snippet> all = new ArrayList<>();
         File workspace = null;

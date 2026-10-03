@@ -421,6 +421,7 @@ class SnippetEngineTest {
     void fromTheFileToTheEditor(@org.junit.jupiter.api.io.TempDir Path tmp) throws Exception {
         Path project = java.nio.file.Files.createDirectories(tmp.resolve("shop"));
         java.nio.file.Files.writeString(project.resolve("package.json"), "{}");
+        java.nio.file.Files.createDirectories(project.resolve(".git")); // project snippets are a repository's
         java.nio.file.Files.createDirectories(project.resolve(".vscode"));
         // as it sits in the repository: JSON's own escapes around the snippet's
         java.nio.file.Files.writeString(project.resolve(".vscode/team.code-snippets"), """

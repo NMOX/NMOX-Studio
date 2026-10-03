@@ -44,6 +44,14 @@ final class SnippetVariables {
     /** A clipboard longer than this is not pasted into a snippet. */
     static final int MAX_CLIPBOARD_CHARS = 64 * 1024;
 
+    /**
+     * The longest value any variable may give a snippet: the clipboard's
+     * bound, held for the caret's line and the selection too. A longer one
+     * refuses the snippet ({@link SnippetTemplates}) rather than insert it
+     * without the text it names.
+     */
+    static final int MAX_VALUE_CHARS = MAX_CLIPBOARD_CHARS;
+
     private SnippetVariables() {
     }
 

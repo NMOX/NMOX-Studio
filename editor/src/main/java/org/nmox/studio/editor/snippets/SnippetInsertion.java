@@ -22,6 +22,7 @@ import org.netbeans.editor.BaseTextUI;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.nmox.studio.core.util.EditedFile;
+import org.nmox.studio.core.util.PlainStatus;
 import org.nmox.studio.editor.polyglot.LanguageComments;
 import org.nmox.studio.editor.snippets.SnippetBody.Refused;
 import org.nmox.studio.editor.snippets.SnippetTemplates.CodeTemplateText;
@@ -84,10 +85,20 @@ final class SnippetInsertion {
      */
     @Messages({
         "# {0} - the snippet's name",
-        "SnippetInsertion_refused=Snippet “{0}” was not inserted: it cannot be honoured whole in this file. The log says why."
+        "SnippetInsertion_refused=Snippet “{0}” was not inserted: it cannot be honoured whole in this file. The log says why.",
+        "# {0} - the snippet's name",
+        "# {1} - the most characters a snippet may insert, already written as digits",
+        "SnippetInsertion_tooLarge=Snippet “{0}” was not inserted: it would insert more than {1} characters."
     })
     static boolean insert(JTextComponent component, Snippet snippet, File workspace, int start, int typed) {
         return insert(component, snippet, workspace, start, typed, SnippetInsertion::throughTheEngine);
+    }
+
+    /** The status line's sentence for a snippet refused at accept: its size by name, anything else through the log. */
+    static String refusal(String name, Refused refused) {
+        return refused instanceof SnippetTemplates.TooLarge
+                ? Bundle.SnippetInsertion_tooLarge(name, String.valueOf(SnippetTemplates.MAX_INSERTED_CHARS))
+                : Bundle.SnippetInsertion_refused(name);
     }
 
     /** How a translated snippet is handed to the code-template engine; a parameter so a test can make the engine fail. */
@@ -122,7 +133,7 @@ final class SnippetInsertion {
         } catch (Refused refused) {
             LOG.log(Level.INFO, "Snippet \"{0}\" ({1}) was not inserted because {2}",
                     new Object[] {snippet.name(), snippet.source(), refused.getMessage()});
-            StatusDisplayer.getDefault().setStatusText(Bundle.SnippetInsertion_refused(snippet.name()));
+            StatusDisplayer.getDefault().setStatusText(PlainStatus.text(refusal(snippet.name(), refused)));
             return false;
         } catch (BadLocationException moved) {
             // the document changed between the list and the pick; the offsets are stale

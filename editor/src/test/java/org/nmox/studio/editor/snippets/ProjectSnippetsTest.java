@@ -69,6 +69,7 @@ class ProjectSnippetsTest {
     void readsOnlySnippetFiles(@TempDir Path tmp) throws IOException {
         Path project = tmp.resolve("shop");
         write(project.resolve("package.json"), "{}");
+        Files.createDirectories(project.resolve(".git")); // a repository: no repository, no snippets
         write(project.resolve(".vscode/team.code-snippets"), snippet("Team log", "log"));
         write(project.resolve(".vscode/api.code-snippets"), snippet("Api call", "api"));
         write(project.resolve(".vscode/javascript.json"), snippet("User snippet", "usr"));
@@ -108,6 +109,7 @@ class ProjectSnippetsTest {
     void linkOutIsNotRead(@TempDir Path tmp) throws IOException {
         Path project = tmp.resolve("shop");
         write(project.resolve("package.json"), "{}");
+        Files.createDirectories(project.resolve(".git")); // a repository: no repository, no snippets
         Path outside = write(tmp.resolve("outside/secrets.code-snippets"), snippet("From outside", "out"));
         Path inside = write(project.resolve("shared/common.snippets"), snippet("From inside", "in"));
         write(project.resolve(".vscode/own.code-snippets"), snippet("Own", "own"));
@@ -133,6 +135,7 @@ class ProjectSnippetsTest {
     void folderLinkOutIsNotRead(@TempDir Path tmp) throws IOException {
         Path project = tmp.resolve("shop");
         write(project.resolve("package.json"), "{}");
+        Files.createDirectories(project.resolve(".git")); // a repository: no repository, no snippets
         Path foreign = tmp.resolve("foreign-vscode");
         write(foreign.resolve("x.code-snippets"), snippet("Foreign", "f"));
         try {
@@ -154,6 +157,7 @@ class ProjectSnippetsTest {
     void badFilesAreSkippedOnce(@TempDir Path tmp) throws IOException {
         Path project = tmp.resolve("shop");
         write(project.resolve("package.json"), "{}");
+        Files.createDirectories(project.resolve(".git")); // a repository: no repository, no snippets
         write(project.resolve(".vscode/a-broken.code-snippets"), "{ this is not json");
         write(project.resolve(".vscode/b-huge.code-snippets"),
                 "{\"Huge\": {\"prefix\": \"h\", \"body\": \"" + "x".repeat((int) ProjectSnippets.MAX_BYTES) + "\"}}");
@@ -176,6 +180,7 @@ class ProjectSnippetsTest {
     void fileCap(@TempDir Path tmp) throws IOException {
         Path project = tmp.resolve("shop");
         write(project.resolve("package.json"), "{}");
+        Files.createDirectories(project.resolve(".git")); // a repository: no repository, no snippets
         for (int i = 0; i < ProjectSnippets.MAX_FILES + 5; i++) {
             write(project.resolve(".vscode/f%02d.code-snippets".formatted(i)), snippet("S%02d".formatted(i), "p" + i));
         }
@@ -192,6 +197,7 @@ class ProjectSnippetsTest {
     void cachedByVersion(@TempDir Path tmp) throws IOException {
         Path project = tmp.resolve("shop");
         write(project.resolve("package.json"), "{}");
+        Files.createDirectories(project.resolve(".git")); // a repository: no repository, no snippets
         Path file = write(project.resolve(".vscode/team.code-snippets"), snippet("Before", "b"));
         File edited = write(project.resolve("a.js"), "").toFile();
         Snippet once = ProjectSnippets.read(edited).snippets().get(0);
@@ -219,6 +225,7 @@ class ProjectSnippetsTest {
     void withinUsesTheLane(@TempDir Path tmp) throws Exception {
         Path project = tmp.resolve("shop");
         write(project.resolve("package.json"), "{}");
+        Files.createDirectories(project.resolve(".git")); // a repository: no repository, no snippets
         write(project.resolve(".vscode/team.code-snippets"), snippet("Lane", "l"));
         File edited = write(project.resolve("a.js"), "").toFile();
         assertThat(names(ProjectSnippets.within(edited, 10_000))).containsExactly("Lane");

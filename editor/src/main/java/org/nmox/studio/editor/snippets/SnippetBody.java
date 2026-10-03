@@ -117,8 +117,11 @@ public record SnippetBody(List<Node> nodes) {
             implements Format {
     }
 
-    /** A body, or an insertion, that is refused whole; the message says why, in English, for the log. */
-    public static final class Refused extends Exception {
+    /**
+     * A body, or an insertion, that is refused whole; the message says why, in English, for the log.
+     * Not final for one reason: {@link SnippetTemplates.TooLarge}, the refusal the status line names.
+     */
+    public static class Refused extends Exception {
 
         private static final long serialVersionUID = 1L;
 
