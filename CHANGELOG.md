@@ -4,6 +4,118 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.6.0] - 2026-10-03
+
+**A repository that was set up for VS Code works here as its team left
+it.** The files under `.vscode` were read since 3.1.0, and each one
+stopped short of what teams actually commit: a task that depended on
+another was refused, `"program": "${file}"` was refused, a `preLaunchTask`
+was refused, recommended extensions and snippets were not read at all.
+This release reads them the way they are written, adds the editing
+gestures a switcher's hands reach for, and puts menu doors on all of it.
+Nothing is approximated: what cannot run as written is still refused by
+name.
+
+### Added
+
+- **`tasks.json`: `dependsOn`, `${input:…}` and the editor's variables.**
+  A task runs with the tasks it depends on first, together or in
+  sequence (`dependsOrder`), a shared dependency once, after one
+  Workspace Trust question for the whole run; the first task that fails
+  stops the run and the status line says which. `${file}`,
+  `${relativeFile}`, `${lineNumber}`, `${selectedText}` and the rest of
+  that family come from the active editor, read at the moment Enter is
+  pressed. `promptString` and `pickString` inputs are asked before
+  anything starts, and a `"password": true` answer reaches the process
+  and nothing that is printed. The whole run is decided before any of it
+  starts: one task that cannot run as written means nothing runs
+  (`VsCodeTaskPlan`).
+- **`launch.json`: `${file}`, `envFile`, `runtimeExecutable`,
+  `runtimeArgs`, Node attach, and `preLaunchTask`.** "Debug the file I
+  am looking at" works; an `npm run dev`, a `tsx` or a
+  `--experimental-strip-types` configuration starts as written; a Node
+  `"request": "attach"` attaches to a `node --inspect` process on this
+  machine. A `preLaunchTask` that names a task of `tasks.json` runs
+  first, through the same code as Enter on that task, and the debugger
+  starts when it has exited zero; a `program` the task builds is looked
+  for after the task, not before. A task that fails, is stopped or is
+  refused starts no debugger, and a background task is refused by name:
+  VS Code waits for its problem matcher, which nothing here reads yet.
+- **Run ▸ Run Task… and Debug ▸ Start Debugging….** The aimed project's
+  tasks and launch configurations in a list, for someone who looks in the
+  menus before typing a name into Quick Search. The chosen row starts
+  through the Quick Search providers' own code, so the refusals, the
+  trust question, the Output tab and the toolbar ■ are the same.
+- **Tools ▸ Recommended VS Code Extensions….** VS Code extensions do not
+  install here, so the sheet answers the question
+  `.vscode/extensions.json` raises: for each recommended extension, what
+  does that job in NMOX Studio — a built-in feature, a window it can
+  open, a rack device, a language server and whether it is installed — or
+  that nothing does. 116 extensions are known, each row a claim checked
+  against this repository; an extension that is not in the table is said
+  to be unknown, never guessed at. The notice a `.vscode` folder raises
+  on first aim names the file and opens the sheet.
+- **Your team's snippets.** `.vscode/*.code-snippets` files are read as
+  they are and offered in completion (⌃Space) as *prefix — Name
+  (description)* with the file beside it, limited to the languages a
+  snippet's `scope` names. Accepting one inserts the body with its tab
+  stops, mirrors, variables and `/regex/format/` transforms. A transform
+  that cannot be run safely leaves the snippet out by name rather than
+  inserting half of it.
+- **Editing gestures.** Toggle Block Comment (⇧⌥A; Shift+Alt+A, and
+  Ctrl+Shift+A on Linux) for every language that has a block comment,
+  refusing a range that already holds a delimiter rather than breaking
+  it; View ▸ Word Wrap (⌥Z / Alt+Z); Expand Line Selection (⌘L where the
+  keymap profile leaves the chord free, and in Quick Search everywhere);
+  and **Symbols in This File**, a Quick Search category over the editor's
+  outline that answers to VS Code's `@name` (Navigate ▸ Go to Symbol in
+  This File… types the `@`).
+
+### Fixed
+
+- **⇧⌥F formatted the file and then typed `Ï`.** On macOS an Option
+  chord also arrives as a typed character, and 3.2.0 bound VS Code's
+  format chord straight to the editor's format action: with a selection,
+  the character replaced it. Found in this release's walk, where
+  `function nameHandler` with `name` selected became `function ÏHandler`
+  while ⇧⌥A beside it, whose action arms the new typed-echo guard, typed
+  nothing. The chord now runs an action that swallows that one character
+  and then formats (`FormatChordAction`). No walk had pressed the chord
+  before: a binding was measured as resolving to its action, and that is
+  not the same as pressing it.
+- **Coming from VS Code said things that had stopped being true** (a
+  task that depends on another is refused; `${file}` is a value only VS
+  Code can supply), in English and in fourteen languages, and gained the
+  rows a switcher looks for and did not find: snippets, auto save,
+  Markdown preview, the timeline, breadcrumbs.
+
+### Changed
+
+- **One definition of the editor's file variables.** `${file}`,
+  `${fileBasenameNoExtension}` and their siblings mean the same string
+  in a task and in a launch configuration, and "the editor" is one rule
+  for both: the tab with the focus when it is an editor, otherwise the
+  tab showing in the editor area.
+
+### Engineering
+
+- Built as five parallel units on a pinned commit, folded by cherry-pick
+  onto one branch with one verify, then walked in the assembled app: a
+  task with its trust question (Keep Safe spawns nothing), an input, a
+  `preLaunchTask` chain that builds the program it then debugs, the
+  failed and the background task refusals, `${file}` with an `envFile`,
+  the extensions sheet, the symbol list, a snippet inserted with its tab
+  stop selected, the block comment chord. The walk is what found the
+  `Ï`.
+- The walk also found that Quick Search cannot be driven by the
+  background tools, which is why the menu doors exist; and that the
+  builders' Maven JVMs share the walk copy's bundle identity, so the walk
+  copy runs on a JDK whose identity nothing else uses.
+- Fourteen translators, one per language, each working from a list
+  generated out of the built jars (`ADD`, `RETRANSLATE`, `DELETE` per
+  file). Two of them, independently, found a menu path in the hour-old
+  English that names no menu.
+
 ## [3.5.13] - 2026-10-02
 
 **3.5.12 mirrored too much.** In Hebrew and Arabic it exchanged the sides
@@ -25597,6 +25709,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.6.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.13...v3.6.0
 [3.5.13]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.12...v3.5.13
 [3.5.12]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.11...v3.5.12
 [3.5.11]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.10...v3.5.11
