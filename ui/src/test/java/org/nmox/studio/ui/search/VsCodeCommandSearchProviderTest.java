@@ -52,6 +52,8 @@ class VsCodeCommandSearchProviderTest {
         assertThat(titles("keyboard shortcuts", ALL)).containsExactly("Preferences: Open Keyboard Shortcuts");
         assertThat(titles("problems", ALL)).containsExactly("View: Toggle Problems");
         assertThat(titles("install extensions", ALL)).containsExactly("Extensions: Install Extensions");
+        assertThat(titles("recommended extensions", ALL)).as("VS Code's own title for the workspace's recommendations")
+                .containsExactly("Extensions: Show Recommended Extensions");
         assertThat(titles("screencast", ALL)).containsExactly("Developer: Toggle Screencast Mode");
         assertThat(titles("terminal", ALL)).contains("View: Toggle Terminal", "Terminal: Create New Terminal");
         assertThat(titles(">toggle terminal", ALL)).as("VS Code's > command prefix, typed from habit")
