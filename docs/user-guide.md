@@ -1930,12 +1930,14 @@ same way — *Run task: build — make all* — and Enter runs the task behind
 the same trust question, in the Output window and under the toolbar ■; a
 shell task runs in the shell VS Code would use (your `$SHELL`, a login
 shell on macOS; PowerShell on Windows) or the one its `options.shell`
-names; a task that needs a value only VS Code can supply, or depends on
-another task, says so on the status line instead of running. The
-repository's `.vscode/launch.json` lists its configurations beside them —
-*Debug: Launch Program — ${workspaceFolder}/server.js* — and Enter
-starts the breakpoint debugger on that configuration after the same
-trust question.
+names; the tasks it `dependsOn` run first, `${file}` is the file in the
+editor and an `${input:…}` question is asked before anything starts; a
+task that needs a value only VS Code can supply says so on the status
+line instead of running. The repository's `.vscode/launch.json` lists
+its configurations beside them — *Debug: Launch Program —
+${workspaceFolder}/server.js* — and Enter starts the breakpoint debugger
+on that configuration after the same trust question. Both lists are in
+the menus too: **Run ▸ Run Task…** and **Debug ▸ Start Debugging…**.
 
 **Find in Projects (⇧⌘F) searches your code, not what the repository
 ignores.** In a git repository it skips whatever the repository's own
