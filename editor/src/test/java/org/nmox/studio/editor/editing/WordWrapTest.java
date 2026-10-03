@@ -228,8 +228,9 @@ class WordWrapTest {
         ToggleWordWrapAction.editors = () -> List.of(editor);
         int before = editor.getKeyListeners().length;
         ToggleWordWrapKeyAction key = new ToggleWordWrapKeyAction();
-        key.actionPerformed(new java.awt.event.ActionEvent(editor, java.awt.event.ActionEvent.ACTION_PERFORMED,
-                ToggleWordWrapKeyAction.NAME, java.awt.event.ActionEvent.ALT_MASK), editor);
+        TypedEchoTest.pressing(editor, () -> key.actionPerformed(new java.awt.event.ActionEvent(editor,
+                java.awt.event.ActionEvent.ACTION_PERFORMED, ToggleWordWrapKeyAction.NAME,
+                java.awt.event.ActionEvent.ALT_MASK), editor));
         assertThat(ToggleWordWrapAction.wrapsNow(editor)).isTrue();
         assertThat(editor.getKeyListeners()).hasSize(before + 1);
         assertThat(said).containsExactly("Word wrap is on for every typescript editor");

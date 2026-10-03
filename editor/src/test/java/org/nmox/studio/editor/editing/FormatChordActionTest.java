@@ -62,7 +62,8 @@ class FormatChordActionTest {
     void theChordFormatsAndSwallowsItsCharacter() {
         JTextArea area = editorWith(new KitWithFormat());
         int before = area.getKeyListeners().length;
-        new FormatChordAction().actionPerformed(press(area, ActionEvent.ALT_MASK | ActionEvent.SHIFT_MASK), area);
+        TypedEchoTest.pressing(area,
+                () -> new FormatChordAction().actionPerformed(press(area, ActionEvent.ALT_MASK | ActionEvent.SHIFT_MASK), area));
         assertThat(ran).containsExactly("format");
         assertThat(area.getKeyListeners()).as("the guard that eats the chord's own typed character")
                 .hasSize(before + 1);

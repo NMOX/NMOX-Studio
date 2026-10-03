@@ -107,4 +107,51 @@ class TypedEchoTest {
         TypedEcho.swallowNext(field);
         assertThat(field.getKeyListeners()).hasSize(before + 1);
     }
+
+    /**
+     * Runs {@code action} as the event thread would while a key is being
+     * pressed on {@code source}: what an editor keybinding sees. Outside
+     * it, a test is a click as far as {@link TypedEcho#arms} can tell.
+     */
+    static void pressing(java.awt.Component source, Runnable action) {
+        java.util.function.Supplier<java.awt.AWTEvent> real = TypedEcho.currentEvent;
+        KeyEvent press = new KeyEvent(source, KeyEvent.KEY_PRESSED, System.currentTimeMillis(),
+                KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, KeyEvent.VK_A, KeyEvent.CHAR_UNDEFINED);
+        TypedEcho.currentEvent = () -> press;
+        try {
+            action.run();
+        } finally {
+            TypedEcho.currentEvent = real;
+        }
+    }
+
+    @Test
+    @DisplayName("only the chord's key press arms the guard: a click made with Alt held types nothing and arms nothing")
+    void onlyAKeyPressArms() {
+        Field field = new Field("ab");
+        ActionEvent alt = new ActionEvent(field, ActionEvent.ACTION_PERFORMED, "x", ActionEvent.ALT_MASK);
+        java.util.function.Supplier<java.awt.AWTEvent> real = TypedEcho.currentEvent;
+        try {
+            // a menu row or a toolbar button clicked while Alt is held
+            TypedEcho.currentEvent = () -> new java.awt.event.MouseEvent(field, java.awt.event.MouseEvent.MOUSE_RELEASED,
+                    0L, java.awt.event.InputEvent.ALT_DOWN_MASK, 1, 1, 1, false, java.awt.event.MouseEvent.BUTTON1);
+            assertThat(TypedEcho.arms(alt)).isFalse();
+            // nothing being dispatched at all (a call from another action, a test)
+            TypedEcho.currentEvent = () -> null;
+            assertThat(TypedEcho.arms(alt)).isFalse();
+            // the key's release or its typed character are not the press
+            TypedEcho.currentEvent = () -> released(field, KeyEvent.VK_A);
+            assertThat(TypedEcho.arms(alt)).isFalse();
+        } finally {
+            TypedEcho.currentEvent = real;
+        }
+        boolean[] armed = new boolean[1];
+        pressing(field, () -> armed[0] = TypedEcho.arms(alt));
+        assertThat(armed[0]).isTrue();
+        pressing(field, () -> armed[0] = TypedEcho.arms(null));
+        assertThat(armed[0]).isFalse();
+        pressing(field, () -> armed[0] = TypedEcho.arms(
+                new ActionEvent(field, ActionEvent.ACTION_PERFORMED, "x", ActionEvent.ALT_MASK | ActionEvent.META_MASK)));
+        assertThat(armed[0]).as("a key press whose chord types nothing").isFalse();
+    }
 }

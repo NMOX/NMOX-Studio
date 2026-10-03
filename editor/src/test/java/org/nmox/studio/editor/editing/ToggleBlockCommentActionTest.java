@@ -156,10 +156,17 @@ class ToggleBlockCommentActionTest {
                 ToggleBlockCommentAction.NAME), area);
         assertThat(area.getKeyListeners()).hasSize(before);
         assertThat(area.getText()).isEqualTo("/* x */");
-        action.actionPerformed(new java.awt.event.ActionEvent(area, java.awt.event.ActionEvent.ACTION_PERFORMED,
-                ToggleBlockCommentAction.NAME, java.awt.event.ActionEvent.ALT_MASK | java.awt.event.ActionEvent.SHIFT_MASK),
-                area);
+        java.awt.event.ActionEvent chord = new java.awt.event.ActionEvent(area,
+                java.awt.event.ActionEvent.ACTION_PERFORMED, ToggleBlockCommentAction.NAME,
+                java.awt.event.ActionEvent.ALT_MASK | java.awt.event.ActionEvent.SHIFT_MASK);
+        // the same Alt modifiers from a click (a menu row): no typed character follows, nothing is armed
+        action.actionPerformed(chord, area);
+        assertThat(area.getKeyListeners()).hasSize(before);
+        assertThat(area.getText()).isEqualTo("x");
+        TypedEchoTest.pressing(area, () -> action.actionPerformed(chord, area));
         assertThat(area.getKeyListeners()).hasSize(before + 1);
+        assertThat(area.getText()).isEqualTo("/* x */");
+        action.actionPerformed(null, area);
         assertThat(area.getText()).isEqualTo("x");
         // no editor at all: nothing happens, and nothing throws
         action.actionPerformed(null, null);
