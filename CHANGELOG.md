@@ -4,6 +4,32 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.8.1] - 2026-10-22
+
+**The PostgreSQL driver moves to 42.7.14, which fixes two security
+vulnerabilities.** Dependabot's pull request is applied by hand and goes
+through the same verify and the same three systems as any other.
+
+### Security
+
+- pgJDBC 42.7.13 to 42.7.14. Both vulnerabilities were checked against how
+  the product uses the driver:
+  - **CVE-2026-107314** (`requireAuth` not enforced when it excludes every
+    authentication method). DB Studio's own connections cannot set it: their
+    URLs are built from host, port and database alone. A **Services** window
+    connection can, because its URL is written by the user and DB Studio has
+    registered its bundled driver for that window since 3.4.1. After this
+    update, such a URL is refused with the driver's own message instead of
+    accepting whatever the server asks for.
+  - **CVE-2026-107315** (padding filled with bytes from earlier statements).
+    Reached only through `ByteStreamWriter`, `CopyIn`, `LargeObject` and
+    `Blob.setBytes`; nothing in the product calls them.
+
+### Changed
+
+- `spotbugs-maven-plugin` 4.10.4.1 to 4.10.5.0 (SpotBugs 4.10.5). The
+  verify that shipped this release ran it over every module.
+
 ## [3.8.0] - 2026-10-22
 
 **A folder of scripts gets a GO button.** The first folder a newcomer
@@ -25826,6 +25852,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.8.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.8.0...v3.8.1
 [3.8.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.7.0...v3.8.0
 [3.7.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.6.0...v3.7.0
 [3.6.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.13...v3.6.0
