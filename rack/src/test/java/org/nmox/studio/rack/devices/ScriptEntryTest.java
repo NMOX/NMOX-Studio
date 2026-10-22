@@ -61,11 +61,15 @@ class ScriptEntryTest {
     }
 
     @Test
-    @DisplayName("a file name with whitespace is quoted the way SOLDER tokenizes; one holding a quote is refused")
+    @DisplayName("a file name with whitespace is quoted the way SOLDER tokenizes; a quote, a control character or a leading dash is refused")
     void quotingFollowsSolder() {
         assertThat(choose("my script.py")).map(ScriptEntry.Entry::command).contains("python3 \"my script.py\"");
         assertThat(choose("it's.py")).as("no quoting makes an apostrophe inert in SOLDER's tokenizer").isEmpty();
         assertThat(choose("say\"hi\".py")).isEmpty();
+        assertThat(choose("-x.py")).as("python3 -x.py is an option, not a file — a cloned repo picks its own names").isEmpty();
+        assertThat(choose("--version.js")).isEmpty();
+        assertThat(choose("line\nbreak.py")).as("a control character cannot ride an LCD line").isEmpty();
+        assertThat(choose("a-b.py")).as("a dash inside a name is just a name").map(ScriptEntry.Entry::command).contains("python3 a-b.py");
     }
 
     @Test

@@ -66,6 +66,9 @@ public final class StarterRacks {
      */
     static final Set<ProjectKind> BARE = EnumSet.of(ProjectKind.LEARN);
 
+    /** The derived starter's id (3.8.0): declared before {@link #DERIVED}, which a static initializer reads it from. */
+    private static final String SCRIPT = "script";
+
     /**
      * Starter ids whose wiring is DERIVED from the folder rather than fixed, so
      * they cannot be listed by {@link #all()} or re-used as a preset: the script
@@ -73,7 +76,7 @@ public final class StarterRacks {
      * {@code StarterRacksTest}'s law — every starter handed out is listed, a
      * preset, or derived, exactly one — stays enumerable.
      */
-    static final Set<String> DERIVED = Set.of("script");
+    static final Set<String> DERIVED = Set.of(SCRIPT);
 
     /**
      * Run / debug / test on a save loop, for any toolchain IGNITION, INSPECTOR
@@ -284,7 +287,7 @@ public final class StarterRacks {
      * {@code main.*} files) answers empty and the bare rack mounts as before.
      */
     static Optional<Starter> scriptStarter(File projectDir) {
-        return ScriptEntry.find(projectDir).map(entry -> new Starter("script", rack -> {
+        return ScriptEntry.find(projectDir).map(entry -> new Starter(SCRIPT, rack -> {
             RackDevice solder = add(rack, DeviceType.CMD, Map.of("command", entry.command()));
             RackDevice console = add(rack, DeviceType.CONSOLE, null);
             wire(rack, solder.getPort("out"), console.getPort("in"));

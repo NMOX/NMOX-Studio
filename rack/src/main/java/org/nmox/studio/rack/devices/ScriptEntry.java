@@ -40,8 +40,10 @@ import java.util.Set;
  * one vocabulary, plus {@code sh} for a shell script and Node's own
  * {@code --experimental-strip-types} for a lone {@code .ts} (v2.69.0: one
  * argv for every Node since 22.6). A file name holding whitespace is quoted
- * the way SOLDER's own tokenizer reads it; one holding a quote character is
- * refused, since no quoting makes it inert there.
+ * the way SOLDER's own tokenizer reads it; one holding a quote character or a
+ * control character is refused, since no quoting makes it inert there, and so
+ * is one beginning with {@code -}: {@code python3 -x.py} is an option to the
+ * interpreter, not a file, and a cloned repository chooses its own names.
  */
 public final class ScriptEntry {
 
@@ -106,7 +108,7 @@ public final class ScriptEntry {
                 chosen = conventional.get(0);
             }
         }
-        if (chosen == null || chosen.indexOf('"') >= 0 || chosen.indexOf('\'') >= 0) {
+        if (chosen == null || !inertAsArgument(chosen)) {
             return Optional.empty();
         }
         List<String> argv = new ArrayList<>(interpreterFor(chosen));
@@ -126,6 +128,24 @@ public final class ScriptEntry {
     private static String stem(String name) {
         int dot = name.lastIndexOf('.');
         return (dot <= 0 ? name : name.substring(0, dot)).toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * A name the interpreter will read as a file and SOLDER's tokenizer will
+     * keep whole: no leading {@code -} (an option), no quote (the tokenizer's
+     * own grouping character), no control character.
+     */
+    static boolean inertAsArgument(String name) {
+        if (name.startsWith("-")) {
+            return false;
+        }
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (c == '"' || c == '\'' || c < 0x20 || c == 0x7f) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** SOLDER tokenizes on whitespace with quotes grouping, so a name holding whitespace rides inside double quotes. */
