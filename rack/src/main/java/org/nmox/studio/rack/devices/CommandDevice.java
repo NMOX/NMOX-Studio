@@ -34,6 +34,12 @@ public abstract class CommandDevice extends RackDevice {
      */
     static final String NO_MANIFEST =
             "NO PROJECT MANIFEST — USE PROJECT… TO AIM THE RACK";
+    // The gate behind that sentence is ProjectInspector.canRunIn: a manifest,
+    // or (3.8.0) the one obvious script a folder with no manifest holds — the
+    // script starter mounts SOLDER for exactly that folder, and the walk that
+    // mounted it found the device refusing in it with this sentence. Workspace
+    // Trust is asked right after, unchanged: a script folder is still a
+    // stranger's code until the user says otherwise.
 
     /** True when {@code tool} resolves on the IDE's augmented PATH — the
      *  shared availability probe every console's grey-honestly path uses
@@ -356,7 +362,7 @@ public abstract class CommandDevice extends RackDevice {
             refuseLaunch(noCommandReason());
             return false;
         }
-        if (requiresProjectManifest() && !ProjectInspector.hasProjectManifest(projectDir())) {
+        if (requiresProjectManifest() && !ProjectInspector.canRunIn(projectDir())) {
             refuseLaunch(NO_MANIFEST);
             return false;
         }
@@ -439,7 +445,7 @@ public abstract class CommandDevice extends RackDevice {
         if (steps == null || steps.isEmpty()) {
             return;
         }
-        if (requiresProjectManifest() && !ProjectInspector.hasProjectManifest(projectDir())) {
+        if (requiresProjectManifest() && !ProjectInspector.canRunIn(projectDir())) {
             refuseLaunch(NO_MANIFEST);
             return;
         }

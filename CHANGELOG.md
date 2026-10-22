@@ -4,6 +4,43 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.8.0] - 2026-10-22
+
+**A folder of scripts gets a GO button.** The first folder a newcomer
+opens is often not a project at all: a `hello.py`, an `app.js`, a
+`main.go` beside a README. Detection said NONE for it, and the IDE
+stopped there — the toolbar ▶ grey and silent, the Workbench reading "no
+toolchain yet", the rack one empty MONITOR — while the shelf held the
+device that could run the file and nothing pointed at it. Walked on
+2026-10-22 in a throwaway home as a first-time user: a VS Code switcher
+whose habit is "run this file" had no door.
+
+### Added
+- **A starter rack for a folder with no project file.** When the aimed
+  folder holds one obvious script at its root, the rack starts with
+  **SOLDER** dialled to run it — `python3 hello.py`, `node app.js`,
+  `go run main.go`, `ruby`, `php`, `sh`, or `node
+  --experimental-strip-types` for a lone `.ts` — feeding MONITOR, the
+  wiring a learning space's run driver is born with. SOLDER arrives at
+  rest; GO is the user's gesture and takes the same Workspace Trust
+  prompt as every spawn. The choice is never a guess: exactly one such
+  file, or exactly one whose name is a conventional entry (`main`,
+  `app`, `index`, `server`, `run`, `start`); two `main.*` files, or
+  scripts in a language that needs a build, and the rack stays bare as
+  before. A name the interpreter would read as an option (a leading `-`)
+  or SOLDER's tokenizer could not keep whole (a quote, a control
+  character) is refused: a cloned repository chooses its own names. A fresh `~/NMOX`, a README alone, and any folder with a
+  manifest are unchanged (`ScriptEntry`, `StarterRacks.scriptStarter`;
+  the root is read by name only and a listing past 500 entries is not
+  read further).
+
+### Changed
+- `StarterRacks.BARE` holds only the learning space now; NONE is decided
+  by the folder, and the starter it hands out is declared DERIVED (its
+  one device carries the folder's own file name), so the gallery law —
+  every starter is listed, a preset, or derived, exactly one — stays
+  enumerable.
+
 ## [3.7.0] - 2026-10-03
 
 **The rest of what a VS Code switcher brings: their own settings, their
@@ -25789,6 +25826,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.8.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.7.0...v3.8.0
 [3.7.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.6.0...v3.7.0
 [3.6.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.13...v3.6.0
 [3.5.13]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.12...v3.5.13

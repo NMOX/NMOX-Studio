@@ -69,7 +69,10 @@ Three things happen when you open a project:
   changed files.
 - The **Task Rack** is set up for the kind of project it is. A Vite
   project gets a Vite console, a Cargo project gets run, debug and test
-  lanes, and so on.
+  lanes, and so on. A folder that is not a project yet but holds one
+  script — a `hello.py`, an `app.js`, a `main.go` — gets a **SOLDER**
+  device dialled to run that file: open the **Task Rack** tab and press
+  **GO**.
 
 ## 3. Run it (one minute)
 

@@ -385,6 +385,19 @@ public final class ProjectInspector {
         return detectKind(projectDir) != ProjectKind.NONE;
     }
 
+    /**
+     * True when a device may run in this directory: it carries a recognized
+     * manifest, or (3.8.0) it holds the one obvious script {@link ScriptEntry}
+     * would run — the script IS its manifest, the way a learning space's marker
+     * is (LEARN, v2.58.0). This is the LAUNCH gate's question only: the
+     * project-root walks ({@code RunFocusedTestAction}, {@code DapDebugAction})
+     * keep asking {@link #hasProjectManifest}, because a {@code src/} holding a
+     * lone {@code index.js} is not the root of the package above it.
+     */
+    public static boolean canRunIn(File projectDir) {
+        return hasProjectManifest(projectDir) || ScriptEntry.find(projectDir).isPresent();
+    }
+
     private static final java.util.Map<File, CacheEntry> packageJsonCache = new java.util.concurrent.ConcurrentHashMap<>();
 
     private static class CacheEntry {
