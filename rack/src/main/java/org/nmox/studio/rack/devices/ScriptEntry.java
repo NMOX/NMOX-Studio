@@ -1,4 +1,4 @@
-package org.nmox.studio.rack.projectstudio;
+package org.nmox.studio.rack.devices;
 
 import java.io.File;
 import java.util.ArrayList;

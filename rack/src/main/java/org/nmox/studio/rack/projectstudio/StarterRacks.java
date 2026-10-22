@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import org.json.JSONObject;
 import org.nmox.studio.rack.devices.DeviceType;
 import org.nmox.studio.rack.devices.ProjectInspector;
+import org.nmox.studio.rack.devices.ScriptEntry;
 import org.nmox.studio.rack.devices.ProjectInspector.ProjectKind;
 import org.nmox.studio.rack.model.Port;
 import org.nmox.studio.rack.model.Rack;

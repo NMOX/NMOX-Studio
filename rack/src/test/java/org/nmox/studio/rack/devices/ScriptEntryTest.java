@@ -1,4 +1,4 @@
-package org.nmox.studio.rack.projectstudio;
+package org.nmox.studio.rack.devices;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -66,6 +66,24 @@ class ScriptEntryTest {
         assertThat(choose("my script.py")).map(ScriptEntry.Entry::command).contains("python3 \"my script.py\"");
         assertThat(choose("it's.py")).as("no quoting makes an apostrophe inert in SOLDER's tokenizer").isEmpty();
         assertThat(choose("say\"hi\".py")).isEmpty();
+    }
+
+    @Test
+    @DisplayName("the launch gate asks canRunIn: a manifest, or the one obvious script, lets a device run; a README alone does not")
+    void theScriptIsTheManifestForTheLaunchGate(@TempDir Path tmp) throws Exception {
+        Path scripts = Files.createDirectory(tmp.resolve("scripts"));
+        Files.writeString(scripts.resolve("hello.py"), "");
+        assertThat(ProjectInspector.hasProjectManifest(scripts.toFile()))
+                .as("detection still says NONE — the project-root walks must not stop at a script folder").isFalse();
+        assertThat(ProjectInspector.canRunIn(scripts.toFile())).as("but SOLDER may run here").isTrue();
+
+        Path node = Files.createDirectory(tmp.resolve("node"));
+        Files.writeString(node.resolve("package.json"), "{}");
+        assertThat(ProjectInspector.canRunIn(node.toFile())).isTrue();
+
+        Path readme = Files.createDirectory(tmp.resolve("readme"));
+        Files.writeString(readme.resolve("README.md"), "# hi\n");
+        assertThat(ProjectInspector.canRunIn(readme.toFile())).as("nothing to run: the NO PROJECT MANIFEST refusal stands").isFalse();
     }
 
     @Test

@@ -67,6 +67,43 @@ class CommandDeviceGuardTest {
     }
 
     @Test
+    @DisplayName("A folder with no manifest but one obvious script launches: the script is its manifest (3.8.0)")
+    void shouldLaunchInAScriptFolder() throws Exception {
+        Files.writeString(projectDir.resolve("hello.py"), "print('hi')\n");
+        Rack rack = new Rack();
+        rack.setProjectDir(projectDir.toFile());
+        EchoDevice device = new EchoDevice();
+        rack.addDevice(device);
+
+        device.primaryAction();
+
+        assertThat(device.finished.await(10, TimeUnit.SECONDS))
+                .as("the walk that mounted SOLDER for this folder found it refused with NO PROJECT MANIFEST").isTrue();
+        assertThat(device.exitCode).isZero();
+    }
+
+    @Test
+    @DisplayName("A script folder is still a stranger's code: Workspace Trust is asked exactly as for a manifest")
+    void scriptFolderStillAsksTrust() throws Exception {
+        Files.writeString(projectDir.resolve("hello.py"), "print('hi')\n");
+        Rack rack = new Rack();
+        rack.setProjectDir(projectDir.toFile());
+        CommandDevice.trustCheck = f -> false;
+        try {
+            EchoDevice device = new EchoDevice();
+            rack.addDevice(device);
+
+            device.primaryAction();
+            flushEdt();
+
+            assertThat(device.finished.await(500, TimeUnit.MILLISECONDS)).as("Keep Safe: nothing runs").isFalse();
+            assertThat(device.statusLcd.getText()).contains("UNTRUSTED WORKSPACE");
+        } finally {
+            CommandDevice.resetTrustCheck();
+        }
+    }
+
+    @Test
     @DisplayName("Should launch normally when package.json exists")
     void shouldLaunchWithPackageJson() throws Exception {
         Files.writeString(projectDir.resolve("package.json"), "{\"name\":\"demo\"}");
