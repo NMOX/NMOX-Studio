@@ -27,7 +27,9 @@ whose habit is "run this file" had no door.
   file, or exactly one whose name is a conventional entry (`main`,
   `app`, `index`, `server`, `run`, `start`); two `main.*` files, or
   scripts in a language that needs a build, and the rack stays bare as
-  before. A fresh `~/NMOX`, a README alone, and any folder with a
+  before. A name the interpreter would read as an option (a leading `-`)
+  or SOLDER's tokenizer could not keep whole (a quote, a control
+  character) is refused: a cloned repository chooses its own names. A fresh `~/NMOX`, a README alone, and any folder with a
   manifest are unchanged (`ScriptEntry`, `StarterRacks.scriptStarter`;
   the root is read by name only and a listing past 500 entries is not
   read further).
