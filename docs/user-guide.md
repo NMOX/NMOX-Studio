@@ -401,9 +401,14 @@ an LCD tells you what happened in words.
   loop; an Angular workspace gets HALO serving into SCOPE; a Vite site
   gets SURGE, MASTER and the install→build→test chain; an Express-style
   service gets its dev server pinging its own health route; any other
-  Node package gets CRATE and NPM-9000 with its scripts. It is a starter,
-  not a save — nothing is written until you press **Save Patch** — and a
-  directory with no manifest keeps the one MONITOR a first launch shows.
+  Node package gets CRATE and NPM-9000 with its scripts. A folder with no
+  project file but one obvious script at its root — a `hello.py`, an
+  `app.js`, a `main.go` beside a README — gets **SOLDER** dialled to run
+  that file, its output on MONITOR: press **GO**. (Two scripts that could
+  each be the entry, or none this product can run, and the rack stays
+  bare rather than guess.) It is a starter, not a save — nothing is
+  written until you press **Save Patch** — and a directory with nothing
+  to run keeps the one MONITOR a first launch shows.
 - **The Rack Gallery.** **Tools ▸ Rack Gallery…** — or
   **Rack Gallery…** at the top of the rack's **Presets ▾** menu — puts every
   rack this install can mount on one shelf: the community racks that ship

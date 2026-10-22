@@ -36,9 +36,14 @@ import static org.nmox.studio.rack.projectstudio.RackPresets.add;
  * because they are the same object (the v2.131.0 second-home law).
  *
  * <p>It is a STARTER, not a preset: nothing is saved until the user presses
- * Save Patch, exactly as before. Two kinds keep the bare rack on purpose
- * ({@link #BARE}): a learning space writes its own driver patch on creation, and
- * a directory with no manifest at all has no toolchain to wire.
+ * Save Patch, exactly as before. One kind keeps the bare rack on purpose
+ * ({@link #BARE}): a learning space writes its own driver patch on creation.
+ * A directory with no manifest at all has no toolchain to wire — but since
+ * 3.8.0 it is read once more before the bare rack wins: a folder holding one
+ * obvious script ({@link ScriptEntry}) starts with SOLDER dialled to run it,
+ * the wiring a learning space's run driver gets, so a newcomer's
+ * {@code hello.py} has a GO button instead of a grey ▶ (the {@link #DERIVED}
+ * starter).
  */
 public final class StarterRacks {
 
@@ -53,11 +58,21 @@ public final class StarterRacks {
     /**
      * Kinds that deliberately keep the bare starter. LEARN: the learning-space
      * driver writes the space's own patch, and a patchless learning directory is
-     * one someone emptied on purpose. NONE: no manifest, no toolchain to wire —
-     * and this is also every fresh {@code ~/NMOX} workspace, so the first thing a
-     * new user sees stays the one honest MONITOR.
+     * one someone emptied on purpose. (NONE left this set in 3.8.0: it keeps the
+     * bare rack whenever {@link ScriptEntry} finds nothing — which is every fresh
+     * {@code ~/NMOX} workspace, so the first thing a new user sees is still the
+     * one honest MONITOR — and gets the {@code script} starter when it does.)
      */
-    static final Set<ProjectKind> BARE = EnumSet.of(ProjectKind.LEARN, ProjectKind.NONE);
+    static final Set<ProjectKind> BARE = EnumSet.of(ProjectKind.LEARN);
+
+    /**
+     * Starter ids whose wiring is DERIVED from the folder rather than fixed, so
+     * they cannot be listed by {@link #all()} or re-used as a preset: the script
+     * starter's one device carries the folder's own file name. Declared here so
+     * {@code StarterRacksTest}'s law — every starter handed out is listed, a
+     * preset, or derived, exactly one — stays enumerable.
+     */
+    static final Set<String> DERIVED = Set.of("script");
 
     /**
      * Run / debug / test on a save loop, for any toolchain IGNITION, INSPECTOR
@@ -246,6 +261,9 @@ public final class StarterRacks {
         if (BARE.contains(kind)) {
             return Optional.empty();
         }
+        if (kind == ProjectKind.NONE) {
+            return scriptStarter(projectDir);
+        }
         return Optional.of(switch (kind) {
             case NODE -> nodeStarter(projectDir);
             case PHP -> new Starter(LAMP, RackPresets.LAMP_BENCH::wire);
@@ -254,6 +272,22 @@ public final class StarterRacks {
             case FOUNDRY -> new Starter("foundry", FOUNDRY);
             default -> new Starter("polyglot", POLYGLOT);
         });
+    }
+
+    /**
+     * A folder with no manifest but one obvious script: SOLDER dialled to run
+     * it, its output on MONITOR — the shape a learning space's run driver is
+     * born with ({@code LearningSpace.wire}). SOLDER arrives at rest and runs
+     * only on GO, behind the same Workspace Trust prompt every spawn takes.
+     * Nothing obvious (an empty {@code ~/NMOX}, a README alone, two
+     * {@code main.*} files) answers empty and the bare rack mounts as before.
+     */
+    static Optional<Starter> scriptStarter(File projectDir) {
+        return ScriptEntry.find(projectDir).map(entry -> new Starter("script", rack -> {
+            RackDevice solder = add(rack, DeviceType.CMD, Map.of("command", entry.command()));
+            RackDevice console = add(rack, DeviceType.CONSOLE, null);
+            wire(rack, solder.getPort("out"), console.getPort("in"));
+        }));
     }
 
     /**

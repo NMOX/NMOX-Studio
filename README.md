@@ -131,7 +131,8 @@ a Task Board (⌥⌘1) beside the code. *Designers*: color swatches on every
 literal **and through `var()` tokens**, project-wide token completion
 with swatch icons, ⌘-click from usage to declaration, a click-to-pick
 color chooser, live viewport presets, save-to-reload. *Engineers*: a
-53-device task rack that starts wired for the project's own kind and
+53-device task rack that starts wired for the project's own kind — or,
+for a folder with no project file, for the one script it holds — and
 travels as a file (Share…/Import… — what a rack holds is shown before it
 mounts, and it arrives at rest), PREFLIGHT ship gates, CI export, pull
 requests on the git chip (list, review threads, checkout — through your own

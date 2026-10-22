@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.nmox.studio.rack.devices.ProjectInspector.ProjectKind;
 import org.nmox.studio.rack.model.Rack;
+import org.nmox.studio.rack.model.RackDevice;
 import org.nmox.studio.rack.model.RackIO;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,18 +27,59 @@ class StarterRacksTest {
 
     @Test
     @DisplayName("every project kind either has a starter rack or sits in BARE with its reason — a new toolchain cannot fall through by accident")
-    void everyKindIsDecided() {
+    void everyKindIsDecided(@TempDir Path tmp) {
         for (ProjectKind kind : ProjectKind.values()) {
-            Optional<StarterRacks.Starter> starter = StarterRacks.forKind(kind, new File("."));
+            Optional<StarterRacks.Starter> starter = StarterRacks.forKind(kind, tmp.toFile());
             if (StarterRacks.BARE.contains(kind)) {
                 assertThat(starter).as(kind + " is blessed bare").isEmpty();
+            } else if (kind == ProjectKind.NONE) {
+                // decided by the folder (3.8.0): an empty one keeps the bare rack
+                assertThat(starter).as("NONE with nothing to run is bare").isEmpty();
             } else {
                 assertThat(starter).as(kind + " has a starter").isPresent();
             }
         }
         assertThat(StarterRacks.BARE)
-                .as("only the two kinds with nothing to wire keep the bare rack")
-                .containsExactlyInAnyOrderElementsOf(EnumSet.of(ProjectKind.LEARN, ProjectKind.NONE));
+                .as("only the learning space, whose driver writes its own patch, keeps the bare rack unconditionally")
+                .containsExactlyInAnyOrderElementsOf(EnumSet.of(ProjectKind.LEARN));
+    }
+
+    @Test
+    @DisplayName("a folder with no manifest but one obvious script starts with SOLDER dialled to it, feeding MONITOR (3.8.0)")
+    void scriptFolderGetsSolder(@TempDir Path tmp) throws Exception {
+        Path scripts = Files.createDirectory(tmp.resolve("scripts"));
+        Files.writeString(scripts.resolve("hello.py"), "print('hi')\n");
+        Files.writeString(scripts.resolve("notes.md"), "# notes\n");
+        StarterRacks.Starter starter = StarterRacks.forProject(scripts.toFile()).orElseThrow();
+        assertThat(starter.id()).isEqualTo("script");
+        Rack rack = new Rack();
+        rack.setProjectDir(scripts.toFile());
+        starter.wiring().accept(rack);
+        assertThat(rack.getDevices()).extracting(RackDevice::getTypeId).containsExactly("cmd", "console");
+        RackDevice solder = rack.getDevices().get(0);
+        assertThat(solder.getState()).containsEntry("command", "python3 hello.py");
+        assertThat(rack.getCables()).as("SOLDER OUT feeds MONITOR IN").hasSize(1);
+        assertThat(rack.getCables().get(0).getFrom().getDevice()).isSameAs(solder);
+        assertThat(solder.getState().getOrDefault("armed", "false"))
+                .as("the starter arrives at rest: GO is the user's gesture").isEqualTo("false");
+
+        // the ambiguous folder is honest: two conventional entries, no guess, the bare rack
+        Path two = Files.createDirectory(tmp.resolve("two"));
+        Files.writeString(two.resolve("main.py"), "");
+        Files.writeString(two.resolve("app.js"), "");
+        assertThat(StarterRacks.forProject(two.toFile())).isEmpty();
+
+        // a manifest still outranks a script beside it: this is a Node project, not a script folder
+        Path node = Files.createDirectory(tmp.resolve("node"));
+        Files.writeString(node.resolve("package.json"), "{}");
+        Files.writeString(node.resolve("hello.py"), "");
+        assertThat(StarterRacks.forProject(node.toFile()).orElseThrow().id()).isEqualTo("node");
+
+        // a root index.html is a STATIC site before it is a script folder
+        Path site = Files.createDirectory(tmp.resolve("site"));
+        Files.writeString(site.resolve("index.html"), "<p>hi</p>");
+        Files.writeString(site.resolve("app.js"), "");
+        assertThat(StarterRacks.forProject(site.toFile()).orElseThrow().id()).isEqualTo("classic");
     }
 
     @Test
@@ -112,10 +154,18 @@ class StarterRacksTest {
         for (ProjectKind kind : ProjectKind.values()) {
             StarterRacks.forKind(kind, tmp.toFile()).ifPresent(s -> handedOut.add(s.id()));
         }
+        // NONE answers only for a folder with a script in it (3.8.0): hand one over so the
+        // derived starter is in the population this law reads
+        Files.writeString(tmp.resolve("hello.py"), "");
+        StarterRacks.forKind(ProjectKind.NONE, tmp.toFile()).ifPresent(s -> handedOut.add(s.id()));
+        assertThat(handedOut).contains("script");
         for (String id : handedOut) {
             boolean own = listed.contains(id);
             boolean preset = StarterRacks.presetBehind(id).isPresent();
-            assertThat(own ^ preset).as("starter '" + id + "' is listed by all() or is a preset re-used — exactly one").isTrue();
+            boolean derived = StarterRacks.DERIVED.contains(id);
+            assertThat((own ? 1 : 0) + (preset ? 1 : 0) + (derived ? 1 : 0))
+                    .as("starter '" + id + "' is listed by all(), is a preset re-used, or is derived from the folder — exactly one")
+                    .isEqualTo(1);
         }
         assertThat(StarterRacks.presetBehind("lamp")).contains(RackPresets.LAMP_BENCH);
         assertThat(StarterRacks.presetBehind("classic")).contains(RackPresets.CLASSIC_WEB);
@@ -157,6 +207,12 @@ class StarterRacksTest {
         Path empty = Files.createDirectory(tmp.resolve("empty"));
         assertThat(StarterRacks.forProject(empty.toFile()))
                 .as("no manifest, no toolchain to wire — the bare MONITOR a first launch shows")
+                .isEmpty();
+
+        Path workspace = Files.createDirectory(tmp.resolve("NMOX"));
+        Files.writeString(workspace.resolve("README.md"), "# NMOX\n");
+        assertThat(StarterRacks.forProject(workspace.toFile()))
+                .as("the fresh ~/NMOX workspace, a README alone: still the bare rack")
                 .isEmpty();
     }
 
