@@ -35,6 +35,12 @@ case "$(uname -s)" in
     MINGW*|MSYS*|CYGWIN*)
         LAUNCHER="$APP_DIR/bin/nmoxstudio64.exe"
         native() { cygpath -m "$1"; }
+        # the native launcher's own record of the Java it chose and how it
+        # started it (--trace, read from apache/netbeans' launcher source):
+        # a 3.8.0 installed boot once ran an older Java than the bundled one
+        # and sat on its "Cannot run on older versions" dialog, and nothing
+        # the run printed could say which Java that was
+        TRACE_LAUNCHER=yes
         ;;
     *)
         LAUNCHER="$APP_DIR/bin/nmoxstudio"
@@ -84,6 +90,10 @@ set --
 if [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/java" ]; then
     set -- --jdkhome "$(native "$JAVA_HOME")"
 fi
+TRACE="$WORK/launcher-trace.log"
+if [ "${TRACE_LAUNCHER:-no}" = yes ]; then
+    set -- "$@" --trace "$(native "$TRACE")"
+fi
 
 echo "boot-smoke: booting $LAUNCHER"
 echo "boot-smoke: userdir  $USERDIR (fresh, removed on exit)"
@@ -109,6 +119,10 @@ fail_with_log() {
     else
         echo "----- launcher stdout/stderr (no messages.log) -----" >&2
         cat "$WORK/stdout.log" >&2
+    fi
+    if [ -f "$TRACE" ]; then
+        echo "----- launcher trace: the Java it chose and how it started it -----" >&2
+        grep -iE 'jdkhome|java|jvm|dll|separate|command line|current dir|registry|key' "$TRACE" | head -80 >&2 || true
     fi
     kill -TERM "$APP_PID" 2>/dev/null || true
     sleep 3
@@ -165,4 +179,7 @@ echo "boot-smoke: OK — module system came up and quit cleanly (exit 0)"
 echo "boot-smoke: no install/enable failures in the module log"
 # a trend line CI can watch: boot-to-clean-exit, whole seconds
 echo "boot-smoke: boot-to-exit ${BOOT_SECONDS}s"
+if [ -f "$TRACE" ]; then
+    echo "boot-smoke: launcher chose: $(grep -m1 -E 'Java DLL path|Command line' "$TRACE" | cut -c1-200)"
+fi
 exit 0
