@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.8.2] - 2026-10-23
+
+**A Windows boot that ran an old Java says which Java it was.** No product
+change. One installed-boot run of the 3.8.0 Windows installer refused to
+start with *"Cannot run on older versions of Java than Java 21"* although
+the bundled Java 25 was installed. The cause is in the platform's Windows
+launcher, now measured: it ignores a failed read of its conf file, so in a
+moment when `etc\nmoxstudio.conf` cannot be opened it loses both the
+bundled runtime (`jdkhome`) and the JVM options, and starts any Java 8 or
+newer it can find. A probe that held the conf open reproduced the failure
+exactly; the record is tech-debt ledger 138.
+
+### Changed
+
+- `scripts/boot-smoke-test.sh` passes the launcher's `--trace` on Windows
+  and prints the Java the launcher chose on every boot, and the relevant
+  trace lines when a boot fails.
+
 ## [3.8.1] - 2026-10-22
 
 **The PostgreSQL driver moves to 42.7.14, which fixes two security
@@ -25852,6 +25870,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.8.2]: https://github.com/NMOX/NMOX-Studio/compare/v3.8.1...v3.8.2
 [3.8.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.8.0...v3.8.1
 [3.8.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.7.0...v3.8.0
 [3.7.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.6.0...v3.7.0
