@@ -20,6 +20,66 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — added by 3.8.2
+
+### 138. On Windows, a launcher that cannot read its conf runs whatever Java it finds
+
+**Seen once, then reproduced on purpose.** The installed-boot check of the
+3.8.0 Windows installer ran twice on the same file. On runner image
+win25 20261021 it booted on the bundled Java 25 in 13 s. On image 20261007
+it printed *"Cannot run on older versions of Java than Java 21"* and sat
+until the 180 s limit, with the bundled `jre\bin\java.exe` installed (the
+install step checks for it).
+
+**The mechanism, read from the platform's launcher source (RELEASE310) and
+then measured.** The installed app finds its runtime through one line the
+release workflow appends to `etc\nmoxstudio.conf`: `jdkhome="jre"`.
+`NbLauncher` reads that file with `parseConfigFile(...)` and ignores its
+result (`nb/ide.launcher/windows/nblauncher.cpp`), so a conf it cannot open
+is the same as a conf with nothing in it. With no `jdkhome`,
+`PlatformLauncher` asks `JvmLauncher` for any Java of version **1.8** or
+newer: the registry, then `JAVA_HOME`, then `javac` on `PATH`.
+`org.netbeans.Main` then reads the RUNNING JVM's version, and below 21 it
+prints that sentence and shows a modal dialog, which is the "hang".
+
+The `installed/launcher-trace` probe held the installed conf open with no
+sharing while the app started, beside a control on the same image:
+
+- control: booted on `NMOX Studio\jre\bin\server\jvm.dll`, clean;
+- conf held: the exact 3.8.0 failure. The launcher's own trace: the
+  registry lookups fail, `JAVA_HOME` is not set, `PATH` yields the runner's
+  `Temurin-Hotspot_jdk\17.0.20-101`, the JVM is created with **"JVM
+  options:" empty**, and the bootstrap refuses Java 17;
+- conf held and `--jdkhome` to the bundled runtime on the command line:
+  the right Java 25, still no JVM options, and the module system never
+  turns on (the log stops after netbinox's install area).
+
+So the conf carries two things the app cannot start without, the runtime
+AND the options (`--add-opens`, memory, the native-access grant), and a
+moment in which the file cannot be opened loses both, silently. What held
+it on the 20261007 image is not known. On a user's machine the same
+moment could come from a scanner, an indexer or a sync client at first
+launch, and the user would see a dialog about an old Java we do not ship,
+or, with no other Java at all, *"Cannot find Java 1.8 or higher"*.
+
+**Why it is not fixed here.** The defect is in the platform's launcher,
+which this product ships as built (`bin\nmoxstudio64.exe`,
+`platform\lib\nbexec64.dll`). A shortcut passing `--jdkhome` was measured
+above and is not enough; passing every option as well would give the
+options a second home on the command line, beside the conf, for a failure
+seen once in eleven runs.
+
+**What would fix it.** Upstream: `NbLauncher` should retry a conf it cannot
+open (a sharing violation is momentary) and refuse to start, saying so,
+rather than continue without it. In this product, if that does not come:
+a launcher of our own, which is ledger 118's native-launcher idea from the
+Windows side.
+
+**What 3.8.2 changed.** `scripts/boot-smoke-test.sh` passes the launcher's
+`--trace` on Windows, prints the Java it chose on every boot and the trace
+lines when a boot fails. The next time this happens on a runner, the run
+says which Java it was, without a probe.
+
 ## Open — added by 3.6.0 (the VS Code repository release)
 
 ### 136. The debugger's windows have two names in a translated build
