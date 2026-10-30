@@ -27,7 +27,11 @@ MariaDB Connector/J 4.0 changed its DEFAULT sslMode, which no bump title
 says and every saved connection would have felt — a dependency whose
 default changes is a product change wearing a version number, and the
 house's answer (measure against the shipped jar, state the mode in the
-URL, give the user the switch) is the general one.*
+URL, give the user the switch) is the general one. The live walk that
+followed, once Docker was up, paid the way walks do: a local MySQL 8 had
+never been connectable in any release (the first login over a plain
+connection needs TLS or the server's RSA key), fixed on the loopback only
+and named in the user's words everywhere else.*
 
 *Currency addendum 2026-09-25 (v3.2.0, the second-week release). The
 question moved from the first hour to the second week: commit, review a

@@ -72,6 +72,41 @@ class MariaDbTlsTest {
     }
 
     @Test
+    @DisplayName("a plain connection to THIS machine may fetch MySQL 8's RSA key; a remote or TLS one never does")
+    void publicKeyRetrievalOnlyOnTheLoopbackAndOnlyInTheClear() {
+        // measured live on mysql:8.4: caching_sha2_password's first login over a plain
+        // connection fails with "RSA public key is not available client side" unless
+        // the key may be fetched — so a local MySQL 8 was never connectable before 3.9.0
+        for (String local : new String[]{"localhost", "127.0.0.1", "127.0.0.2", "::1", "[::1]", "LOCALHOST"}) {
+            ConnectionSpec s = new ConnectionSpec("id", "t", DbEngine.MYSQL, local, 3306, "db", "u", null, false);
+            assertThat(DbClient.connectionUrl(s)).as(local).contains("allowPublicKeyRetrieval=true");
+        }
+        for (String remote : new String[]{"db.example.com", "10.0.0.5", "192.168.1.20", "localhost.evil.example"}) {
+            ConnectionSpec s = new ConnectionSpec("id", "t", DbEngine.MYSQL, remote, 3306, "db", "u", null, false);
+            assertThat(DbClient.connectionUrl(s)).as("fetching the key over a network is the MitM the driver refuses by default: " + remote)
+                    .doesNotContain("allowPublicKeyRetrieval");
+        }
+        // under TLS the key travels inside the encrypted channel; nothing to allow
+        assertThat(DbClient.connectionUrl(spec(DbEngine.MYSQL, 3306, true))).doesNotContain("allowPublicKeyRetrieval");
+    }
+
+    @Test
+    @DisplayName("the two refusals a real MySQL 8.4 gave are translated: the plain first login, and the self-signed certificate under Use TLS")
+    void realMysqlRefusalsReadHuman() {
+        // both messages copied from the live walk of 2026-10-30 against mysql:8.4
+        String plain = JdbcCore.humanize(new SQLException(
+                "RSA public key is not available client side (option serverRsaPublicKeyFile not set)"));
+        assertThat(plain).contains("Use TLS").contains("serverRsaPublicKeyFile");
+        String selfSigned = JdbcCore.humanize(new SQLException(
+                "(conn=12) Cannot use authentication plugin caching_sha2_password with a Self signed certificates. "
+                + "Either set sslMode=trust, use password with a MitM-Proof authentication plugin or provide server certificate to client"));
+        assertThat(selfSigned).contains("certificate could not be verified").contains("caching_sha2_password");
+        // an ordinary error is left as the driver said it
+        assertThat(JdbcCore.humanize(new SQLException("Table 'shop.orders' doesn't exist")))
+                .isEqualTo("Table 'shop.orders' doesn't exist");
+    }
+
+    @Test
     @DisplayName("Use TLS against a server that offers none refuses before a byte of credentials leaves, and the refusal reads human")
     void tlsAgainstAPlainServerRefusesAndSpeaks() throws Exception {
         try (FakeServer server = FakeServer.start()) {

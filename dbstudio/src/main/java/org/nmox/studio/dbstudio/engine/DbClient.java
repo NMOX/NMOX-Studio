@@ -286,12 +286,33 @@ public final class DbClient implements DbBackend {
         String url = spec.engine().jdbcUrl(spec);
         return switch (spec.engine()) {
             case MYSQL, MARIADB -> url + "?connectTimeout=" + (CONNECT_TIMEOUT_SECONDS * 1000)
-                    + "&sslMode=" + (spec.secure() ? "verify-full" : "disable");
+                    + "&sslMode=" + (spec.secure() ? "verify-full" : "disable")
+                    // MySQL 8's default plugin (caching_sha2_password) will not take a
+                    // password over a plain connection until it has either TLS or the
+                    // server's RSA key, and a user's FIRST login always needs one — so
+                    // a local MySQL 8 could never be connected at all (measured live on
+                    // mysql:8.4, 3.9.0). Fetching the key over the wire is a MitM hazard
+                    // on a network and none on the loopback, so it is allowed there only;
+                    // a remote plain connection keeps the refusal, and humanize names
+                    // the box that fixes it.
+                    + (!spec.secure() && isLoopbackHost(spec.host()) ? "&allowPublicKeyRetrieval=true" : "");
             case POSTGRES -> url + "?connectTimeout=" + CONNECT_TIMEOUT_SECONDS;
             case SQLITE -> url;
             // unreachable: the constructor rejects non-SQL engines
             case MONGODB, COUCHDB -> throw new IllegalStateException("not a JDBC engine");
         };
+    }
+
+    /** The host spellings a connection to this machine takes; no lookup, a string rule. */
+    static boolean isLoopbackHost(String host) {
+        if (host == null) {
+            return false;
+        }
+        String h = host.trim().toLowerCase(java.util.Locale.ROOT);
+        if (h.startsWith("[") && h.endsWith("]")) {
+            h = h.substring(1, h.length() - 1);
+        }
+        return h.equals("localhost") || h.equals("::1") || h.startsWith("127.");
     }
 
     /** Package-private for the security-hardening test (ledger 54 L3). */

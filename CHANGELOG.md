@@ -71,14 +71,31 @@ README does.
   them, and the three things only David can do (the Windows signing
   purchase, the GitHub description, the positioning line).
 
-### Known
+### Fixed
 
-- No live MySQL or MariaDB server was reachable on the build machine, so
-  the connect path was measured against the driver's own configuration
-  parser and the fake-greeting server, not against a real database. A
-  real server with a self-signed certificate refuses under **Use TLS**
-  with the certificate sentence; that is the honest answer, and a
-  `trust`-everything mode was deliberately not offered.
+- A local MySQL 8 could not be connected at all, in any release before
+  this one — found by the live walk, not by the bump. MySQL 8's default
+  plugin (`caching_sha2_password`) refuses a password over a plain
+  connection until it has either TLS or the server's RSA key, and a user's
+  first login always needs one, so Test answered *RSA public key is not
+  available client side* against a fresh `mysql:8.4`. A plain connection
+  to **this machine** (`localhost`, `127.x`, `::1`) may now fetch the key
+  (`allowPublicKeyRetrieval`, a man-in-the-middle hazard on a network and
+  none on the loopback); a plain connection to a remote server keeps the
+  driver's refusal and says, in the user's words, to tick **Use TLS**.
+
+### Measured
+
+- Live, once Docker was up: against `mariadb:11` (11.8.9) **Use TLS** off
+  connects in the clear (`Ssl_cipher` empty) and on connects over
+  `TLS_AES_256_GCM_SHA384` — with the image's own certificate and with a
+  hand-made self-signed one, since MariaDB 11.4+ lets the driver verify a
+  self-signed certificate through the password; against `mysql:8.4`,
+  **Use TLS** on refuses the auto-generated self-signed certificate
+  (*Cannot use authentication plugin caching_sha2_password with a Self
+  signed certificates*), which the product translates to the certificate
+  sentence — the honest answer, and a trust-everything mode was
+  deliberately not offered.
 
 ## [3.8.2] - 2026-10-23
 
