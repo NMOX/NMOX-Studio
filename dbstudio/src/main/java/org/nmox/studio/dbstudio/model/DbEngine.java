@@ -21,6 +21,11 @@ import org.openide.util.NbBundle.Messages;
  * {@code jdbc:mariadb://} URL connects happily to a stock MySQL
  * server. Two enum constants remain so the UI can say what the user
  * means and so a future engine-specific quirk has a seam to live in.
+ *
+ * <p>Since 3.9.0 both carry their TLS mode in the URL
+ * ({@code DbClient.connectionUrl}): the driver's own default became
+ * TLS-required in Connector/J 4.0, and a spec saved before then must keep
+ * connecting the way it did.
  */
 @Messages({
     // chrome (shift-2970): the user-facing word for what a tree lists.
@@ -118,6 +123,17 @@ public enum DbEngine {
      *         they have no JDBC URL; use
      *         {@code DbBackend.create(spec, password)} instead
      */
+    /**
+     * Whether the connection dialog offers <i>Use TLS</i> for this engine:
+     * CouchDB's HTTP transport (https, v1.122.0) and the MySQL/MariaDB
+     * driver's {@code sslMode} (3.9.0). PostgreSQL negotiates its own
+     * ({@code sslmode=prefer}), SQLite is a file, MongoDB's client has
+     * its own setting.
+     */
+    public boolean offersTls() {
+        return this == COUCHDB || this == MYSQL || this == MARIADB;
+    }
+
     public String jdbcUrl(ConnectionSpec spec) {
         return switch (this) {
             case MYSQL, MARIADB -> "jdbc:mariadb://" + hostPort(spec) + "/" + nz(spec.database());

@@ -268,9 +268,25 @@ public final class DbClient implements DbBackend {
      * none.
      */
     private String urlWithConnectTimeout() {
+        return connectionUrl(spec);
+    }
+
+    /**
+     * The URL the driver dials. Package-private for the TLS test.
+     *
+     * <p>MySQL/MariaDB always state their {@code sslMode}: MariaDB
+     * Connector/J 4.0 dials TLS by default ({@code verify-full}), and a
+     * spec written before 3.9.0 carries {@code secure=false}, so leaving
+     * the mode to the driver would have turned every existing plain
+     * connection into a refusal. {@code secure} means verify-full — the
+     * server's certificate is checked, never merely trusted; off means
+     * the cleartext connection those specs always had.
+     */
+    static String connectionUrl(ConnectionSpec spec) {
         String url = spec.engine().jdbcUrl(spec);
         return switch (spec.engine()) {
-            case MYSQL, MARIADB -> url + "?connectTimeout=" + (CONNECT_TIMEOUT_SECONDS * 1000);
+            case MYSQL, MARIADB -> url + "?connectTimeout=" + (CONNECT_TIMEOUT_SECONDS * 1000)
+                    + "&sslMode=" + (spec.secure() ? "verify-full" : "disable");
             case POSTGRES -> url + "?connectTimeout=" + CONNECT_TIMEOUT_SECONDS;
             case SQLITE -> url;
             // unreachable: the constructor rejects non-SQL engines

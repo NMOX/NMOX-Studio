@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,6 +39,10 @@ import org.openide.util.NbBundle.Messages;
  * {@code config/spotbugs-exclude.xml}.
  */
 @Messages({
+    // a TLS refusal in the user's words: the driver's own advice names a URL
+    // option this product never shows; the checkbox is what they can reach (3.9.0)
+    "JdbcCore_tlsNotOffered=This server offers no TLS. Untick \u201cUse TLS\u201d to connect in the clear, or turn TLS on at the server. The driver said: {0}",
+    "JdbcCore_tlsCertificate=The server offers TLS, but its certificate could not be verified. The driver said: {0}",
     // chrome (shift-2970): the honest markers an oversize cell carries.
     // {n,number,0} keeps the digits ungrouped, as the concatenation printed them.
     "JdbcCore_cellTruncated={0} \u2026[{1,number,0} chars, truncated]",
@@ -323,7 +328,20 @@ final class JdbcCore {
         if (message == null || message.isBlank()) {
             message = t.getClass().getSimpleName();
         }
-        return message.trim();
+        message = message.trim();
+        String lower = message.toLowerCase(Locale.ROOT);
+        // MariaDB Connector/J: "Trying to connect with ssl, but ssl not enabled in
+        // the server. TLS is enabled by default, set sslMode=disable ..." — measured
+        // against the shipped driver by MariaDbTlsTest, not read from its notes
+        if (lower.contains("ssl not enabled in the server")) {
+            return Bundle.JdbcCore_tlsNotOffered(message);
+        }
+        if ((lower.contains("ssl") || lower.contains("tls"))
+                && (lower.contains("certificate") || lower.contains("pkix")
+                    || lower.contains("hostname") || lower.contains("handshake"))) {
+            return Bundle.JdbcCore_tlsCertificate(message);
+        }
+        return message;
     }
 
     static String blankToNull(String s) {

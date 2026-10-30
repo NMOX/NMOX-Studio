@@ -64,6 +64,8 @@ import org.openide.util.NbBundle.Messages;
     "ConnectionDialog_fileLabel=File:",
     "ConnectionDialog_useTls=Use TLS (https)",
     "ConnectionDialog_tlsTooltip=CouchDB only: speak https to the server (port 6984 by convention)",
+    "ConnectionDialog_useTlsSql=Use TLS (verify the server\u2019s certificate)",
+    "ConnectionDialog_tlsSqlTooltip=MySQL/MariaDB: encrypt the connection and verify the server\u2019s certificate. Off, the connection is in the clear, as it always was.",
     "ConnectionDialog_test=Test",
     "ConnectionDialog_testTooltip=Probe the server with these settings (async)",
     "ConnectionDialog_keepStoredPassword=Leave blank to keep the stored password",
@@ -93,7 +95,7 @@ final class ConnectionDialog extends JPanel {
     private final JTextField userField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(18));
     private final JPasswordField passwordField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JPasswordField(18));
     private final JTextField fileField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(24));
-    /** TLS opt-in for CouchDB's HTTP transport (ledger 54 L2). */
+    /** TLS opt-in: CouchDB's https (ledger 54 L2) and MySQL/MariaDB's sslMode (3.9.0). */
     private final javax.swing.JCheckBox secureBox =
             new javax.swing.JCheckBox(Bundle.ConnectionDialog_useTls());
     private final JLabel testLabel = new JLabel(" ");
@@ -102,7 +104,8 @@ final class ConnectionDialog extends JPanel {
     private final ConnectionSpec existing;
     private int lastDefaultPort;
 
-    private ConnectionDialog(ConnectionSpec existing) {
+    /** Package-private for the TLS test; the product reaches it through the static doors below. */
+    ConnectionDialog(ConnectionSpec existing) {
         super(new BorderLayout(0, 6));
         this.existing = existing;
         nameField.getAccessibleContext().setAccessibleName(Bundle.ConnectionDialog_nameA11y());
@@ -186,7 +189,6 @@ final class ConnectionDialog extends JPanel {
         addRow(panel, 4, Bundle.ConnectionDialog_passwordLabel(), passwordField);
         JLabel hint = new JLabel(Bundle.ConnectionDialog_keychainHint());
         addRow(panel, 5, "", hint);
-        secureBox.setToolTipText(Bundle.ConnectionDialog_tlsTooltip());
         addRow(panel, 6, "", secureBox);
         return panel;
     }
@@ -232,9 +234,14 @@ final class ConnectionDialog extends JPanel {
                     ? String.valueOf(engine.defaultPort()) : "");
         }
         lastDefaultPort = engine.defaultPort();
-        // the TLS flag only means anything on CouchDB's HTTP transport;
-        // JDBC engines carry TLS in driver URLs, Mongo in its own client
-        secureBox.setVisible(engine == DbEngine.COUCHDB);
+        // the TLS flag means something on CouchDB's HTTP transport and on the
+        // MySQL/MariaDB driver (3.9.0: Connector/J 4.0 dials TLS by default,
+        // so the mode is always ours to say); PostgreSQL negotiates its own,
+        // Mongo's client has its own setting
+        secureBox.setVisible(engine.offersTls());
+        boolean sql = engine == DbEngine.MYSQL || engine == DbEngine.MARIADB;
+        secureBox.setText(sql ? Bundle.ConnectionDialog_useTlsSql() : Bundle.ConnectionDialog_useTls());
+        secureBox.setToolTipText(sql ? Bundle.ConnectionDialog_tlsSqlTooltip() : Bundle.ConnectionDialog_tlsTooltip());
         revalidate();
         repaint();
     }
@@ -249,7 +256,22 @@ final class ConnectionDialog extends JPanel {
                 databaseField.getText().trim(),
                 userField.getText().trim(),
                 fileField.getText().trim(),
-                selectedEngine() == DbEngine.COUCHDB && secureBox.isSelected());
+                selectedEngine().offersTls() && secureBox.isSelected());
+    }
+
+    /** Package-private for the TLS test. */
+    javax.swing.JCheckBox tlsBox() {
+        return secureBox;
+    }
+
+    /** Package-private for the TLS test. */
+    void selectEngine(DbEngine engine) {
+        engineCombo.setSelectedItem(engine);
+    }
+
+    /** Package-private for the TLS test. */
+    ConnectionSpec specForTest() {
+        return specFromFields("test");
     }
 
     private static int parsePort(String text) {
