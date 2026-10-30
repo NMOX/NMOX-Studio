@@ -239,9 +239,15 @@ final class ConnectionDialog extends JPanel {
         // so the mode is always ours to say); PostgreSQL negotiates its own,
         // Mongo's client has its own setting
         secureBox.setVisible(engine.offersTls());
-        boolean sql = engine == DbEngine.MYSQL || engine == DbEngine.MARIADB;
-        secureBox.setText(sql ? Bundle.ConnectionDialog_useTlsSql() : Bundle.ConnectionDialog_useTls());
-        secureBox.setToolTipText(sql ? Bundle.ConnectionDialog_tlsSqlTooltip() : Bundle.ConnectionDialog_tlsTooltip());
+        // one literal per sink: the markup-render gates read the head of each
+        // setText/setToolTipText argument, and a ternary's head is not a literal
+        if (engine == DbEngine.MYSQL || engine == DbEngine.MARIADB) {
+            secureBox.setText(Bundle.ConnectionDialog_useTlsSql());
+            secureBox.setToolTipText(Bundle.ConnectionDialog_tlsSqlTooltip());
+        } else {
+            secureBox.setText(Bundle.ConnectionDialog_useTls());
+            secureBox.setToolTipText(Bundle.ConnectionDialog_tlsTooltip());
+        }
         revalidate();
         repaint();
     }
