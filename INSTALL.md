@@ -30,6 +30,12 @@ Run `NMOX-Studio-<version>-windows-setup.exe` and follow the wizard
 (per-user install needs no admin rights). A start-menu entry and
 optional desktop icon point at the 64-bit launcher.
 
+The installer is not yet Authenticode-signed, so SmartScreen shows
+*Windows protected your PC* the first time you run it: click **More
+info**, then **Run anyway**. The download can be verified against the
+GPG-signed `SHA256SUMS` on the release page (see
+[Verifying what you downloaded](#verifying-what-you-downloaded)).
+
 Prefer no installer? The portable zip works on Windows too: extract and
 run `bin\nmoxstudio64.exe`.
 

@@ -22,10 +22,11 @@ package org.nmox.studio.dbstudio.model;
  * @param user     login user; unused for SQLite
  * @param filePath absolute path to the database file — SQLite only,
  *                 empty for server engines
- * @param secure   TLS (https) for CouchDB's HTTP transport (ledger 54
- *                 L2) — false is the pre-v1.122.0 cleartext behavior;
- *                 JDBC engines carry their TLS in driver URLs and
- *                 ignore this flag
+ * @param secure   TLS: https for CouchDB's HTTP transport (ledger 54 L2)
+ *                 and {@code sslMode=verify-full} for MySQL/MariaDB
+ *                 (3.9.0) — false is the cleartext connection every spec
+ *                 had before; PostgreSQL negotiates its own and ignores
+ *                 this flag, as do SQLite and MongoDB
  */
 public record ConnectionSpec(
         String id,

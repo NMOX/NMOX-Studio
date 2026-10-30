@@ -4,6 +4,99 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.9.0] - 2026-10-30
+
+**DB Studio speaks TLS to MySQL and MariaDB, and the front page says less
+and means it.** Dependabot's maven group brought MariaDB Connector/J 4.0.0,
+a major release that dials TLS by default (`sslMode=verify-full`). Taken
+as it came, every plain local MySQL or MariaDB connection saved before
+today would have started refusing on the day of the bump, so the bump is a
+product decision rather than a ride-along: the connection dialog's **Use
+TLS** box, CouchDB's since v1.122.0, now reaches MySQL and MariaDB (encrypt
+and verify the server's certificate — never merely trust it), every
+MySQL/MariaDB URL states its mode so a spec saved before 3.9.0 connects
+exactly as it did, and a TLS refusal reads in the user's words, because the
+driver's own advice ("set sslMode=disable") names a URL option this product
+never shows. Measured against the driver this build ships, not read from
+its notes: a fake server speaking one protocol-10 greeting without the SSL
+capability shows the TLS connect refusing before a byte of credentials
+leaves and the plain connect reaching the server (`MariaDbTlsTest`); four
+mutants by name. Beside it, the front door, from the funnel's own numbers
+(about fifty GitHub visitors and one to three real downloads per release):
+the README is a front page again — 349 lines from 1,072, the feature wall
+moved whole to `docs/features.md` and the module map to CONTRIBUTING —
+Windows users are told what SmartScreen will say about an installer that
+is not yet signed, and the Homebrew cask describes the product the way the
+README does.
+
+### Added
+
+- DB Studio: **Use TLS** on MySQL and MariaDB connections
+  (`DbEngine.offersTls`, `DbClient.connectionUrl`): on, the driver's
+  `verify-full`; off, `disable` — the cleartext connection every
+  `.nmoxdb.json` written before 3.9.0 already had. The box says what it
+  means per engine (https for CouchDB, the certificate check for
+  MySQL/MariaDB), in all fifteen languages; a server that offers no TLS,
+  or whose certificate cannot be verified, says so in plain words
+  (`JdbcCore.humanize`). `ConnectionDialogTlsTest`, `MariaDbTlsTest`.
+- `docs/features.md`: the feature catalogue, every surface with the proof
+  behind each claim, moved verbatim from the README with its links
+  re-rooted. Listed in the docs index and read by the docs count census
+  and the gallery's wiring gate.
+- README and INSTALL say what SmartScreen shows for the unsigned Windows
+  installer and how to proceed, and point at the GPG-signed `SHA256SUMS`.
+
+### Changed
+
+- MariaDB Connector/J 3.5.10 → 4.0.0 (Dependabot #855, applied by hand
+  and checked against how DB Studio uses the driver): Java 17 minimum is
+  under the product's 21; the JNA dependency is gone, so the signing lane
+  has one native fewer to find; `PreparedStatement.executeQuery` now
+  refuses statements that return no rows, which DB Studio never does — the
+  console runs `Statement.execute`, the probe `SELECT 1`; and 3.5.11's
+  fixes ride along, including CONJ-1345, `DatabaseMetaData.getURL()`
+  exposing the password since 3.5.10 — DB Studio never calls it, checked.
+- maven-surefire-plugin 3.6.0 → 3.6.1 (the same pull request).
+- README: the Features and Agent Port sections are a twelve-line summary
+  pointing at the catalogue; the project tree, module table and
+  architecture notes live in CONTRIBUTING's new *The modules*; two
+  boilerplate lists (*Adding new modules*, *Code quality*) that said
+  nothing CONTRIBUTING does not say better are gone.
+- The Homebrew cask's `desc` reads *Web developer's IDE with a
+  hardware-style task rack*, in both of its homes.
+- Tech-debt ledger 138 records its upstream issue,
+  [apache/netbeans#9743](https://github.com/apache/netbeans/issues/9743).
+- `docs/engineering/plan.md` carries the product-manager read of
+  2026-10-30: what the funnel numbers say, what this release did about
+  them, and the three things only David can do (the Windows signing
+  purchase, the GitHub description, the positioning line).
+
+### Fixed
+
+- A local MySQL 8 could not be connected at all, in any release before
+  this one — found by the live walk, not by the bump. MySQL 8's default
+  plugin (`caching_sha2_password`) refuses a password over a plain
+  connection until it has either TLS or the server's RSA key, and a user's
+  first login always needs one, so Test answered *RSA public key is not
+  available client side* against a fresh `mysql:8.4`. A plain connection
+  to **this machine** (`localhost`, `127.x`, `::1`) may now fetch the key
+  (`allowPublicKeyRetrieval`, a man-in-the-middle hazard on a network and
+  none on the loopback); a plain connection to a remote server keeps the
+  driver's refusal and says, in the user's words, to tick **Use TLS**.
+
+### Measured
+
+- Live, once Docker was up: against `mariadb:11` (11.8.9) **Use TLS** off
+  connects in the clear (`Ssl_cipher` empty) and on connects over
+  `TLS_AES_256_GCM_SHA384` — with the image's own certificate and with a
+  hand-made self-signed one, since MariaDB 11.4+ lets the driver verify a
+  self-signed certificate through the password; against `mysql:8.4`,
+  **Use TLS** on refuses the auto-generated self-signed certificate
+  (*Cannot use authentication plugin caching_sha2_password with a Self
+  signed certificates*), which the product translates to the certificate
+  sentence — the honest answer, and a trust-everything mode was
+  deliberately not offered.
+
 ## [3.8.2] - 2026-10-23
 
 **A Windows boot that ran an old Java says which Java it was.** No product
@@ -25870,6 +25963,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.9.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.8.2...v3.9.0
 [3.8.2]: https://github.com/NMOX/NMOX-Studio/compare/v3.8.1...v3.8.2
 [3.8.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.8.0...v3.8.1
 [3.8.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.7.0...v3.8.0

@@ -1,5 +1,38 @@
 # The Plan
 
+*Currency addendum 2026-10-30 (3.9.0, the product-manager read). Asked
+to look at the project as a senior product manager, the first instrument
+was the funnel, not the backlog: in the fortnight before 2026-10-30 the
+repository had about fifty visitors, each release one to three real
+downloads (the installed-boot workflow takes one of each itself), three
+stars and no issue from anyone outside. Four hundred and fifty releases
+have shipped to, in effect, nobody yet — the product is far ahead of its
+distribution. So the ranked answer to "what's next" is not a feature.
+In order: (1) sign the Windows installer (ledger 86b, a purchase; Windows
+is the one platform with any download count, and an unsigned installer
+meets SmartScreen's "Windows protected your PC" with the Run button hidden
+behind More info); (2) one positioning line in every place a stranger
+reads one — the GitHub description still says "New Media On X Studio",
+the cask said "NetBeans RCP-based IDE", the README says "a desktop IDE for
+web developers", the website says "the web studio with a rack" (this
+release aligned the cask and left the description, which is David's, with
+the README's sentence as the proposal); (3) a front page a visitor can
+finish (done: 349 lines, the catalogue in `docs/features.md`); (4) honesty
+at the one place a Windows user stops (done: the SmartScreen note); (5)
+distribution lanes — winget, Scoop, Flathub — written and gated the way
+the signing lanes were, armed by a decision, and sequenced AFTER (1) so a
+listing never funnels people to an installer that scares them. The
+dependency work of the same day was the lesson worth keeping:
+MariaDB Connector/J 4.0 changed its DEFAULT sslMode, which no bump title
+says and every saved connection would have felt — a dependency whose
+default changes is a product change wearing a version number, and the
+house's answer (measure against the shipped jar, state the mode in the
+URL, give the user the switch) is the general one. The live walk that
+followed, once Docker was up, paid the way walks do: a local MySQL 8 had
+never been connectable in any release (the first login over a plain
+connection needs TLS or the server's RSA key), fixed on the loopback only
+and named in the user's words everywhere else.*
+
 *Currency addendum 2026-09-25 (v3.2.0, the second-week release). The
 question moved from the first hour to the second week: commit, review a
 diff, resolve a conflict, open a pull request, chase a stack trace, keep a

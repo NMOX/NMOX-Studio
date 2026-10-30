@@ -80,6 +80,15 @@ Windows side.
 lines when a boot fails. The next time this happens on a runner, the run
 says which Java it was, without a probe.
 
+**Filed upstream** on 2026-10-23 as
+[apache/netbeans#9743](https://github.com/apache/netbeans/issues/9743),
+every claim checked against the launcher source and the probe logs first
+(the draft had said the JVM started with no options at all; the trace
+shows it kept the launcher's own `-Djava.class.path` and `-Dnetbeans.dirs`
+and lost everything the conf carried). The two ways to close it are
+unchanged: the launcher retries or refuses, or the product ships its own
+(ledger 118).
+
 ## Open — added by 3.6.0 (the VS Code repository release)
 
 ### 136. The debugger's windows have two names in a translated build

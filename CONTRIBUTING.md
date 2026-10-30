@@ -124,6 +124,79 @@ javadoc tells the rest. A ledger failing on your change usually wants a
 decision written down (classify the new site, with its reason), not a
 workaround.
 
+## The modules
+
+The repository, module by module:
+
+```
+NMOX-Studio/
+├── core/                   # Shared SPI facades, the Device SPI, process/IO utilities
+├── ui/                     # Main windows, Workbench home base, actions
+├── editor/                 # Polyglot editor: TextMate grammars, LSP,
+│   │                       #   completion, outline, spellcheck
+│   ├── polyglot/          # 70+ language registration
+│   ├── grammars/          # TextMate grammar loading via NetBeans CSL
+│   ├── lsp/               # Language Server Protocol client
+│   ├── javascript/        # Regex-aware JavaScript lexer
+│   └── outline/           # Structure navigator (⌘7)
+├── rack/                   # The Task Rack: hardware-styled task devices
+│   ├── devices/           # The 53 rack devices
+│   ├── engine/            # Patch execution (wire OK jacks → run pipeline)
+│   ├── docker/            # HARBOR device + Docker panel
+│   └── projectstudio/     # Project Studio templates
+├── infra/                  # Node-RED-style multi-cloud Infra Designer
+│   ├── api/               # Provider abstraction
+│   └── model/             # DigitalOcean, Hetzner, Cloudflare resources
+├── apiclient/              # API Studio: Postman-style request tab
+├── dbstudio/               # DB Studio: SQL + document database suite
+│   ├── model/             # Engines, connection specs, schema records
+│   ├── engine/            # DbBackend: JDBC + Mongo + CouchDB(HTTP)
+│   └── ui/                # The ⌥⌘7 tab: tree, console, results
+├── web3/                   # Contract Studio: Web3/EVM development
+│   ├── engine/            # Keccak-256, ABI codec, JSON-RPC client
+│   └── ui/                # The ⌥⌘6 tab: Interact, Watch, Oversight
+├── project/               # Project and resource management
+├── tools/                 # Development tools and utilities
+├── branding/              # Splash, icons, NMOX Phosphor theme
+├── application/           # Main application assembly (the cluster)
+├── NMOX-Studio-sample/    # Module template (built, never shipped)
+├── packaging/             # macOS DMG, Linux tar.gz/deb, Windows installer
+├── build.sh               # Build script
+├── run.sh                 # Development run script
+└── README.md              # The front page
+```
+
+### Module overview
+
+| Module | Description | Key Components |
+|--------|-------------|----------------|
+| **core** | Shared SPI facades, the public Device SPI, process/IO utilities | `spi` (ProjectAim, LiveServings, TrustGate…), `spi.device`, `ProcessSupport`, `AtomicFiles`, `BoundedReads` |
+| **ui** | Main windows, Workbench home base, actions | `MainWindow`, Workbench, actions |
+| **editor** | Polyglot editor — grammars, LSP, completion, outline | `WebFileSupport`, polyglot/grammars/lsp/outline |
+| **rack** | The Task Rack — hardware-styled task devices and patch engine | `RackTopComponent`, devices, engine, docker (HARBOR) |
+| **infra** | Node-RED-style multi-cloud Infra Designer | `InfraDesignerTopComponent`, provider api/model |
+| **apiclient** | API Studio — Postman-style request tab | `ApiClientTopComponent`, engine, `.nmoxapi.json` |
+| **dbstudio** | DB Studio — SQL + document database suite | `DbStudioTopComponent`, `DbBackend` (JDBC/Mongo/Couch), Keyring passwords |
+| **web3** | Contract Studio — Web3/EVM smart contracts | `Web3StudioTopComponent`, `AbiCodec`/`Keccak256`/`JsonRpcClient`, no-private-keys boundary |
+| **project** | Project and resource management | `ProjectExplorerTopComponent` |
+| **tools** | Development and debugging tools | Tool windows, utilities |
+| **branding** | Splash, icons, NMOX Phosphor theme | Branding resources |
+| **application** | Main application assembly (the cluster) | App descriptor, packaging hooks |
+
+### Architecture
+
+NMOX Studio is built on the NetBeans Rich Client Platform, so it inherits the
+platform's module system, windowing, and `Lookup`-based service wiring rather
+than reinventing them. The application is assembled from the modules listed
+above, each a self-contained NetBeans module (NBM) with:
+- **Clear Dependencies**: Explicit module dependencies declared in the POM
+- **API Separation**: Clean separation between API and implementation
+- **Lookup Wiring**: Services and `TopComponent`s registered via NetBeans
+  annotations (`@ServiceProvider`, `@TopComponent.Registration`) and resolved
+  through the platform `Lookup`
+- **Resource Management**: Proper resource bundling and internationalization
+- **Testing Support**: Unit and integration tests run headless in CI
+
 ## How this house works
 
 These aren't style preferences; each one was paid for by a shipped

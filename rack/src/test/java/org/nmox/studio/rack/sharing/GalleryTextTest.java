@@ -106,18 +106,18 @@ class GalleryTextTest {
     }
 
     @Test
-    @DisplayName("the README's wiring sketch is the generated one: every line of its block is a Rust save loop line in docs/racks.md")
+    @DisplayName("the feature catalogue's wiring sketch is the generated one: every line of its block is a Rust save loop line in docs/racks.md")
     void readmeSketchIsGenerated() throws Exception {
-        String readme = Files.readString(Path.of("..", "README.md"), StandardCharsets.UTF_8).replace("\r\n", "\n");
+        String readme = Files.readString(Path.of("..", "docs", "features.md"), StandardCharsets.UTF_8).replace("\r\n", "\n");
         int open = readme.indexOf("```\nREFLEX CHANGED");
-        assertThat(open).as("the README shows the Rust save loop's wiring").isPositive();
+        assertThat(open).as("docs/features.md shows the Rust save loop's wiring").isPositive();
         String block = readme.substring(open + 4, readme.indexOf("\n```", open + 4));
         String racks = Files.readString(Path.of("..", "docs", "racks.md"), StandardCharsets.UTF_8).replace("\r\n", "\n");
         int section = racks.indexOf("### Rust save loop");
         assertThat(section).isPositive();
         String rust = racks.substring(section, racks.indexOf("\n### ", section + 4));
         for (String line : block.split("\n")) {
-            assertThat(rust).as("README line is generated wiring: " + line).contains("`" + line + "`");
+            assertThat(rust).as("catalogue line is generated wiring: " + line).contains("`" + line + "`");
         }
     }
 }

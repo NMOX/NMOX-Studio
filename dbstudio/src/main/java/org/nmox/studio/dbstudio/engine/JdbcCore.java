@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,6 +39,11 @@ import org.openide.util.NbBundle.Messages;
  * {@code config/spotbugs-exclude.xml}.
  */
 @Messages({
+    // a TLS refusal in the user's words: the driver's own advice names a URL
+    // option this product never shows; the checkbox is what they can reach (3.9.0)
+    "JdbcCore_tlsNotOffered=This server offers no TLS. Untick \u201cUse TLS\u201d to connect in the clear, or turn TLS on at the server. The driver said: {0}",
+    "JdbcCore_tlsCertificate=The server offers TLS, but its certificate could not be verified. The driver said: {0}",
+    "JdbcCore_tlsPublicKey=MySQL will not accept this password over a plain connection to a remote server. Tick \u201cUse TLS\u201d. The driver said: {0}",
     // chrome (shift-2970): the honest markers an oversize cell carries.
     // {n,number,0} keeps the digits ungrouped, as the concatenation printed them.
     "JdbcCore_cellTruncated={0} \u2026[{1,number,0} chars, truncated]",
@@ -323,7 +329,26 @@ final class JdbcCore {
         if (message == null || message.isBlank()) {
             message = t.getClass().getSimpleName();
         }
-        return message.trim();
+        message = message.trim();
+        String lower = message.toLowerCase(Locale.ROOT);
+        // MariaDB Connector/J: "Trying to connect with ssl, but ssl not enabled in
+        // the server. TLS is enabled by default, set sslMode=disable ..." — measured
+        // against the shipped driver by MariaDbTlsTest, not read from its notes
+        if (lower.contains("ssl not enabled in the server")) {
+            return Bundle.JdbcCore_tlsNotOffered(message);
+        }
+        // "RSA public key is not available client side (option serverRsaPublicKeyFile
+        // not set)" — MySQL 8's first login over a plain remote connection (measured
+        // live on mysql:8.4); the loopback case never gets here (DbClient.connectionUrl)
+        if (lower.contains("rsa public key is not available")) {
+            return Bundle.JdbcCore_tlsPublicKey(message);
+        }
+        if ((lower.contains("ssl") || lower.contains("tls"))
+                && (lower.contains("certificate") || lower.contains("pkix")
+                    || lower.contains("hostname") || lower.contains("handshake"))) {
+            return Bundle.JdbcCore_tlsCertificate(message);
+        }
+        return message;
     }
 
     static String blankToNull(String s) {

@@ -43,6 +43,7 @@ class DocsCountGateTest {
     private static List<Path> liveDocs() throws IOException {
         List<Path> docs = new ArrayList<>();
         docs.add(Path.of("..", "README.md"));
+        docs.add(Path.of("..", "docs", "features.md"));
         docs.add(Path.of("..", "docs", "user-guide.md"));
         // the Kitchen Sink quotes counts too — its "85 grammars" rotted
         // for two releases because this census missed it (v2.34.2)

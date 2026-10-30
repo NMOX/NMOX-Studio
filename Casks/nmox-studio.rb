@@ -4,7 +4,7 @@ cask "nmox-studio" do
 
   url "https://github.com/NMOX/NMOX-Studio/releases/download/v#{version}/NMOX-Studio-#{version}-macos.dmg"
   name "NMOX Studio"
-  desc "NetBeans RCP-based IDE for web development"
+  desc "Web developer's IDE with a hardware-style task rack"
   homepage "https://github.com/NMOX/NMOX-Studio"
 
   depends_on :macos

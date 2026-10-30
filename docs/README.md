@@ -53,6 +53,9 @@ click from wherever you are.
 - **[📄 Rack files](rack-files.md)** — a rack as a portable, inspectable
   workflow: the format, what happens when a file travels between people, and
   how to contribute a rack to the gallery.
+- **[📚 The feature catalogue](features.md)** — every surface of the
+  product, feature by feature, with the proof behind each claim; the long
+  form of the README's front page.
 - **[🖼️ The visual tour](tour.md)** — every major feature on one page,
   with real screenshots; the phosphor-styled version is the website,
   <https://nmox.github.io/NMOX-Studio/>.
