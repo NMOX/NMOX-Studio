@@ -1,0 +1,696 @@
+# NMOX Studio, feature by feature
+
+*The long tour: every surface of the product, with the proof behind each
+claim. The [README](../README.md) is the front page; this is the catalogue
+behind it. Prefer pictures? [The visual tour](tour.md). Prefer doing?
+[The Kitchen Sink](kitchen-sink.md).*
+
+## 🎛️ The Task Rack
+Every web-dev task is a hardware device — knobs, LEDs, LCDs, patch
+cables. Wire OK jacks together (Tab flips the rack) and one keypress
+runs install → build → test, with output scrolling on a phosphor
+monitor. 53 devices: package managers, bundlers, test runners, dev
+servers, databases, linters, formatters, git, deploy, HTTP, tunnels,
+load bench, file watcher, the QUORUM lane-join barrier, SOLDER (any
+command as a unit), TAIL (follow log files), HELM (run commands on your
+servers over ssh), an in-rack REPL, the ANVIL local EVM chain, the
+STELLAR (Soroban) and ANCHOR (Solana) smart-contract consoles, the
+DYNAMO Grunt/Gulp runner, the KVASIR AI error explainer, the WAYPOINT
+monorepo-workspace selector, and framework consoles for Angular,
+Phoenix, Next.js, Vite, Astro, SvelteKit, Nuxt, and Laravel (ARTISAN),
+and more. Patches persist per project, ship as presets, and export to
+GitHub Actions. **[The full device reference](devices.md)** is
+generated from the catalog itself — CI fails if it drifts.
+
+## 🎛 A rack is a workflow you can hand to someone
+A rack is not configuration. It is a development workflow you can *see* —
+what runs, in what order, in parallel or not, and what happens when
+something fails — and it is a small file, so it travels.
+
+```
+REFLEX CHANGED ▸ GLOSS RUN, PURITY RUN
+GLOSS DONE ▸ QUORUM IN 1
+PURITY DONE ▸ QUORUM IN 2
+QUORUM OK ▸ VERITAS RUN
+VERITAS FAIL ▸ KVASIR EXPLAIN
+```
+
+A save checks formatting and runs clippy *at the same time*; QUORUM waits for
+both; `cargo test` runs only when both passed; a failure is explained,
+hands-free. Parallel steps, a join, a conditional and an error path — visible
+at once, changed by moving a cable.
+
+
+That is the *Rust save loop*, one of the racks in the **Rack Gallery**
+(Tools ▸ Rack Gallery…, or **Presets ▾** on the rack): community racks,
+the built-in presets, the starters and your own on one shelf, each saying
+what it is for, which tools it needs (and which of them this machine
+lacks), and how it is wired — before it mounts. **Share…** sends yours as a
+file, to the clipboard (a rack is small enough to paste into a chat), or
+into **My Racks**; you name it, and you read every command and path that
+leaves with it first — your home directory is rewritten to `~` even inside
+a command, and anything that looks like a credential is flagged. **Import…**
+shows what a rack holds *and what this install cannot give it* — a cable
+into a jack you do not have, by name — found by a dry run before anything
+mounts. It arrives at rest: nothing watches, ticks or follows until you
+press it, and every GO stays behind Workspace Trust. No account, no server:
+the gallery's community racks are a reviewed directory in this repository,
+and **[adding one is a pull request](rack-files.md)**. The racks are
+listed in **[docs/racks.md](racks.md)**, generated from the files.
+
+## 🔧 Write your own device
+The fleet is no longer fixed. Drop a JSON file in `~/.nmox/devices.d/`
+and a real device appears on the shelf: knobs, buttons, LEDs, ports,
+patch cables, saved into the project's patch, found by ⌘I, recorded by
+the flight recorder. No Java, no plugin build, no restart.
+
+```json
+{
+  "id": "com.example.hello", "title": "HELLO", "tagline": "greets the project",
+  "category": "AUTOMATE",
+  "usage": "GO prints a greeting using the project's own node.\nPatch DONE onward to chain another device after it.",
+  "buttons": [{ "label": "GO", "role": "GO", "command": ["node", "-e", "console.log('hello')"] }]
+}
+```
+
+The **host keeps the laws, not the file**: workspace trust gates every
+spawn, the role picks the colour, ports are validated against the same
+lexicon as the built-ins. And the format refuses what it cannot read
+honestly — shell lines (`|`, `&&`, backticks), tools named by path,
+unknown `{{variables}}` — skipping a bad file whole, with the reason in
+the log, rather than putting a control on your shelf whose label lies.
+
+**[Reference](device-files.md)** ·
+**[Tutorial](tutorials/your-own-device.md)** ·
+**[Java SPI](device-spi.md)** for devices that need real state.
+
+## 🚦 Quality is a shipping gate
+Four floors, each a knob on a faceplate, each able to close the OK jack:
+**VITALS** (Lighthouse performance/a11y/best-practices/SEO), **VERITAS
+MIN COV** (test coverage), **GAUNTLET MIN R/S** (load-bench throughput),
+and **PRISM** (bundle-size budget). **BEACON** watches production —
+uptime plus TLS days-remaining on a clock. Wire any subset through
+QUORUM into LAUNCHPAD: nothing slow, thin, heavy, or expiring ships.
+VITALS' GATE knob makes **WCAG a shipping gate**: an inaccessible page
+closes the deploy gate exactly like a slow one.
+
+## ⚡ Built to live in all day
+**In your language.** The IDE's own chrome — menus, dialogs, tooltips,
+status lines, Welcome, Options — speaks fifteen languages: English, Español, Français, Deutsch, Русский, Українська, Polski,
+Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文,
+हिन्दी, עברית and العربية — and Hebrew and Arabic lay the whole window out right to
+left, not just the words inside it.
+Pick yours in Options ▸ General ▸ Language and the open windows rename
+themselves on the spot — no restart, and the choice survives one anyway.
+Times follow the language too, so a Hindi reader gets a 12-hour clock while
+a record an agent parses stays fixed. The user guide is translated in full — every chapter, in every one of
+them — and the Welcome's guide link lands in your language:
+[Español](user-guide.es.md) · [Français](user-guide.fr.md) ·
+[Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) ·
+[Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) ·
+[Português (Brasil)](user-guide.pt.md) ·
+[Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) ·
+[Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) ·
+[हिन्दी](user-guide.hi.md) · [עברית](user-guide.he.md) ·
+[العربية](user-guide.ar.md).
+The product's own website speaks all fifteen too — the page it serves on
+localhost and publishes to <https://nmox.github.io/NMOX-Studio/>, with a
+picker naming each language in its own words.
+Rack faceplates keep their panel vocabulary on purpose.
+
+![NMOX Studio in French: the launchpad reads DÉMARRER, RÉCENTS and OUTILS, and the tabs read Bienvenue, Rack de tâches, Studio de bases de données, Studio de contrats and Concepteur d’infrastructure](images/i18n-welcome-fr.png)
+
+![The same build in Russian: НАЧАЛО, НЕДАВНИЕ and ИНСТРУМЕНТЫ on the Welcome, with Добро пожаловать, Стойка задач, Студия баз данных and Студия контрактов as tabs](images/i18n-welcome-ru.png)
+
+![The same build in Ukrainian: ПОЧАТОК, НЕДАВНІ and ІНСТРУМЕНТИ, with Ласкаво просимо, Стійка задач, Студія баз даних and Конструктор інфраструктури as tabs](images/i18n-welcome-uk.png)
+
+![The same build in Hindi: शुरुआत, हाल के and टूलिंग on the Welcome, with स्वागत, टास्क रैक, डेटाबेस स्टूडियो and कॉन्ट्रैक्ट स्टूडियो as tabs](images/i18n-welcome-hi.png)
+
+![The same build in Spanish: INICIO, RECIENTES and HERRAMIENTAS on the Welcome, with Bienvenida, Rack de tareas, Estudio de bases de datos and Diseñador de infraestructura as tabs](images/i18n-welcome-es.png)
+
+![The same build in German: START, ZULETZT and WERKZEUGE on the Welcome, with Willkommen, Task-Rack, Datenbank-Studio, Smart-Contract-Studio and Infrastruktur-Designer as tabs](images/i18n-welcome-de.png)
+
+![The same build in Polish: START, OSTATNIE and NARZĘDZIA on the Welcome, with Witamy, Stojak zadań, Studio baz danych, Studio kontraktów and Projektant infrastruktury as tabs](images/i18n-welcome-pl.png)
+
+![The same build in Brazilian Portuguese: INÍCIO, RECENTES and FERRAMENTAS on the Welcome, with Bem-vindo, Rack de tarefas, Estúdio de banco de dados, Estúdio de contratos and Designer de infraestrutura as tabs](images/i18n-welcome-pt.png)
+
+![The same build in Indonesian: MULAI, TERBARU and PERKAKAS on the Welcome, with Selamat Datang, Rak Tugas, Studio Basis Data, Studio Kontrak and Perancang Infrastruktur as tabs](images/i18n-welcome-id.png)
+
+![The same build in Filipino: SIMULAN, KAMAKAILAN and MGA KASANGKAPAN on the Welcome, with Maligayang Pagdating, Rack ng Gawain, Studio ng Database, Studio ng Kontrata and Taga-disenyo ng Infrastructure as tabs](images/i18n-welcome-tl.png)
+
+![The same build in Vietnamese: BẮT ĐẦU, GẦN ĐÂY and CÔNG CỤ on the Welcome, with Chào mừng, Giá tác vụ, Studio cơ sở dữ liệu, Studio hợp đồng and Trình thiết kế hạ tầng as tabs](images/i18n-welcome-vi.png)
+
+![The same build in Simplified Chinese: 开始, 最近 and 工具 on the Welcome, with 欢迎, 任务机架, 数据库工作室, 合约工作室 and 基础设施设计器 as tabs](images/i18n-welcome-zh.png)
+
+- **The toolbar's ▶** runs the aimed project the way its toolchain runs,
+  and **the ■ beside Debug** stops every command the product started for
+  you (the ▶'s runs, NPM Explorer scripts, a Focused Test, an install, an
+  `ng generate`), naming them in its tooltip; a Run pressed while the
+  project's own dependency install is still going is refused out loud.
+- **The Welcome page's First Steps** column ticks its first gestures —
+  open a project, run something, see a server live, ask KVASIR, try a
+  learning space, point an agent at the IDE — from records the product
+  already keeps; no survey, no telemetry, and it disappears when done.
+- **Switch Project (⌥⌘P)** re-aims the whole IDE through a guard that
+  names running work before stopping it — no more silently killed dev
+  servers. **Quick Search (⌘I, or ⇧⌘P — the command palette)** finds actions, files, recent projects
+  (Enter switches), rack devices (Enter racks them), **API Studio
+  requests** (jumps to the request), **infra nodes** (selects them
+  on the canvas), and the aimed project's **npm scripts** (type `dev`,
+  Enter runs it, trust-gated, with your own package manager). ⌘9 rack, ⌘8 Docker, ⌥⌘0 workbench; the status line
+  shows what's running.
+- **The rack has undo (⌘Z / ⇧⌘Z)**: add, remove, move a device or
+  patch a cable and take it back — including a removed device, which
+  comes back with its cables re-wired. A 100-deep history that starts
+  clean on whatever patch you loaded.
+- **Experiments (⌥⌘K new, ⌥⇧⌘K the shelf)**: throwaway workspaces in `~/.nmox/experiments` —
+  no git, no recents pollution, pre-trusted. Promote the keepers
+  (move + git init), discard the rest.
+- **`.env` respected everywhere**: every command the rack launches reads
+  the project's `.env`/`.env.local` automatically; rack settings win.
+- **Git on the status line**: aim inside a repo and a **⎇ branch chip**
+  appears (`⎇ main ±3` — HEAD read straight from disk, no git process
+  until you interact). Click it for **Show Changes, Diff, Annotate,
+  History, Refresh** — and because aiming opens the project for the
+  whole platform, the **Team** menu is the full enabled git suite with
+  just a project aimed, nothing selected.
+- **The Help menu answers three questions**: **What's New…** (the
+  bundled release notes, and the unseen ones once after an update),
+  **Report a Problem…** drafts a bug report with the version, OS, Java
+  and a redacted log tail (home path as ~, credentials as [redacted])
+  that YOU submit on GitHub — the product sends nothing; **Keyboard
+  Shortcuts…** lists every NMOX chord from the running keymap, never a
+  hand-kept list, with Copy as Markdown.
+
+## 🌿 Git and GitHub, all day
+
+- **NMOX Studio is git's editor, difftool and mergetool** (`nmox -w`,
+  `nmox -d`), on all three operating systems: `git commit` opens the
+  message in the IDE and waits for the tab to close; **Team ▸ Use NMOX
+  Studio with Git…** sets it up, showing each setting's current value first.
+- **Git's own files are real files**: the commit message's `#` lines are
+  comments, only what you write is spellchecked, and a summary past 72
+  characters is flagged; `git rebase -i` lists highlight each command.
+- **Conflicts resolve where they are written**: both sides tinted, and
+  **Accept Current / Incoming / Both** as a Quick Fix, each one undo.
+- **Where you stand, at a glance**: the chip reads `⎇ main ±2 ↑2 ↓1`
+  (changed files, commits to push and pull), and the status line names who
+  last changed the caret's line — `Ada Lovelace, 3 days ago · Fix the parser`.
+- **GitHub one gesture away**: **Open on GitHub** / **Copy GitHub Link** for
+  lines, files and folders, and **New Pull Request on GitHub** for the branch
+  you just pushed — in your own browser.
+- **A failing stack trace is a door**: ⌘-click `src/app.ts:42:7` in the
+  Terminal and the file opens there. **Tools ▸ Check Markdown Links…** finds
+  the README link that would 404 on GitHub before you push.
+
+The whole loop as one sitting: [The Second Week](tutorials/the-second-week.md).
+
+## 🎤 Made to be shown
+- **View ▸ Presentation Mode**: one toggle and every open editor is
+  +10 pt, the in-app Browser's page is at 150%, and the Output window
+  and every open Terminal follow — live, never persisted, restored
+  exactly when you toggle off.
+  **View ▸ Show Keystrokes** puts the chord you just pressed (⌘S, ⌥⌘G,
+  `⌘Z ×3`) large at the bottom of the window; chords only — what you
+  type never reaches the projector.
+- **Edit ▸ Copy as Markdown** (or right-click): the selection or the
+  whole file as a fenced block tagged with its language (` ```jsx `,
+  ` ```bash `…), the fence lengthened when the snippet itself has
+  backticks. **Copy as Markdown with Link** adds the GitHub
+  `blob/<branch>/path#L3-L14` link to the same lines — from disk facts
+  alone, refusing rather than guessing (no origin, not GitHub, an
+  unsaved buffer). **Open on GitHub** and **Copy GitHub Link** give the
+  link alone, for lines, a file or a folder, in the editor and on
+  Project Studio's tree.
+- **Tools ▸ Save Screenshot… / Save Editor Screenshot… / Copy Editor
+  Screenshot**: the IDE painted by Swing itself at 2x — no
+  screen-recording permission, no desktop, no crop; the editor tab
+  alone for a slide, named after the document, or straight onto the
+  clipboard. **Copy Project Tree as Markdown**: the README tree, heavy
+  directories named but never entered.
+
+## 🧠 The rack remembers, sees, and survives
+- **BLACKBOX** records every launch, exit, duration, and error on a session
+  timeline that persists across restarts — with a slow-creep alarm that
+  notices when your build quietly doubles.
+- **SONAR** maps every listening port to its owning process (docker
+  containers labeled) with one-click kill. EADDRINUSE, solved.
+- **Session Resurrection**: crash, `kill -9`, or power loss — relaunch and
+  the IDE offers your running dev servers back. One click and they're alive.
+
+## 🧬 Wired together
+The parts talk to each other. Every running server — dev servers,
+`php -S`, static serves, even ANVIL's local chain — announces itself to
+one live registry: the **status line** grows a `⇄ serving` chip (click
+to open it in the in-app Browser), **⌘I finds running servers**, VITALS
+and BEACON **auto-target** the served URL when theirs is blank, API
+Studio quietly offers to set `{{baseUrl}}`, and Contract Studio
+**connects itself** the moment your chain is up. Edit a manifest and the
+rack keeps up: save package.json and NPM-9000 re-lists your scripts;
+save the Gruntfile and DYNAMO re-parses its tasks — no re-aiming, and a
+wizard writing ten files costs one re-sync, not ten. Build your
+contracts anywhere (rack, terminal, CI) and Contract Studio's tree
+refreshes itself. Run a postgres container and DB Studio offers the
+connection, prefilled. Hand-edit any studio's workspace file and it
+reloads — silently when it's safe, with a polite "Reload?" when you have
+unsaved work, and never, ever by clobbering it.
+
+## 🐳 First-class Docker
+The HARBOR device tracks the daemon (containers up, images held, disk
+reclaimable) and opens the Docker Panel: a disk-reclaim ledger, live
+container management with browser-jump ports, image tooling, volumes,
+networks — and **Dockerize**, which generates production multi-stage
+Dockerfiles from your project's detected toolchain.
+
+## 🐘 First-class LAMP/LEMP
+PHP is a full citizen: the **ARTISAN** device is a Laravel console
+(serve/test/migrate/fresh/queue/routes with composer.lock version
+currency), TYPEGUARD runs **phpstan** and GLOSS runs **Pint** on PHP
+projects, IGNITION serves `php -S` docroot-aware, and the test under
+your caret runs via PHPUnit. `.htaccess` and Apache configs highlight
+alongside nginx, php.ini, and `.env`. The **PHP Web (LEMP)** template
+scaffolds a guarded front controller, a passing PHPUnit suite, a working
+nginx + php-fpm + MariaDB compose stack, and a `deploy/cloud-init.yml`
+LEMP bootstrap you paste straight into a droplet in the Infra designer —
+with the **LAMP Bench** preset wiring composer → phpunit + phpstan +
+pint on one keypress. And the **Database Explorer** ships in the box:
+connect to MySQL/MariaDB from the Services window, browse schemas, and
+run SQL in a real editor with result grids (bring the Connector/J jar;
+the driver UI handles registration).
+
+## 🕰️ The classic web, first-class
+The stacks that used to be number one still run half the internet, and
+NMOX Studio treats them like it. A **script-tag site with no manifest at
+all** opens as a project and serves with one keypress (VITALS and BEACON
+work on it unchanged). `bower.json`, `Gruntfile.js`, `gulpfile.js`, and
+`webpack.config.js` are project manifests; FORGE builds through webpack,
+grunt, or gulp straight from the config file; CRATE runs `bower install`
+in sequence; and the **DYNAMO** device reads your Gruntfile or gulpfile
+and puts its tasks on a knob — no node required just to browse them.
+Completion knows the classic APIs (`$.ajax`, `_.debounce`,
+`ko.observable`…) whenever your deps or script tags carry jQuery,
+MooTools, Prototype, Backbone, Underscore, or Knockout — and a project
+still on jQuery 1.x wears an honest **EOL** chip. CoffeeScript
+highlights and outlines like any other language. Want to go the other
+way? The **Classic Kit** (File → Add to Project → Classic Kit…) extends any codebase with
+pinned vendored builds (script tags wired idempotently) or npm deps, and
+generates webpack/Grunt/gulp/bower scaffolds without ever clobbering a
+file you wrote. There are even **Classic Web (jQuery)** and **Classic Web
+(MooTools)** templates — script-tag era, no build step, served as-is —
+and a MooTools learning space that tours `Class`/`Extends`, the extended
+natives, and Fx on a live page.
+
+## ⌨️ Polyglot editing
+70+ languages with syntax highlighting (90 TextMate grammars through
+NetBeans CSL) — code plus the whole config layer: `.editorconfig`,
+dotenv, ignore files, GraphQL, Vue, Svelte, Astro, Pug, Handlebars,
+Liquid, nginx, Makefile, Protocol Buffers, Prisma, YAML, TOML,
+Dockerfile. First-class HTML, CSS, SCSS and Less with tag, attribute,
+value and property completion; LSP with ordered server fallbacks; a
+regex-aware JavaScript lexer; typing intelligence; **format on save
+with Prettier** (and on demand: right-click → Format with Prettier,
+config or not) (opt-in via the project's own Prettier config,
+project-pinned binary preferred, caret survives the save); comment-only
+spellcheck (your keys and values are never flagged as typos); **inline
+color swatches** in CSS/SCSS/Less (every color literal is painted as the
+color it names, with legible text picked by luminance); a **Structure
+navigator** (⌘7) that outlines any file — classes, functions, tests,
+selectors, headings, config keys — and jumps to a symbol on click;
+project-wide **Go to Symbol** (⌥⇧⌘O); a **minimap** and **sticky
+scroll** on every editor; a **Tests window** (⌥⌘2) that lists every
+test before anything runs; and the NMOX Phosphor dark theme.
+
+Bun and Deno are first-class toolchains (detected with precedence over
+plain Node — every AUTO device speaks the right binary, CI export
+included), alongside Rust, Go, Python, Ruby, PHP, the BEAM family, and
+more. Deno workspaces get the full treatment: `deno lsp` is the
+TypeScript authority there (the `Deno` global and `jsr:` imports check
+clean, tsserver yields), lint/format/test lanes speak `deno lint`,
+`deno fmt`, and `deno test`, Run Focused Test filters single
+`Deno.test` cases, and the ship gate runs all three built-in checks.
+Rust gets the same toolchain-native loop: rust-analyzer with the
+rustup-proxy trap fixed (a component-less proxy now triggers the
+one-click `rustup component add rust-analyzer` notification instead of
+silent nothing), `cargo clippy` and `cargo fmt` on the lint/format
+lanes, single-`#[test]` focused runs, and a four-check ship gate. Go
+modules get `go vet` (or `golangci-lint` when the project opts in) on
+the lint lane and `gofmt` on the format lane — including an honest
+CHECK verdict that reads gofmt's file list, since gofmt itself exits 0
+even when files need formatting.
+
+## 🤖 The AI faces
+**Your AI, your key.** KVASIR speaks three wires — Claude (Anthropic),
+ChatGPT (OpenAI) and Gemini (Google); pick one with **KEY…** on the
+device or in Options ▸ Rack & Cloud, and every face below follows.
+Consent is granted per provider; keys never cross providers.
+**Ask KVASIR** — select code in any editor, right-click, and hold a
+conversation about it; follow-ups carry the full history. **Edit with
+KVASIR** — say what to change and approve the rewrite in a before/after
+preview, applied as one undo. **Complete with KVASIR** (⌥⌘G) — a
+completion at the caret shown as ghost text; Tab inserts, any edit
+dismisses. **Draft Commit Message** on the git chip — your staged diff,
+drafted; it never commits. And the rack's **KVASIR** device explains
+the last failed run (command, exit code, the error lines), then keeps
+answering — EXPLAIN also reaches API Studio responses, DB Studio
+errors, the Browser's page errors and a failed Check My Work. Each flow
+earns its own one-time consent naming exactly what is sent and what is
+not; nothing leaves without a gesture; keys are keychain-only; Fast
+(Haiku) or Deep (Sonnet), remembered.
+
+## 🅰️ Angular, first-class
+
+Angular is the framework NMOX Studio is deliberately excellent at.
+`.component.html` templates are their own citizens — and so are
+Angular 21's SUFFIXLESS ones (`widget.html` beside `widget.ts`),
+recognized by structure (the `@Component` sibling plus the
+`angular.json` ancestry) and given the same template editor: a
+dedicated template mime lit by the Angular team's own grammars, so `@if`/`@for`
+control-flow blocks, structural directives, and `{{ interpolations }}`
+all highlight — with `@`-block and `*`-directive completion in any
+project that carries an `angular.json`. The **Angular Language
+Service** installs into your project from an in-IDE prompt (it must
+match your workspace's Angular and TypeScript versions) and then the
+templates are *type-checked against the component class*: typo a
+property in a binding and the Angular compiler's own "Did you mean…?"
+squiggle appears as you type. **⌘B inside a template jumps to the
+definition** — `{{ title }}` lands on the `title` field in the
+component class — and the right-click menu switches you between the
+pair: **Open Angular Template** from the class (the decorator's
+`templateUrl` wins, the sibling convention backstops), **Open
+Component Class** from the template. The in-app Browser's DevTools
+have an **Angular pane**: the live component tree of a dev build
+(instance state, host directives, click-to-highlight), with the
+honest production-build answer when `window.ng` is stripped. The rack
+side is HALO, the Angular console (serve/build/test/generate/update
+with version currency), and **New Project** ships an Angular
+standalone template.
+
+## 🖖 Vue and Svelte, first-class
+
+The component mimes get the whole editor treatment: `.vue`
+and `.svelte` panes carry real editor kits, so every keyboard chord —
+⌘/ toggle comment, **⌥⌘E Emmet in your component markup** — fires in
+all five keymap profiles; auto-pairs type and delete symmetrically;
+and completion speaks each framework's own language. In a `.vue` file
+that means the directives with their shorthands (`v-if`, `v-for`,
+`v-model`, `@click`, `:class`), the Composition API (`ref`,
+`computed`, `watch`, lifecycle hooks), the `<script setup>` compiler
+macros (`defineProps`, `defineModel`, `useTemplateRef`), and the
+built-in components (`Teleport`, `Suspense`, `Transition`). In a
+`.svelte` file it means Svelte 5's runes — including the dotted
+variants (`$state.raw`, `$effect.pre`, `$inspect.trace`) — template
+blocks, directives, and lifecycle. **Vue's language server actually
+answers**: the IDE installs `@vue/language-server@2` into your project
+from an in-IDE prompt, resolves your project's own TypeScript as the
+tsdk, and injects the initialization options the server needs
+(`vue.hybridMode:false`), so a typo'd property in a template gets the
+real compiler squiggle. (The 3.x server line is deliberately pinned
+out: it requires a VS-Code-hosted tsserver bridge and publishes
+nothing to any other editor — proven against the real binary.)
+`svelteserver` answers with its defaults, project-pinned install
+preferred. Both frameworks keep their DevTools panes (live component
+tree for Vue dev builds, `__svelte_meta` source mapping for Svelte),
+their Vite templates, their learning spaces, and their consoles
+(NIMBUS for Nuxt, KINETIC for SvelteKit, VELOCITY for plain Vite).
+
+## 🔍 The source-aware Browser
+
+The oldest split in web development — the browser knows *which element
+you mean*, the editor knows *where the code lives*, and you carry
+information between them by hand — is closed inside the IDE. In the
+in-app Browser's DevTools DOM tab:
+
+- **Pick element**: a crosshair in the live page — click any element
+  and the DOM tree selects it, highlights it, and shows its computed
+  styles (with a WCAG contrast verdict).
+- **Open Source**: the selected element opens the HTML file that
+  produced it, *at the line*. It only trusts pages it can trace to
+  your disk (`file://` pages and anything served by a rack serve
+  device), and it refuses honestly otherwise — a remote page says
+  "not served from a project here," a script-generated element says
+  so instead of jumping somewhere wrong.
+- **Edit Style…**: a property/value tweak applies inline in the page
+  *instantly*, then lands in the source stylesheet — the rule chosen
+  by asking the page which selectors matched (the cascade's own
+  answer), replaced in place with every other byte untouched. Compiled
+  CSS with a preprocessor sibling refuses with "edit the preprocessor
+  source instead," because a write there would be lost on the next
+  compile.
+
+With save-to-reload already watching, the loop closes: pick → tweak →
+source updated → page reloads from that source. A runtime error on a
+page served from your project lands in the editor too — a squiggle at
+the line and an Action Items row — and **Explain error…** asks KVASIR
+about it. The walkthrough:
+[Browser to Source](tutorials/browser-to-source.md).
+
+## 🐞 Breakpoints that actually stop
+
+Click the gutter, press ⇧⌘F5 (or Debug ▸ Debug File, or right-click →
+**Debug File** — or the toolbar's bug button for the project's own
+entry, the file its `start` script runs), and your program pauses
+there — call stack, variables in scope, stepping, watch expressions
+evaluated against the live process. **JavaScript and TypeScript debug
+out of the box**: Microsoft's [js-debug](https://github.com/microsoft/vscode-js-debug)
+(the engine VS Code uses) ships inside the IDE, so if `node` runs your
+file, you can debug it. Python (debugpy) and Go (delve) work the same
+way with their own adapters. Debugging runs your code, so it asks for
+Workspace Trust first — the same gate the rack uses. And it follows
+your program's children: a forked process, a worker thread, or a
+page's Web Worker each become a debug session of their own, stopping at
+the breakpoints set in their files (v2.156.0).
+
+![A JavaScript breakpoint hit — live V8 variables and the Node call stack](images/debug-javascript.png)
+
+## 📋 The Task Board and sprints
+A per-project kanban (⌥⌘1): columns of cards, dragged or keyed between
+them, advisory WIP limits (the header turns red past the limit — it
+never blocks a move), epic labels, a blocker register with owners and
+unblock actions, a one-clock-per-board time clock, and an **Overview**
+dashboard — WIP now, done today and this week, a 14-day flow strip,
+aging cards, retro notes. **Sprints** name a window, the Overview grows
+a burndown reconstructed from your cards' own done stamps, **Sprint
+Report…** and **Close Sprint…** archive for velocity, and the
+**Standup** button turns the board's own records into the daily report
+as markdown. It all lives in `.nmoxtasks.json` beside the project —
+commit it and the team shares one board; edits made outside the IDE win
+over a stale gesture, and card text always renders as plain characters.
+
+## 🎓 Learning Spaces
+Projects that exist to be learned from. **File → New Learning Space…**
+(⇧⌘L) opens a searchable picker of **93 built-in tutorials** across
+languages, frameworks, and libraries; choose one — say Common Lisp —
+and the studio generates a real project: sample code, a TUTORIAL.md
+that walks it (with the install command for your OS), and a rack
+already wired with a **live REPL** pointed at the right interpreter.
+Press START, click HINTS for starter expressions, type `(+ 1 2 3)`,
+read the answer. The REPL is a genuine interactive process you type
+into (clisp, python3, node, ghci, iex, irb, sqlite3, redis-cli…) — a
+new capability, since the rack's command devices deliberately run with
+a closed stdin. Framework spaces with a real console (Rails, Django,
+Phoenix, Laravel Tinker) wire that console; the rest wire a run
+command. The whole catalog is data (`learn-catalog.json`) — and every
+space is honest: if a tool isn't installed, it says so and hands you
+the install line. Some spaces **check your work** (File ▸ Check My
+Work) against real checkpoints and offer the KVASIR tutor when a check
+fails; **Export as Learning Space…** turns any project into a drop-in
+your students can load.
+
+## 🩺 Honest about your machine
+**Tools → Environment Doctor** probes every external tool the studio
+can drive — the core four, each language toolchain, and every
+learning-space interpreter — live with its version command, in one
+table: ✓ with the version line, or ✗ with the install command that
+fixes it. The **Welcome screen** is a real launchpad: start actions
+with their shortcuts, your recent projects (click to aim the studio),
+every tool window with its keystroke, and the stamped version with a
+What's-new link.
+
+## 🧩 Block Studio
+A Scratch-like composer (⌥⌘5) that builds **real Web Components** from
+interlocking pieces: state, props, slots, timers, event handlers — snap
+them together (illegal nestings simply refuse) and the runnable
+custom-element code appears live beside the canvas, each piece mapped to
+the exact lines it generates. Fully keyboard-operable and
+screen-reader-visible. A workspace holds many components with a
+toolbar switcher; **Save Component** writes `src/components/<tag>.js`
+(never clobbering a file it didn't generate), **Open Component…**
+parses a generated file back into blocks, and **Preview** serves the
+whole workspace live on localhost — components can nest each other's
+tags and render composed.
+
+## 🧪 API Studio
+A Postman-style tab (⌥⌘8) for building, saving, sending,
+and **testing** HTTP requests: collections of requests, a builder with
+params/headers/body/auth, `{{variable}}` environments so one request
+travels from localhost to prod, and per-request assertions (status,
+response time, body contains, JSON path, header present) that turn a
+probe into a check. The workspace persists as `.nmoxapi.json` beside the
+project. **Import what you already have**: curl commands, `.http`/`.rest`
+files, OpenAPI 3 specs (JSON or YAML), **Postman Collections**, and **HAR captures**
+from the browser's Network tab — with every secret routed to the OS
+keychain at the border (captured cookies and opaque credentials are
+dropped and counted, never written to a committable file) — and export
+any collection back out as a `.http` file. See the
+[migration tutorial](tutorials/migrating-from-postman.md).
+
+## 🗄️ DB Studio
+A database management suite in its own tab (⌥⌘7) — **SQLite, PostgreSQL,
+MySQL, MariaDB, MongoDB, and CouchDB**, batteries included: the drivers
+are bundled (CouchDB needs none — it's plain HTTP), so a fresh install
+connects to a real database in under a minute. One tree browses
+tables/views, Mongo collections, or Couch databases down to columns and
+document shapes; a kind-aware console speaks SQL (highlighted) to SQL
+engines and JSON to document engines — Extended-JSON commands for Mongo,
+Mango selectors for Couch. Scripts run statement-by-statement (an error
+in one never stops the rest), results land in per-statement grids with
+elapsed times and honest truncation flags, history keeps your last 50
+runs — persisted per project, next to named **saved queries** — and
+CANCEL actually cancels. Connection specs persist per project
+in `.nmoxdb.json`; **passwords live only in the OS keychain** via the
+platform Keyring. ⌘I finds your connections and tables like everything
+else. And it speaks platform: connections configured in the NetBeans
+**Services** window appear under a Services branch and run in the same
+console — any database with a registered driver, Java DB and Kvasir
+included, with NetBeans owning drivers and credentials.
+
+The grids work for a living, too. Run a simple single-table SELECT (or
+peek a table) on a SQL engine and the grid unlocks for **in-grid row
+editing**: edited cells tint, a chip counts pending edits, and
+**Apply…** shows the exact `UPDATE` statements — primary-key WHERE
+clauses, properly quoted identifiers — before anything runs, then
+re-runs your query so you see database truth. Grids that can't be
+edited safely tell you why in plain words ("Read-only — no primary
+key"). Any result exports to **CSV or JSON**; **EXPLAIN** lights up for
+SELECTs and shows the engine's own query plan; and if your project's
+`.env` declares `DB_*` or `DATABASE_URL`, DB Studio quietly offers to
+create the connection — prefilled dialog, password straight to the
+keychain.
+
+## ⛓️ Contract Studio (Web3)
+Smart contract development in its own tab (⌥⌘6) — **Solidity in the
+editor** (pinned TextMate grammar, Navigator outline, LSP catalog
+entry), **Vyper in the editor** too (grammar, outline, decorator
+completion), **Foundry as a real toolchain** (`foundry.toml` projects get
+IDE-native Build/Test/Clean → forge, plus rack lanes, slither findings
+included), and a Studio
+that treats contracts like the first-class artifacts they are. The
+tree scans Foundry `out/` and Hardhat `artifacts/`; the **Interact**
+pane generates call forms straight from the ABI — CALL a view function
+and read the decoded return, SEND a write and watch the receipt land,
+with revert reasons decoded to their names. Deploys record into a
+per-project address book (`.nmoxweb3.json`). **Observation and
+oversight are built in**: the **Watch** pane follows blocks and
+ABI-decodes event logs live off your devnet; **Oversight** shows the
+per-function gas table (`forge test --gas-report`, parsed), every
+contract's size against the EIP-170 24 KB limit with headroom bars,
+and the deployment book. In the rack, **ANVIL** runs your local chain
+(port/chain-id/block-time/fork-url, READY gate, resurrection) and
+**GOVERNOR** holds the gas line (`forge snapshot --check` with a
+tolerance knob) alongside the other quality gates.
+
+**And Web3 is more than the EVM here.** **STELLAR** builds Soroban
+contracts (Rust → WASM via `stellar contract build`, native `cargo
+test`, the quickstart local network one knob away) and **ANCHOR** runs
+Solana (`solana-test-validator` with a live RPC URL and a truthful
+SERVING gate, `anchor build/test`); **Cairo/Starknet and Move (Sui) are full language
+verticals** — `Scarb.toml` projects get the official grammar, outline,
+LSP (served by scarb itself), and every Run/Build/Test lane — and Move
+speaks **both dialects**: a `Move.toml` naming AptosFramework flips
+every lane to `aptos move compile/test` automatically. The
+**Multi-Chain Bench** preset racks all three chains on one MONITOR,
+and the **Contract Kit** (File → Add to Project → Contract Kit (Web3)…) scaffolds a
+live-proven starter for any of **eleven chains** — Solidity/Foundry,
+Soroban, Solana, CosmWasm, ink!, Cairo, Move, **Bitcoin**
+(spending conditions as Miniscript policies compiled to consensus
+Script), and **Clarity on Stacks** (decidable, Bitcoin-anchored, with
+a simnet test harness), and **Cardano** (Aiken validators whose
+refusal paths are declared tests), and **TON** (Tact actors tested on
+an in-memory chain where a refusal is a bounced message). Learning
+spaces walk Stellar, Solana, CosmWasm, ink!, Cairo, Move, Bitcoin,
+Clarity, Cardano, and TON with samples proven against the real
+toolchains. New to contracts? **[The Beginner's Guide to Smart
+Contracts](smart-contracts-beginners-guide.md)** teaches the five
+mental models and gets you to a green refusal test in ten minutes —
+no network, no keys. Keys never touch the IDE: every chain
+CLI manages its own identities.
+
+**The security boundary is the feature**: the IDE never touches
+private keys — no key fields, no signing code. Deploys and sends go
+through the devnet's own unlocked accounts (`eth_sendTransaction` on
+anvil); remote networks are read-only in the Studio, and RPC URLs
+that embed API keys live only in the OS keychain, never on disk.
+
+## 🌐 Standards & PWA, supported with gusto
+`.editorconfig` is **honored, not just highlighted** — indentation
+follows it while you type (indent_style, indent_size, tab_width: Tab,
+Enter and re-indent write tabs in a tabs project and four spaces in a
+four-space one), and every save applies trim_trailing_whitespace and
+insert_final_newline with a minimal edit so the caret stays put —
+glob sections, root stopping and closer-file precedence per the spec. The
+**Standards Kit wizard** (File → Add to Project → Standards Kit…) generates the web's
+well-known files, each correct to its spec: robots.txt (RFC 9309),
+sitemap.xml, site.webmanifest, RFC 9116 security.txt with a true
+RFC 3339 Expires, humans.txt. The **PWA Kit wizard** (File → Add to Project → PWA Kit…)
+makes the project installable in one dialog: a generated icon set
+(monogram or your own artwork — icon-192/512, W3C-safe-zone maskable
+pair, apple-touch-icon, rendered in-process with zero external tools),
+an installability-complete manifest, a **readable vanilla service
+worker** (app-shell or network-first strategy, precache list built
+from the files the project actually has, offline.html fallback), and
+idempotent index.html wiring. Every API Studio response is graded on a
+**Standards tab** — HSTS, CSP, nosniff, clickjacking, Referrer-Policy,
+Permissions-Policy, COOP — value-aware, letter-graded, a named fix for
+every miss. Neither wizard ever overwrites an existing file.
+The **A11y Kit wizard** (File → Add to Project → A11y Kit (Web)…) makes accessibility
+the starting point — focus-visible styles, a skip link, `lang`,
+reduced-motion support, a keyboard-walk checklist — and the **I18n Kit
+wizard** (File → Add to Project → I18n Kit (Web)…) makes it translatable: locale
+catalogs, a dependency-free `data-i18n` applier that keeps
+`<html lang>` truthful, and the checklist of rules tooling can't
+enforce. Both idempotent, never clobbering.
+
+## 🏗️ Projects and infrastructure
+The Workbench home base (toolchain chips, open/recent files, tooling
+shelf), Project Studio templates that scaffold versioned, rack-wired
+projects, and a Node-RED-style Infra Designer for DigitalOcean, Hetzner,
+and Cloudflare with cost estimates and dry-run planning — plus the
+truth-and-teardown loop: **Sync from cloud** pulls your live resources
+from all three providers into the designer in one sweep (each provider
+isolated, so one bad token never aborts the others; re-syncing
+refreshes nodes in place instead of duplicating them), **Refresh**
+flags cloud-deleted resources as drifted, **Destroy stack** tears
+everything down in reverse dependency order with the monthly bill in
+view, droplets take **cloud-init** user_data, and a deployed node hands
+you its **ssh command** from the context menu.
+
+## ✅ Proven, not promised
+CI runs real `npm install`/build/test/serve through the actual rack devices
+on every commit. Quitting the IDE reaps every child process — no orphaned
+dev servers, guaranteed and tested. Every commit also clears SpotBugs,
+find-sec-bugs, and **per-module JaCoCo coverage floors** on all ten code
+modules — coverage measured on the *testable surface* (pure-Swing windows
+and dialogs are excluded by name with a written reason, not chased with
+brittle tests), so the floors mean what they say.
+
+## The Agent Port (MCP)
+
+Tools ▸ **Agent Port (MCP)…** starts a Model Context Protocol server any
+agent can connect to — loopback only, a per-start bearer token (or, when
+you tick **Keep this address and token**, one kept in the system keychain,
+so an agent configured once still connects tomorrow; **Copy for Claude
+Code** copies the `claude mcp add` line), any browser `Origin` refused — and it is **read-only by construction**: a
+build-failing ledger bans every spawn, write and stop primitive from
+the package. Twelve typed tools (`ide_context` for the whole picture;
+`project_state`, `live_servers`, `live_runs`, `run_history`,
+`last_failure`, `diagnostics`, `find_symbol`, `outline`,
+`search_text` — which never reads `.env` files, rc tokens or private
+keys — `editor_state`, `rack_devices`), the same answers as
+`nmox://` resources (with templates for the two that take an
+argument), prompts that fold live state into the question, and argument
+completion for the prompt and template that take one; an agent can
+subscribe and be told over the port's event stream when a run starts,
+a server goes live, or an attached outline's file changes, and hear every run's lifecycle — or, on request,
+its whole output — as MCP log messages. A port that can read the IDE is
+never invisible: the status line wears a `⌁ agent port :N` chip while
+it runs. See [the tutorial](tutorials/agent-port.md).

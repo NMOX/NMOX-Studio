@@ -1568,7 +1568,11 @@ traffic.
 
 Connect to SQLite, PostgreSQL, MySQL, MariaDB, MongoDB, or CouchDB —
 drivers are bundled, nothing to install. Passwords go **only** to your OS
-keychain. Three ways connections find you: add one manually, accept the
+keychain. **Use TLS** in the connection dialog encrypts the link to a
+MySQL, MariaDB or CouchDB server and verifies its certificate — a cloud
+database that requires TLS connects, a local one without it connects in
+the clear as before, and a server that offers no TLS says so in plain
+words when the box is ticked. Three ways connections find you: add one manually, accept the
 offer when your project's `.env` carries `DB_*`/`DATABASE_URL`, or accept
 the offer when a database container is running in Docker. The console is
 kind-aware (SQL kit for SQL engines, JSON commands for Mongo/Couch), runs
