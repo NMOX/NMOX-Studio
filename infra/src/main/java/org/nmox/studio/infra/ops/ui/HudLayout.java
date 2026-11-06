@@ -49,6 +49,8 @@ public final class HudLayout {
             return out;
         }
         double reach = Math.min(w * 0.46, Math.max(160, h * 0.62));
+        // the fan's height leaves room above and below for a host's satellites and labels
+        double reachY = Math.min(reach * 0.78, Math.max(60, h / 2.0 - 110));
         double hostR = n <= 4 ? 40 : n <= 8 ? 34 : 28;
         if (n <= 9) {
             // a fan: evenly spread angles, narrower for few hosts so two do not sit at the extremes
@@ -56,7 +58,7 @@ public final class HudLayout {
             for (int i = 0; i < n; i++) {
                 double a = n == 1 ? 0 : -spread / 2 + spread * i / (n - 1);
                 double x = wx + Math.cos(a) * reach;
-                double y = wy + Math.sin(a) * reach * 0.78;
+                double y = wy + Math.sin(a) * reachY;
                 out.put(hosts.get(i).id, new Place(x, y, hostR));
             }
         } else {

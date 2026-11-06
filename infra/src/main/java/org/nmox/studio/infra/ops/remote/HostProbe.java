@@ -130,11 +130,17 @@ public final class HostProbe {
             if (name.isEmpty()) {
                 return null;
             }
+            // docker joins labels with commas and a VALUE may hold commas too
+            // (compose's depends_on does): a segment without '=' continues the previous value
             Map<String, String> labels = new LinkedHashMap<>();
+            String lastKey = null;
             for (String pair : o.optString("Labels", "").split(",")) {
                 int eq = pair.indexOf('=');
                 if (eq > 0) {
-                    labels.put(pair.substring(0, eq).trim(), pair.substring(eq + 1).trim());
+                    lastKey = pair.substring(0, eq).trim();
+                    labels.put(lastKey, pair.substring(eq + 1).trim());
+                } else if (lastKey != null && !pair.isBlank()) {
+                    labels.put(lastKey, labels.get(lastKey) + "," + pair.trim());
                 }
             }
             List<String> networks = new ArrayList<>();

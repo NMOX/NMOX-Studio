@@ -157,8 +157,29 @@ import org.openide.util.RequestProcessor;
 public final class OpsHub {
 
     private static final Logger LOG = Logger.getLogger(OpsHub.class.getName());
-    private static final RequestProcessor CLOUD = new RequestProcessor("Ops Hub cloud", 2, true);
-    private static final RequestProcessor SSH = new RequestProcessor("Ops Hub ssh", 4, true);
+    private static final RequestProcessor CLOUD_RP = new RequestProcessor("Ops Hub cloud", 2, true);
+    private static final RequestProcessor SSH_RP = new RequestProcessor("Ops Hub ssh", 4, true);
+
+    /** A worker lane: the product's are request processors; a test's is a queue it drains by hand. */
+    public interface Lane {
+        /** Runs {@code r} after {@code delayMillis}; the handle cancels it if it has not started. */
+        Runnable post(Runnable r, long delayMillis);
+    }
+
+    private void onCloud(Runnable r) {
+        cloud.post(r, 0);
+    }
+
+    private void onSsh(Runnable r) {
+        ssh.post(r, 0);
+    }
+
+    static Lane lane(RequestProcessor rp) {
+        return (r, delay) -> {
+            RequestProcessor.Task task = rp.post(r, (int) delay);
+            return task::cancel;
+        };
+    }
 
     /** How often reachable hosts are probed while the Hub is showing. */
     public static final int POLL_SECONDS = 15;
@@ -180,7 +201,8 @@ public final class OpsHub {
     public static synchronized OpsHub getDefault() {
         if (instance == null) {
             instance = new OpsHub(System::currentTimeMillis, javax.swing.SwingUtilities::invokeLater,
-                    new ProcessRemoteRunner(knownHostsFile()), NbPreferences.forModule(OpsHub.class).node("ops"));
+                    new ProcessRemoteRunner(knownHostsFile()), NbPreferences.forModule(OpsHub.class).node("ops"),
+                    lane(CLOUD_RP), lane(SSH_RP));
         }
         return instance;
     }
@@ -189,6 +211,8 @@ public final class OpsHub {
     private final Consumer<Runnable> edt;
     private final RemoteRunner sshRunner;
     private final Preferences prefs;
+    private final Lane cloud;
+    private final Lane ssh;
     private final Topology topology = new Topology();
     private final List<Listener> listeners = new ArrayList<>();
     private final Deque<OpsEvent> feed = new ArrayDeque<>();
@@ -196,15 +220,18 @@ public final class OpsHub {
     private final Set<String> probing = Collections.synchronizedSet(new HashSet<>());
     private final Map<String, DeployRun> deploys = new LinkedHashMap<>();
     private final AtomicBoolean polling = new AtomicBoolean();
-    private RequestProcessor.Task pollTask;
+    private Runnable pollCancel;
     private SimulatedOps simulation;
     private Boolean moshOnPath;
 
-    OpsHub(java.util.function.LongSupplier clock, Consumer<Runnable> edt, RemoteRunner sshRunner, Preferences prefs) {
+    OpsHub(java.util.function.LongSupplier clock, Consumer<Runnable> edt, RemoteRunner sshRunner, Preferences prefs,
+            Lane cloud, Lane ssh) {
         this.clock = clock;
         this.edt = edt;
         this.sshRunner = sshRunner;
         this.prefs = prefs;
+        this.cloud = cloud;
+        this.ssh = ssh;
         for (OpsProvider p : Lookup.getDefault().lookupAll(OpsProvider.class)) {
             providers.put(p.id(), p);
         }
@@ -354,7 +381,9 @@ public final class OpsHub {
 
     private void loadManualHosts() {
         try {
-            for (String key : prefs.node("hosts").keys()) {
+            String[] keys = prefs.node("hosts").keys();
+            java.util.Arrays.sort(keys); // the store keeps no order; the HUD should
+            for (String key : keys) {
                 String v = prefs.node("hosts").get(key, "");
                 try {
                     org.json.JSONObject o = new org.json.JSONObject(v);
@@ -407,7 +436,7 @@ public final class OpsHub {
             if (!p.configured()) {
                 continue;
             }
-            CLOUD.post(() -> {
+            onCloud(() -> {
                 try {
                     List<HostRecord> listed = p.listHosts();
                     edt.accept(() -> applyListing(p, listed));
@@ -486,7 +515,7 @@ public final class OpsHub {
      */
     public void createHost(OpsProvider p, HostSpec spec) {
         event(OpsEvent.Kind.STEP, null, Bundle.OpsHub_asking(p.displayName(), spec.name()));
-        CLOUD.post(() -> {
+        onCloud(() -> {
             HostRecord r;
             try {
                 r = p.createHost(spec);
@@ -514,7 +543,7 @@ public final class OpsHub {
             event(OpsEvent.Kind.FAIL, node.id, Bundle.OpsHub_watchGaveUp(node.label));
             return;
         }
-        CLOUD.post(() -> {
+        onCloud(() -> {
             HostRecord r;
             try {
                 r = p.readHost(node.providerId);
@@ -562,7 +591,7 @@ public final class OpsHub {
     }
 
     private void scheduleWatch(OpsProvider p, OpsNode node, long since, int seconds) {
-        CLOUD.post(() -> edt.accept(() -> watch(p, node, since)), seconds * 1000);
+        cloud.post(() -> edt.accept(() -> watch(p, node, since)), seconds * 1000L);
     }
 
     /** Destroys a provider host; the node stays as DESTROYING until the provider stops listing it. */
@@ -574,7 +603,7 @@ public final class OpsHub {
         node.status = HostStatus.DESTROYING;
         topology.touched(node);
         event(OpsEvent.Kind.STEP, node.id, Bundle.OpsHub_destroying(node.label));
-        CLOUD.post(() -> {
+        onCloud(() -> {
             try {
                 p.destroyHost(node.providerId);
                 edt.accept(() -> {
@@ -641,7 +670,7 @@ public final class OpsHub {
             return;
         }
         RemoteRunner runner = runnerFor(node);
-        SSH.post(() -> {
+        onSsh(() -> {
             HostFacts facts;
             try {
                 facts = HostProbe.probe(runner, target);
@@ -785,13 +814,13 @@ public final class OpsHub {
     /** The window is showing: poll while it is. */
     public void startPolling() {
         if (polling.compareAndSet(false, true)) {
-            pollTask = SSH.post(this::pollTick, 500);
+            pollCancel = ssh.post(this::pollTick, 500);
         }
     }
 
     public void stopPolling() {
-        if (polling.compareAndSet(true, false) && pollTask != null) {
-            pollTask.cancel();
+        if (polling.compareAndSet(true, false) && pollCancel != null) {
+            pollCancel.run();
         }
     }
 
@@ -800,7 +829,7 @@ public final class OpsHub {
             return;
         }
         edt.accept(this::probeAll);
-        pollTask = SSH.post(this::pollTick, POLL_SECONDS * 1000);
+        pollCancel = ssh.post(this::pollTick, POLL_SECONDS * 1000L);
     }
 
     // ---- deploy ----
@@ -839,7 +868,7 @@ public final class OpsHub {
         event(OpsEvent.Kind.STEP, host.id, Bundle.OpsHub_deploying(plan.app(), host.label, Integer.toString(plan.hostPort())));
         SshTarget target = targetOf(host);
         RemoteRunner runner = runnerFor(host);
-        SSH.post(() -> {
+        onSsh(() -> {
             Deployer.Outcome outcome = new Deployer(runner).deploy(project.toPath(), plan, target, new Deployer.Listener() {
                 @Override
                 public void stepStarted(Deployer.Step step) {

@@ -44,17 +44,22 @@ public final class ProjectBundle {
 
     /** Walks the project and decides what travels. Pure apart from reading the tree. */
     public static Manifest plan(Path root) throws IOException {
+        return plan(root, MAX_FILES, MAX_BYTES);
+    }
+
+    /** The walk with its caps as parameters, so a test reaches them without 20,000 files. */
+    static Manifest plan(Path root, int maxFiles, long maxBytes) throws IOException {
         List<String> files = new ArrayList<>();
         List<String> skipped = new ArrayList<>();
         long[] bytes = {0};
         String[] refusal = {null};
         Path base = root.toAbsolutePath().normalize();
-        walk(base, base, 0, files, skipped, bytes, refusal);
+        walk(base, base, 0, files, skipped, bytes, refusal, maxFiles, maxBytes);
         return new Manifest(files, bytes[0], skipped, refusal[0]);
     }
 
     private static void walk(Path base, Path dir, int depth, List<String> files, List<String> skipped,
-            long[] bytes, String[] refusal) throws IOException {
+            long[] bytes, String[] refusal, int maxFiles, long maxBytes) throws IOException {
         if (refusal[0] != null) {
             return;
         }
@@ -78,7 +83,7 @@ public final class ProjectBundle {
                     skipped.add(rel + "/ (the server builds its own)");
                     continue;
                 }
-                walk(base, child, depth + 1, files, skipped, bytes, refusal);
+                walk(base, child, depth + 1, files, skipped, bytes, refusal, maxFiles, maxBytes);
                 if (refusal[0] != null) {
                     return;
                 }
@@ -94,12 +99,12 @@ public final class ProjectBundle {
             }
             files.add(rel);
             bytes[0] += Files.size(child);
-            if (files.size() > MAX_FILES) {
-                refusal[0] = "more than " + MAX_FILES + " files";
+            if (files.size() > maxFiles) {
+                refusal[0] = "more than " + maxFiles + " files";
                 return;
             }
-            if (bytes[0] > MAX_BYTES) {
-                refusal[0] = "more than " + (MAX_BYTES / (1024 * 1024)) + " MB";
+            if (bytes[0] > maxBytes) {
+                refusal[0] = "more than " + (maxBytes / (1024 * 1024)) + " MB";
                 return;
             }
         }
