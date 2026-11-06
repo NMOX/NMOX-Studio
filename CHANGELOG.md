@@ -74,7 +74,13 @@ of each other (the fan now checks every pair and falls back to a grid),
 and a saved host was never probed (the poll skipped "booting"). And a
 test found a fourth: the ssh runner's two drains handed lines to the
 caller concurrently, and a plain list lost some — delivery is
-serialized now.
+serialized now. And the Windows lane found a fifth before the merge:
+the bundle's order came from a `Path`'s own sort, which is
+case-insensitive there (`bin` before `Dockerfile`), and every file
+reported executable, so a Dockerfile went up as 0755 — the walk now
+sorts by name in code-point order and, where there are no POSIX
+permissions, calls a file executable only when it starts with a
+shebang, so the same project makes the same bytes from every OS.
 
 **Not verified live, said plainly**: no DigitalOcean droplet was
 created, because that bills David's account. The request body, the

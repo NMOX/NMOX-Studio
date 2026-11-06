@@ -69,7 +69,10 @@ public final class ProjectBundle {
         }
         List<Path> children;
         try (Stream<Path> s = Files.list(dir)) {
-            children = s.sorted().toList();
+            // by name, code point order: a Path's own order is case-insensitive on Windows
+            // (the Windows lane caught `bin` sorting before `Dockerfile`), and the bundle
+            // must be the same bytes from every OS
+            children = s.sorted(java.util.Comparator.comparing(c -> c.getFileName().toString())).toList();
         }
         for (Path child : children) {
             String rel = base.relativize(child).toString().replace('\\', '/');

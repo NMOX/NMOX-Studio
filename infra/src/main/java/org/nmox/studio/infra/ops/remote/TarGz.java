@@ -60,12 +60,23 @@ public final class TarGz implements AutoCloseable {
         pad(size);
     }
 
-    private static boolean executable(Path file) {
+    /**
+     * POSIX: the owner's execute bit. Elsewhere (Windows answers
+     * {@code canExecute()} true for every file — the Windows lane caught a
+     * Dockerfile going up as 0755) a file is executable when it starts
+     * with a shebang, which is what a script on the server will need.
+     */
+    static boolean executable(Path file) {
         try {
             Set<PosixFilePermission> perms = Files.getPosixFilePermissions(file);
             return perms.contains(PosixFilePermission.OWNER_EXECUTE);
         } catch (IOException | UnsupportedOperationException notPosix) {
-            return file.toFile().canExecute() && !Files.isDirectory(file);
+            try (InputStream in = Files.newInputStream(file)) {
+                byte[] head = in.readNBytes(2);
+                return head.length == 2 && head[0] == '#' && head[1] == '!';
+            } catch (IOException unreadable) {
+                return false;
+            }
         }
     }
 
