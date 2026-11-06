@@ -46,6 +46,8 @@ class TsServerPrecheckTest {
         TsServerPrecheck.Verdict v = TsServerPrecheck.check(project.toFile(), bin);
         assertThat(v.kind()).isEqualTo(TsServerPrecheck.Kind.NO_TSSERVER);
         assertThat(v.version()).isEqualTo("7.0.2");
+        assertThat(v.workspace()).as("it is the project's: what it carries waits for trust").isTrue();
+        assertThat(v.typescriptDir()).isEqualTo(project.resolve("node_modules/typescript").toFile());
     }
 
     @Test
@@ -57,6 +59,7 @@ class TsServerPrecheckTest {
         TsServerPrecheck.Verdict v = TsServerPrecheck.check(project.toFile(), bin);
         assertThat(v.kind()).as("this machine's exact shape: nvm prefix, typescript 7 beside the server").isEqualTo(TsServerPrecheck.Kind.NO_TSSERVER);
         assertThat(v.version()).isEqualTo("7.0.2");
+        assertThat(v.workspace()).as("the user's own install").isFalse();
         typescript(prefix.resolve("lib/node_modules/typescript"), "5.9.2", true);
         assertThat(TsServerPrecheck.check(project.toFile(), bin).kind()).isEqualTo(TsServerPrecheck.Kind.SERVEABLE);
         assertThat(TsServerPrecheck.check(null, null).kind()).isEqualTo(TsServerPrecheck.Kind.NOT_FOUND);
@@ -71,12 +74,18 @@ class TsServerPrecheckTest {
     }
 
     @Test
-    @DisplayName("launchNpm consults the precheck for the TypeScript server and refuses with the door (wiring)")
+    @DisplayName("launchNpm consults the precheck, and a TypeScript without a tsserver goes to its own server, not to a notice (wiring)")
     void wiring() throws Exception {
-        String src = Files.readString(Path.of("src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java"));
-        assertThat(src).contains("TsServerPrecheck.check(").contains("LanguageServerHealth.reportNoTsserver(");
+        String src = Files.readString(Path.of("src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java")).replace("\r\n", "\n");
+        int branch = src.indexOf("if (v.kind() == TsServerPrecheck.Kind.NO_TSSERVER) {\n                return nativeTypeScript(lookup, dir, v);");
+        assertThat(branch).as("TypeScript 7 is served by TypeScript 7 (3.10.0)").isPositive();
+        assertThat(src.indexOf("TsServerPrecheck.check(")).isPositive().isLessThan(branch);
         String health = Files.readString(Path.of("src/main/java/org/nmox/studio/editor/lsp/LanguageServerHealth.java"));
-        assertThat(health).contains("typescript-language-server:no-tsserver").contains("ships no tsserver")
+        assertThat(health).as("the notice that is left is about a missing compiler, and offers the user's own TypeScript")
+                .contains("typescript:no-compiler").contains("has no compiler binary for this machine")
+                .contains("\"npm\", \"install\", \"-g\", \"typescript\")")
                 .as("the refusal speaks in the log too").contains("was not started");
+        assertThat(health).as("TypeScript 5 is no longer what a TypeScript 7 project is told to install")
+                .doesNotContain("reportNoTsserver");
     }
 }

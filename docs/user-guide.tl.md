@@ -439,7 +439,7 @@ Nasa menu na Kasangkapan, sinisiyasat nito nang buhay ang 66 panlabas na kasangk
 
 ### Mga pader na may pinto
 
-Kapag walang tagapaglingkod ng wika o kasangkapan, sinasabi ng IDE kung anong utos ang patatakbuhin, o nag-aalok itong patakbuhin mismo; hindi kailanman basta kabiguan. May sariling pinto ang isang pader: walang dalang tsserver ang TypeScript 7, kaya kung ang natagpuang TypeScript ay ika-7, minsang sasabihin ito ng patnugot at ihahain ang linyang ika-5 — ang siya ring inilalagay nito sa gayon ding dahilan. Kapag may kumuha na sa isang daungan, pinapangalanan ng mali ang prosesong nakaupo roon, at pinapaalis ito ng SONAR.
+Kapag walang tagapaglingkod ng wika o kasangkapan, sinasabi ng IDE kung anong utos ang patatakbuhin, o nag-aalok itong patakbuhin mismo; hindi kailanman basta kabiguan. Walang dalang tsserver ang TypeScript 7, kaya pinapaandar ng patnugot ang sariling tagapaglingkod ng wika ng TypeScript 7 (`tsc --lsp`): ang sa iyo kaagad, ang sa isang proyekto kapag pinagkatiwalaan mo na ang proyekto. Ang TypeScript 5 at 6 ay pinaglilingkuran gaya ng dati. Kapag may kumuha na sa isang daungan, pinapangalanan ng mali ang prosesong nakaupo roon, at pinapaalis ito ng SONAR.
 
 ### Isang GO na walang ginagawa
 

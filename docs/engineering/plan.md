@@ -1,5 +1,40 @@
 # The Plan
 
+*Currency addendum 2026-11-06 (3.10.0, the product-manager sprint with an
+eye on where the web is going). The ranked list of 2026-10-30 below still
+stands and its first three items are still David's: the Windows signing
+purchase, the GitHub description, one positioning line. A sprint cannot
+do those, so this one asked a different question of the same product:
+which of its bets about the future has come due? One had. Futures bet F5
+said TypeScript's native port would replace tsserver; by November
+`npm install typescript` gives TypeScript 7, and this product's answer to
+a TypeScript 7 was still September's: a notice offering to install
+TypeScript 5. Measured before anything was built, that answer had gone
+from dated to harmful, because the install rewrites a project's declared
+TypeScript and Angular 22 accepts only 6. So 3.10.0 starts TypeScript 7's
+own language server and stops naming a TypeScript into any project that
+has one. For the audience the product chose (Angular first, the modern
+web stack generally) this is the difference between an editor that works
+on a project created this month and one that asks you to downgrade it.
+What the sprint taught, to keep: (1) **a workaround has an expiry date
+and nobody writes it down.** The pin was correct the day it shipped and
+nothing in the build could notice the day it stopped being correct; the
+futures document's "re-measure when" line is the only instrument that
+did, and only because someone re-read it. Every pin against upstream
+should carry its trigger. (2) **Starting a server is not having its
+answers.** TypeScript 7's server answered completion and hover on the
+first try and showed no errors at all, because it reports problems only
+when asked and the platform's client cannot ask. A feature probe that
+stopped at "it starts and completes" would have shipped an editor with
+no red in it. (3) **The walk found an older defect again**: a language
+server's errors had been painted twice on every focus change since
+3.1.0, visible only because the new server's fresh answers made the
+stale layer disagree with them. (4) Template currency is the next unit
+of the same kind and is its own release (ledger 140): the Angular
+template is a major behind for a reason this release half removed.
+Not done, and said so: Angular and Vue on TypeScript 7 still wait on
+their own language servers (ledger 139).*
+
 *Currency addendum 2026-10-30 (3.9.0, the product-manager read). Asked
 to look at the project as a senior product manager, the first instrument
 was the funnel, not the backlog: in the fortnight before 2026-10-30 the

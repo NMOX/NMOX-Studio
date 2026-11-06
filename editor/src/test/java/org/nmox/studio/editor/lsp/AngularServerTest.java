@@ -111,14 +111,16 @@ class AngularServerTest {
     }
 
     @Test
-    @DisplayName("the catalog pins TypeScript 5 in its install advice")
-    void catalogPinsTypeScriptMajor() {
+    @DisplayName("the catalog's Angular install names no TypeScript: the workspace's own is the one its Angular needs")
+    void catalogLeavesTheProjectsTypeScriptAlone() {
         LanguageServerCatalog.Server s = LanguageServerCatalog.forBinary("ngserver");
         assertThat(s).isNotNull();
         assertThat(s.language()).containsIgnoringCase("angular");
-        // advice that installed TypeScript 7 would produce a server that
-        // cannot start — the pin is the whole point
-        assertThat(s.install()).contains("typescript@5");
+        // npm replaces the range a manifest declares with the one a command
+        // names: "typescript@5" here rewrote an Angular 22 project's "~6.0.3"
+        // to "^5.9.3" (measured, 3.10.0), and Angular 22 wants ">=6.0 <6.1"
+        assertThat(s.install()).doesNotContain("typescript");
+        assertThat(s.command()).noneMatch(arg -> arg.startsWith("typescript"));
         assertThat(s.install()).contains("@angular/language-server");
         // installed into the PROJECT, not globally: it must match the
         // versions the workspace builds with

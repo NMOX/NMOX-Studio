@@ -439,7 +439,7 @@ Di menu Alat, ia menjajaki langsung 66 perkakas luar — node, npm, docker, forg
 
 ### Tembok yang punya pintu
 
-Bila peladen bahasa atau sebuah perkakas tidak ada, IDE memberi tahu perintah mana yang harus dijalankan, atau menawarkan menjalankannya; tidak pernah sekadar kegagalan. Satu tembok punya pintunya sendiri: TypeScript 7 tidak membawa tsserver, jadi bila TypeScript yang ditemukan adalah 7, penyunting mengatakannya sekali dan menawarkan jalur 5 — jalur yang ia pasang sendiri karena alasan yang sama. Bila sebuah porta sudah terpakai, pesan galat menyebut proses yang menduduki, dan SONAR mengusirnya.
+Bila peladen bahasa atau sebuah perkakas tidak ada, IDE memberi tahu perintah mana yang harus dijalankan, atau menawarkan menjalankannya; tidak pernah sekadar kegagalan. TypeScript 7 tidak membawa tsserver, jadi penyunting menjalankan peladen bahasa milik TypeScript 7 sendiri (`tsc --lsp`): milik Anda seketika, milik sebuah proyek setelah Anda memercayai proyek itu. TypeScript 5 dan 6 dilayani seperti sebelumnya. Bila sebuah porta sudah terpakai, pesan galat menyebut proses yang menduduki, dan SONAR mengusirnya.
 
 ### GO yang tidak melakukan apa-apa
 

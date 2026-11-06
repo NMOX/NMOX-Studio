@@ -129,6 +129,9 @@ final class ServerTrust {
         runs(m, "vue-language-server", "loads TypeScript from the project (its own gate since v2.14.0)");
         runs(m, "typescript-language-server",
                 "loads the TypeScript in the workspace's node_modules when there is one; see runsHere");
+        runs(m, TsNative.BINARY, "TypeScript 7's own server: the compiler binary is the project's when it comes from"
+                + " the project's node_modules, and the user's own reads only: it loads no plugin a tsconfig names,"
+                + " where the tsserver of TypeScript 5 does (measured, 3.10.0: scripts/probes/tsc-lsp-trust); see runsHere");
         // -- held: not established either way
         held(m, "gleam", "compiles the project and fetches its dependencies; not established that nothing of the project runs");
         held(m, "serve-d", "resolves through dub, whose recipes can carry commands; not established which it runs");
@@ -192,8 +195,11 @@ final class ServerTrust {
      * workspace has one, and otherwise the user's. A cloned repository
      * before {@code npm install} keeps its TypeScript and JavaScript
      * intelligence, and one that arrives with a {@code node_modules} waits.
+     * TypeScript 7's own server is the other: it is judged by where the
+     * binary lies, because the binary is all of the project's it can run.
      */
-    static boolean runsHere(String binary, File projectDir) {
+    static boolean runsHere(String command, File projectDir) {
+        String binary = binaryOf(command);
         if (reach(binary) == Reach.READS) {
             return false;
         }
@@ -201,13 +207,17 @@ final class ServerTrust {
             // the same candidate the server and TsServerPrecheck look at
             return projectDir != null && new File(projectDir, "node_modules/typescript").exists();
         }
+        if (TsNative.BINARY.equals(binary)) {
+            // the one thing of the project's that this server can run is itself
+            return TsNative.inside(new File(command), projectDir);
+        }
         return true;
     }
 
     /** The decision, with no side effect: whether the server for this command may start for this project. */
     static Verdict decide(String command, File projectDir) {
         String binary = binaryOf(command);
-        if (!runsHere(binary, projectDir)) {
+        if (!runsHere(command, projectDir)) {
             return Verdict.START;
         }
         if (projectDir == null) {
@@ -236,6 +246,19 @@ final class ServerTrust {
         return true;
     }
 
+    /**
+     * A binary the caller found THROUGH the project (its
+     * {@code node_modules}) in a project that is not trusted: it waits,
+     * whatever its path says. {@link #decide} judges a compiler by where
+     * its path lies, and a link can lead that path out of the project;
+     * the caller knows how it came by the file.
+     */
+    static void waits(String command, File projectDir) {
+        REFUSED.set(Boolean.TRUE);
+        WAITING.putIfAbsent(projectDir, binaryOf(command));
+        speak(binaryOf(command), projectDir, Verdict.UNTRUSTED);
+    }
+
     private static void speak(String binary, File projectDir, Verdict verdict) {
         // a walk reads logs, not balloons: the refusal is in the log every time it is the first
         String key = projectDir == null ? "no project: " + binary : projectDir.getAbsolutePath();
@@ -248,7 +271,9 @@ final class ServerTrust {
         if (LanguageServerHealth.forgeRun()) {
             return; // a docs picture shows the product, not this machine's trust store
         }
-        Server server = LanguageServerCatalog.forBinary(binary);
+        // TypeScript 7's server is the compiler; the language it serves is the older server's
+        Server server = LanguageServerCatalog.forBinary(
+                TsNative.BINARY.equals(binary) ? "typescript-language-server" : binary);
         String language = server != null ? server.language() : binary;
         String title = NbBundle.getMessage(ServerTrust.class, "ServerTrust_title", language);
         if (verdict == Verdict.NO_PROJECT) {

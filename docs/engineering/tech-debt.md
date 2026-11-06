@@ -20,6 +20,71 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — added by 3.10.0
+
+### 139. What TypeScript 7's own server leaves undone
+
+3.10.0 starts TypeScript 7's language server (`tsc --lsp`) where 2.85.0
+offered a downgrade. Measured on 7.0.2 and walked in the assembled app
+(errors on open, after an edit, after a file changed on disk; the
+trusted and the untrusted leg; no process left behind). What it does
+not do, each measured or read, none built:
+
+- **Angular on TypeScript 7 has no template intelligence.** ngserver
+  loads `tsserverlibrary.js`, which TypeScript 6.0.3 ships and 7 does
+  not. Angular 22 itself requires TypeScript `>=6.0 <6.1`, so a correct
+  Angular 22 workspace is not on 7 and is unaffected; a workspace forced
+  to 7 gets TypeScript's errors from the native server and nothing in
+  templates. Upstream's to change. Trigger: `@angular/language-server`
+  naming TypeScript 7 in its peer range.
+- **A Vue project that declares TypeScript 7 gets the notice again each
+  session.** Vue's server (the pinned 2.x line) needs a tsdk with
+  tsserver in it. The door no longer installs a TypeScript over the
+  declared one, so there is nothing for it to do but say so. Same
+  trigger, `@vue/language-server`.
+- **The bridge that asks for problems is on for `tsc` only.** Any other
+  server that reports only when asked would show nothing here, exactly
+  as TypeScript 7 did. Only `tsc` was measured for it; the other launched servers have
+  shown their problems through the client's own push for as long as
+  they have shipped, which is evidence and not a measurement. Turning the bridge on for a
+  server is one argument at its launch; it should be measured per
+  server first, since a server that pushes AND answers pulls would be
+  painted twice.
+- **A `tsconfig.json`'s own problems arrive under a lower-cased path**
+  on a case-insensitive file system (the server pushes them itself, and
+  spells the path its own way). They reach Action Items; whether the
+  editor paints them on the open `tsconfig.json` was not walked.
+- **Tools ▸ Language Servers counts TypeScript as installed only when
+  typescript-language-server is.** A machine with TypeScript 7 alone
+  has working TypeScript intelligence and a row that says missing. The
+  Environment Doctor's `tsc` row says what serves which version.
+- **Debug File was not driven in the walk** (the menu row was disabled
+  for the background tools), so nothing here says how the debugger and
+  the native server share a file. They share nothing by design: the
+  debugger is js-debug.
+
+### 140. The project templates are a major behind on purpose, and the purpose has aged
+
+Measured 2026-11-06 against the registry: the Angular template pins
+`~21.2` with TypeScript `~5.9` while Angular is 22.2 on TypeScript 6;
+the Vite templates pin `^6` while Vite is 8. Both ceilings were set for
+reasons written at the pins (v1.237.0, v1.241.0): the TypeScript-5
+ceiling existed because the editor's TypeScript lane needed tsserver,
+and the Vite ceiling because 7+ refuses a Node below 22.12. The first
+reason is gone as of 3.10.0 for TypeScript itself, and half gone for
+Angular (ngserver is happy on 6). The second depends on what Node a
+newcomer has, which was last measured in August.
+
+Not moved in 3.10.0 because a template is proven by installing and
+building it (v1.241.0: *a starter that was never installed is a claim*),
+fifteen of them on three systems, and that is a release of its own.
+What to do, in order: re-measure the Node floor a current LTS install
+gives; move Angular to 22 with TypeScript 6 and prove `ng build` and
+the template squiggle; move Vite as far as the measured Node allows;
+keep the ceiling tests (`ProjectTemplatesTest.viteTemplatesObeyTheCeilings`,
+`angularObeysItsCeilings`, `AngularSpacePinParityTest`) and rewrite the
+reason at each pin.
+
 ## Open — added by 3.8.2
 
 ### 138. On Windows, a launcher that cannot read its conf runs whatever Java it finds

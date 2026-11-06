@@ -88,6 +88,9 @@ public final class DiagnosticsTap extends FilterInputStream {
                 break;
             }
         }
+        if (TsNative.BINARY.equals(name)) {
+            name = "typescript"; // TypeScript 7's server is the compiler: its problems read as the old server's did
+        }
         return TOOL_PREFIX + name;
     }
 

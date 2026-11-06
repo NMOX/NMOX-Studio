@@ -51,6 +51,19 @@ public final class LanguageServers {
      */
     static LanguageServerProvider.LanguageServerDescription launch(Lookup lookup,
             List<String> command, org.json.JSONObject initOptions) {
+        return launch(lookup, command, initOptions, false);
+    }
+
+    /**
+     * As above; {@code asksForProblems} puts {@link PullDiagnostics}
+     * between the client and a server that reports a file's problems
+     * only when asked. One server needs it today, TypeScript 7's, and it
+     * is switched on per server because it was measured per server: a
+     * server that also publishes by itself would have every problem
+     * reported twice.
+     */
+    static LanguageServerProvider.LanguageServerDescription launch(Lookup lookup,
+            List<String> command, org.json.JSONObject initOptions, boolean asksForProblems) {
         try {
             File dir = projectDir(lookup);
             // nothing a project controls runs before the project is trusted:
@@ -73,6 +86,13 @@ public final class LanguageServers {
             Process process = pb.start();
             ServerStderr.watch(process, new File(command.get(0)).getName(), ServerStderr::toStatusLine);
             java.io.OutputStream serverIn = process.getOutputStream();
+            java.io.InputStream serverOut = process.getInputStream();
+            if (asksForProblems) {
+                PullDiagnostics asks = new PullDiagnostics(serverIn, serverOut,
+                        new File(command.get(0)).getName());
+                serverIn = asks.toServer();
+                serverOut = asks.fromServer();
+            }
             if (initOptions != null) {
                 serverIn = new InitOptionsInjector(serverIn, initOptions);
             }
@@ -83,7 +103,7 @@ public final class LanguageServers {
             // the server's problems also reach Action Items (3.1.0): every
             // byte passes through unchanged — see DiagnosticsTap
             return LanguageServerProvider.LanguageServerDescription.create(
-                    new DiagnosticsTap(process.getInputStream(), command.get(0)), serverIn, process,
+                    new DiagnosticsTap(serverOut, command.get(0)), serverIn, process,
                     org.openide.util.lookup.Lookups.fixed(new LspLanguageIds()));
         } catch (IOException ex) {
             // no popup: a missing language server is a normal condition, but
@@ -207,19 +227,81 @@ public final class LanguageServers {
         cmd.addAll(List.of(args));
         // report the package name, not the resolved node_modules path
         if ("typescript-language-server".equals(bin)) {
-            // the TypeScript wall, spoken before the spawn (v2.85.0): a
-            // typescript 7 where the server looks means an initialize that
-            // fails on every file open; refuse with the door instead
+            // which TypeScript is here decides which server serves it
+            // (v2.85.0 named the wall; 3.10.0 put the door in it): a
+            // TypeScript with a tsserver gets typescript-language-server,
+            // and one without (7, the Go port) gets its own native server
             String resolved = useLocal ? local.getAbsolutePath() : ToolLocator.resolve(bin);
             File serverBin = resolved == null ? null : new File(resolved);
-            TsServerPrecheck.Verdict v = TsServerPrecheck.check(dir,
-                    serverBin != null && serverBin.isAbsolute() ? serverBin : null);
+            boolean haveServer = serverBin != null && serverBin.isAbsolute();
+            TsServerPrecheck.Verdict v = TsServerPrecheck.check(dir, haveServer ? serverBin : null);
             if (v.kind() == TsServerPrecheck.Kind.NO_TSSERVER) {
-                LanguageServerHealth.reportNoTsserver(v.version());
-                return null;
+                return nativeTypeScript(lookup, dir, v);
+            }
+            if (v.kind() == TsServerPrecheck.Kind.NOT_FOUND) {
+                // no TypeScript where the older server would look: the
+                // user's own TypeScript 7 serves, if there is one
+                File own = TsNative.ownExe(tscOnPath(), dir);
+                if (own != null) {
+                    return launch(lookup, TsNative.command(own), null, true);
+                }
+                if (!haveServer) {
+                    // nothing on this machine serves TypeScript or JavaScript:
+                    // one package does, and it is not the older server
+                    LanguageServerHealth.reportMissing("typescript", LanguageServerHealth.OWN_TYPESCRIPT);
+                    return null;
+                }
             }
         }
         return reported(launch(lookup, cmd), bin);
+    }
+
+    /**
+     * TypeScript 7 where the server looks: start TypeScript's own server
+     * ({@link TsNative}), from the project when the project is trusted
+     * and from the user's own install when it is not. The decision is
+     * {@link TsNative#choose}; this method only gathers its four facts
+     * and does what it says.
+     */
+    private static LanguageServerProvider.LanguageServerDescription nativeTypeScript(
+            Lookup lookup, File dir, TsServerPrecheck.Verdict v) {
+        File found = TsNative.exe(v.typescriptDir());
+        File own = TsNative.ownExe(tscOnPath(), dir);
+        boolean trusted = dir != null && ServerTrust.trusted.test(dir);
+        TsNative.Choice choice = TsNative.choose(found != null, v.workspace(), trusted, own != null);
+        switch (choice) {
+            case FOUND, OWN -> {
+                File exe = choice == TsNative.Choice.FOUND ? found : own;
+                LanguageServerProvider.LanguageServerDescription server =
+                        launch(lookup, TsNative.command(exe), null, true);
+                if (server == null && !ServerTrust.tookRefusal()) {
+                    LanguageServerHealth.reportNoCompiler(v.version());
+                }
+                return server;
+            }
+            case WAIT_FOR_TRUST -> {
+                // the compiler was found through the project, so it is the
+                // project's wherever its path leads: said, and waited for
+                ServerTrust.waits(found.getAbsolutePath(), dir);
+                ServerTrust.tookRefusal();
+                return null;
+            }
+            default -> {
+                LanguageServerHealth.reportNoCompiler(v.version());
+                return null;
+            }
+        }
+    }
+
+    /** The {@code tsc} launcher on the PATH, looked for afresh: one the user just installed is seen. */
+    private static File tscOnPath() {
+        for (String pathDir : ToolLocator.augmentedPath().split(File.pathSeparator)) {
+            File tsc = ToolLocator.foundIn(new File(pathDir), TsNative.BINARY);
+            if (tsc != null) {
+                return tsc;
+            }
+        }
+        return null;
     }
 
     /**
@@ -1434,9 +1516,15 @@ public final class LanguageServers {
             }
             File tsdk = vueTsdk(dir);
             if (tsdk == null) {
-                // no project TypeScript: the server would boot and idle;
-                // say how to get the working pair instead
-                return reported(null, "vue-language-server");
+                // no project TypeScript the server can load: it would boot
+                // and idle; say how to get the working pair instead. A
+                // project that names no TypeScript is offered 5 by name; one
+                // that names its own is never handed another (3.10.0)
+                LanguageServerCatalog.Server catalogued = LanguageServerCatalog.forBinary("vue-language-server");
+                LanguageServerHealth.reportMissing("vue-language-server",
+                        LanguageServerCatalog.declaresTypeScript(dir) ? catalogued
+                                : LanguageServerCatalog.withTypeScript5(catalogued));
+                return null;
             }
             File local = new File(dir, "node_modules/.bin/vue-language-server");
             if (local.canExecute() && vueServerMajor(dir) >= 3) {

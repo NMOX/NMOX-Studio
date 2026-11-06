@@ -65,6 +65,10 @@ class ServerTrustLedgerTest {
         while (reportedAs.find()) {
             binaries.add(reportedAs.group(1));
         }
+        // TypeScript 7's own server: the command is a path the launch works out
+        if (src.contains("TsNative.command(")) {
+            binaries.add(TsNative.BINARY);
+        }
         return binaries;
     }
 
@@ -157,6 +161,39 @@ class ServerTrustLedgerTest {
     }
 
     @Test
+    @DisplayName("TypeScript 7's own server: the project's compiler waits for trust, and the user's own starts anywhere")
+    void theProjectsCompilerWaits(@TempDir Path project) {
+        File dir = project.toFile();
+        String projects = new File(dir, "node_modules/@typescript/typescript-linux-x64/lib/tsc").getPath();
+        String users = new File(dir.getParentFile(), "prefix/lib/node_modules/@typescript/typescript-linux-x64/lib/tsc").getPath();
+        ServerTrust.trusted = d -> false;
+        assertThat(ServerTrust.decide(projects, dir))
+                .as("a repository can bring any file under this name").isEqualTo(Verdict.UNTRUSTED);
+        assertThat(ServerTrust.decide(projects + ".exe", dir)).isEqualTo(Verdict.UNTRUSTED);
+        assertThat(ServerTrust.decide(users, dir))
+                .as("the user's own loads no plugin a tsconfig names (measured): it reads").isEqualTo(Verdict.START);
+        assertThat(ServerTrust.decide(users, null)).as("a lone file").isEqualTo(Verdict.START);
+        ServerTrust.trusted = d -> d.equals(dir);
+        assertThat(ServerTrust.decide(projects, dir)).isEqualTo(Verdict.START);
+    }
+
+    @Test
+    @DisplayName("a binary found through the project waits when the caller says so, wherever its path leads")
+    void foundThroughTheProjectWaits(@TempDir Path project) {
+        ServerTrust.trusted = d -> false;
+        System.setProperty("nmox.shots.dir", "the notification is not under test"); // log only
+        try {
+            String outside = new File(project.toFile().getParentFile(), "linked-store/lib/tsc").getPath();
+            assertThat(ServerTrust.decide(outside, project.toFile()))
+                    .as("by its path alone it is not the project's").isEqualTo(Verdict.START);
+            ServerTrust.waits(outside, project.toFile());
+            assertThat(ServerTrust.tookRefusal()).as("it is a refusal, so it is not reported as missing").isTrue();
+        } finally {
+            System.clearProperty("nmox.shots.dir");
+        }
+    }
+
+    @Test
     @DisplayName("a refusal is remembered for the caller on this thread, once")
     void aRefusalIsNotReportedAsMissing(@TempDir Path project) {
         ServerTrust.trusted = d -> false;
@@ -177,7 +214,7 @@ class ServerTrustLedgerTest {
     void theLaunchAsksFirst() throws Exception {
         String src = Files.readString(SOURCE, StandardCharsets.UTF_8).replace("\r\n", "\n");
         int launch = src.indexOf("static LanguageServerProvider.LanguageServerDescription launch(Lookup lookup,\n"
-                + "            List<String> command, org.json.JSONObject initOptions) {");
+                + "            List<String> command, org.json.JSONObject initOptions, boolean asksForProblems) {");
         assertThat(launch).as("the one method every server is launched by").isPositive();
         String body = src.substring(launch, src.indexOf("\n    }\n", launch));
         int asks = body.indexOf("if (ServerTrust.refuses(command.get(0), dir)) {");

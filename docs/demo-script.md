@@ -72,8 +72,8 @@ that printed address is what lights the ⇄ chip and opens the Browser.
 Open `src/app/app.html` once before the room is watching. The first
 template you open raises a balloon — *Angular (templates) intelligence
 unavailable — click to install ngserver into the project* — and that
-click is the whole install (project-local, TypeScript 5 pinned, no
-terminal). Beat 3 needs it: the squiggle you will show is the Angular
+click is the whole install (project-local, your project's TypeScript
+left as it is, no terminal). Beat 3 needs it: the squiggle you will show is the Angular
 compiler's own, and it only speaks once the language service is there.
 
 The faster door is **New Experiment…** (⌥⌘K — the first entry on the
@@ -285,8 +285,8 @@ without the API.
 **The template shows no squiggle.** The Angular Language Service is not
 installed in this project yet — open the template and click the
 balloon's install link (or Tools ▸ Environment Doctor names `ngserver`
-with its install line). It needs TypeScript 5 beside it; the door
-installs the pinned pair.
+with its install line). It uses the TypeScript your project already
+has (5 or 6; Angular's own range decides which).
 
 **The port is busy.** `ng serve` pins 4200 and refuses a busy one in
 the Output (*Port 4200 is already in use*) instead of moving. Press

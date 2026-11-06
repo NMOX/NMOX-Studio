@@ -112,7 +112,7 @@ verbs that appear in `tools/list` only while armed, every existing law
 kept in order, the audit in the flight recorder. Three ways to go,
 David's call.
 
-### F5 — TypeScript's native port replaces tsserver. — RECORDED (watch item)
+### F5 — TypeScript's native port replaces tsserver. — DELIVERED for TypeScript itself (3.10.0); Angular and Vue still ride tsserver
 
 **Trajectory (2026):** TS 7 (the Go port) exists and dropped
 `tsserverlibrary.js` — this product already pins TS 5 for ngserver and
@@ -142,6 +142,36 @@ said — the day typescript-language-server (and ngserver) speak the
 native server, the pin moves as its own gauntleted arc; until then an
 unpinned `npm i -g typescript` is a trap, and the Doctor's F5 note
 ("tsgo 7.0.0-dev") was this same fact seen from the other side.
+**Re-measured 2026-11-06 and delivered (3.10.0):** the arc did not
+arrive the way the paragraph above expected. typescript-language-server
+still cannot use a TypeScript 7 and nothing says it will; what arrived
+instead is that TypeScript 7.0.2 carries a language server of its own,
+the compiler binary run as `tsc --lsp --stdio` (it names itself
+`typescript-go`). So the product stopped offering a downgrade and
+starts that server (`TsNative`): the user's own TypeScript 7 for any
+project, a project's own compiler once the project is trusted. Four
+measured facts shaped it. It reports a file's problems only when asked
+(`textDocument/diagnostic`) and the platform's LSP client (lsp4j 0.24)
+cannot ask, so `PullDiagnostics` asks on the client's behalf and hands
+the answer over as the `publishDiagnostics` the client understands. It
+refuses the `"params":null` the client writes on shutdown. It registers
+a configuration watch the client would refuse with a SEVERE. And it
+loads no plugin a `tsconfig.json` names, where the tsserver of
+TypeScript 5 does (`scripts/probes/tsc-lsp-trust`, with the control),
+which is why the user's own compiler only reads a project.
+The same measurement found the pin had turned from a guard into a
+hazard: `npm i -D … typescript@5` REWRITES a project's declared range
+(measured: `~6.0.3` became `^5.9.3`), and Angular 22 requires
+TypeScript `>=6.0 <6.1`. No install the IDE runs names a TypeScript
+into a project that has one any more.
+**What still rides tsserver, and the next trigger:** ngserver and
+Vue's server load `tsserverlibrary.js`, which TypeScript 6.0.3 still
+ships and 7 does not. An Angular workspace on TypeScript 7 gets
+TypeScript intelligence from the native server and no template
+intelligence; a Vue project that declares TypeScript 7 gets the old
+notice. Both wait on their own upstreams (tech-debt ledger 139).
+Re-measure when `@angular/language-server` or `@vue/language-server`
+names TypeScript 7 in its peer range.
 
 ### F7 — TypeScript runs without a build. — DELIVERED (v2.69.0, the run lane)
 

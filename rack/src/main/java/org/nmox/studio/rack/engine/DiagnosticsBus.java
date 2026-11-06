@@ -56,7 +56,11 @@ public final class DiagnosticsBus {
         return Map.copyOf(BY_TOOL);
     }
 
-    /** All problems for a file across tools (for the squiggle layer). */
+    /**
+     * All problems for a file, across every tool. The squiggle layer
+     * does not paint all of these: a language server's are the
+     * platform client's to paint ({@code RackSquiggler.squiggled}).
+     */
     public static List<Problem> problemsFor(File file) {
         List<Problem> result = new ArrayList<>();
         for (List<Problem> batch : BY_TOOL.values()) {

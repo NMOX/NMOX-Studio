@@ -338,6 +338,18 @@ the lint lane and `gofmt` on the format lane — including an honest
 CHECK verdict that reads gofmt's file list, since gofmt itself exits 0
 even when files need formatting.
 
+**TypeScript 5, 6 and 7.** TypeScript 5 and 6 are served by
+typescript-language-server. TypeScript 7 is the Go port: it ships no
+tsserver, and it carries a language server of its own, the compiler
+run as `tsc --lsp`. The editor starts that one for a TypeScript 7
+(yours at once; a project's own after you trust the project, because
+a compiler in `node_modules` is the project's code). That server
+reports a file's errors only when a client asks, and the platform's
+client cannot ask, so the editor asks on its behalf: on open, after an
+edit, and when the server says a file on disk changed. Measured against
+TypeScript 7.0.2 (`scripts/probes/tsc-lsp-trust`); `PullDiagnosticsTest`,
+`TsNativeTest`.
+
 ## 🤖 The AI faces
 **Your AI, your key.** KVASIR speaks three wires — Claude (Anthropic),
 ChatGPT (OpenAI) and Gemini (Google); pick one with **KEY…** on the
@@ -369,7 +381,8 @@ control-flow blocks, structural directives, and `{{ interpolations }}`
 all highlight — with `@`-block and `*`-directive completion in any
 project that carries an `angular.json`. The **Angular Language
 Service** installs into your project from an in-IDE prompt (it must
-match your workspace's Angular and TypeScript versions) and then the
+match your workspace's Angular and TypeScript versions, so the install
+leaves the project's TypeScript as it is) and then the
 templates are *type-checked against the component class*: typo a
 property in a binding and the Angular compiler's own "Did you mean…?"
 squiggle appears as you type. **⌘B inside a template jumps to the

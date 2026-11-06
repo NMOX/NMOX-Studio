@@ -57,4 +57,37 @@ class RackSquigglerDescribeTest {
     void emptyBatch() throws Exception {
         assertThat(RackSquiggler.describe(doc(), "[tsc] ", List.of())).isEmpty();
     }
+
+    @Test
+    @DisplayName("an editor that gains focus is painted with the rack tools' problems, never a second copy of a language server's")
+    void focusDoesNotRepaintAServersProblems() throws Exception {
+        File f = new File("squiggled-" + System.nanoTime() + "/src/main.ts").getAbsoluteFile();
+        File other = new File(f.getParentFile(), "other.ts");
+        String server = "lsp:typescript";
+        try {
+            DiagnosticsBus.publish(server, List.of(
+                    new DiagnosticsBus.Problem(f, 5, "Type 'string' is not assignable to type 'number'. (2322)", true)));
+            DiagnosticsBus.publish("squiggled-test-eslint", List.of(
+                    new DiagnosticsBus.Problem(f, 2, "no-unused-vars", true),
+                    new DiagnosticsBus.Problem(other, 1, "another file", true)));
+            assertThat(DiagnosticsBus.problemsFor(f)).as("both are on the bus, for Action Items").hasSize(2);
+            assertThat(RackSquiggler.squiggled(f))
+                    .as("the server's is the platform client's to paint, on the expression it names; "
+                            + "painted here too it becomes a whole-line mark nothing clears (walked, 3.10.0)")
+                    .extracting(DiagnosticsBus.Problem::message).containsExactly("no-unused-vars");
+        } finally {
+            DiagnosticsBus.publish(server, List.of());
+            DiagnosticsBus.publish("squiggled-test-eslint", List.of());
+        }
+    }
+
+    @Test
+    @DisplayName("wiring: the focus listener paints what squiggled() answers, and nothing reads the whole bus for a file")
+    void theFocusListenerUsesIt() throws Exception {
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/editor/diagnostics/RackSquiggler.java"));
+        assertThat(src).contains("describe(comp.getDocument(), \"\", squiggled(file))");
+        assertThat(src).as("problemsFor answers every tool's problems, a language server's among them")
+                .doesNotContain("DiagnosticsBus.problemsFor(");
+    }
 }
