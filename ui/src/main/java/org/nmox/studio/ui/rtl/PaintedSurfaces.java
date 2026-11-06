@@ -44,6 +44,7 @@ final class PaintedSurfaces {
             "RackPanel",         // rack units stack; jacks sit where the hardware puts them
             "Knob", "LcdDisplay", "Led", "RackButton", "ToggleSwitch", "VuMeter",
             "FlowCanvas",        // a wire reads "serves" — a direction with meaning
+            "HudCanvas",         // the Ops Hub's topology: a link runs from this machine to a host, a fan opens to the right (3.11.0)
             "BlockCanvas",       // interlocking pieces; the nesting is the syntax
             "InfraPalette",      // node kinds beside the canvas they drop onto
             "MinimapSideBar",    // a silhouette of code, and code runs left to right

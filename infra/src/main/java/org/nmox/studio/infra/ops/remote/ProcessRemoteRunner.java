@@ -32,28 +32,38 @@ public final class ProcessRemoteRunner implements RemoteRunner {
     static final int MAX_LINE_CHARS = 16_000;
 
     private final String knownHostsFile;
+    private final String sshExecutable;
 
     public ProcessRemoteRunner(String knownHostsFile) {
+        this(knownHostsFile, "ssh");
+    }
+
+    /** Test seam: the "ssh" to run — a script that echoes what it was given. */
+    ProcessRemoteRunner(String knownHostsFile, String sshExecutable) {
         this.knownHostsFile = knownHostsFile;
+        this.sshExecutable = sshExecutable;
     }
 
     @Override
     public Result run(SshTarget target, String remoteCommand, InputStream stdin,
             Consumer<String> onLine, Duration timeout) {
-        List<String> argv = target.sshCommand(knownHostsFile, remoteCommand);
+        List<String> argv = new java.util.ArrayList<>(target.sshCommand(knownHostsFile, remoteCommand));
+        argv.set(0, sshExecutable);
         ProcessBuilder pb = ProcessSupport.builder(argv);
         if (stdin != null) {
             pb.redirectInput(ProcessBuilder.Redirect.PIPE);
         }
         Deque<String> tail = new ArrayDeque<>();
+        // stdout and stderr are drained on two threads; the caller hears ONE line at a time
+        // (the first version handed lines to the caller concurrently, and a plain list lost some)
         Consumer<String> sink = line -> {
             synchronized (tail) {
                 tail.addLast(line);
                 while (tail.size() > TAIL_LINES) {
                     tail.removeFirst();
                 }
+                onLine.accept(line);
             }
-            onLine.accept(line);
         };
         Process p;
         try {

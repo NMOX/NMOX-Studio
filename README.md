@@ -55,7 +55,10 @@ from typed pieces; API Studio is Postman-shaped with security-header
 grades; DB Studio speaks six engines with bundled drivers; Contract
 Studio drives eleven smart-contract chains with no key fields anywhere;
 the Infra Designer draws DigitalOcean, Hetzner and Cloudflare on a
-Node-RED-style canvas. Beside them: a per-project **Task Board** with
+Node-RED-style canvas; the **Ops Hub** is a DevOps HUD where a server
+you create materialises on a living topology, a click opens mosh or ssh
+in the IDE's Terminal, a deploy builds your Dockerfile on it, and every
+link says whether it was observed, inferred or declared. Beside them: a per-project **Task Board** with
 sprints, a **source-aware Browser** whose DevTools open the element's
 source line, and a **Tests window** that lists every test before
 anything runs.
