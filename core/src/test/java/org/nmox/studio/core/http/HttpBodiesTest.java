@@ -202,7 +202,9 @@ class HttpBodiesTest {
                 "../dbstudio/src/main/java/org/nmox/studio/dbstudio/engine/CouchBackend.java",
                 "../rack/src/main/java/org/nmox/studio/rack/engine/KvasirClient.java",
                 "../rack/src/main/java/org/nmox/studio/rack/devices/HttpDevice.java",
-                "../infra/src/main/java/org/nmox/studio/infra/api/DigitalOceanClient.java",
+                // 3.11.0: the Infra Designer's read moved into CloudHttp, the one bearer
+                // round trip the DigitalOcean client and the Ops Hub's providers share
+                "../infra/src/main/java/org/nmox/studio/infra/api/CloudHttp.java",
                 "../ui/src/main/java/org/nmox/studio/ui/UpdateCheck.java");
         for (String site : sites) {
             String src = Files.readString(Path.of(site)).replace("\r\n", "\n");
