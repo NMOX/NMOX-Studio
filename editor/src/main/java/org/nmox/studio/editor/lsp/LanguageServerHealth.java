@@ -46,27 +46,40 @@ public final class LanguageServerHealth {
     private LanguageServerHealth() {
     }
 
+    /** What the notice below offers: the user's own TypeScript, which is version 7 and brings its compiler. */
+    static final Server OWN_TYPESCRIPT = new Server("TypeScript", TsNative.BINARY,
+            "npm install -g typescript", java.util.List.of("npm", "install", "-g", "typescript"), false);
+
     /**
-     * The TypeScript wall spoken once (v2.85.0): a typescript is installed
-     * where the server looks, but it is 7+ — the Go port, no tsserver — so
-     * the server would fail its initialize on every file open. The balloon
-     * names the version, and its click runs the catalog's install (which
-     * pins typescript@5) through the same trust-gated installer.
+     * TypeScript 7 is here and its server cannot start, said once
+     * (3.10.0; v2.85.0 said a different thing in this place). TypeScript
+     * 7's server is its compiler, a binary npm installs for the machine
+     * it runs on, so a {@code node_modules} filled on another system (a
+     * Linux container's, mounted on a Mac) or installed without optional
+     * packages has a TypeScript and no compiler to run. The user's own
+     * TypeScript serves such a project ({@link TsNative#choose}), so the
+     * notice names the version and its click installs one.
+     *
+     * <p>Until 3.10.0 this notice met every TypeScript 7 and offered
+     * TypeScript 5, because the editor could only start
+     * typescript-language-server, which needs a tsserver that 7 does not
+     * ship.
      */
-    public static void reportNoTsserver(String version) {
-        if (!REPORTED.add("typescript-language-server:no-tsserver")) {
+    public static void reportNoCompiler(String version) {
+        if (!REPORTED.add("typescript:no-compiler")) {
             return;
         }
-        Server s = LanguageServerCatalog.forBinary("typescript-language-server");
-        String install = s != null ? s.install() : "npm install -g typescript@5";
+        Server s = OWN_TYPESCRIPT;
+        String install = s.install();
         // the refusal speaks in the log too (a walk reads logs, not balloons)
         java.util.logging.Logger.getLogger(LanguageServerHealth.class.getName()).info(
-                "TypeScript " + version + " ships no tsserver; the TypeScript server was not started — " + install);
+                "TypeScript " + version + " has no compiler binary for this machine (@typescript/"
+                + TsNative.platformPackage() + "); its language server was not started — " + install);
         if (forgeRun()) {
             return; // a docs picture shows the product, not this machine's toolchain
         }
         NotificationDisplayer.getDefault().notify(NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_tsTitle"), ICON,
-                NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_tsBody", version,
+                NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_tsNoCompiler", version,
                         clickInstalls(s) ? NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_tsClickInstall", install)
                                 : NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_tsRun", install)),
                 e -> {

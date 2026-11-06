@@ -276,6 +276,9 @@ class DiagnosticsTapTest {
         assertThat(DiagnosticsTap.toolFor("C:\\npm\\vscode-eslint-language-server.cmd".replace('\\', File.separatorChar)))
                 .isEqualTo("lsp:vscode-eslint");
         assertThat(DiagnosticsTap.toolFor("rust-analyzer")).isEqualTo("lsp:rust-analyzer");
+        assertThat(DiagnosticsTap.toolFor("/p/node_modules/@typescript/typescript-darwin-arm64/lib/tsc"))
+                .as("TypeScript 7's server is the compiler; its problems are TypeScript's").isEqualTo("lsp:typescript");
+        assertThat(DiagnosticsTap.toolFor("C:\\p\\lib\\tsc.exe".replace('\\', File.separatorChar))).isEqualTo("lsp:typescript");
         assertThat(DiagnosticsTap.toolFor("stylelint-lsp")).isEqualTo("lsp:stylelint");
         assertThat(DiagnosticsTap.fileOf("untitled:Untitled-1")).isNull();
     }
@@ -286,7 +289,9 @@ class DiagnosticsTapTest {
         String squiggler = Files.readString(Path.of("src/main/java/org/nmox/studio/editor/diagnostics/RackSquiggler.java"));
         assertThat(squiggler).contains("DiagnosticsTap.isLspTool(tool)");
         String servers = Files.readString(Path.of("src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java"));
-        assertThat(servers).contains("new DiagnosticsTap(process.getInputStream(), command.get(0))");
+        // the server's output, or (3.10.0) what PullDiagnostics makes of it: the tap is the last reader either way
+        assertThat(servers).contains("java.io.InputStream serverOut = process.getInputStream();")
+                .contains("new DiagnosticsTap(serverOut, command.get(0))");
         assertThat(servers.split("LanguageServerDescription\\.create\\(", -1)).as("one launch seam").hasSize(2);
     }
 }
