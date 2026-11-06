@@ -133,6 +133,20 @@ class ContainmentLedgerTest {
                 + "repository) is the user's own choice of database and stays legal: "
                 + "refusing it is what Containment would do, and it would break those "
                 + "layouts. Nothing is written or run at the path here."),
+            Map.entry("TsNative.java",
+                "A DIFFERENT QUESTION (3.10.0): whose compiler is this? TypeScript 7's "
+                + "server is a binary found at a FIXED layout beside a typescript package "
+                + "(@typescript/typescript-<platform>-<arch>/lib/tsc; no caller supplies a "
+                + "string), and inside() then asks whether that existing absolute file lies "
+                + "under the workspace, because a compiler from the project's node_modules is "
+                + "the project's code and waits for Workspace Trust while the user's own does "
+                + "not. Both answers are legal and nothing is refused, read or written by the "
+                + "answer. It judges the path as written AND the real one and treats an "
+                + "unresolvable path as inside, so every doubt lands on the side that waits "
+                + "for trust; Containment joins a relative name under a root and hands back "
+                + "one resolved file or null, which cannot say 'this absolute file is the "
+                + "project's by either spelling'. Pinned by TsNativeTest.inside and "
+                + "ServerTrustLedgerTest.theProjectsCompilerWaits."),
             Map.entry("SymbolIndexProvider.java",
                 "A DIFFERENT QUESTION, measured (ledger 117, which swept its sibling "
                 + "McpSubscriptions and left this one): outline() must accept an "
