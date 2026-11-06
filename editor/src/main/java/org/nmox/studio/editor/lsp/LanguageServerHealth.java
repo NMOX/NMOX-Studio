@@ -47,7 +47,7 @@ public final class LanguageServerHealth {
     }
 
     /** What the notice below offers: the user's own TypeScript, which is version 7 and brings its compiler. */
-    static final Server OWN_TYPESCRIPT = new Server("TypeScript", TsNative.BINARY,
+    static final Server OWN_TYPESCRIPT = new Server("TypeScript / JavaScript", TsNative.BINARY,
             "npm install -g typescript", java.util.List.of("npm", "install", "-g", "typescript"), false);
 
     /**
@@ -104,11 +104,19 @@ public final class LanguageServerHealth {
 
     /** Called when a server binary failed to launch; notifies at most once per binary. */
     public static void reportMissing(String binary) {
+        reportMissing(binary, LanguageServerCatalog.forBinary(binary));
+    }
+
+    /**
+     * As {@link #reportMissing(String)}, with the install the launch
+     * site worked out for this project in place of the catalog's: what
+     * the notice shows is what its click runs.
+     */
+    static void reportMissing(String binary, Server s) {
         if (binary == null || QUIET_BINARIES.contains(binary)
                 || !REPORTED.add(binary)) {
             return; // already told them, or built-ins cover this family
         }
-        Server s = LanguageServerCatalog.forBinary(binary);
         String language = s != null ? s.language() : binary;
         String install = s != null ? s.install()
                 : "install " + binary + " and put it on your PATH";

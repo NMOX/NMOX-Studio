@@ -238,12 +238,18 @@ public final class LanguageServers {
             if (v.kind() == TsServerPrecheck.Kind.NO_TSSERVER) {
                 return nativeTypeScript(lookup, dir, v);
             }
-            if (v.kind() == TsServerPrecheck.Kind.NOT_FOUND && !haveServer) {
-                // neither a TypeScript in the project nor the older server on
-                // this machine: the user's own TypeScript 7 serves, if there is one
+            if (v.kind() == TsServerPrecheck.Kind.NOT_FOUND) {
+                // no TypeScript where the older server would look: the
+                // user's own TypeScript 7 serves, if there is one
                 File own = TsNative.ownExe(tscOnPath(), dir);
                 if (own != null) {
                     return launch(lookup, TsNative.command(own), null, true);
+                }
+                if (!haveServer) {
+                    // nothing on this machine serves TypeScript or JavaScript:
+                    // one package does, and it is not the older server
+                    LanguageServerHealth.reportMissing("typescript", LanguageServerHealth.OWN_TYPESCRIPT);
+                    return null;
                 }
             }
         }
@@ -1510,9 +1516,15 @@ public final class LanguageServers {
             }
             File tsdk = vueTsdk(dir);
             if (tsdk == null) {
-                // no project TypeScript: the server would boot and idle;
-                // say how to get the working pair instead
-                return reported(null, "vue-language-server");
+                // no project TypeScript the server can load: it would boot
+                // and idle; say how to get the working pair instead. A
+                // project that names no TypeScript is offered 5 by name; one
+                // that names its own is never handed another (3.10.0)
+                LanguageServerCatalog.Server catalogued = LanguageServerCatalog.forBinary("vue-language-server");
+                LanguageServerHealth.reportMissing("vue-language-server",
+                        LanguageServerCatalog.declaresTypeScript(dir) ? catalogued
+                                : LanguageServerCatalog.withTypeScript5(catalogued));
+                return null;
             }
             File local = new File(dir, "node_modules/.bin/vue-language-server");
             if (local.canExecute() && vueServerMajor(dir) >= 3) {

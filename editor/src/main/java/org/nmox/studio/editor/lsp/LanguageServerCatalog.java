@@ -56,12 +56,16 @@ public final class LanguageServerCatalog {
 
     static {
         add("TypeScript / JavaScript", "typescript-language-server",
-                // typescript@5 (v2.85.0): npm's latest is TypeScript 7, the Go port,
-                // which ships no tsserver — the language server cannot use it
-                // (the v1.237.0 ceiling); an unpinned install left the editor's
-                // TypeScript intelligence silently dead on this very machine
-                "npm install -g typescript-language-server typescript@5",
-                List.of("npm", "install", "-g", "typescript-language-server", "typescript@5"));
+                // The server alone (3.10.0). It serves a TypeScript that has a
+                // tsserver: 5 or 6, the project's own. v2.85.0 added
+                // "typescript@5" here because a bare "typescript" had become 7,
+                // which this server cannot use; but a named version REPLACES the
+                // one installed, so the click took a machine's own TypeScript 7
+                // down to 5 — and 7 no longer needs this server at all: its
+                // compiler is its language server (TsNative), started when 7 is
+                // what a project or the machine has.
+                "npm install -g typescript-language-server",
+                List.of("npm", "install", "-g", "typescript-language-server"));
         // in Deno workspaces (deno.json/deno.jsonc) the runtime's own
         // server replaces tsserver — see LanguageServers.DenoServer
         add("TypeScript / JavaScript (Deno workspaces)", "deno",
@@ -74,23 +78,32 @@ public final class LanguageServerCatalog {
         // The Angular Language Service is installed INTO THE PROJECT, not
         // globally: it must match the Angular and TypeScript versions the
         // workspace builds with, and it probes the project's own
-        // node_modules (v1.214.0). It also needs TypeScript 5.x —
-        // TypeScript 7 dropped lib/tsserverlibrary.js, which ngserver
-        // requires — so the hint pins the major.
+        // node_modules (v1.214.0). The install names no TypeScript
+        // (3.10.0): an Angular workspace carries the one its Angular
+        // needs, and a named version REPLACES it. Until 3.10.0 this said
+        // typescript@5, right while Angular wanted 5; Angular 22 wants
+        // ">=6.0 <6.1", and the click rewrote a project's "~6.0.3" to
+        // "^5.9.3" (measured), after which it no longer builds.
         addProjectLocal("Angular (templates)", "ngserver",
-                "npm i -D @angular/language-server @angular/language-service typescript@5",
+                "npm i -D @angular/language-server @angular/language-service",
                 List.of("npm", "install", "--save-dev", "@angular/language-server",
-                        "@angular/language-service", "typescript@5"));
+                        "@angular/language-service"));
         // Vue pins the 2.x line (v2.14.0): 3.x answers every didOpen
         // with a tsserver/request bridge request only VS Code can
         // satisfy — a generic LSP client gets zero diagnostics from it,
         // proven against the real 3.3.10. 2.x with hybridMode:false
         // does its own TypeScript against the project's tsdk, so the
         // install is project-local like Angular's.
+        // The server alone (3.10.0). It used to say "typescript" beside
+        // it, which npm reads as "the latest": TypeScript 7 since 2026,
+        // which has no lib/typescript.js for this server to load, so on
+        // a project with no TypeScript the click installed one the
+        // server cannot use and the notice came back (measured). A
+        // project that has a TypeScript keeps it; one that has none is
+        // offered TypeScript 5 by name: see withTypeScript5.
         addProjectLocal("Vue (single-file components)", "vue-language-server",
-                "npm i -D @vue/language-server@2 typescript",
-                List.of("npm", "install", "--save-dev",
-                        "@vue/language-server@2", "typescript"));
+                "npm i -D @vue/language-server@2",
+                List.of("npm", "install", "--save-dev", "@vue/language-server@2"));
         add("Svelte", "svelteserver",
                 "npm install -g svelte-language-server",
                 List.of("npm", "install", "-g", "svelte-language-server"));
@@ -159,6 +172,51 @@ public final class LanguageServerCatalog {
     }
 
     private LanguageServerCatalog() {
+    }
+
+    /** How much of a package.json is read to learn whether it names TypeScript. */
+    static final long MANIFEST_READ_CAP = 1024 * 1024;
+
+    /**
+     * Whether a project says which TypeScript it wants: {@code typescript}
+     * among its package.json dependencies of any kind. A project that
+     * does is never handed another by an install here, because npm
+     * replaces the range a manifest declares with the one a command
+     * names. A manifest that cannot be read, or is too large to, counts
+     * as declaring one: a version is named only into a project known to
+     * have none. Disk work: asked off the event thread.
+     */
+    static boolean declaresTypeScript(File projectDir) {
+        File manifest = new File(projectDir, "package.json");
+        if (!manifest.isFile()) {
+            return false;
+        }
+        try {
+            org.json.JSONObject json = new org.json.JSONObject(
+                    org.nmox.studio.core.util.BoundedReads.read(manifest, MANIFEST_READ_CAP));
+            for (String group : new String[] {"dependencies", "devDependencies", "peerDependencies", "optionalDependencies"}) {
+                org.json.JSONObject deps = json.optJSONObject(group);
+                if (deps != null && deps.has("typescript")) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (java.io.IOException | RuntimeException unreadable) {
+            return true;
+        }
+    }
+
+    /**
+     * The same install with TypeScript 5 beside it, for a project that
+     * has no TypeScript and a server that loads the project's (Vue's:
+     * it needs {@code lib/typescript.js}, which TypeScript 7 does not
+     * have). Named as 5, because a bare {@code typescript} is 7.
+     */
+    static Server withTypeScript5(Server server) {
+        List<String> command = new java.util.ArrayList<>(server.command());
+        command.add("typescript@5");
+        return new Server(server.language(), server.binary(), server.install() + " typescript@5",
+                List.copyOf(command), server.projectLocal());
     }
 
     /** The catalog entry for a launch binary, or null when uncatalogued. */

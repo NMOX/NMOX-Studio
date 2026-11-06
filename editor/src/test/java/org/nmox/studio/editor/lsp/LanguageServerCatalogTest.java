@@ -19,8 +19,10 @@ class LanguageServerCatalogTest {
         assertThat(LanguageServerCatalog.forBinary("gopls").install()).contains("gopls");
         assertThat(LanguageServerCatalog.forBinary("rust-analyzer").install()).contains("rustup");
         assertThat(LanguageServerCatalog.forBinary("typescript-language-server").install())
-                .contains("npm install").as("TypeScript 7 ships no tsserver (v2.85.0)").contains("typescript@5");
-        assertThat(LanguageServerCatalog.forBinary("typescript-language-server").command()).contains("typescript@5");
+                .contains("npm install -g typescript-language-server");
+        assertThat(LanguageServerCatalog.forBinary("typescript-language-server").command())
+                .as("a named version replaces the one installed: no install here takes a machine's TypeScript 7 down to 5")
+                .noneMatch(arg -> arg.startsWith("typescript@") || arg.equals("typescript"));
         assertThat(LanguageServerCatalog.forBinary("pyright-langserver")).isNotNull();
     }
 
@@ -77,5 +79,55 @@ class LanguageServerCatalogTest {
         assertThat(swift.autoInstallable()).isFalse();
         assertThat(swift.command()).isEmpty();
         assertThat(swift.installer()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("no install names a TypeScript version into a project: the project's own is the project's decision")
+    void noInstallNamesTypeScript() {
+        // measured 3.10.0: 'npm i -D typescript@5' rewrote an Angular 22 project's "~6.0.3" to "^5.9.3"
+        // (Angular 22 wants >=6.0 <6.1), and a bare 'typescript' gave a Vue project TypeScript 7,
+        // which has no lib/typescript.js for Vue's server to load
+        for (Server s : LanguageServerCatalog.all()) {
+            assertThat(s.command()).as(s.binary() + " installs").noneMatch(arg -> arg.equals("typescript") || arg.startsWith("typescript@"));
+            assertThat(s.install()).as(s.binary() + " says").doesNotContainPattern("(^| )typescript(@\\S+)?( |$)");
+        }
+    }
+
+    @Test
+    @DisplayName("a project that names no TypeScript is offered 5 by name; one that names its own, or cannot be read, is not")
+    void typescriptIsNamedOnlyIntoAProjectWithNone(@org.junit.jupiter.api.io.TempDir java.nio.file.Path project) throws Exception {
+        java.io.File dir = project.toFile();
+        assertThat(LanguageServerCatalog.declaresTypeScript(dir)).as("no manifest at all").isFalse();
+        java.nio.file.Files.writeString(project.resolve("package.json"), "{\"name\":\"shop\",\"dependencies\":{\"vue\":\"^3.5.0\"}}");
+        assertThat(LanguageServerCatalog.declaresTypeScript(dir)).isFalse();
+        java.nio.file.Files.writeString(project.resolve("package.json"),
+                "{\"name\":\"shop\",\"devDependencies\":{\"typescript\":\"~5.8.3\"}}");
+        assertThat(LanguageServerCatalog.declaresTypeScript(dir)).isTrue();
+        java.nio.file.Files.writeString(project.resolve("package.json"), "{\"peerDependencies\":{\"typescript\":\">=5\"}}");
+        assertThat(LanguageServerCatalog.declaresTypeScript(dir)).isTrue();
+        java.nio.file.Files.writeString(project.resolve("package.json"), "{ not json");
+        assertThat(LanguageServerCatalog.declaresTypeScript(dir))
+                .as("a version is named only into a project KNOWN to have none").isTrue();
+        java.nio.file.Files.writeString(project.resolve("package.json"),
+                "{\"x\":\"" + "y".repeat((int) LanguageServerCatalog.MANIFEST_READ_CAP) + "\"}");
+        assertThat(LanguageServerCatalog.declaresTypeScript(dir)).as("too large to read").isTrue();
+
+        Server vue = LanguageServerCatalog.forBinary("vue-language-server");
+        Server withFive = LanguageServerCatalog.withTypeScript5(vue);
+        assertThat(withFive.command()).containsExactly("npm", "install", "--save-dev", "@vue/language-server@2", "typescript@5");
+        assertThat(withFive.install()).isEqualTo("npm i -D @vue/language-server@2 typescript@5");
+        assertThat(withFive.projectLocal()).isTrue();
+        assertThat(vue.command()).as("the catalog's own entry is untouched").doesNotContain("typescript@5");
+    }
+
+    @Test
+    @DisplayName("wiring: Vue's missing-TypeScript notice chooses its install by what the project declares")
+    void vueDoorChoosesByTheProject() throws Exception {
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java")).replace("\r\n", "\n");
+        assertThat(src).contains("LanguageServerCatalog.declaresTypeScript(dir) ? catalogued\n"
+                + "                                : LanguageServerCatalog.withTypeScript5(catalogued));");
+        assertThat(src).as("a machine with nothing that serves TypeScript is offered TypeScript, which serves itself")
+                .contains("LanguageServerHealth.reportMissing(\"typescript\", LanguageServerHealth.OWN_TYPESCRIPT);");
     }
 }
