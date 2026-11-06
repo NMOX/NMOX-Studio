@@ -191,7 +191,7 @@ class OpsHubTest {
         hub.probe(host);
         ssh.drain(2);
         assertThat(t.servicesOf(host.id)).hasSize(2);
-        assertThat(hub.feed()).extracting(OpsEvent::text).anyMatch(s -> s.contains("no longer runs cache"));
+        assertThat(hub.feed()).extracting(OpsEvent::text).anyMatch(s -> s.contains("cache is no longer running"));
         // silence: unreachable, said once
         runner.lines = List.of();
         hub.probe(host);
@@ -226,7 +226,7 @@ class OpsHubTest {
         List<String> feed = hub.feed().stream().map(OpsEvent::text).toList();
         assertThat(feed).anyMatch(s -> s.contains("accepted demo"))
                 .anyMatch(s -> s.contains("waiting for ssh"))
-                .anyMatch(s -> s.contains("answers ssh"))
+                .anyMatch(s -> s.contains("ssh answers on"))
                 .anyMatch(s -> s.contains("is ready"));
         hub.setSimulation(false);
         assertThat(hub.topology().nodes(OpsKind.HOST)).isEmpty();

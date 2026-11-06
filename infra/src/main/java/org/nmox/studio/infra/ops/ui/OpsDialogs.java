@@ -123,13 +123,17 @@ public final class OpsDialogs {
         }
         JPanel form = new JPanel(new GridBagLayout());
         JTextField name = TextDirection.keepLeftToRight(new JTextField("nmox-" + Long.toString(System.currentTimeMillis() % 100000, 36), 24));
+        name.getAccessibleContext().setAccessibleName(Bundle.NewServer_name());
         JComboBox<ProviderOptions.Region> region = new JComboBox<>(options.regions().stream()
                 .filter(ProviderOptions.Region::available).toArray(ProviderOptions.Region[]::new));
+        region.getAccessibleContext().setAccessibleName(Bundle.NewServer_region());
         region.setRenderer(new Labeled<ProviderOptions.Region>(r -> r.name() + " (" + r.slug() + ")"));
         JComboBox<ProviderOptions.Size> size = new JComboBox<>(options.sizes().toArray(ProviderOptions.Size[]::new));
+        size.getAccessibleContext().setAccessibleName(Bundle.NewServer_size());
         size.setRenderer(new Labeled<ProviderOptions.Size>(s ->
                 s.describe() + "  ·  $" + Numbers.display(s.priceMonthly(), 2) + "/mo"));
         JComboBox<ProviderOptions.Image> image = new JComboBox<>(options.images().toArray(ProviderOptions.Image[]::new));
+        image.getAccessibleContext().setAccessibleName(Bundle.NewServer_image());
         image.setRenderer(new Labeled<ProviderOptions.Image>(i -> i.distribution() + " " + i.name()));
         int row = 0;
         row = field(form, row, Bundle.NewServer_name(), name);
@@ -257,8 +261,11 @@ public final class OpsDialogs {
     public static AddHost addHost() {
         JPanel form = new JPanel(new GridBagLayout());
         JTextField spec = TextDirection.keepLeftToRight(new JTextField("root@", 28));
+        spec.getAccessibleContext().setAccessibleName(Bundle.AddHost_spec());
         JTextField label = TextDirection.followsReader(new JTextField(28));
+        label.getAccessibleContext().setAccessibleName(Bundle.AddHost_label());
         JTextField identity = TextDirection.keepLeftToRight(new JTextField(28));
+        identity.getAccessibleContext().setAccessibleName(Bundle.AddHost_identity());
         int row = 0;
         row = field(form, row, Bundle.AddHost_spec(), spec);
         row = field(form, row, Bundle.AddHost_label(), label);
@@ -293,9 +300,12 @@ public final class OpsDialogs {
         List<Integer> exposed = Dockerfiles.exposedPorts(dockerfile);
         JPanel form = new JPanel(new GridBagLayout());
         JTextField app = TextDirection.keepLeftToRight(new JTextField(DeployPlan.slugOf(project.getName()), 20));
+        app.getAccessibleContext().setAccessibleName(Bundle.DeployDialog_app());
         JTextField hostPort = TextDirection.keepLeftToRight(new JTextField("80", 8));
+        hostPort.getAccessibleContext().setAccessibleName(Bundle.DeployDialog_hostPort());
         JTextField containerPort = TextDirection.keepLeftToRight(new JTextField(
                 exposed.isEmpty() ? "" : Integer.toString(exposed.get(0)), 8));
+        containerPort.getAccessibleContext().setAccessibleName(Bundle.DeployDialog_containerPort());
         JTextArea plan = PlainDialogs.plain("", Bundle.DeployDialog_plan());
         plan.setRows(8);
         plan.setColumns(72);

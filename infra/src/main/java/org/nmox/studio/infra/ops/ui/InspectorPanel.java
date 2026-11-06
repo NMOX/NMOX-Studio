@@ -188,7 +188,7 @@ public final class InspectorPanel extends JPanel {
         c.gridy = row;
         c.insets = new Insets(2, 0, 2, 8);
         c.anchor = GridBagConstraints.LINE_START;
-        JLabel l = new JLabel(name);
+        JLabel l = new JLabel(PlainText.plain(name));
         l.setLabelFor(bar);
         into.add(l, c);
         c.gridx = 1;

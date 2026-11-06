@@ -82,6 +82,9 @@ class FirstLaunchWindowsLedgerTest {
                 "Contract Studio announced \"0 contract artifacts\" for a bakery API (⌥⌘6)");
         CLOSED.put("InfraDesignerTopComponent",
                 "a project that deploys nowhere does not need a cloud canvas (⌥⌘9)");
+        CLOSED.put("OpsHubTopComponent",
+                "a newcomer has no servers yet, and the Hub's first picture would be an empty "
+                + "fleet; it opens from Window ▸ Ops Hub and the Welcome's TOOLING column (3.11.0)");
         CLOSED.put("ApiClientTopComponent",
                 "API Studio opened on a seeded sample request nobody asked for (⌥⌘8)");
         CLOSED.put("IrcTopComponent",

@@ -57,7 +57,7 @@ import org.openide.util.NbBundle.Messages;
     "HudCanvas_accessibleName=Ops Hub topology",
     "# {0} - how many hosts",
     "# {1} - how many services",
-    "HudCanvas_accessibleDescription=Fleet: {0} hosts, {1} services. Arrows move, Enter opens a host, Escape returns.",
+    "HudCanvas_accessibleDescription=Fleet: hosts {0}, services {1}. Arrows move, Enter opens a host, Escape returns.",
     "# {0} - the node's label",
     "# {1} - its kind",
     "# {2} - its status",
