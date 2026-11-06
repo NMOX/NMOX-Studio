@@ -69,7 +69,7 @@ import org.openide.windows.TopComponent;
     "OpsHub_token=Token…",
     "OpsHub_tokenTooltip=Set the DigitalOcean API token (the Infra Designer's Tokens… sets the same one)",
     "OpsHub_viewFleet=Fleet",
-    "OpsHub_viewServices=Services",
+    "OpsHub_viewServices=Workloads",
     "OpsHub_viewTooltip=The physical picture, or the logical one",
     "OpsHub_motion=Motion",
     "OpsHub_motionTooltip=Let the HUD glide; off snaps every change into place (the system's Reduce Motion is honoured when this is on)",

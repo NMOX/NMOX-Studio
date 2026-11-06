@@ -78,7 +78,7 @@ import org.openide.util.NbBundle.Messages;
     "HudCanvas_statusGone=gone",
     "HudCanvas_simBadge=SIM",
     "HudCanvas_viewFleet=Fleet",
-    "HudCanvas_viewServices=Services",
+    "HudCanvas_viewServices=Workloads",
     "HudCanvas_legend=observed ——  inferred – –  declared · · ·"
 })
 public final class HudCanvas extends JPanel {
