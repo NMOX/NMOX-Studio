@@ -37,7 +37,9 @@ class ProcessRemoteRunnerTest {
         assertThat(result.exitCode()).isEqualTo(3);
         assertThat(result.timedOut()).isFalse();
         assertThat(lines).contains("err", "hello from stdin");
-        assertThat(lines.get(0)).startsWith("argv: -o BatchMode=yes").contains("UserKnownHostsFile=/kh")
+        // stdout and stderr are two pipes; which lands first is the kernel's call, not ours
+        String argv = lines.stream().filter(l -> l.startsWith("argv: ")).findFirst().orElse("");
+        assertThat(argv).startsWith("argv: -o BatchMode=yes").contains("UserKnownHostsFile=/kh")
                 .contains("-p 2222 root@203.0.113.9 -- uptime");
         assertThat(result.tail()).contains("hello from stdin");
     }
