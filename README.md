@@ -107,6 +107,10 @@ itself across every release since v1.51.
 
 ## See it
 
+![The Ops Hub — this machine on the left, a real host and two simulated servers fanned out to the right, a deploy just read back as a service, the inspector naming every link's evidence](docs/images/ops-hub.png)
+
+*The Ops Hub (Window ▸ Ops Hub) — create a server, watch it come up, connect over mosh or ssh in the IDE's Terminal, deploy, watch; every link marked observed, inferred or declared, and the simulation labeled as such.*
+
 | | |
 |---|---|
 | ![Ask KVASIR](docs/images/kvasir-explain.png) | ![Contract Studio](docs/images/contract-studio.png) |

@@ -317,7 +317,9 @@ public final class OpsDialogs {
         row = field(form, row, Bundle.DeployDialog_app(), app);
         row = field(form, row, Bundle.DeployDialog_hostPort(), hostPort);
         row = field(form, row, Bundle.DeployDialog_containerPort(), containerPort);
-        field(form, row, Bundle.DeployDialog_plan(), new javax.swing.JScrollPane(plan));
+        javax.swing.JScrollPane planScroll = new javax.swing.JScrollPane(plan);
+        planScroll.setPreferredSize(new java.awt.Dimension(560, 150)); // walked 3.11.0: without a size the plan showed one line
+        field(form, row, Bundle.DeployDialog_plan(), planScroll);
         Runnable preview = () -> {
             try {
                 DeployPlan p = new DeployPlan(app.getText().trim(), Integer.parseInt(hostPort.getText().trim()),
