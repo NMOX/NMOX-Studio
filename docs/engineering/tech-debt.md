@@ -20,6 +20,52 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — added by 3.11.0
+
+### 141. The Ops Hub's first slice: what it does not do yet
+
+3.11.0 ships Create → watch → connect → deploy → observe, proven on the
+simulation end to end and on a real host over ssh (this machine's own
+sshd), with the DigitalOcean half proven against a fake API and NOT
+against a live account, because a droplet bills David. Recorded, each
+with its door, none built (`docs/engineering/ops-hub.md` holds the
+longer roadmap):
+
+- **No live DigitalOcean create has been run.** `DigitalOceanOpsTest`
+  proves the request body (tag, keys, cloud-init, monitoring), the
+  listing, the 404-is-gone read and the destroy against documented
+  shapes. The first live walk is one click in the Hub once David
+  decides to spend the cents; expect the first real difference to be a
+  shape the documentation did not show.
+- **One provider.** Hetzner is a class (`OpsProvider` is found through
+  Lookup); the dialog, the watch and the HUD need nothing new.
+- **Service telemetry is a probe, not a stream.** Load, memory and disk
+  come from one ssh round trip every 15 s; containers from `docker ps`.
+  No `docker stats`, no traffic delta — so a pulse on a link means the
+  HUB did something (a probe answered, a deploy step ended), never that
+  users did.
+- **No rollback door.** The deploy keeps the previous image and
+  `src.prev` on the host; running the previous tag is a button nobody
+  has written.
+- **No logs door.** `docker logs -f` into an Output tab is the obvious
+  next action on a service node.
+- **No chord.** Every `⌥⌘` digit is taken; the Hub opens from Window,
+  the Welcome's TOOLING column and nothing else. Quick Search does not
+  reach hosts yet.
+- **The Infra Designer and the Hub do not know each other.** A designed
+  wire should be a DECLARED edge on the Hub, and a droplet the Designer
+  created should carry the Hub's tag; today each is right about its own
+  half.
+- **The deploy's project walk honours no `.dockerignore`.** The server's
+  `docker build` honours it, so the image is right; the upload may carry
+  more than it needs.
+- **Opening the Terminal container opens the platform's own local shell
+  tab beside ours.** The container's own `componentOpened` does that;
+  the Hub's tab is the second one. Cosmetic, the platform's.
+- **The Hub's known_hosts is pruned only on destroy.** A manual host
+  forgotten from the Hub keeps its line; harmless (a changed key is still
+  refused), but the file grows.
+
 ## Open — added by 3.10.0
 
 ### 139. What TypeScript 7's own server leaves undone

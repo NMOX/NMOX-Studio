@@ -59,6 +59,10 @@ class SortSiteLedgerTest {
      * says why the reader's language must not touch it.
      */
     private static final Map<String, String> STABLE = Map.ofEntries(
+            Map.entry("DigitalOceanOps.java",
+                    "the provider's sizes by its own price number (cheapest first) and its images "
+                    + "by slug, newest release first — numbers and machine slugs, not names a "
+                    + "person reads; a collator would put '24.04' and '22.04' by letter (3.11.0)"),
             Map.entry("ToolLocator.java",
                     "version directory names, sorted to pick the newest — a collator "
                     + "would reorder version numbers and select the wrong toolchain"),

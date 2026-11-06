@@ -50,6 +50,9 @@ class SearchSurfaceLedgerTest {
 
     /** Literal by decision. Each value says why widening it would be wrong. */
     private static final Map<String, String> LITERAL = Map.ofEntries(
+            Map.entry("HudStyle.java",
+                    "a font family name asked whether it is a monospace one (contains \"mono\"), "
+                    + "to pick the face that lines digits up — not a search a person typed (3.11.0)"),
             Map.entry("SearchTerms.java",
                     "the matcher itself: its javadoc quotes the shape it replaced"),
             Map.entry("TextFilters.java",

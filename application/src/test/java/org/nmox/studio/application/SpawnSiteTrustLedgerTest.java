@@ -159,6 +159,21 @@ class SpawnSiteTrustLedgerTest {
                 + "self-attach is refused, as on an install updated in-app without the conf flag (v2.171.0)"),
             Map.entry("CommandProbe.java",
                 "BLESSED: fixed tool-version argv from the device tables — never project-controlled"),
+            Map.entry("OpsHub.java",
+                "BLESSED: `ssh-keygen -R <host> -f <the Hub's own known_hosts>` after a host is destroyed, "
+                + "so its reused address is not refused (3.11.0); fixed argv, the host validated by SshTarget, "
+                + "the file under ~/.nmox/ops and never the user's own"),
+            Map.entry("ReducedMotion.java",
+                "BLESSED: macOS `defaults read com.apple.universalaccess reduceMotion`, a fixed argv "
+                + "read once per session off the EDT so the HUD honours the system's Reduce Motion "
+                + "(3.11.0); runs nothing of a project's"),
+            Map.entry("ProcessRemoteRunner.java",
+                "BLESSED: the user's own `ssh` with a Hub-built argv (SshTarget refuses option-looking "
+                + "and shell-looking names; the remote line is a fixed probe script or a DeployPlan "
+                + "whose only spliced values are a validated slug, two ports and a digit stamp). "
+                + "Nothing of a project runs on THIS machine: what the line carries runs on a server "
+                + "the user named and confirmed (3.11.0 Ops Hub); the project is only READ, bounded "
+                + "and with secrets left out, to become the bundle on stdin"),
             Map.entry("EnvironmentDoctor.java",
                 "BLESSED: the fixed probe table's own `tool --version` argv, bounded (v1.106.0)"),
             Map.entry("GitSetupAction.java",

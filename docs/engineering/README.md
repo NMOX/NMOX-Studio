@@ -27,6 +27,10 @@ Every document here is current; the v0.x-era papers were removed in
 - **[dx-plan-3.4.md](./dx-plan-3.4.md)** — the plan for 3.4, shipped as 3.4.0: what
   happens when a second developer joins, when something goes wrong, and
   when the IDE is used without a mouse or a screen.
+- **[ops-hub.md](./ops-hub.md)** — the Ops Hub (3.11.0): the DevOps HUD's
+  rule (a mark is a measurement or it is labeled), what it builds on,
+  the architecture, the first slice, what was verified and how, and the
+  roadmap.
 - **[dx-plan-3.5.md](./dx-plan-3.5.md)** — the plan for 3.5, shipped as 3.5.0: what
   someone who installs the Windows or the Linux build sees, measured by
   booting and photographing the assembled app on both.

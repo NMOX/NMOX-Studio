@@ -1674,6 +1674,28 @@ with the monthly cost of what you're destroying framed in the confirm
 dialog. Right-click a deployed node to copy its ssh command. The design
 persists to `.nmoxinfra.json`.
 
+![The Ops Hub — this machine, a real host (phoenix) and two simulated servers in the fan, a deploy read back as a service node, the inspector's facts, gauges, relationships and deploy tracker](images/ops-hub.png)
+
+**Ops Hub (Window ▸ Ops Hub).** Where the Infra Designer is what you
+want to exist, the Ops Hub is a picture of what does: a DevOps HUD with
+this machine on the left and every server you can reach fanned out to
+the right. **New Server…** asks DigitalOcean for a droplet (the same
+token as the Infra Designer), prices it before you confirm, and the
+host appears beside you and glides into place while the feed narrates
+each step the Hub observes — accepted, provisioning, active, ssh
+answering, cloud-init done. Select a host and press **mosh** or **ssh**
+to open a session in the IDE's own Terminal; press **Deploy…** to build
+the aimed project's Dockerfile on the host and run it (the dialog shows
+the exact remote commands first, with Cancel as the default). Every
+reachable host is probed every 15 s while the window shows — load,
+memory, disk, the running containers — and each becomes a node whose
+links say how the Hub knows: solid for observed, dashed for inferred,
+dotted for declared. **Add Host…** reaches a server you already have
+over ssh; **Simulation** is a labeled pretend provider for seeing the
+loop without a bill. The Hub keeps its own `known_hosts` under
+`~/.nmox/ops/` and never writes yours. Tab into the HUD and use the
+arrow keys, Enter and Escape to move without a mouse.
+
 ### IRC (⌥⌘3)
 
 ![A live Libera.Chat session — join, local echo, and /lastlog answering in place](images/irc-libera.png)

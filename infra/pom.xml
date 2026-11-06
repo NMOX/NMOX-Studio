@@ -78,6 +78,15 @@
             <artifactId>org-openide-dialogs</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- 3.11.0 Ops Hub: the IDE's own Terminal runs mosh/ssh in a tab.
+             InputOutput/IOProvider/IOContainer are the public half; the
+             friend-only terminal and native-execution classes are reached
+             by name through the system class loader (TerminalDoor). -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-io</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-settings</artifactId>

@@ -379,6 +379,18 @@
                         <exclude>**/PropertyPanel*.class</exclude>
                         <exclude>**/FlowCanvas*.class</exclude>
                         <exclude>**/InfraPalette$Renderer.class</exclude>
+                        <!-- infra: the Ops Hub's window, HUD canvas, inspector, feed and dialogs are
+                             pure Swing over the tested engine (OpsHub) and cores (HudLayout, Motion);
+                             TerminalDoor drives friend-only platform classes by reflection and is
+                             proven by the walk; ReducedMotion reads a preference and the OS (3.11.0) -->
+                        <exclude>**/ops/ui/OpsHubTopComponent*.class</exclude>
+                        <exclude>**/ops/ui/HudCanvas*.class</exclude>
+                        <exclude>**/ops/ui/InspectorPanel*.class</exclude>
+                        <exclude>**/ops/ui/EventFeedPanel*.class</exclude>
+                        <exclude>**/ops/ui/OpsDialogs*.class</exclude>
+                        <exclude>**/ops/ui/TerminalDoor*.class</exclude>
+                        <exclude>**/ops/ui/ReducedMotion*.class</exclude>
+                        <exclude>**/ops/ui/HudStyle*.class</exclude>
                         <!-- ui: main window shell + welcome launchpad screen -->
                         <exclude>**/MainWindow*.class</exclude>
                         <exclude>**/WelcomeScreen*.class</exclude>

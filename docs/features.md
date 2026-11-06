@@ -663,6 +663,28 @@ catalogs, a dependency-free `data-i18n` applier that keeps
 `<html lang>` truthful, and the checklist of rules tooling can't
 enforce. Both idempotent, never clobbering.
 
+## 🛰️ Ops Hub — the DevOps HUD
+Window ▸ Ops Hub: a living topology with this machine on the left and
+every server you can reach fanned out to the right. **New Server…** asks
+DigitalOcean for a droplet (the Infra Designer's token), prices it per
+month and per hour before a safe-default confirm, and the host appears at
+your side and glides into place while the feed narrates each observed
+step — accepted, provisioning, active, ssh answering, cloud-init done
+(docker, mosh-server and curl installed). **mosh** and **ssh** each open
+a session in the IDE's own Terminal under a pty; a plain click picks mosh
+when both ends have it and says why otherwise. **Deploy…** shows the
+exact remote lines, builds the aimed project's Dockerfile on the host,
+runs it labeled, and reads the container back. Every reachable host is
+probed every 15 s while the window shows (load, memory, disk, `docker
+ps`), its containers become service nodes, and every link says how the
+Hub knows — solid observed, dashed inferred (a shared network), dotted
+declared (compose's `depends_on`, a host you typed in). **Add Host…**
+reaches any server over ssh; **Simulation** is a labeled pretend
+provider in the unroutable documentation range. The Hub keeps its own
+`known_hosts` under `~/.nmox/ops/` and never writes yours; the HUD is
+keyboard-operable and its nodes are accessible rows. Reduce Motion is
+honoured. Design and roadmap: `docs/engineering/ops-hub.md`.
+
 ## 🏗️ Projects and infrastructure
 The Workbench home base (toolchain chips, open/recent files, tooling
 shelf), Project Studio templates that scaffold versioned, rack-wired

@@ -1,5 +1,28 @@
 # The Plan
 
+*Currency addendum 2026-11-06, later the same day (3.11.0, the Ops Hub).
+David's brief: the WarGames terminal crossed with a Hollywood command
+centre, on one condition — everything on the screen is real. The first
+slice is Create → watch → connect (mosh and ssh, both as doors) →
+deploy → observe, built inside the infra module on the token store and
+the cloud round trip it already had, with the platform's own pty
+Terminal reached the way the git chip reaches History. The rule that
+keeps the picture honest is written at the top of
+`docs/engineering/ops-hub.md`: a mark on the HUD is a measurement or it
+is labeled — edges carry OBSERVED / INFERRED / DECLARED, statuses are
+transitions the Hub watched, pulses ride only real crossings, the
+simulation is a switch with a banner. Proven: 44 tests over the cores
+with a hand-driven clock and lanes; the simulation walked end to end;
+a real host (a user-mode sshd on this Mac) probed, connected to over
+mosh and ssh from the IDE's Terminal, and refusing a deploy by name.
+Not proven: a live droplet, because it bills David — ledger 141 says
+so and the design document says how. Two lessons for the file: the
+platform's process builder refuses the AWT thread, so a terminal's
+process starts on a worker and the door's outcome arrives by callback;
+and a painted canvas becomes walkable and screen-readable by the same
+move — accessible rows with a parent and an `AccessibleSelection` —
+which the Block Studio had shown once and this walk needed again.*
+
 *Currency addendum 2026-11-06 (3.10.0, the product-manager sprint with an
 eye on where the web is going). The ranked list of 2026-10-30 below still
 stands and its first three items are still David's: the Windows signing

@@ -4,6 +4,113 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.11.0] - 2026-11-06
+
+**The Ops Hub: a DevOps HUD where everything on screen is real.** The
+brief was the childhood dream — the WarGames terminal crossed with a
+film's command centre — with one condition that turns a prop into a
+tool: real servers, real deployments, real telemetry, real controls.
+So the Hub (Window ▸ Ops Hub, the Welcome's TOOLING column) is a
+living topology with a rule under it: **a mark on the HUD is a
+measurement or it is labeled.** Every link carries its evidence, drawn
+so the distinction survives colour-blindness — solid for OBSERVED (a
+container the host's own `docker ps` listed, a server the provider
+reports), dashed for INFERRED (two containers on a shared user-defined
+network), dotted for DECLARED (a compose file's `depends_on`, a host
+you typed in). Every host status is a transition the Hub watched
+happen; a pulse runs along a link only when something real crossed it;
+nothing moves when nothing happened, and under Reduce Motion (the
+Hub's own switch, or the system's, read once) every spring snaps.
+
+The loop the brief asked for, end to end. **New Server…** reads a
+provider's regions, sizes with prices, Ubuntu/Debian images and account
+keys off the EDT, offers to upload this machine's `~/.ssh/*.pub` when
+the account has none, prices the choice per month and per hour, and
+confirms the bill with Cancel as the default. The host is born at this
+machine's side and glides into the fan; the feed narrates each step as
+it is observed — accepted, provisioning, active with an address, ssh
+answering, cloud-init done (it installs docker, mosh-server and curl).
+**mosh** and **ssh** are two buttons and two context-menu rows on every
+host (both asked for by name), each opening a tab in the IDE's own
+Terminal under a real pty; a plain click chooses mosh when both ends
+have it and says why otherwise. The Hub keeps its own `known_hosts`
+under `~/.nmox/ops/` with `accept-new`, so a server made a minute ago is
+trusted on first contact, a changed key is refused, the user's own file
+is never written, and a destroyed host's key is pruned (through
+`ssh-keygen -R`, because ssh hashes the entries) so its reused address
+does not refuse the next tenant. **Deploy…** shows the five remote lines
+before any of them run, pre-fills the port the Dockerfile `EXPOSE`s,
+streams the build into the inspector's tracker and the feed, and reads
+the container back; the bundle leaves `node_modules`, `.git`, build
+output and every `.env` at home, skips symlinks, and is refused whole
+past its caps. Every reachable host is probed every 15 s while the
+window shows — load, memory, disk, uptime, the running containers —
+and a host that stops answering says so once. **Add Host…** reaches a
+server you already have, which is how the slice was proven for real
+without a bill. **Simulation** is a checkbox: hosts in the
+documentation range 203.0.113.0/24 (unroutable by RFC 5737), a scripted
+timeline, a banner across the top and a badge on every node.
+
+Providers make hosts; ssh does everything after. `OpsProvider` is found
+through Lookup (DigitalOcean today; a second provider is a class), and
+the DigitalOcean client and the Hub now send through one bearer-token
+round trip (`infra.api.CloudHttp`, extracted from the Infra Designer's
+client) with the same leash and the same bounded read. The Hub's
+engine (`infra.ops.OpsHub`) is EDT-confined from its first line, with
+named lanes for cloud and ssh and every result crossing to the EDT
+before it touches a node; tests drive it with an inline EDT, lanes they
+drain by hand and a clock they advance.
+
+Walked in the assembled app: the simulation end to end (create, watch
+to ready, deploy, a service appearing with its port, the Services view
+gliding into columns), and a real host — a user-mode sshd on this
+machine — probed for its real load and disk, connected to over mosh
+and over ssh from the IDE's Terminal (both clients running under the
+platform's pty), and refusing a deploy by name because that host has no
+docker. The walk found three defects before they shipped: the
+platform's process builder refuses the AWT thread (the terminal's
+process now starts on a worker), a short canvas laid two hosts on top
+of each other (the fan now checks every pair and falls back to a grid),
+and a saved host was never probed (the poll skipped "booting"). And a
+test found a fourth: the ssh runner's two drains handed lines to the
+caller concurrently, and a plain list lost some — delivery is
+serialized now. And the Windows lane found a fifth before the merge:
+the bundle's order came from a `Path`'s own sort, which is
+case-insensitive there (`bin` before `Dockerfile`), and every file
+reported executable, so a Dockerfile went up as 0755 — the walk now
+sorts by name in code-point order and, where there are no POSIX
+permissions, calls a file executable only when it starts with a
+shebang, so the same project makes the same bytes from every OS.
+
+**Not verified live, said plainly**: no DigitalOcean droplet was
+created, because that bills David's account. The request body, the
+listing, the provisioning watch and the destroy are proven against a
+fake API whose answers are the API's documented shapes
+(`DigitalOceanOpsTest`); the first live create is a one-click walk once
+David decides to spend the cents. `docs/engineering/ops-hub.md` is the
+design and the roadmap (Hetzner as a class; the Infra Designer's wires
+as DECLARED edges; service telemetry; rollback from the kept previous
+image; logs; a chord once a family is free).
+
+### Added
+
+- **Ops Hub** (`infra.ops`): the DevOps HUD — topology model with
+  evidence-carrying edges, DigitalOcean and Simulation providers, the
+  ssh probe, the deployer, the engine, the painted HUD with keyboard
+  navigation and accessible rows, the inspector, the feed, the dialogs,
+  the terminal door; Window ▸ Ops Hub and the Welcome's TOOLING link.
+- `infra.api.CloudHttp`: one bearer-token round trip for every cloud
+  call in the product.
+- 44 tests over the pure cores, the fake-API provider, the simulation,
+  the engine and the real ssh runner against a stand-in `ssh`.
+- `docs/engineering/ops-hub.md`: the design, the slice, what was
+  verified and how, the roadmap.
+
+### Changed
+
+- The Infra Designer's DigitalOcean client sends through `CloudHttp`
+  (behaviour unchanged; one home for the leash and the bounded read).
+
 ## [3.10.0] - 2026-11-06
 
 **TypeScript 7 gets TypeScript intelligence, and the IDE stops
@@ -26087,6 +26194,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.11.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.10.0...v3.11.0
 [3.10.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.9.0...v3.10.0
 [3.9.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.8.2...v3.9.0
 [3.8.2]: https://github.com/NMOX/NMOX-Studio/compare/v3.8.1...v3.8.2
