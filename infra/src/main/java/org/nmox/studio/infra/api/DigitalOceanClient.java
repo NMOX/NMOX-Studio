@@ -1,11 +1,6 @@
 package org.nmox.studio.infra.api;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,8 +40,6 @@ public final class DigitalOceanClient {
 
     public static final String API = "https://api.digitalocean.com";
     private static final Pattern PLACEHOLDER = Pattern.compile("\\$\\{(id|ip)-of:([^}]+)}");
-
-    private final HttpClient http = org.nmox.studio.core.http.HttpClientFactory.shared();
 
     // ---- plan execution ----
 
@@ -209,35 +202,9 @@ public final class DigitalOceanClient {
 
     private JSONObject send(CloudProvider provider, String method, String path, String body)
             throws IOException, InterruptedException {
-        String tok = provider.token();
-        if (tok == null) {
-            throw new IOException("no " + provider.displayName() + " API token configured");
-        }
-        HttpRequest.Builder rb = HttpRequest.newBuilder(URI.create(provider.apiBase() + path))
-                .header("Authorization", "Bearer " + tok)
-                .header("Content-Type", "application/json")
-                .timeout(Duration.ofSeconds(60));
-        switch (method) {
-            case "POST" -> rb.POST(HttpRequest.BodyPublishers.ofString(body));
-            case "DELETE" -> rb.DELETE();
-            default -> rb.GET();
-        }
-        HttpResponse<java.io.InputStream> response =
-                http.send(rb.build(), HttpResponse.BodyHandlers.ofInputStream());
-        // bounded read: ofString() buffered the whole body, so a hostile or
-        // misconfigured endpoint behind a secret token could OOM the IDE. A
-        // DO API list response is small; 8 MB is orders of magnitude past it.
-        String text;
-        try (java.io.InputStream in = response.body()) {
-            // the request's 60 s timeout ends at the headers; the body gets its own
-            text = org.nmox.studio.core.http.HttpBodies.readUtf8(in,
-                    org.nmox.studio.core.http.HttpBodies.DEFAULT_CAP_BYTES,
-                    Duration.ofSeconds(60)).text();
-        }
-        if (response.statusCode() >= 300) {
-            throw new IOException("HTTP " + response.statusCode() + ": " + compact(text));
-        }
-        return text == null || text.isBlank() ? new JSONObject() : new JSONObject(text);
+        // one home for the bearer round trip since 3.11.0: CloudHttp (the Ops
+        // Hub's providers send through the same leash and the same bounded read)
+        return CloudHttp.over(provider).send(method, path, body);
     }
 
     /** Pulls the new resource's id out of a creation response, per kind. */
@@ -805,10 +772,6 @@ public final class DigitalOceanClient {
     }
 
     private static String compact(String text) {
-        if (text == null) {
-            return "unknown error";
-        }
-        String oneLine = text.replaceAll("\\s+", " ").trim();
-        return oneLine.length() > 160 ? oneLine.substring(0, 160) + "…" : oneLine;
+        return CloudHttp.compact(text);
     }
 }
