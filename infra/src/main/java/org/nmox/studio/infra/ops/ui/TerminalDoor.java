@@ -49,28 +49,51 @@ public final class TerminalDoor {
     private TerminalDoor() {
     }
 
+    private static final org.openide.util.RequestProcessor RP = new org.openide.util.RequestProcessor("Ops Hub terminal", 1, true);
+
     /**
      * Runs {@code argv} in a new Terminal tab. The first element is the
      * tool's name, resolved on this machine's PATH (the launcher's
-     * augmented one); the rest are its arguments.
+     * augmented one); the rest are its arguments. The tab is made on the
+     * EDT; the process is built and started on a worker, because the
+     * platform's process builder refuses the AWT thread (walked 3.11.0:
+     * {@code IllegalThreadStateException: Should never be called from AWT
+     * thread}) — so the outcome arrives through the callback, on the EDT.
      */
-    public static Outcome open(String title, List<String> argv, String workingDir) {
+    public static void open(String title, List<String> argv, String workingDir, java.util.function.Consumer<Outcome> then) {
         String exe = ToolLocator.resolve(argv.get(0));
         if (exe == null) {
-            return Outcome.NO_TOOL;
+            then.accept(Outcome.NO_TOOL);
+            return;
         }
+        String[] args = argv.subList(1, argv.size()).toArray(String[]::new);
+        InputOutput io;
         try {
-            openInPlatformTerminal(title, exe, argv.subList(1, argv.size()).toArray(String[]::new), workingDir);
-            return Outcome.OPENED;
+            io = openTab(title);
         } catch (ReflectiveOperationException | RuntimeException | LinkageError notReachable) {
             LOG.log(Level.INFO, "The platform Terminal could not be driven; falling back to the clipboard", notReachable);
             fallback(argv);
-            return Outcome.COPIED_FALLBACK;
+            then.accept(Outcome.COPIED_FALLBACK);
+            return;
         }
+        RP.post(() -> {
+            Outcome outcome;
+            try {
+                runInTab(io, title, exe, args, workingDir);
+                outcome = Outcome.OPENED;
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError notReachable) {
+                LOG.log(Level.INFO, "The platform Terminal could not run the command; falling back to the clipboard", notReachable);
+                io.closeInputOutput();
+                fallback(argv);
+                outcome = Outcome.COPIED_FALLBACK;
+            }
+            Outcome done = outcome;
+            javax.swing.SwingUtilities.invokeLater(() -> then.accept(done));
+        });
     }
 
-    private static void openInPlatformTerminal(String title, String exe, String[] args, String workingDir)
-            throws ReflectiveOperationException {
+    /** The tab, on the EDT: the terminal container, one InputOutput in it, xterm emulation. */
+    private static InputOutput openTab(String title) throws ReflectiveOperationException {
         ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
         Class<?> containerClass = Class.forName(
                 "org.netbeans.modules.dlight.terminal.ui.TerminalContainerTopComponent", true, cl);
@@ -82,13 +105,18 @@ public final class TerminalDoor {
         IOProvider provider = IOProvider.get("Terminal");
         InputOutput io = provider.getIO(title, new Action[0], ioContainer);
         io.select();
-
         Class<?> ioTerm = Class.forName("org.netbeans.modules.terminal.api.ui.IOTerm", true, cl);
         Object term = ioTerm.getMethod("term", InputOutput.class).invoke(null, io);
         if (term != null) {
             term.getClass().getMethod("setEmulation", String.class).invoke(term, "xterm");
         }
+        return io;
+    }
 
+    /** The process, off the EDT: the platform's own builder and service, as its Terminal action uses them. */
+    private static void runInTab(InputOutput io, String title, String exe, String[] args, String workingDir)
+            throws ReflectiveOperationException {
+        ClassLoader cl = Lookup.getDefault().lookup(ClassLoader.class);
         Class<?> envFactory = Class.forName("org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory", true, cl);
         Class<?> envClass = Class.forName("org.netbeans.modules.nativeexecution.api.ExecutionEnvironment", true, cl);
         Object env = envFactory.getMethod("getLocal").invoke(null);

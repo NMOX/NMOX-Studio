@@ -112,6 +112,7 @@ public final class InspectorPanel extends JPanel {
     private final OpsHub hub;
     private final Actions actions;
     private final JLabel title = new JLabel();
+    private final JTextArea hint = org.nmox.studio.core.util.PlainDialogs.plain(Bundle.Inspector_nothingSelected(), Bundle.Inspector_title());
     private final JPanel facts = new JPanel(new GridBagLayout());
     private final JProgressBar load = new JProgressBar(0, 100);
     private final JProgressBar mem = new JProgressBar(0, 100);
@@ -134,6 +135,10 @@ public final class InspectorPanel extends JPanel {
         title.getAccessibleContext().setAccessibleName(Bundle.Inspector_title());
         JPanel column = new JPanel();
         column.setLayout(new BoxLayout(column, BoxLayout.PAGE_AXIS));
+        hint.setLineWrap(true);
+        hint.setWrapStyleWord(true);
+        hint.setColumns(24);
+        column.add(leading(hint));
         column.add(leading(title));
         column.add(Box.createVerticalStrut(6));
         column.add(leading(buttons));
@@ -201,8 +206,10 @@ public final class InspectorPanel extends JPanel {
         facts.removeAll();
         buttons.removeAll();
         edges.removeAll();
+        hint.setVisible(node == null);
+        title.setVisible(node != null);
         if (node == null) {
-            title.setText(PlainText.plain(Bundle.Inspector_nothingSelected()));
+            title.setText("");
             connectHow.setText("");
             gauges.setVisible(false);
             deployBox.setVisible(false);

@@ -52,22 +52,34 @@ public final class HudLayout {
         // the fan's height leaves room above and below for a host's satellites and labels
         double reachY = Math.min(reach * 0.78, Math.max(60, h / 2.0 - 110));
         double hostR = n <= 4 ? 40 : n <= 8 ? 34 : 28;
+        double apart = 2 * hostR + 70; // two hosts need their rings AND their labels clear of each other
+        boolean fanned = false;
         if (n <= 9) {
-            // a fan: evenly spread angles, narrower for few hosts so two do not sit at the extremes
-            double spread = Math.toRadians(Math.min(120, 26 * Math.max(1, n - 1) + 10));
+            // a fan: angles spread so neighbours sit `apart` along the arc, within what the canvas allows
+            double spread = n == 1 ? 0 : Math.min(Math.toRadians(140), (n - 1) * apart / Math.max(1, reachY));
+            Map<String, Place> fan = new LinkedHashMap<>();
+            double minGap = Double.MAX_VALUE;
             for (int i = 0; i < n; i++) {
                 double a = n == 1 ? 0 : -spread / 2 + spread * i / (n - 1);
                 double x = wx + Math.cos(a) * reach;
                 double y = wy + Math.sin(a) * reachY;
-                out.put(hosts.get(i).id, new Place(x, y, hostR));
+                for (Place other : fan.values()) {
+                    minGap = Math.min(minGap, Math.hypot(other.x - x, other.y - y));
+                }
+                fan.put(hosts.get(i).id, new Place(x, y, hostR));
             }
-        } else {
-            // past a fan's capacity: a grid filling the right-hand three quarters
-            int cols = (int) Math.ceil(Math.sqrt(n * 1.6));
+            if (n == 1 || minGap >= apart * 0.8) {
+                out.putAll(fan);
+                fanned = true;
+            }
+        }
+        if (!fanned) {
+            // past a fan's capacity, or a canvas too short for one: a grid filling the right-hand three quarters
+            int cols = Math.max(1, (int) Math.ceil(Math.sqrt(n * 1.6)));
             int rows = (int) Math.ceil(n / (double) cols);
             double left = wx + 120;
-            double cellW = Math.max(120, (w - left - 40) / Math.max(1, cols));
-            double cellH = Math.max(100, (h - 80.0) / Math.max(1, rows));
+            double cellW = Math.max(apart, (w - left - 40) / Math.max(1, cols));
+            double cellH = Math.max(apart, (h - 80.0) / Math.max(1, rows));
             for (int i = 0; i < n; i++) {
                 int c = i % cols;
                 int r = i / cols;

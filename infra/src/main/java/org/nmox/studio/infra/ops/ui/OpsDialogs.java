@@ -54,6 +54,8 @@ import org.openide.util.NbBundle.Messages;
     "# {0} - monthly price",
     "# {1} - hourly price",
     "NewServer_cost=≈ ${0}/month (${1}/hour), billed by the provider from the moment it exists",
+    "# {0} - monthly price",
+    "NewServer_costSimulated=≈ ${0}/month if it were real — simulated, nothing is billed",
     "NewServer_create=Create",
     "NewServer_cancel=Cancel",
     "NewServer_badName=The name must be a hostname: lowercase letters, digits and dashes.",
@@ -94,7 +96,8 @@ import org.openide.util.NbBundle.Messages;
     // tokens
     "Tokens_title=DigitalOcean API token",
     "Tokens_field=API token (stored in the OS keychain; blank keeps the current one)",
-    "Tokens_save=Save"
+    "Tokens_save=Save",
+    "OpsDialogs_messageName=Ops Hub"
 })
 public final class OpsDialogs {
 
@@ -157,8 +160,9 @@ public final class OpsDialogs {
         JLabel cost = new JLabel();
         Runnable recost = () -> {
             ProviderOptions.Size s = (ProviderOptions.Size) size.getSelectedItem();
-            cost.setText(PlainText.plain(s == null ? "" : Bundle.NewServer_cost(
-                    Numbers.display(s.priceMonthly(), 2), Numbers.display(s.priceHourly(), 5))));
+            cost.setText(PlainText.plain(s == null ? "" : provider.simulated()
+                    ? Bundle.NewServer_costSimulated(Numbers.display(s.priceMonthly(), 2))
+                    : Bundle.NewServer_cost(Numbers.display(s.priceMonthly(), 2), Numbers.display(s.priceHourly(), 5))));
         };
         size.addActionListener(e -> recost.run());
         recost.run();
@@ -187,7 +191,7 @@ public final class OpsDialogs {
         DialogDescriptor d = new DialogDescriptor(form, Bundle.NewServer_title(), true,
                 new Object[]{create, cancel}, cancel, DialogDescriptor.DEFAULT_ALIGN, null, null);
         while (true) {
-            if (DialogDisplayer.getDefault().notify(d) != create) {
+            if (!create.equals(DialogDisplayer.getDefault().notify(d))) {
                 return null;
             }
             String n = name.getText().trim();
@@ -264,7 +268,7 @@ public final class OpsDialogs {
         DialogDescriptor d = new DialogDescriptor(form, Bundle.AddHost_title(), true,
                 new Object[]{add, cancel}, add, DialogDescriptor.DEFAULT_ALIGN, null, null);
         while (true) {
-            if (DialogDisplayer.getDefault().notify(d) != add) {
+            if (!add.equals(DialogDisplayer.getDefault().notify(d))) {
                 return null;
             }
             try {
@@ -293,7 +297,10 @@ public final class OpsDialogs {
         JTextField containerPort = TextDirection.keepLeftToRight(new JTextField(
                 exposed.isEmpty() ? "" : Integer.toString(exposed.get(0)), 8));
         JTextArea plan = PlainDialogs.plain("", Bundle.DeployDialog_plan());
-        plan.setRows(7);
+        plan.setRows(8);
+        plan.setColumns(72);
+        plan.setLineWrap(true);
+        plan.setWrapStyleWord(true);
         plan.setFont(HudStyle.mono(10.5f));
         int row = 0;
         row = field(form, row, "", new JLabel(PlainText.plain(Bundle.DeployDialog_to(host.label))));
@@ -324,7 +331,7 @@ public final class OpsDialogs {
         DialogDescriptor d = new DialogDescriptor(form, Bundle.DeployDialog_confirmTitle(host.label), true,
                 new Object[]{go, cancel}, cancel, DialogDescriptor.DEFAULT_ALIGN, null, null);
         while (true) {
-            if (DialogDisplayer.getDefault().notify(d) != go) {
+            if (!go.equals(DialogDisplayer.getDefault().notify(d))) {
                 return null;
             }
             int hp;
@@ -366,7 +373,7 @@ public final class OpsDialogs {
         Object cancel = Bundle.NewServer_cancel();
         DialogDescriptor d = new DialogDescriptor(form, Bundle.Tokens_title(), true,
                 new Object[]{save, cancel}, save, DialogDescriptor.DEFAULT_ALIGN, null, null);
-        if (DialogDisplayer.getDefault().notify(d) != save) {
+        if (!save.equals(DialogDisplayer.getDefault().notify(d))) {
             return false;
         }
         char[] chars = field.getPassword();
@@ -435,6 +442,6 @@ public final class OpsDialogs {
 
     static void message(String text) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                PlainDialogs.plain(text, Bundle.NewServer_title()), NotifyDescriptor.INFORMATION_MESSAGE));
+                PlainDialogs.plain(text, Bundle.OpsDialogs_messageName()), NotifyDescriptor.INFORMATION_MESSAGE));
     }
 }

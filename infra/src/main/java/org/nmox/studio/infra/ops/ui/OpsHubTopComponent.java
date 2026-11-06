@@ -51,7 +51,7 @@ import org.openide.windows.TopComponent;
 @TopComponent.Registration(mode = "editor", openAtStartup = false, position = 305)
 @ActionID(category = "Window", id = "org.nmox.studio.infra.ops.ui.OpsHubTopComponent")
 @org.openide.awt.ActionReferences({
-    @ActionReference(path = "Menu/Window", position = 261)
+    @ActionReference(path = "Menu/Window", position = 262)
 })
 @TopComponent.OpenActionRegistration(displayName = "#CTL_OpsHubAction", preferredID = "OpsHubTopComponent")
 @Messages({
@@ -145,6 +145,7 @@ public final class OpsHubTopComponent extends TopComponent {
         setToolTipText(Bundle.HINT_OpsHubTopComponent());
         setLayout(new BorderLayout());
         inspector = new InspectorPanel(hub, new InspectorActions());
+        hub.topology().workstation().label = HudCanvas.kindWord(OpsKind.WORKSTATION);
         add(toolbar(), BorderLayout.PAGE_START);
         JSplitPane split = TextDirection.sidesFollowReader(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, canvas, inspector));
         split.setResizeWeight(0.72);
@@ -361,16 +362,17 @@ public final class OpsHubTopComponent extends TopComponent {
         String how = mosh ? "mosh" : "ssh";
         String title = Bundle.TerminalDoor_tabTitle(node.label, how);
         List<String> argv = mosh ? target.interactiveMosh(hub.knownHosts()) : target.interactiveSsh(hub.knownHosts());
-        TerminalDoor.Outcome outcome = TerminalDoor.open(title, argv, System.getProperty("user.home"));
-        String status = switch (outcome) {
-            case OPENED -> Bundle.OpsHub_opened(title);
-            case COPIED_FALLBACK -> Bundle.OpsHub_copied();
-            case NO_TOOL -> mosh ? Bundle.OpsHub_noMosh() : Bundle.OpsHub_noSsh();
-        };
-        StatusDisplayer.getDefault().setStatusText(PlainStatus.text(status));
-        if (outcome == TerminalDoor.Outcome.NO_TOOL && mosh) {
-            connect(node, false);
-        }
+        TerminalDoor.open(title, argv, System.getProperty("user.home"), outcome -> {
+            String status = switch (outcome) {
+                case OPENED -> Bundle.OpsHub_opened(title);
+                case COPIED_FALLBACK -> Bundle.OpsHub_copied();
+                case NO_TOOL -> mosh ? Bundle.OpsHub_noMosh() : Bundle.OpsHub_noSsh();
+            };
+            StatusDisplayer.getDefault().setStatusText(PlainStatus.text(status));
+            if (outcome == TerminalDoor.Outcome.NO_TOOL && mosh) {
+                connect(node, false);
+            }
+        });
     }
 
     /** A plain click's connect: the automatic choice. */

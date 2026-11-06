@@ -569,7 +569,7 @@ public final class OpsHub {
                     event(OpsEvent.Kind.STEP, node.id, Bundle.OpsHub_provisioning(node.label));
                 }
                 if (read.active() && read.address() != null) {
-                    if (before != HostStatus.BOOTING || !"ssh".equals(node.facts.get("watch"))) {
+                    if (!"ssh".equals(node.facts.get("watch"))) {
                         node.facts.put("watch", "ssh");
                         event(OpsEvent.Kind.STEP, node.id, Bundle.OpsHub_activeWaitingForSsh(node.label, read.address()));
                     }
@@ -624,27 +624,27 @@ public final class OpsHub {
         });
     }
 
-    /** A destroyed host's address will be reused; its key must not refuse the next tenant. */
+    /**
+     * A destroyed host's address will be reused; its key must not refuse
+     * the next tenant. ssh hashes known_hosts entries by default (walked
+     * 3.11.0: the Hub's file held {@code |1|…} lines), so the only honest
+     * way to drop one is ssh's own {@code ssh-keygen -R}, a fixed argv on
+     * the Hub's own file.
+     */
     private void forgetHostKey(OpsNode node) {
         String file = knownHosts();
-        if (file == null || node.address == null) {
+        if (file == null || node.address == null || !Files.exists(Path.of(file))) {
             return;
         }
-        Path kh = Path.of(file);
-        try {
-            if (Files.exists(kh)) {
-                List<String> kept = new ArrayList<>();
-                for (String line : Files.readAllLines(kh)) {
-                    String host = node.sshPort == 22 ? node.address : "[" + node.address + "]:" + node.sshPort;
-                    if (!line.startsWith(host + " ") && !line.startsWith(host + ",")) {
-                        kept.add(line);
-                    }
-                }
-                org.nmox.studio.core.util.AtomicFiles.writeString(kh, String.join("\n", kept) + (kept.isEmpty() ? "" : "\n"));
+        String host = node.sshPort == 22 ? node.address : "[" + node.address + "]:" + node.sshPort;
+        onSsh(() -> {
+            try {
+                org.nmox.studio.core.process.ProcessSupport.runBounded(
+                        List.of("ssh-keygen", "-R", host, "-f", file), null, java.time.Duration.ofSeconds(10));
+            } catch (IOException | RuntimeException cannot) {
+                LOG.log(Level.FINE, "could not prune known_hosts", cannot);
             }
-        } catch (IOException cannot) {
-            LOG.log(Level.FINE, "could not prune known_hosts", cannot);
-        }
+        });
     }
 
     // ---- probing ----
@@ -802,10 +802,11 @@ public final class OpsHub {
                 || e.kind().equals("reaches") && e.from().startsWith(host.id + "/"), edges);
     }
 
-    /** Probes every host that can be probed. */
+    /** Probes every host with an address, unless the provider still owns its story (requested, provisioning, destroying). */
     public void probeAll() {
         for (OpsNode n : topology.nodes(OpsKind.HOST)) {
-            if (n.address != null && !n.status.inProgress()) {
+            if (n.address != null && n.status != HostStatus.REQUESTED && n.status != HostStatus.PROVISIONING
+                    && n.status != HostStatus.DESTROYING) {
                 probe(n);
             }
         }

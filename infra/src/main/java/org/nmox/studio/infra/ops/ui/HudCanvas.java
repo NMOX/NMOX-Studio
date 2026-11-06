@@ -642,9 +642,6 @@ public final class HudCanvas extends JPanel {
         g.draw(screen);
         g.fill(new RoundRectangle2D.Double(x - r * 0.5, y + h / 2 - r * 0.15 + 4, r, 4, 2, 2));
         label(g, n.label, x, y + h / 2 + r * 0.6, HudStyle.TEXT, HudStyle.ui(12f, true));
-        if (r > 24) {
-            label(g, Bundle.HudCanvas_kindWorkstation(), x, y + h / 2 + r * 0.6 + 14, HudStyle.MUTED, HudStyle.ui(10.5f, false));
-        }
     }
 
     private void paintHost(Graphics2D g, OpsNode n, Glide gl, double x, double y, double r, boolean sel, boolean hov) {
@@ -874,10 +871,67 @@ public final class HudCanvas extends JPanel {
         return accessible;
     }
 
-    private final class AccessibleHud extends AccessibleJPanel {
+    /**
+     * The HUD as assistive technology sees it: a list whose items are the
+     * view's visible nodes, each selectable and pressable (press selects;
+     * a second action opens a host), with its painted bounds — so VoiceOver
+     * lands on a server, and so a walk that cannot deliver a mouse click
+     * can still press one (the Block Studio idiom, ledger 48).
+     */
+    private final class AccessibleHud extends AccessibleJPanel implements javax.accessibility.AccessibleSelection {
         @Override
         public javax.accessibility.AccessibleRole getAccessibleRole() {
-            return javax.accessibility.AccessibleRole.CANVAS;
+            return javax.accessibility.AccessibleRole.LIST;
+        }
+
+        @Override
+        public javax.accessibility.AccessibleSelection getAccessibleSelection() {
+            return this;
+        }
+
+        // ---- selection: a screen reader (or macOS's AX bridge) selects a row; the HUD selects the node ----
+
+        @Override
+        public int getAccessibleSelectionCount() {
+            return selected != null && HudLayout.visible(places).contains(selected) ? 1 : 0;
+        }
+
+        @Override
+        public javax.accessibility.Accessible getAccessibleSelection(int i) {
+            List<String> ids = HudLayout.visible(places);
+            int at = selected == null ? -1 : ids.indexOf(selected);
+            return i == 0 && at >= 0 ? new AccessibleNode(selected, at) : null;
+        }
+
+        @Override
+        public boolean isAccessibleChildSelected(int i) {
+            List<String> ids = HudLayout.visible(places);
+            return i >= 0 && i < ids.size() && ids.get(i).equals(selected);
+        }
+
+        @Override
+        public void addAccessibleSelection(int i) {
+            List<String> ids = HudLayout.visible(places);
+            if (i >= 0 && i < ids.size()) {
+                select(ids.get(i));
+            }
+        }
+
+        @Override
+        public void removeAccessibleSelection(int i) {
+            if (isAccessibleChildSelected(i)) {
+                select(null);
+            }
+        }
+
+        @Override
+        public void clearAccessibleSelection() {
+            select(null);
+        }
+
+        @Override
+        public void selectAllAccessibleSelection() {
+            // one node at a time
         }
 
         @Override
@@ -889,6 +943,266 @@ public final class HudCanvas extends JPanel {
         public String getAccessibleDescription() {
             return Bundle.HudCanvas_accessibleDescription(topology.nodes(OpsKind.HOST).size(),
                     topology.nodes(OpsKind.SERVICE).size());
+        }
+
+        @Override
+        public int getAccessibleChildrenCount() {
+            return HudLayout.visible(places).size();
+        }
+
+        @Override
+        public javax.accessibility.Accessible getAccessibleChild(int i) {
+            List<String> ids = HudLayout.visible(places);
+            if (i < 0 || i >= ids.size()) {
+                return null;
+            }
+            return new AccessibleNode(ids.get(i), i);
+        }
+    }
+
+    /** One node as a list item with bounds and two actions: select, open. */
+    private final class AccessibleNode extends javax.accessibility.AccessibleContext
+            implements javax.accessibility.Accessible, javax.accessibility.AccessibleAction,
+            javax.accessibility.AccessibleComponent {
+
+        private final String id;
+        private final int index;
+
+        AccessibleNode(String id, int index) {
+            this.id = id;
+            this.index = index;
+            // macOS's bridge resolves a row's selection through its PARENT's AccessibleSelection,
+            // and a context made by hand has no parent until one is set (walked 3.11.0)
+            setAccessibleParent(HudCanvas.this);
+        }
+
+        @Override
+        public javax.accessibility.AccessibleContext getAccessibleContext() {
+            return this;
+        }
+
+        @Override
+        public String getAccessibleName() {
+            OpsNode n = topology.node(id);
+            if (n == null) {
+                return id;
+            }
+            String status = n.kind == OpsKind.HOST ? statusWord(n.status) : n.facts.getOrDefault("status", "");
+            return n.label + ", " + kindWord(n.kind) + (status.isEmpty() ? "" : ", " + status);
+        }
+
+        @Override
+        public javax.accessibility.AccessibleRole getAccessibleRole() {
+            return javax.accessibility.AccessibleRole.LIST_ITEM;
+        }
+
+        @Override
+        public javax.accessibility.AccessibleStateSet getAccessibleStateSet() {
+            javax.accessibility.AccessibleStateSet set = new javax.accessibility.AccessibleStateSet();
+            set.add(javax.accessibility.AccessibleState.VISIBLE);
+            set.add(javax.accessibility.AccessibleState.SHOWING);
+            set.add(javax.accessibility.AccessibleState.SELECTABLE);
+            set.add(javax.accessibility.AccessibleState.ENABLED);
+            if (id.equals(selected)) {
+                set.add(javax.accessibility.AccessibleState.SELECTED);
+            }
+            return set;
+        }
+
+        @Override
+        public int getAccessibleIndexInParent() {
+            return index;
+        }
+
+        @Override
+        public int getAccessibleChildrenCount() {
+            return 0;
+        }
+
+        @Override
+        public javax.accessibility.Accessible getAccessibleChild(int i) {
+            return null;
+        }
+
+        @Override
+        public java.util.Locale getLocale() {
+            return HudCanvas.this.getLocale();
+        }
+
+        @Override
+        public javax.accessibility.AccessibleAction getAccessibleAction() {
+            return this;
+        }
+
+        @Override
+        public javax.accessibility.AccessibleComponent getAccessibleComponent() {
+            return this;
+        }
+
+        // ---- actions ----
+
+        @Override
+        public int getAccessibleActionCount() {
+            return 2;
+        }
+
+        @Override
+        public String getAccessibleActionDescription(int i) {
+            return i == 0 ? javax.accessibility.AccessibleAction.CLICK : i == 1 ? "open" : null;
+        }
+
+        @Override
+        public boolean doAccessibleAction(int i) {
+            if (i == 0) {
+                select(id);
+                return true;
+            }
+            if (i == 1) {
+                select(id);
+                drillInto(id);
+                return true;
+            }
+            return false;
+        }
+
+        // ---- bounds: where the node is painted now ----
+
+        private java.awt.Rectangle box() {
+            Glide g = glides.get(id);
+            if (g == null) {
+                return new java.awt.Rectangle(0, 0, 0, 0);
+            }
+            int r = (int) Math.max(8, g.r.value()) + 4;
+            return new java.awt.Rectangle((int) g.x.value() - r, (int) g.y.value() - r, 2 * r, 2 * r);
+        }
+
+        @Override
+        public java.awt.Rectangle getBounds() {
+            return box();
+        }
+
+        @Override
+        public void setBounds(java.awt.Rectangle r) {
+        }
+
+        @Override
+        public java.awt.Point getLocation() {
+            return box().getLocation();
+        }
+
+        @Override
+        public void setLocation(java.awt.Point p) {
+        }
+
+        @Override
+        public java.awt.Point getLocationOnScreen() {
+            java.awt.Point p = box().getLocation();
+            if (HudCanvas.this.isShowing()) {
+                java.awt.Point origin = HudCanvas.this.getLocationOnScreen();
+                p.translate(origin.x, origin.y);
+            }
+            return p;
+        }
+
+        @Override
+        public java.awt.Dimension getSize() {
+            return box().getSize();
+        }
+
+        @Override
+        public void setSize(java.awt.Dimension d) {
+        }
+
+        @Override
+        public boolean contains(java.awt.Point p) {
+            return box().contains(p);
+        }
+
+        @Override
+        public javax.accessibility.Accessible getAccessibleAt(java.awt.Point p) {
+            return null;
+        }
+
+        @Override
+        public Color getBackground() {
+            return HudStyle.GROUND;
+        }
+
+        @Override
+        public void setBackground(Color c) {
+        }
+
+        @Override
+        public Color getForeground() {
+            return HudStyle.TEXT;
+        }
+
+        @Override
+        public void setForeground(Color c) {
+        }
+
+        @Override
+        public java.awt.Cursor getCursor() {
+            return HudCanvas.this.getCursor();
+        }
+
+        @Override
+        public void setCursor(java.awt.Cursor c) {
+        }
+
+        @Override
+        public Font getFont() {
+            return HudCanvas.this.getFont();
+        }
+
+        @Override
+        public void setFont(Font f) {
+        }
+
+        @Override
+        public FontMetrics getFontMetrics(Font f) {
+            return HudCanvas.this.getFontMetrics(f);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
+
+        @Override
+        public void setEnabled(boolean b) {
+        }
+
+        @Override
+        public boolean isVisible() {
+            return true;
+        }
+
+        @Override
+        public void setVisible(boolean b) {
+        }
+
+        @Override
+        public boolean isShowing() {
+            return HudCanvas.this.isShowing();
+        }
+
+        @Override
+        public boolean isFocusTraversable() {
+            return false;
+        }
+
+        @Override
+        public void requestFocus() {
+            HudCanvas.this.requestFocusInWindow();
+        }
+
+        @Override
+        public void addFocusListener(java.awt.event.FocusListener l) {
+        }
+
+        @Override
+        public void removeFocusListener(java.awt.event.FocusListener l) {
         }
     }
 }

@@ -49,6 +49,22 @@ class HudLayoutTest {
     }
 
     @Test
+    @DisplayName("two hosts on a short canvas never overlap (the walk found them on top of each other)")
+    void shortCanvas() {
+        for (int n : new int[]{2, 3, 5}) {
+            Map<String, HudLayout.Place> p = HudLayout.layout(fleet(n, 0), HudView.FLEET, 640, 330);
+            for (int i = 0; i < n; i++) {
+                for (int j = i + 1; j < n; j++) {
+                    HudLayout.Place a = p.get("h" + i);
+                    HudLayout.Place b = p.get("h" + j);
+                    assertThat(Math.hypot(a.x() - b.x(), a.y() - b.y())).as(n + " hosts, " + i + " vs " + j)
+                            .isGreaterThanOrEqualTo(a.r() + b.r() + 40);
+                }
+            }
+        }
+    }
+
+    @Test
     @DisplayName("a host view centres the host, rings its services, and sends the other hosts off the right edge with no size")
     void hostView() {
         Topology t = fleet(3, 2);

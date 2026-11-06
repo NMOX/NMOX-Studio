@@ -71,6 +71,7 @@ import org.openide.windows.WindowManager;
     "MainWindow_contractStudio=Contract Studio  ⌥⌘6",
     "MainWindow_apiStudio=API Studio  ⌥⌘8",
     "MainWindow_infraDesigner=Infra Designer  ⌥⌘9",
+    "MainWindow_opsHub=Ops Hub",
     "MainWindow_dockerPanel=Docker Panel  ⌘8",
     "MainWindow_whatsNew=What's new",
     "MainWindow_whatsNewTip=The release notes for this version, in the product (v2.64.0)",
@@ -191,6 +192,7 @@ public final class MainWindow extends TopComponent {
             windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_contractStudio()), "Web3StudioTopComponent"));
             windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_apiStudio()), "ApiClientTopComponent"));
             windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_infraDesigner()), "InfraDesignerTopComponent"));
+            windows.add(windowLink(Bundle.MainWindow_opsHub(), "OpsHubTopComponent"));
             windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_dockerPanel()), "DockerPanelTopComponent"));
 
             JPanel columns = new JPanel(new java.awt.GridLayout(1, 4, 36, 0));
