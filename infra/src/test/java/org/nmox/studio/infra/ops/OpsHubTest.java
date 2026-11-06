@@ -92,7 +92,7 @@ class OpsHubTest {
     }
 
     /** A provider the test scripts. */
-    static final class ScriptedProvider implements OpsProvider {
+    static class ScriptedProvider implements OpsProvider {
         final List<HostRecord> listed = new ArrayList<>();
 
         public String id() { return "scripted"; }
@@ -268,6 +268,161 @@ class OpsHubTest {
                 .extracting(OpsNode::sshSpec).containsExactly("deploy@203.0.113.5:2222", "root@example.org");
         again.forgetManualHost(hosts.get(0));
         assertThat(hub().topology().nodes(OpsKind.HOST)).hasSize(1);
+    }
+
+    /** A runner that plays a deploy: records commands, answers verify with a container, fails where told. */
+    static final class DeployRunner implements RemoteRunner {
+        final List<String> commands = new ArrayList<>();
+        String failAt;
+
+        @Override
+        public Result run(SshTarget target, String remoteCommand, InputStream stdin, Consumer<String> onLine, Duration timeout) {
+            commands.add(remoteCommand);
+            if (remoteCommand.startsWith("echo nmox-probe 1")) {
+                probe().forEach(onLine);
+                return new Result(0, "", false);
+            }
+            if (stdin != null) {
+                try {
+                    stdin.readAllBytes();
+                } catch (java.io.IOException ex) {
+                    throw new AssertionError(ex);
+                }
+            }
+            if (failAt != null && remoteCommand.startsWith(failAt)) {
+                onLine.accept("the host says no");
+                return new Result(1, "the host says no", false);
+            }
+            if (remoteCommand.startsWith("sleep 2; docker ps")) {
+                onLine.accept("{\"Names\":\"nmox-shop\",\"Image\":\"nmox/shop:1\",\"Status\":\"Up\",\"Ports\":\"0.0.0.0:80->3000/tcp\",\"Labels\":\"nmox.ops.app=shop\",\"Networks\":\"bridge\"}");
+                onLine.accept("http 80 200");
+            }
+            return new Result(0, "", false);
+        }
+    }
+
+    @Test
+    @DisplayName("a deploy through the engine runs to the end, tracks its steps, announces the port, and probes afterwards")
+    void deployThroughTheEngine(@TempDir Path project) throws Exception {
+        Files.writeString(project.resolve("Dockerfile"), "FROM scratch\nEXPOSE 3000\n");
+        DeployRunner dr = new DeployRunner();
+        OpsHub hub = new OpsHub(clock::get, Runnable::run, dr, prefs, cloud, ssh).withProviders(List.of(provider));
+        OpsNode host = hub.addManualHost(new SshTarget("root", "203.0.113.5", 22, null), "box");
+        ssh.drain(2);
+        List<String> states = new ArrayList<>();
+        hub.addListener(new OpsHub.Listener() {
+            public void event(OpsEvent e) { }
+            public void stateChanged() {
+                DeployRun r = hub.deployOf(host.id);
+                if (r != null && r.current() != null && (states.isEmpty() || !states.get(states.size() - 1).equals(r.current().name()))) {
+                    states.add(r.current().name());
+                }
+            }
+        });
+        DeployRun run = hub.deploy(host, project.toFile(), new org.nmox.studio.infra.ops.remote.DeployPlan("shop", 80, 3000, "1"));
+        assertThat(run).isNotNull();
+        assertThat(hub.deployRefusal(host, project.toFile())).as("a second deploy waits for the first").contains("still running");
+        ssh.drain(3);
+        assertThat(run.finished).isTrue();
+        assertThat(run.ok()).isTrue();
+        assertThat(run.outcome.httpCode()).isEqualTo("200");
+        assertThat(states).containsExactly("BUNDLE", "UPLOAD", "SWAP", "BUILD", "RUN", "VERIFY");
+        assertThat(run.steps.values()).allMatch(st -> st == DeployRun.StepState.OK);
+        assertThat(run.tail()).isNotEmpty();
+        assertThat(dr.commands).hasSize(7); // the first probe, five steps, the probe after
+        assertThat(hub.feed()).extracting(OpsEvent::text).anyMatch(t -> t.contains("shop is up on box:80"))
+                .anyMatch(t -> t.contains("verify ok"));
+        assertThat(hub.deployRefusal(host, project.toFile())).isNull();
+    }
+
+    @Test
+    @DisplayName("a deploy that fails at the build stops there and names the step and the host's last words")
+    void deployStops(@TempDir Path project) throws Exception {
+        Files.writeString(project.resolve("Dockerfile"), "FROM scratch\n");
+        DeployRunner dr = new DeployRunner();
+        dr.failAt = "docker build";
+        OpsHub hub = new OpsHub(clock::get, Runnable::run, dr, prefs, cloud, ssh).withProviders(List.of(provider));
+        OpsNode host = hub.addManualHost(new SshTarget("root", "203.0.113.5", 22, null), "box");
+        ssh.drain(2);
+        DeployRun run = hub.deploy(host, project.toFile(), new org.nmox.studio.infra.ops.remote.DeployPlan("shop", 80, 3000, "1"));
+        ssh.drain(3);
+        assertThat(run.finished).isTrue();
+        assertThat(run.ok()).isFalse();
+        assertThat(run.steps.get(org.nmox.studio.infra.ops.remote.Deployer.Step.BUILD)).isEqualTo(DeployRun.StepState.FAILED);
+        assertThat(run.steps.get(org.nmox.studio.infra.ops.remote.Deployer.Step.RUN)).isEqualTo(DeployRun.StepState.PENDING);
+        assertThat(hub.feed()).extracting(OpsEvent::text).anyMatch(t -> t.contains("Deploy stopped at build") && t.contains("the host says no"));
+    }
+
+    @Test
+    @DisplayName("destroying a provider host removes it and says billing stops; a provider's refusal keeps it and says why")
+    void destroy() {
+        OpsHub hub = hub();
+        provider.listed.add(new HostRecord("1", "alpha", "203.0.113.1", true, "active", Map.of()));
+        hub.refresh();
+        cloud.drain(2);
+        OpsNode node = hub.topology().node("scripted:1");
+        hub.destroyHost(node);
+        assertThat(node.status).isEqualTo(HostStatus.DESTROYING);
+        cloud.drain(2);
+        assertThat(hub.topology().node("scripted:1")).isNull();
+        assertThat(hub.feed()).extracting(OpsEvent::text).anyMatch(t -> t.contains("alpha destroyed"));
+        // a provider that refuses
+        OpsProvider stubborn = new ScriptedProvider() {
+            @Override
+            public void destroyHost(String id) {
+                throw new RuntimeException("HTTP 422: locked");
+            }
+        };
+        OpsHub hub2 = new OpsHub(clock::get, Runnable::run, runner, prefs, cloud, ssh).withProviders(List.of(stubborn));
+        provider.listed.add(new HostRecord("2", "beta", "203.0.113.2", true, "active", Map.of()));
+        hub2.applyRecord(stubborn, new HostRecord("2", "beta", "203.0.113.2", true, "active", Map.of()));
+        OpsNode beta = hub2.topology().node("scripted:2");
+        hub2.destroyHost(beta);
+        cloud.drain(2);
+        assertThat(hub2.topology().node("scripted:2")).isNotNull();
+        assertThat(beta.lastProblem).contains("locked");
+        assertThat(hub2.feed()).extracting(OpsEvent::text).anyMatch(t -> t.contains("Destroy failed"));
+    }
+
+    @Test
+    @DisplayName("a provider that fails to list or to create says so in the feed and leaves the topology as it was")
+    void providerFailures() {
+        OpsProvider broken = new ScriptedProvider() {
+            @Override
+            public List<HostRecord> listHosts() {
+                throw new RuntimeException("HTTP 401: Unable to authenticate you");
+            }
+
+            @Override
+            public HostRecord createHost(HostSpec spec) {
+                throw new RuntimeException("HTTP 422: region unavailable");
+            }
+        };
+        OpsHub hub = new OpsHub(clock::get, Runnable::run, runner, prefs, cloud, ssh).withProviders(List.of(broken));
+        hub.refresh();
+        cloud.drain(2);
+        hub.createHost(broken, new HostSpec("demo", "r", "s", "i", List.of(), ""));
+        cloud.drain(2);
+        assertThat(hub.topology().nodes(OpsKind.HOST)).isEmpty();
+        List<String> feed = hub.feed().stream().map(OpsEvent::text).toList();
+        assertThat(feed).anyMatch(t -> t.contains("Unable to authenticate")).anyMatch(t -> t.contains("refused") && t.contains("region unavailable"));
+    }
+
+    @Test
+    @DisplayName("polling probes every addressed host while on, and stops when told")
+    void polling() {
+        OpsHub hub = hub();
+        hub.addManualHost(new SshTarget("root", "203.0.113.5", 22, null), "a");
+        hub.addManualHost(new SshTarget("root", "203.0.113.6", 22, null), "b");
+        runner.lines = probe();
+        ssh.drain(2);
+        int before = runner.calls;
+        hub.startPolling();
+        ssh.drain(1); // the tick: it posts one probe per host and the next tick
+        assertThat(runner.calls).isEqualTo(before);
+        hub.stopPolling(); // cancels the next tick; the probes already posted still run
+        ssh.drain(5);
+        assertThat(runner.calls).as("one probe per host, and no further tick").isEqualTo(before + 2);
     }
 
     @Test
