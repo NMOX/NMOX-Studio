@@ -439,7 +439,7 @@ Trong trình đơn Công cụ, nó dò trực tiếp 66 công cụ bên ngoài �
 
 ### Những bức tường có cửa
 
-Thiếu một máy chủ ngôn ngữ hay một công cụ, IDE nói cho bạn biết phải chạy lệnh nào, hoặc đề nghị chạy hộ; không bao giờ là một lời từ chối trơ trọi. Một bức tường có cửa riêng: TypeScript 7 không mang theo tsserver, nên nếu TypeScript tìm được là bản 7, trình soạn thảo nói một lần rồi mời cài dòng 5 — cũng chính là dòng nó tự cài vì lẽ ấy. Nếu một cổng đã bị chiếm, thông báo lỗi gọi tên tiến trình đang ngồi đó, và SONAR đuổi kẻ ấy đi.
+Thiếu một máy chủ ngôn ngữ hay một công cụ, IDE nói cho bạn biết phải chạy lệnh nào, hoặc đề nghị chạy hộ; không bao giờ là một lời từ chối trơ trọi. TypeScript 7 không mang theo tsserver, nên trình soạn thảo khởi động máy chủ ngôn ngữ của chính TypeScript 7 (`tsc --lsp`): bản của bạn thì ngay lập tức, bản của một dự án thì khi bạn đã tin cậy dự án đó. TypeScript 5 và 6 vẫn được phục vụ như trước. Nếu một cổng đã bị chiếm, thông báo lỗi gọi tên tiến trình đang ngồi đó, và SONAR đuổi kẻ ấy đi.
 
 ### Một nút GO chẳng làm gì
 

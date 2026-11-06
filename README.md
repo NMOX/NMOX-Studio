@@ -126,7 +126,8 @@ your translation catalogs read the same way (Tools ▸ Check
 Translations… reports missing, copied and mis-placeholdered keys across
 i18next, vue-i18n, Angular XLIFF, Lingui, Paraglide and react-intl, with
 key completion inside `t('…')` and ⌘-click to the source catalog);
-tsserver/eslint/Prettier out of the box; breakpoints in Node and Chrome;
+TypeScript intelligence for 5, 6 and 7 (the Go port's own server),
+eslint and Prettier out of the box; breakpoints in Node and Chrome;
 a Task Board (⌥⌘1) beside the code. *Designers*: color swatches on every
 literal **and through `var()` tokens**, project-wide token completion
 with swatch icons, ⌘-click from usage to declaration, a click-to-pick

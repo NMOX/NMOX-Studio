@@ -439,7 +439,7 @@ En el menú Herramientas, sondea en vivo 66 herramientas externas — node, npm,
 
 ### Muros con puerta
 
-Si falta un servidor de lenguaje o una herramienta, el IDE te dice qué orden ejecutar, o se ofrece a ejecutarla; nunca un fallo a secas. Un muro tiene su propia puerta: TypeScript 7 no trae tsserver, así que si el TypeScript que encuentra el servidor es el 7, el editor lo dice una vez y ofrece instalar la serie 5 — que es la que instala por la misma razón. Si un puerto está ocupado, el error nombra al proceso que se sentó en él, y SONAR lo echa.
+Si falta un servidor de lenguaje o una herramienta, el IDE te dice qué orden ejecutar, o se ofrece a ejecutarla; nunca un fallo a secas. TypeScript 7 no trae tsserver, así que el editor arranca el servidor de lenguaje propio de TypeScript 7 (`tsc --lsp`): el tuyo enseguida, el de un proyecto en cuanto confías en el proyecto. TypeScript 5 y 6 se atienden como antes. Si un puerto está ocupado, el error nombra al proceso que se sentó en él, y SONAR lo echa.
 
 ### Un GO que no hace nada
 

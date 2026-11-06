@@ -4,6 +4,130 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.10.0] - 2026-11-06
+
+**TypeScript 7 gets TypeScript intelligence, and the IDE stops
+downgrading projects to give it to them.** TypeScript 7, the Go port, is
+what `npm install typescript` gives today. It ships no tsserver, so
+typescript-language-server cannot use it, and since v2.85.0 this product
+answered a TypeScript 7 with a notice that offered to install TypeScript
+5. That answer was right in September and is wrong now, for two measured
+reasons. TypeScript 7.0.2 carries a language server of its own, the
+compiler run as `tsc --lsp`. And the install the notice ran,
+`npm i … typescript@5`, rewrites a project's declared TypeScript: an
+Angular 22 project on `~6.0.3`, the only range Angular 22 accepts, came
+out on `^5.9.3`. So the editor starts TypeScript 7's own server, and no
+install the IDE runs names a TypeScript into a project that has one.
+
+Starting the server was a day's work; getting its errors on screen was
+the rest of the sprint. That server reports a file's problems only when
+a client asks (`textDocument/diagnostic`), and the platform's LSP client
+cannot ask, so an editor on TypeScript 7 would have had completion, hover
+and go-to-definition over code with no red in it. `PullDiagnostics` sits
+on the two streams and asks on the client's behalf: when a file opens,
+after an edit (every open file, since an edit in one breaks another),
+and when the server says something changed on disk. The answer goes to
+the client as the `publishDiagnostics` it understands. Measured against
+the real 7.0.2 first, then walked in the assembled app: errors on open,
+after an edit, after a file nobody had open was changed on disk, gone
+when the file closes, no process left behind.
+
+The walk found three things no test had. The server registers a
+configuration watch the client refuses with a SEVERE log entry, three
+per start. It reports every snapshot it takes at the "info" level, three
+hundred log lines for one opened file. And a defect of this product's
+own, shipped since 3.1.0 and unrelated to TypeScript 7: every time an
+editor gained focus, each language server's errors were painted a second
+time across their whole lines, in a layer nothing cleared when the
+answer changed. All three are fixed here.
+
+Trust is unchanged in kind and stated for the new server. A compiler in
+a project's `node_modules` is the project's code and waits for Workspace
+Trust; your own TypeScript 7 serves the project until then. Your own
+compiler only reads: measured with a trap plugin named in `tsconfig.json`,
+which the tsserver of TypeScript 5 loads and runs and `tsc --lsp` does
+not (`scripts/probes/tsc-lsp-trust`, control included). Nineteen mutants
+by name.
+
+### Added
+
+- TypeScript 7's own language server (`TsNative`): the compiler binary
+  from `@typescript/typescript-<platform>-<arch>`, found beside the
+  `typescript` package or nested in it, started as `tsc --lsp --stdio`
+  with no Node in between. The choice is one pure function
+  (`TsNative.choose`): the TypeScript that was found when it is the
+  user's own or the workspace is trusted, else the user's own, else wait
+  for trust, else say there is no compiler for this machine.
+  `TsNativeTest`.
+- `PullDiagnostics`: asks a pull-only server for a file's problems and
+  publishes the answer to the platform's client. Debounced (60 ms after
+  an open, 300 ms after an edit, never longer than 1.5 s under steady
+  typing), bounded (256 open files, 32 questions a pass, 16 MiB a
+  frame), an older answer never overwrites a newer one, an overtaken
+  question is asked again twice, a closed file is published empty, and a
+  stream it cannot frame passes through untouched. It also strips the
+  `"params":null` the client writes on `shutdown` and `exit`, which
+  TypeScript 7 refuses, so the server ends by protocol and not by
+  signal. `PullDiagnosticsTest` (19).
+- `scripts/probes/tsc-lsp-trust`: the measurement the trust verdict
+  rests on, with its control.
+- The Environment Doctor's `tsc` row says which TypeScript is served by
+  what.
+
+### Changed
+
+- The three installs that named a TypeScript no longer do: the
+  typescript-language-server install is the server alone (it had pinned
+  a global `typescript@5`, which downgraded a global TypeScript 7), and
+  the Angular and Vue installs leave the project's TypeScript as it is.
+  Vue's door adds `typescript@5` only into a project that declares no
+  TypeScript at all (`LanguageServerCatalog.declaresTypeScript`, a
+  bounded read; an unreadable manifest counts as declaring one).
+- A machine with no typescript-language-server and a TypeScript 7 of the
+  user's own gets TypeScript intelligence from it, where it used to get
+  the install notice.
+- The notice for a TypeScript 7 with no compiler for this machine says
+  that, in all fifteen languages, in place of the sentence about
+  tsserver.
+- `ServerTrust`: `tsc` is classified RUNS with its mechanism, and runs
+  the project's code exactly when the binary is inside the project.
+  `ServerTrustLedgerTest` derives it from the source like the rest.
+- Dependabot #857, applied by hand and checked against how each is used:
+  sqlite-jdbc 3.53.4.0 → 3.54.1.0 (fixes cubic backtracking in the
+  regex that finds a table's primary key, which DB Studio reaches
+  through `getPrimaryKeys` for the edit gate); MongoDB driver 5.13.0 →
+  5.14.0 (carries a size-validation fix in the BSON writer; no 5.13.x
+  patch exists, so there is no older patch for it to be missing);
+  JaCoCo 0.8.15 → 0.8.16; maven-enforcer-plugin 3.6.3 → 3.7.0. The
+  MongoDB jars carry no native library and SQLite's two macOS libraries
+  sit where they did, so the signing lane finds what it found.
+- The user guide (English and the fourteen translations), the feature
+  catalogue, the README and the demo script say what serves TypeScript 7.
+- `docs/engineering/futures-2031.md`: bet F5 is delivered for TypeScript
+  itself, with what still rides tsserver and the next trigger.
+- Tech-debt ledger 139 (what the native server leaves undone) and 140
+  (the project templates are a major behind, and why that is its own
+  release).
+
+### Fixed
+
+- A language server's problems are no longer painted twice. When an
+  editor gained focus, `RackSquiggler` painted every tool's problems for
+  the file as whole-line marks, a language server's among them (they
+  have been on the diagnostics bus for Action Items since 3.1.0), over
+  the marks the platform's client had already drawn on the expressions.
+  Nothing cleared that layer when the server's answer changed, so a
+  fixed error kept its underline until the tab was closed. The focus
+  listener now paints the rack tools' problems only
+  (`RackSquiggler.squiggled`).
+- A server's request to watch configuration changes is accepted, where
+  the client answered with an error and logged SEVERE for each
+  (`PullDiagnostics.accepts`; any other registration still goes to the
+  client to refuse, since accepting a file watch would be a promise this
+  client breaks).
+- A server's info-level log no longer fills the IDE's log; errors and
+  warnings still reach it.
+
 ## [3.9.0] - 2026-10-30
 
 **DB Studio speaks TLS to MySQL and MariaDB, and the front page says less
@@ -25963,6 +26087,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.10.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.9.0...v3.10.0
 [3.9.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.8.2...v3.9.0
 [3.8.2]: https://github.com/NMOX/NMOX-Studio/compare/v3.8.1...v3.8.2
 [3.8.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.8.0...v3.8.1

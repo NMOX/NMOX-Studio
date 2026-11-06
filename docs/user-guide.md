@@ -1071,7 +1071,8 @@ directives, and interpolations all highlight, and `@`-block /
 - **Template type-checking**: install the Angular Language Service
   when the IDE offers it (the install runs *inside your project* —
   the service must match your workspace's Angular and TypeScript
-  versions; note it needs TypeScript 5.x). After that, binding to a
+  versions, and the install leaves your project's TypeScript as it is;
+  the service needs TypeScript 5 or 6, not 7). After that, binding to a
   property that doesn't exist on the component class draws the Angular
   compiler's own "Did you mean…?" error as you type.
 - **⌘B in a template** jumps to the definition — `{{ title }}` lands
@@ -2236,11 +2237,20 @@ six are done, or when you press **Hide this list**.
   node, npm, docker, forge, composer, gopls, … — showing found versions
   and the install command for anything missing.
 - **Missing language server / missing tool**: the IDE tells you the
-  command to run (or offers to run it), never a bare failure. One
-  wall has its own door: TypeScript 7 (the Go port) ships no tsserver,
-  so if the typescript the language server finds is 7, the editor says
-  so once and offers `npm install -g typescript@5` — the install the
-  IDE runs for you pins 5 for the same reason.
+  command to run (or offers to run it), never a bare failure.
+- **TypeScript 7** (the Go port, and what `npm install typescript`
+  gives today) ships no tsserver, so typescript-language-server cannot
+  use it. The editor starts TypeScript 7's own language server instead:
+  the compiler, run as `tsc --lsp`. Your own TypeScript 7 serves any
+  project at once. A project's own compiler, the one in its
+  `node_modules`, is the project's code, so it starts once you trust the
+  project; until then your own serves it, if you have one. That server
+  reports a file's errors only when asked, and the editor asks for you:
+  on open, after an edit, and when a file changed on disk. TypeScript 5
+  and 6 are served by typescript-language-server as before. An install
+  the IDE runs for you no longer names a TypeScript version into a
+  project that has one: Angular 22 needs TypeScript 6, and a pinned 5
+  would have rewritten your `package.json`.
 - **"… intelligence is waiting for a trusted workspace"**: most language
   servers do more than read. rust-analyzer builds the project, and a build
   runs its `build.rs`; R sources the project's `.Rprofile`; a Perl server

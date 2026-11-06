@@ -439,7 +439,7 @@ Im Menü Extras prüft er 66 äußere Werkzeuge im Betrieb — node, npm, docker
 
 ### Mauern mit Tür
 
-Fehlt ein Sprachserver oder ein Werkzeug, sagt Ihnen die IDE, welchen Befehl Sie ausführen sollen, oder bietet an, ihn auszuführen; nie ein blanker Fehlschlag. Eine Mauer hat ihre eigene Tür: TypeScript 7 liefert keinen tsserver, also sagt der Editor einmal Bescheid, wenn das gefundene TypeScript die 7 ist, und bietet die Reihe 5 an — die er aus demselben Grund selbst installiert. Ist ein Port belegt, benennt der Fehler den Prozess, der sich daraufgesetzt hat, und SONAR wirft ihn hinaus.
+Fehlt ein Sprachserver oder ein Werkzeug, sagt Ihnen die IDE, welchen Befehl Sie ausführen sollen, oder bietet an, ihn auszuführen; nie ein blanker Fehlschlag. TypeScript 7 liefert keinen tsserver, also startet der Editor den eigenen Sprachserver von TypeScript 7 (`tsc --lsp`): Ihren eigenen sofort, den eines Projekts, sobald Sie dem Projekt vertrauen. TypeScript 5 und 6 werden wie bisher bedient. Ist ein Port belegt, benennt der Fehler den Prozess, der sich daraufgesetzt hat, und SONAR wirft ihn hinaus.
 
 ### Ein GO, das nichts tut
 

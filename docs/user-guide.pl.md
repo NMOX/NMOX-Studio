@@ -437,7 +437,7 @@ W menu Narzędzia bada na żywo 66 zewnętrznych narzędzi — node, npm, docker
 
 ### Mury z drzwiami
 
-Gdy brak serwera języka albo narzędzia, środowisko mówi, jakie polecenie uruchomić, albo proponuje, że uruchomi je samo; nigdy samą porażkę. Jeden mur ma własne drzwi: TypeScript 7 nie niesie tsservera, więc jeśli znaleziony TypeScript to siódemka, edytor mówi o tym raz i proponuje linię piątą — tę samą, którą sam instaluje z tego samego powodu. Gdy port jest zajęty, błąd nazywa proces, który się na nim rozsiadł, a SONAR go wyrzuca.
+Gdy brak serwera języka albo narzędzia, środowisko mówi, jakie polecenie uruchomić, albo proponuje, że uruchomi je samo; nigdy samą porażkę. TypeScript 7 nie niesie tsservera, więc edytor uruchamia własny serwer języka TypeScriptu 7 (`tsc --lsp`): twój od razu, a projektowy, gdy zaufasz projektowi. TypeScript 5 i 6 są obsługiwane jak dotąd. Gdy port jest zajęty, błąd nazywa proces, który się na nim rozsiadł, a SONAR go wyrzuca.
 
 ### GO, które nic nie robi
 

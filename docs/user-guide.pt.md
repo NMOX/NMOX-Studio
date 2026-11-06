@@ -439,7 +439,7 @@ No menu Ferramentas, ele sonda ao vivo 66 ferramentas externas — node, npm, do
 
 ### Muros com porta
 
-Se falta um servidor de linguagem ou uma ferramenta, o IDE diz qual comando rodar, ou se oferece para rodá-lo; nunca uma falha seca. Um muro tem porta própria: o TypeScript 7 não traz tsserver, então, se o TypeScript encontrado for o 7, o editor diz isso uma vez e oferece a linha 5 — a mesma que ele instala pelo mesmo motivo. Se uma porta de rede está ocupada, o erro nomeia o processo que se sentou nela, e o SONAR o expulsa.
+Se falta um servidor de linguagem ou uma ferramenta, o IDE diz qual comando rodar, ou se oferece para rodá-lo; nunca uma falha seca. O TypeScript 7 não traz tsserver, então o editor inicia o servidor de linguagem do próprio TypeScript 7 (`tsc --lsp`): o seu na hora, o de um projeto assim que você confia no projeto. O TypeScript 5 e o 6 são atendidos como antes. Se uma porta de rede está ocupada, o erro nomeia o processo que se sentou nela, e o SONAR o expulsa.
 
 ### Um GO que não faz nada
 
