@@ -54,13 +54,16 @@ import org.openide.util.RequestProcessor;
  * {@code tsconfig.json} that changes, clears errors with no keystroke.</li>
  * </ul>
  *
- * <p>Two smaller repairs ride the same pass, both measured against
+ * <p>Smaller repairs ride the same pass, each measured against
  * TypeScript 7.0.2. The platform's client writes {@code "params":null}
  * on {@code shutdown} and {@code exit} (lsp4j's message writer, read
  * from its bytecode), and this server refuses both with
  * {@code InvalidParams: expected no params, got null}, so it would never
- * be shut down by the protocol; the member is removed. And the first
- * frame, {@code initialize}, gains the two capabilities above.
+ * be shut down by the protocol; the member is removed. The first frame,
+ * {@code initialize}, gains the two capabilities above. The server's
+ * request to be told of configuration changes is accepted here
+ * ({@link #accepts}), and its info-level log is kept out of the IDE's
+ * ({@link #chatter}).
  *
  * <p>Every other byte passes unchanged, in order. A frame is held only
  * until it is whole. Bounds: a header over 8 KiB, or one with no length,
@@ -97,6 +100,11 @@ final class PullDiagnostics {
     private static final byte[] PREFIX_BYTES = ID_PREFIX.getBytes(StandardCharsets.US_ASCII);
     private static final byte[] REFRESH_BYTES = "diagnostic/refresh".getBytes(StandardCharsets.US_ASCII);
     private static final byte[] REFRESH_ESCAPED = "diagnostic\\/refresh".getBytes(StandardCharsets.US_ASCII);
+    private static final byte[] REGISTER_BYTES = "registerCapability".getBytes(StandardCharsets.US_ASCII);
+    private static final byte[] LOG_BYTES = "window/logMessage".getBytes(StandardCharsets.US_ASCII);
+    private static final byte[] LOG_ESCAPED = "window\\/logMessage".getBytes(StandardCharsets.US_ASCII);
+    /** The one registration accepted on the client's behalf; see {@link #accepts}. */
+    static final String CONFIGURATION_WATCH = "workspace/didChangeConfiguration";
 
     /** Runs {@link #work} once, some milliseconds from now; arming again moves the time. */
     interface Timer {
@@ -513,6 +521,68 @@ final class PullDiagnostics {
         return frame(notification.toString().getBytes(StandardCharsets.UTF_8));
     }
 
+    /**
+     * Whether a request to register capabilities is one this class
+     * answers yes to, in the client's place.
+     *
+     * <p>TypeScript 7 asks, on {@code initialized}, to be told when the
+     * configuration changes. The platform's client implements no
+     * registration at all (ledger 45), so lsp4j answers with an internal
+     * error and logs it at SEVERE, and the server logs the failure back
+     * as an error: three red entries for every start, measured in the
+     * first walk of this class. The promise that request asks for is one
+     * this client keeps by doing nothing: it has no configuration, so it
+     * never changes, and there is never a change to report. Any other
+     * registration (a file watch, a save hook) is a promise this client
+     * would break, and goes to the client to be refused as before.
+     */
+    static boolean accepts(JSONObject request) {
+        JSONObject params = request.optJSONObject("params");
+        JSONArray registrations = params == null ? null : params.optJSONArray("registrations");
+        if (registrations == null || registrations.isEmpty()) {
+            return false;
+        }
+        for (int i = 0; i < registrations.length(); i++) {
+            JSONObject registration = registrations.optJSONObject(i);
+            if (registration == null || !CONFIGURATION_WATCH.equals(registration.optString("method"))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Whether a log message is the server talking to itself. TypeScript
+     * 7 reports every snapshot it takes, every watch it adds and the
+     * whole of the client's capabilities at the "info" level; the
+     * platform's client writes each to the IDE's log, and one opened file
+     * was three hundred lines of it, with more on every key. Errors and
+     * warnings (types 1 and 2) are the client's to show. The rest can be
+     * read at FINE under this class's name.
+     */
+    private boolean chatter(JSONObject message) {
+        JSONObject params = message.optJSONObject("params");
+        if (params == null || params.optInt("type", 1) < 3) {
+            return false;
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "{0}: {1}", new Object[] {name, params.optString("message")});
+        }
+        return true;
+    }
+
+    /** Answers a request of the server's with an empty success, from the lane. */
+    private void reply(JSONObject request) {
+        JSONObject reply = new JSONObject().put("jsonrpc", "2.0").put("id", request.get("id")).put("result", JSONObject.NULL);
+        synchronized (state) {
+            if (ended) {
+                return;
+            }
+            outbox.add(frame(reply.toString().getBytes(StandardCharsets.UTF_8)));
+        }
+        timer.in(0);
+    }
+
     /** The server asked to be asked again: answer it, and ask about every open document. */
     private void refresh(JSONObject request) {
         JSONObject reply = new JSONObject().put("jsonrpc", "2.0").put("id", request.get("id")).put("result", JSONObject.NULL);
@@ -537,7 +607,7 @@ final class PullDiagnostics {
         private byte[] out = new byte[0];
         private int at;
         /** Bytes of an oversize body still to copy straight through. */
-        private long passing;
+        private int passing;
         /** The server's framing was lost: bytes pass, nothing is read. */
         private boolean blind;
         private boolean eof;
@@ -566,7 +636,7 @@ final class PullDiagnostics {
                     return n;
                 }
                 if (passing > 0 || blind) {
-                    int n = in.read(b, off, (int) Math.min(len, blind ? len : passing));
+                    int n = in.read(b, off, blind ? len : Math.min(len, passing));
                     if (n < 0) {
                         return end();
                     }
@@ -663,7 +733,9 @@ final class PullDiagnostics {
     private byte[] serverFrame(byte[] body) {
         boolean mine = indexOf(body, PREFIX_BYTES) >= 0;
         boolean asksAgain = indexOf(body, REFRESH_BYTES) >= 0 || indexOf(body, REFRESH_ESCAPED) >= 0;
-        if (!mine && !asksAgain) {
+        boolean registers = indexOf(body, REGISTER_BYTES) >= 0;
+        boolean logs = indexOf(body, LOG_BYTES) >= 0 || indexOf(body, LOG_ESCAPED) >= 0;
+        if (!mine && !asksAgain && !registers && !logs) {
             return body;
         }
         JSONObject message;
@@ -672,7 +744,15 @@ final class PullDiagnostics {
         } catch (RuntimeException notJson) {
             return body;
         }
-        if (asksAgain && "workspace/diagnostic/refresh".equals(message.optString("method")) && message.has("id")) {
+        String method = message.optString("method");
+        if (logs && "window/logMessage".equals(method) && chatter(message)) {
+            return new byte[0];
+        }
+        if (registers && "client/registerCapability".equals(method) && message.has("id") && accepts(message)) {
+            reply(message);
+            return new byte[0];
+        }
+        if (asksAgain && "workspace/diagnostic/refresh".equals(method) && message.has("id")) {
             refresh(message);
             return new byte[0];
         }

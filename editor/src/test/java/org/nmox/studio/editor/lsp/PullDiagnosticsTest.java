@@ -212,7 +212,8 @@ class PullDiagnosticsTest {
         String bareBody = "{\"jsonrpc\":\"2.0\",\"method\":\"window/logMessage\",\"params\":\"p:1\"}";
         byte[] bare = ("Content-Length: " + bareBody.length() + "\n\n" + bareBody).getBytes(StandardCharsets.UTF_8);
         byte[] quoting = PullDiagnostics.frame(("{\"jsonrpc\":\"2.0\",\"method\":\"window/logMessage\",\"params\":"
-                + "{\"type\":3,\"message\":\"handled nmox-pull:4 and workspace/diagnostic/refresh\"}}").getBytes(StandardCharsets.UTF_8));
+                + "{\"type\":2,\"message\":\"handled nmox-pull:4, registerCapability and workspace/diagnostic/refresh\"}}")
+                .getBytes(StandardCharsets.UTF_8));
         ByteArrayOutputStream said = new ByteArrayOutputStream();
         for (byte[] part : new byte[][] {reply, own, bare, quoting}) {
             said.write(part);
@@ -322,7 +323,7 @@ class PullDiagnosticsTest {
         bridge.work();
         serverGot();
         server.says("{\"jsonrpc\":\"2.0\",\"id\":9,\"method\":\"workspace/diagnostic/refresh\"}");
-        server.says("{\"jsonrpc\":\"2.0\",\"method\":\"window/logMessage\",\"params\":{\"type\":3,\"message\":\"next\"}}");
+        server.says("{\"jsonrpc\":\"2.0\",\"method\":\"window/logMessage\",\"params\":{\"type\":2,\"message\":\"next\"}}");
         InputStream in = bridge.fromServer();
         byte[] next = in.readNBytes(20);
         assertThat(new String(next, StandardCharsets.US_ASCII)).as("the refresh request is gone from the stream").startsWith("Content-Length: ");
@@ -332,6 +333,61 @@ class PullDiagnosticsTest {
         assertThat(got.get(0).isNull("result")).isTrue();
         assertThat(got.get(0).has("result")).isTrue();
         assertThat(questions(got)).extracting(q -> q[0]).containsExactlyInAnyOrder(A, B);
+    }
+
+    @Test
+    @DisplayName("the server's request to hear of configuration changes is accepted here; any other registration is the client's to refuse")
+    void aConfigurationWatchIsAccepted() throws Exception {
+        // TypeScript 7.0.2's own request, as it wrote it
+        String asked = "{\"jsonrpc\":\"2.0\",\"id\":\"ts1\",\"method\":\"client/registerCapability\",\"params\":{\"registrations\":"
+                + "[{\"id\":\"typescript-config-watch-id\",\"method\":\"workspace/didChangeConfiguration\","
+                + "\"registerOptions\":{\"section\":[\"js/ts\",\"typescript\",\"javascript\",\"editor\"]}}]}}";
+        String files = "{\"jsonrpc\":\"2.0\",\"id\":\"ts2\",\"method\":\"client/registerCapability\",\"params\":{\"registrations\":"
+                + "[{\"id\":\"a\",\"method\":\"workspace/didChangeConfiguration\"},"
+                + "{\"id\":\"b\",\"method\":\"workspace/didChangeWatchedFiles\"}]}}";
+        server.says(asked);
+        server.says(files);
+        List<JSONObject> seen = clientSees();
+        assertThat(seen).as("a promise this client would break is not made for it").hasSize(1);
+        assertThat(seen.get(0).getString("id")).isEqualTo("ts2");
+        assertThat(armed).as("the yes is written by the lane").containsExactly(0);
+    }
+
+    @Test
+    @DisplayName("the yes to a configuration watch reaches the server, under the server's own id")
+    void theAcceptanceIsWritten() throws Exception {
+        server.says("{\"jsonrpc\":\"2.0\",\"id\":\"ts1\",\"method\":\"client/registerCapability\",\"params\":{\"registrations\":"
+                + "[{\"id\":\"w\",\"method\":\"workspace/didChangeConfiguration\"}]}}");
+        assertThat(readOneRound(bridge.fromServer())).isEmpty();
+        bridge.work();
+        List<JSONObject> got = serverGot();
+        assertThat(got).hasSize(1);
+        assertThat(got.get(0).getString("id")).isEqualTo("ts1");
+        assertThat(got.get(0).has("result")).isTrue();
+        assertThat(got.get(0).has("error")).isFalse();
+    }
+
+    @Test
+    @DisplayName("the server's info-level log stays out of the IDE's; its warnings and errors are the client's to show")
+    void infoLogIsKeptOut() throws Exception {
+        byte[] info = PullDiagnostics.frame(("{\"jsonrpc\":\"2.0\",\"method\":\"window/logMessage\",\"params\":"
+                + "{\"type\":3,\"message\":\"======== Cloning snapshot 1 ========\"}}").getBytes(StandardCharsets.UTF_8));
+        byte[] log = PullDiagnostics.frame(("{\"jsonrpc\":\"2.0\",\"method\":\"window/logMessage\",\"params\":"
+                + "{\"type\":4,\"message\":\"Updated watches in 17µs\"}}").getBytes(StandardCharsets.UTF_8));
+        byte[] warning = PullDiagnostics.frame(("{\"jsonrpc\":\"2.0\",\"method\":\"window/logMessage\",\"params\":"
+                + "{\"type\":2,\"message\":\"tsconfig.json: unknown option\"}}").getBytes(StandardCharsets.UTF_8));
+        byte[] error = PullDiagnostics.frame(("{\"jsonrpc\":\"2.0\",\"method\":\"window/logMessage\",\"params\":"
+                + "{\"type\":1,\"message\":\"panic\"}}").getBytes(StandardCharsets.UTF_8));
+        byte[] shown = PullDiagnostics.frame(("{\"jsonrpc\":\"2.0\",\"method\":\"window/showMessage\",\"params\":"
+                + "{\"type\":3,\"message\":\"said to the user, so it is the user's\"}}").getBytes(StandardCharsets.UTF_8));
+        for (byte[] part : new byte[][] {info, warning, log, error, shown}) {
+            server.says(part);
+        }
+        ByteArrayOutputStream kept = new ByteArrayOutputStream();
+        for (byte[] part : new byte[][] {warning, error, shown}) {
+            kept.write(part);
+        }
+        assertThat(bridge.fromServer().readAllBytes()).isEqualTo(kept.toByteArray());
     }
 
     @Test

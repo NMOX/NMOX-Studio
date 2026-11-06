@@ -113,9 +113,39 @@ public class RackSquiggler implements Runnable {
             if (file == null) {
                 return;
             }
-            List<DiagnosticsBus.Problem> problems = DiagnosticsBus.problemsFor(file);
             HintsController.setErrors(comp.getDocument(), "nmox-rack-onopen",
-                    describe(comp.getDocument(), "", problems));
+                    describe(comp.getDocument(), "", squiggled(file)));
         });
+    }
+
+    /**
+     * What this layer paints for a file an editor has just shown: the
+     * rack tools' problems, and not a language server's.
+     *
+     * <p>From 3.1.0 a language server's problems are on the bus too, for
+     * Action Items ({@code DiagnosticsTap}), and the listener above
+     * leaves them to the platform's client, which paints each on the
+     * expression it names. This read did not: it took every tool's
+     * problems, so whenever an editor gained focus the server's errors
+     * were painted a second time as marks across their whole lines, in a
+     * layer nothing clears when the server's answer changes. Walked in
+     * 3.10.0 on a TypeScript file: three errors underlined on the faulty
+     * word, then, one click into the editor later, on the whole line,
+     * and still there after the fourth error that was typed had been
+     * undone.
+     */
+    static List<DiagnosticsBus.Problem> squiggled(File file) {
+        List<DiagnosticsBus.Problem> problems = new ArrayList<>();
+        DiagnosticsBus.all().forEach((tool, batch) -> {
+            if (org.nmox.studio.editor.lsp.DiagnosticsTap.isLspTool(tool)) {
+                return;
+            }
+            for (DiagnosticsBus.Problem p : batch) {
+                if (p.file().equals(file)) {
+                    problems.add(p);
+                }
+            }
+        });
+        return problems;
     }
 }
