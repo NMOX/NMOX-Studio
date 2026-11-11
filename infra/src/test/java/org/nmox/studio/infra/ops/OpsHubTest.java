@@ -868,7 +868,7 @@ class OpsHubTest {
         var files = new org.nmox.studio.infra.ops.remote.ProjectBundle.Refusal(
                 org.nmox.studio.infra.ops.remote.ProjectBundle.Refusal.Kind.TOO_MANY_FILES, 20_000, null);
         assertThat(OpsHub.reasonOf(new Deployer.Outcome(Deployer.Step.BUNDLE, null, null, null, files)))
-                .isEqualTo("the project holds more than 20000 files after what stays home");
+                .isEqualTo("the project holds more than 20000 files, not counting what stays on this machine");
         var deep = new org.nmox.studio.infra.ops.remote.ProjectBundle.Refusal(
                 org.nmox.studio.infra.ops.remote.ProjectBundle.Refusal.Kind.TOO_DEEP, 32, "a/b");
         assertThat(OpsHub.reasonOf(new Deployer.Outcome(Deployer.Step.BUNDLE, null, null, null, deep)))
@@ -876,7 +876,7 @@ class OpsHubTest {
         var big = new org.nmox.studio.infra.ops.remote.ProjectBundle.Refusal(
                 org.nmox.studio.infra.ops.remote.ProjectBundle.Refusal.Kind.TOO_BIG, 200, null);
         assertThat(OpsHub.reasonOf(new Deployer.Outcome(Deployer.Step.BUNDLE, null, null, null, big)))
-                .isEqualTo("the project is larger than 200 MB after what stays home");
+                .isEqualTo("the project is larger than 200 MB, not counting what stays on this machine");
         assertThat(OpsHub.reasonOf(new Deployer.Outcome(Deployer.Step.BUILD, null, null, "no space left on device")))
                 .isEqualTo("no space left on device");
     }

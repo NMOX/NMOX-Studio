@@ -279,7 +279,8 @@ door were the real ones). Each row was fixed and walked again.
   gestures and named key actions, the layout's two caption laws, and the
   inspector laid out at its pane's own width.
 - **Mutants by name**: 10 on the camera, 31 on the review's fixes, 31 on
-  the walks' and the translators' fixes; every one killed by a named
+  the walks' and the translators' fixes, 13 on the bundle's ignore file
+  and refusals; every one killed by a named
   test except one written down as equivalent (the column's `tracksViewportWidth`, which its own
   preferred width already implies). Several were killed only after the
   TEST was repaired — the wrap test and the fact-word test first let

@@ -40,7 +40,7 @@ public final class ProjectBundle {
             TOO_MANY_FILES,
             /** More bytes than {@link #MAX_BYTES}; the number is the cap in megabytes. */
             TOO_BIG,
-            /** Folders nested deeper than {@link #MAX_DEPTH}; the number is the cap, {@code where} the folder. */
+            /** Folders nested deeper than {@link #MAX_DEPTH}; the number is the cap, {@code where} the top two levels of the chain. */
             TOO_DEEP
         }
     }
@@ -144,7 +144,12 @@ public final class ProjectBundle {
             return;
         }
         if (depth > MAX_DEPTH) {
-            refusal[0] = new Refusal(Refusal.Kind.TOO_DEEP, MAX_DEPTH, base.relativize(dir).toString());
+            // where the chain STARTS, not the folder thirty-three levels down: its first two levels are what
+            // a reader can find, and the whole path would fill the feed
+            Path chain = base.relativize(dir);
+            String top = chain.subpath(0, Math.min(2, chain.getNameCount())).toString();
+            refusal[0] = new Refusal(Refusal.Kind.TOO_DEEP, MAX_DEPTH,
+                    java.io.File.separatorChar == '\\' ? top.replace('\\', '/') : top);
             return;
         }
         List<Path> children;

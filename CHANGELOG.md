@@ -79,8 +79,10 @@ walks of the four-day-old Hub found wrong in it.
 - The Quick Search category is named **Ops Hub**, and a row says `host`,
   the word the window uses.
 - A deploy refused for its size says so in the reader's language ("the
-  project holds more than 20000 files after what stays home"). The
-  three refusals were English sentences built in the engine.
+  project holds more than 20000 files, not counting what stays on this
+  machine"), and one refused for depth names where the chain of folders
+  starts instead of a path thirty-three levels long. The three refusals
+  were English sentences built in the engine.
 
 ### Fixed
 

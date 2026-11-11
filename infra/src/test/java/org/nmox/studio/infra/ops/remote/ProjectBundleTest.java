@@ -114,6 +114,15 @@ class ProjectBundleTest {
         ProjectBundle.Manifest big = ProjectBundle.plan(root, 100, 25);
         assertThat(big.why().kind()).isEqualTo(ProjectBundle.Refusal.Kind.TOO_BIG);
         assertThat(ProjectBundle.plan(root, 100, 1_000_000).why()).isNull();
+        // too deep: the refusal names where the chain starts, in two levels, not a path of thirty-three
+        Path deep = root.resolve("top");
+        for (int i = 0; i <= ProjectBundle.MAX_DEPTH + 1; i++) {
+            deep = deep.resolve("d" + i);
+        }
+        Files.createDirectories(deep);
+        ProjectBundle.Manifest nested = ProjectBundle.plan(root, 100, 1_000_000);
+        assertThat(nested.why()).isEqualTo(new ProjectBundle.Refusal(ProjectBundle.Refusal.Kind.TOO_DEEP, ProjectBundle.MAX_DEPTH, "top/d0"));
+        assertThat(nested.refusal()).isEqualTo("folders nested deeper than 32 levels under top/d0");
     }
 
     @Test
