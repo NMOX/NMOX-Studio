@@ -4,7 +4,7 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [3.12.0] - 2026-11-10
+## [3.12.0] - 2026-11-11
 
 **The Ops Hub's second slice: a picture you can move around in, a
 service you can look inside, and a deploy you can take back.** 3.11.0
