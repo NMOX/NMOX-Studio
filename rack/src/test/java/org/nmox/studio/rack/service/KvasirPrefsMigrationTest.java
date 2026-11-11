@@ -19,9 +19,18 @@ class KvasirPrefsMigrationTest {
     private final Preferences legacy = Preferences.userRoot().node("nmox-test/migration-legacy-" + System.nanoTime());
 
     @AfterEach
-    void cleanup() throws Exception {
-        target.removeNode();
-        legacy.removeNode();
+    void cleanup() {
+        for (Preferences node : new Preferences[] {target, legacy}) {
+            try {
+                node.removeNode();
+            } catch (java.util.prefs.BackingStoreException ex) {
+                // Best-effort janitor work only. A fresh CI runner can have no
+                // ~/.java/.userPrefs to lock, and then nothing here was ever
+                // persisted, so there is nothing durable to remove. Every
+                // assertion ran before this; none is excused. It failed the
+                // Linux lane of 3.12.0's pull request (the v1.286.0 class).
+            }
+        }
     }
 
     @Test

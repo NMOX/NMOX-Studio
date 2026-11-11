@@ -157,6 +157,15 @@ host over ssh:
   deploy log scrolled sideways to the end of docker's longest line; a
   failed swap forgot what the host had printed.
 
+Found by the pull request's own Linux lane:
+
+- **Four tests failed in their cleanup, not in an assertion.** A fresh
+  runner can have no `~/.java/.userPrefs` to lock, and removing a
+  throwaway preferences node then throws after every assertion has
+  passed (the v1.286.0 class, in the four tests that fix did not
+  reach). The removal is best-effort; no assertion is excused. No
+  product change.
+
 ### Translations
 
 Every new and changed string is in all fifteen languages, after six
