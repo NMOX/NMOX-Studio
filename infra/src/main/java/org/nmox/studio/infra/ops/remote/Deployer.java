@@ -98,31 +98,39 @@ public final class Deployer {
         }
         if (!up.ok() || tarProblem[0] != null) {
             listener.stepFinished(Step.UPLOAD, false);
-            return new Outcome(Step.UPLOAD, null, null, tarProblem[0] != null ? tarProblem[0] : up.tail());
+            // when the REMOTE side failed, its words are the reason: the local writer's "Pipe closed"
+            // is only the echo of the host hanging up (a full disk, no permission under /srv)
+            String remoteSaid = up.ok() || up.tail() == null || up.tail().isBlank() ? null : lastLine(up.tail());
+            return new Outcome(Step.UPLOAD, null, null, remoteSaid != null ? remoteSaid : tarProblem[0] != null ? tarProblem[0] : up.tail());
         }
         listener.stepFinished(Step.UPLOAD, true);
 
         if (!step(Step.SWAP, plan.swap(), target, listener, SHORT_TIMEOUT)) {
             return new Outcome(Step.SWAP, null, null, "swap failed");
         }
-        List<String> buildTail = new java.util.ArrayList<>();
+        // a build prints for twenty minutes: the reason for a failure is its LAST words, so only those are kept
+        String[] buildLast = {null};
         if (!step(Step.BUILD, plan.build(), target, l -> {
             listener.line(Step.BUILD, l);
-            buildTail.add(l);
+            if (!l.isBlank()) {
+                buildLast[0] = l;
+            }
         }, listener, BUILD_TIMEOUT)) {
-            return new Outcome(Step.BUILD, null, null, lastNonBlank(buildTail));
+            return new Outcome(Step.BUILD, null, null, buildLast[0] == null ? "failed" : buildLast[0]);
         }
         return runAndVerify(plan, target, listener);
     }
 
     /** RUN then VERIFY: replace the container by name, then read back what docker runs. */
     private Outcome runAndVerify(DeployPlan plan, SshTarget target, Listener listener) {
-        List<String> runTail = new java.util.ArrayList<>();
+        String[] runLast = {null};
         if (!step(Step.RUN, plan.run(), target, l -> {
             listener.line(Step.RUN, l);
-            runTail.add(l);
+            if (!l.isBlank()) {
+                runLast[0] = l;
+            }
         }, listener, SHORT_TIMEOUT)) {
-            return new Outcome(Step.RUN, null, null, lastNonBlank(runTail));
+            return new Outcome(Step.RUN, null, null, runLast[0] == null ? "failed" : runLast[0]);
         }
 
         listener.stepStarted(Step.VERIFY);
@@ -140,10 +148,14 @@ public final class Deployer {
                 http[0] = parts.length >= 3 ? parts[2] : null;
             }
         }, SHORT_TIMEOUT);
-        boolean running = v.ok() && seen[0] != null;
+        // docker lists a crash-looping container too ("Restarting (1) 2 seconds ago"): only "Up …" is running
+        boolean listed = v.ok() && seen[0] != null;
+        boolean running = listed && seen[0].status().startsWith("Up");
         listener.stepFinished(Step.VERIFY, running);
         if (!running) {
-            return new Outcome(Step.VERIFY, http[0], null, "the container is not running after start");
+            return new Outcome(Step.VERIFY, http[0], null, listed
+                    ? "the container did not stay up: " + seen[0].status()
+                    : "the container is not running after start");
         }
         return new Outcome(null, http[0], seen[0], null);
     }
@@ -169,12 +181,8 @@ public final class Deployer {
         return r.ok();
     }
 
-    private static String lastNonBlank(List<String> lines) {
-        for (int i = lines.size() - 1; i >= 0; i--) {
-            if (!lines.get(i).isBlank()) {
-                return lines.get(i);
-            }
-        }
-        return "failed";
+    private static String lastLine(String tail) {
+        String[] lines = tail.strip().split("\\R");
+        return lines[lines.length - 1].strip();
     }
 }

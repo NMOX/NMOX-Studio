@@ -39,23 +39,38 @@ public final class TarGz implements AutoCloseable {
         header(n, 0, 0755, '5', 0);
     }
 
+    /**
+     * Adds one regular file. The file is opened without following a
+     * link and exactly the size its header promised is copied: a path
+     * that became a symlink after the bundle was planned, or a file that
+     * grew, stops the bundle by name instead of sending what was not
+     * planned.
+     */
     public void file(String name, Path file) throws IOException {
-        long size = Files.size(file);
+        java.nio.file.attribute.BasicFileAttributes attrs = Files.readAttributes(file,
+                java.nio.file.attribute.BasicFileAttributes.class, java.nio.file.LinkOption.NOFOLLOW_LINKS);
+        if (!attrs.isRegularFile()) {
+            throw new IOException(name + " is no longer a regular file");
+        }
+        long size = attrs.size();
         int mode = executable(file) ? 0755 : 0644;
-        long mtime = Files.getLastModifiedTime(file).toMillis() / 1000;
+        long mtime = attrs.lastModifiedTime().toMillis() / 1000;
         header(name, size, mode, '0', mtime);
-        try (InputStream in = Files.newInputStream(file)) {
+        try (InputStream in = Files.newInputStream(file, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
             byte[] buf = new byte[64 * 1024];
-            long copied = 0;
-            int n;
-            while ((n = in.read(buf)) > 0) {
+            long left = size;
+            while (left > 0) {
+                int n = in.read(buf, 0, (int) Math.min(buf.length, left));
+                if (n < 0) {
+                    break;
+                }
                 out.write(buf, 0, n);
-                copied += n;
+                left -= n;
             }
-            if (copied != size) {
+            if (left != 0 || in.read() >= 0) {
                 throw new IOException(name + " changed while it was being bundled");
             }
-            written += copied;
+            written += size;
         }
         pad(size);
     }

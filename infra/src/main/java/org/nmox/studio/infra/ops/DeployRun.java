@@ -23,7 +23,7 @@ public final class DeployRun {
 
     public enum StepState { PENDING, RUNNING, OK, FAILED }
 
-    /** The output kept for the panel; the full log goes to the feed as it happens. */
+    /** The lines of output kept for the panel — the LAST ones; a build's whole log is not kept anywhere. */
     public static final int TAIL = 40;
 
     public final String hostId;

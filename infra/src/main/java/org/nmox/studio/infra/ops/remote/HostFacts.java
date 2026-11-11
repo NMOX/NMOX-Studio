@@ -19,11 +19,12 @@ import java.util.Map;
  * @param moshServer {@code mosh-server} resolves on the host
  * @param docker {@code docker} resolves on the host
  * @param cloudInit cloud-init's first status word ({@code done}, {@code running}, {@code error}), or null when absent
- * @param containers the running containers, as docker printed them
+ * @param containers the running containers, as docker printed them — at most {@link HostProbe#MAX_CONTAINERS}
+ * @param containersNotShown how many more the host listed past that cap (0 almost always)
  */
 public record HostFacts(String os, double load1, int cpus, long memTotalKb, long memUsedKb,
         long diskTotalKb, long diskUsedKb, long uptimeSeconds, boolean moshServer, boolean docker,
-        String cloudInit, List<ContainerFact> containers) {
+        String cloudInit, List<ContainerFact> containers, int containersNotShown) {
 
     /** One running container, from {@code docker ps --format '{{json .}}'}. */
     public record ContainerFact(String id, String name, String image, String status,

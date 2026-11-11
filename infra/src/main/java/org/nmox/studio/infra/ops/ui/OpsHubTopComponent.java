@@ -233,12 +233,36 @@ public final class OpsHubTopComponent extends TopComponent {
         return b;
     }
 
+    /**
+     * The toolbar's facts. Whether a token is set is a KEYCHAIN read the
+     * first time it is asked (the provider caches it after), so until
+     * {@link #primeOffEdt} has asked once on a worker the chip says
+     * nothing rather than ask on the event thread.
+     */
     private void syncChrome() {
+        simulation.setSelected(hub.simulating());
+        if (!primed) {
+            providerChip.setText("");
+            return;
+        }
         OpsProvider digitalOcean = hub.provider(org.nmox.studio.infra.ops.provider.DigitalOceanOps.ID);
         boolean live = digitalOcean != null && digitalOcean.configured();
         providerChip.setText(PlainText.plain(live ? Bundle.OpsHub_providerLive() : Bundle.OpsHub_providerNoToken()));
         providerChip.setForeground(live ? HudStyle.READY.darker() : javax.swing.UIManager.getColor("Label.disabledForeground"));
-        simulation.setSelected(hub.simulating());
+    }
+
+    private volatile boolean primed;
+
+    /** Asks the two slow questions once, on a worker: is there a token (the keychain), is mosh here (the PATH). */
+    private void primeOffEdt(Runnable then) {
+        DIALOG_PREP.post(() -> {
+            for (OpsProvider p : hub.providers()) {
+                p.configured();
+            }
+            hub.moshOnPath();
+            primed = true;
+            javax.swing.SwingUtilities.invokeLater(then);
+        });
     }
 
     private void showSelected() {
@@ -287,35 +311,48 @@ public final class OpsHubTopComponent extends TopComponent {
             }
             String[] local = chosen.simulated() ? null : OpsDialogs.localPublicKey();
             javax.swing.SwingUtilities.invokeLater(() -> {
-                OpsDialogs.NewServer answer = OpsDialogs.newServer(chosen, options,
-                        local == null ? null : local[1], local == null ? null : () -> addKey(chosen, local));
-                if (answer != null) {
+                OpsDialogs.NewServer answer = OpsDialogs.newServer(chosen, options, local == null ? null : local[1]);
+                if (answer == null) {
+                    return;
+                }
+                if (answer.addLocalKey() && local != null) {
+                    createWithLocalKey(chosen, answer.spec(), local);
+                } else {
                     hub.createHost(chosen, answer.spec());
                 }
             });
         });
     }
 
-    /** Uploads this machine's key to the account on the EDT's behalf (a dialog is waiting); returns the id or null. */
-    private String addKey(OpsProvider provider, String[] local) {
-        String[] id = {null};
-        String[] err = {null};
-        RequestProcessor.Task t = DIALOG_PREP.post(() -> {
+    /**
+     * The user said yes to the price AND asked for this machine's key on
+     * the account: add the key, then create with it. Both are the
+     * provider's network, so both happen off the event thread (the first
+     * cut waited for the upload ON it, inside the dialog, and uploaded
+     * before the price was confirmed — a No left a key behind).
+     */
+    private void createWithLocalKey(OpsProvider provider, org.nmox.studio.infra.ops.provider.HostSpec spec, String[] local) {
+        DIALOG_PREP.post(() -> {
+            String id;
             try {
-                id[0] = provider.addSshKey("NMOX Studio " + local[1], local[0]);
+                id = provider.addSshKey("NMOX Studio " + local[1], local[0]);
             } catch (java.io.IOException | RuntimeException ex) {
-                err[0] = ex.getMessage();
+                javax.swing.SwingUtilities.invokeLater(() -> OpsDialogs.message(Bundle.OpsHub_keyFailed(String.valueOf(ex.getMessage()))));
+                return;
             } catch (InterruptedException interrupted) {
                 Thread.currentThread().interrupt();
+                return;
             }
+            List<String> keys = new ArrayList<>(spec.sshKeyIds());
+            if (id != null) {
+                keys.add(id);
+            }
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                StatusDisplayer.getDefault().setStatusText(PlainStatus.text(Bundle.OpsHub_keyAdded()));
+                hub.createHost(provider, new org.nmox.studio.infra.ops.provider.HostSpec(spec.name(), spec.region(),
+                        spec.size(), spec.image(), keys, spec.userData()));
+            });
         });
-        t.waitFinished();
-        if (err[0] != null) {
-            OpsDialogs.message(Bundle.OpsHub_keyFailed(err[0]));
-            return null;
-        }
-        StatusDisplayer.getDefault().setStatusText(PlainStatus.text(Bundle.OpsHub_keyAdded()));
-        return id[0];
     }
 
     private void addHost() {
@@ -546,7 +583,11 @@ public final class OpsHubTopComponent extends TopComponent {
         hub.topology().addListener(topologyListener);
         ReducedMotion.readSystemSettingAsync();
         syncChrome();
-        hub.refresh();
+        primeOffEdt(() -> {
+            syncChrome();
+            showSelected();
+            hub.refresh();
+        });
     }
 
     @Override

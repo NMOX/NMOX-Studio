@@ -161,7 +161,12 @@ public final class SimulatedWorld {
         out.add("mosh " + (configured ? "yes" : "no"));
         out.add("docker " + (configured ? "yes" : "no"));
         out.add("cloudinit " + (configured ? "done" : "running"));
-        for (SimContainer c : h.containers) {
+        List<SimContainer> running;
+        synchronized (this) {
+            // a deploy step replaces the container on another thread while a probe reads the list
+            running = new ArrayList<>(h.containers);
+        }
+        for (SimContainer c : running) {
             out.add("container {\"ID\":\"" + Integer.toHexString(c.name.hashCode()) + "\",\"Names\":\"" + c.name
                     + "\",\"Image\":\"" + c.image + "\",\"Status\":\"Up " + ((clock.getAsLong() - c.since) / 1000)
                     + " seconds\",\"Ports\":\"0.0.0.0:" + c.hostPort + "->" + c.containerPort

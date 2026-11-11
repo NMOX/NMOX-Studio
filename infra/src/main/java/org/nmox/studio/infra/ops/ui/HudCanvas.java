@@ -505,6 +505,12 @@ public final class HudCanvas extends JPanel {
 
     /** Recomputes targets for the current view and lets the springs go. */
     public void relayout() {
+        if (view.level() == HudView.Level.HOST && topology.node(view.hostId()) == null) {
+            // the host this view was about is gone (destroyed, forgotten): there is nothing to be inside
+            view = HudView.FLEET;
+            onView.accept(view);
+            camera.release();
+        }
         int w = Math.max(200, getWidth());
         int h = Math.max(160, getHeight());
         places = HudLayout.layout(topology, view, w, h);
@@ -576,7 +582,9 @@ public final class HudCanvas extends JPanel {
     }
 
     private void onEvent(OpsEvent event) {
-        if (event.nodeId() == null || ReducedMotion.reduced()) {
+        // a pulse says "something crossed this link": only the host's own answers qualify — a provider's
+        // listing never touched it, and a host that stopped answering crossed nothing
+        if (event.nodeId() == null || !event.overLink() || ReducedMotion.reduced()) {
             return;
         }
         OpsNode n = topology.node(event.nodeId());

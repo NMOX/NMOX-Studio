@@ -114,8 +114,14 @@ public final class OpsDialogs {
 
     // ---- New Server ----
 
-    /** What the dialog decided. Null when cancelled. */
-    public record NewServer(HostSpec spec, ProviderOptions.Size size, ProviderOptions.Region region) {
+    /**
+     * What the dialog decided. Null when cancelled.
+     *
+     * @param addLocalKey the user asked for this machine's public key to be added to the account —
+     *     done by the caller AFTER the priced confirm said yes and off the event thread, so a No
+     *     leaves nothing behind at the provider and a slow provider never freezes the window
+     */
+    public record NewServer(HostSpec spec, ProviderOptions.Size size, ProviderOptions.Region region, boolean addLocalKey) {
     }
 
     /**
@@ -123,8 +129,7 @@ public final class OpsDialogs {
      * EDT; {@code localPublicKey} is this machine's key when one was found,
      * offered for upload when the account has none.
      */
-    public static NewServer newServer(OpsProvider provider, ProviderOptions options, String localPublicKeyName,
-            java.util.function.Supplier<String> addKey) {
+    public static NewServer newServer(OpsProvider provider, ProviderOptions options, String localPublicKeyName) {
         if (options.sizes().isEmpty() || options.regions().isEmpty()) {
             message(Bundle.NewServer_noOptions());
             return null;
@@ -158,7 +163,7 @@ public final class OpsDialogs {
             keys.add(box);
         }
         JCheckBox addLocal = null;
-        if (localPublicKeyName != null && addKey != null) {
+        if (localPublicKeyName != null) {
             addLocal = new JCheckBox(PlainText.plain(Bundle.NewServer_addKey(localPublicKeyName)), options.sshKeys().isEmpty());
             addLocal.getAccessibleContext().setAccessibleName(Bundle.NewServer_addKey(localPublicKeyName));
             keys.add(addLocal);
@@ -224,13 +229,8 @@ public final class OpsDialogs {
                     keyIds.add(options.sshKeys().get(i).id());
                 }
             }
-            if (addLocal != null && addLocal.isSelected()) {
-                String id = addKey.get();
-                if (id != null) {
-                    keyIds.add(id);
-                }
-            }
-            if (keyIds.isEmpty() && !provider.simulated()) {
+            boolean addKey = addLocal != null && addLocal.isSelected();
+            if (keyIds.isEmpty() && !addKey && !provider.simulated()) {
                 message(Bundle.NewServer_noKeys());
                 continue;
             }
@@ -238,7 +238,7 @@ public final class OpsDialogs {
                     Numbers.display(s.priceMonthly(), 2)), Bundle.NewServer_confirmTitle())) {
                 return null;
             }
-            return new NewServer(new HostSpec(n, r.slug(), s.slug(), im.slug(), keyIds, CloudInit.USER_DATA), s, r);
+            return new NewServer(new HostSpec(n, r.slug(), s.slug(), im.slug(), keyIds, CloudInit.USER_DATA), s, r, addKey);
         }
     }
 

@@ -89,7 +89,10 @@ import org.openide.util.RequestProcessor;
     "# {2} - the provider's id for it",
     "OpsHub_accepted={0} accepted {1} (id {2})",
     "# {0} - the host's label",
-    "OpsHub_watchGaveUp={0} did not become ready within 15 minutes — still watched on each poll",
+    "OpsHub_watchGaveUp={0} did not become ready within 15 minutes — the Hub keeps asking while its window is open",
+    "# {0} - the host's label",
+    "# {1} - the provider's name",
+    "OpsHub_goneWhileWatched={0} no longer exists at {1}",
     "# {0} - the error",
     "OpsHub_watchFailed=watch: {0}",
     "# {0} - the host's label",
@@ -104,7 +107,19 @@ import org.openide.util.RequestProcessor;
     "# {0} - the error",
     "OpsHub_destroyFailed=Destroy failed: {0}",
     "# {0} - the host's label",
-    "OpsHub_stoppedAnswering={0} stopped answering ssh",
+    "# {1} - what ssh said",
+    "OpsHub_stoppedAnswering={0} stopped answering ssh: {1}",
+    "# {0} - the host's label",
+    "# {1} - what ssh said",
+    "OpsHub_doesNotAnswer={0} does not answer ssh: {1}",
+    "# {0} - the provider's name",
+    "# {1} - the provider's word for the server's state (off, archive)",
+    "OpsHub_providerSaysNotRunning={0} reports it {1}",
+    "# {0} - the host's label",
+    "# {1} - cloud-init's verdict (error, degraded)",
+    "OpsHub_readyCloudInitTrouble={0} answers ssh, but cloud-init ended in {1} — docker and mosh-server may be missing",
+    "# {0} - how many",
+    "OpsHub_containersNotShown={0} more (not drawn)",
     "# {0} - the host's label",
     "OpsHub_answersSshConfiguring=ssh answers on {0} — cloud-init still running",
     "# {0} - the host's label",
@@ -212,6 +227,8 @@ public final class OpsHub {
 
     /** How often reachable hosts are probed while the Hub is showing. */
     public static final int POLL_SECONDS = 15;
+    /** Every this-many poll ticks the providers are listed again (once a minute). */
+    static final int REFRESH_EVERY_TICKS = 4;
     /** How long a new host may take from request to ready before the watch gives up (and says so). */
     static final long WATCH_LIMIT_MILLIS = 15 * 60_000L;
     /** The feed's bound. */
@@ -246,7 +263,16 @@ public final class OpsHub {
     private final List<Listener> listeners = new ArrayList<>();
     private final Deque<OpsEvent> feed = new ArrayDeque<>();
     private final Map<String, OpsProvider> providers = new LinkedHashMap<>();
-    private final Set<String> probing = Collections.synchronizedSet(new HashSet<>());
+    /**
+     * Probes in flight, by NODE (not by id: a host forgotten and added again is another node, and
+     * the first one's late answer is not its), each with whoever is waiting for the answer. EDT.
+     */
+    private final Map<OpsNode, List<Consumer<HostFacts>>> probing = new java.util.IdentityHashMap<>();
+    /** Hosts a provisioning watch is following: while one is, "ssh refused" is expected and said nowhere. EDT. */
+    private final Set<OpsNode> watched = Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+    /** Watches whose provider read is failing, so the failure is announced once and not every five seconds. EDT. */
+    private final Set<OpsNode> watchErrored = Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+    private int pollTicks;
     private final Map<String, DeployRun> deploys = new LinkedHashMap<>();
     private final AtomicBoolean polling = new AtomicBoolean();
     private Runnable pollCancel;
@@ -343,6 +369,10 @@ public final class OpsHub {
             for (OpsNode n : topology.nodes()) {
                 if (n.simulated) {
                     topology.remove(n.id);
+                    // its run goes with it: the next simulation numbers its hosts from one again,
+                    // and a new sim-1 must not open on the last world's deploy
+                    deploys.remove(n.id);
+                    watched.remove(n);
                 }
             }
             event(OpsEvent.Kind.INFO, null, Bundle.OpsHub_simulationOff());
@@ -451,7 +481,14 @@ public final class OpsHub {
                     hosts.put(n.id, o.toString());
                 }
             }
-            hosts.flush();
+            // the puts are memory; the flush is the disk, and this runs on the EDT
+            onCloud(() -> {
+                try {
+                    hosts.flush();
+                } catch (BackingStoreException | IllegalStateException cannot) {
+                    LOG.log(Level.WARNING, "Could not save the Ops Hub's hosts", cannot);
+                }
+            });
         } catch (BackingStoreException | IllegalStateException cannot) {
             LOG.log(Level.WARNING, "Could not save the Ops Hub's hosts", cannot);
         }
@@ -462,10 +499,11 @@ public final class OpsHub {
     /** Re-reads every configured provider's hosts, off the EDT; applies on the EDT. */
     public void refresh() {
         for (OpsProvider p : providers()) {
-            if (!p.configured()) {
-                continue;
-            }
             onCloud(() -> {
+                // whether a provider is configured is a keychain read the first time: asked on the lane
+                if (!p.configured()) {
+                    return;
+                }
                 try {
                     List<HostRecord> listed = p.listHosts();
                     edt.accept(() -> applyListing(p, listed));
@@ -489,6 +527,10 @@ public final class OpsHub {
             if (p.id().equals(n.provider) && !seen.contains(n.id) && n.status != HostStatus.REQUESTED) {
                 n.status = HostStatus.GONE;
                 topology.remove(n.id);
+                deploys.remove(n.id);
+                // destroyed somewhere else: its address will be handed to another server, whose key
+                // must not be refused as "changed" because this one's is still on file
+                forgetHostKey(n);
                 event(OpsEvent.Kind.INFO, n.id, Bundle.OpsHub_noLongerListed(n.label, p.displayName()));
             }
         }
@@ -513,8 +555,14 @@ public final class OpsHub {
         node.facts.put("provider status", r.providerStatus());
         node.lastSeenMillis = clock.getAsLong();
         if (!r.active()) {
-            if (node.status != HostStatus.DESTROYING) {
+            if (node.status == HostStatus.DESTROYING) {
+                // the destroy owns its story
+            } else if ("new".equals(r.providerStatus()) || node.status == HostStatus.REQUESTED) {
                 node.status = HostStatus.PROVISIONING;
+            } else {
+                // off, archived: it exists and is not coming up — say what the provider says, sweep nothing
+                node.status = HostStatus.UNREACHABLE;
+                node.lastProblem = Bundle.OpsHub_providerSaysNotRunning(p.displayName(), String.valueOf(r.providerStatus()));
             }
         } else if (!node.status.reachable() && node.status != HostStatus.UNREACHABLE
                 && node.status != HostStatus.DESTROYING) {
@@ -561,6 +609,7 @@ public final class OpsHub {
                 node.facts.put("made here", "yes");
                 topology.touched(node);
                 event(OpsEvent.Kind.OK, node.id, Bundle.OpsHub_accepted(p.displayName(), spec.name(), r.providerId()));
+                watched.add(node);
                 watch(p, node, clock.getAsLong());
             });
         });
@@ -568,28 +617,56 @@ public final class OpsHub {
 
     /** One tick of the provisioning watch; reschedules itself until READY, GONE or the limit. Starts on the EDT. */
     private void watch(OpsProvider p, OpsNode node, long since) {
+        if (topology.node(node.id) != node) {
+            endWatch(node); // destroyed or replaced meanwhile
+            return;
+        }
         if (clock.getAsLong() - since > WATCH_LIMIT_MILLIS) {
+            endWatch(node);
+            // it is no longer "becoming": the sweep stops, and the ordinary poll takes over from here
+            if (node.status.inProgress()) {
+                node.status = HostStatus.UNREACHABLE;
+                topology.touched(node);
+            }
             event(OpsEvent.Kind.FAIL, node.id, Bundle.OpsHub_watchGaveUp(node.label));
             return;
         }
         onCloud(() -> {
             HostRecord r;
+            String failure = null;
             try {
                 r = p.readHost(node.providerId);
             } catch (IOException | RuntimeException ex) {
-                edt.accept(() -> event(OpsEvent.Kind.FAIL, node.id, Bundle.OpsHub_watchFailed(ex.getMessage())));
+                failure = String.valueOf(ex.getMessage());
                 r = null;
             } catch (InterruptedException interrupted) {
                 Thread.currentThread().interrupt();
                 return;
             }
             HostRecord read = r;
+            String failed = failure;
             edt.accept(() -> {
-                if (topology.node(node.id) == null) {
-                    return; // destroyed meanwhile
+                if (topology.node(node.id) != node) {
+                    endWatch(node); // destroyed or replaced meanwhile
+                    return;
                 }
-                if (read == null) {
+                if (failed != null) {
+                    // the provider could not be read: say so ONCE, keep trying quietly
+                    if (watchErrored.add(node)) {
+                        event(OpsEvent.Kind.FAIL, node.id, Bundle.OpsHub_watchFailed(failed));
+                    }
                     scheduleWatch(p, node, since, 5);
+                    return;
+                }
+                watchErrored.remove(node);
+                if (read == null) {
+                    // the provider answered, and its answer is that there is no such server
+                    endWatch(node);
+                    node.status = HostStatus.GONE;
+                    topology.remove(node.id);
+                    deploys.remove(node.id);
+                    forgetHostKey(node);
+                    event(OpsEvent.Kind.FAIL, node.id, Bundle.OpsHub_goneWhileWatched(node.label, p.displayName()));
                     return;
                 }
                 HostStatus before = node.status;
@@ -603,12 +680,10 @@ public final class OpsHub {
                         event(OpsEvent.Kind.STEP, node.id, Bundle.OpsHub_activeWaitingForSsh(node.label, read.address()));
                     }
                     probeThen(node, facts -> {
-                        if (facts == null) {
-                            scheduleWatch(p, node, since, 6);
-                        } else if (node.status != HostStatus.READY) {
+                        if (facts == null || node.status != HostStatus.READY) {
                             scheduleWatch(p, node, since, 6);
                         } else {
-                            node.facts.remove("watch");
+                            endWatch(node);
                             topology.touched(node);
                         }
                     });
@@ -623,12 +698,19 @@ public final class OpsHub {
         cloud.post(() -> edt.accept(() -> watch(p, node, since)), seconds * 1000L);
     }
 
+    private void endWatch(OpsNode node) {
+        watched.remove(node);
+        watchErrored.remove(node);
+        node.facts.remove("watch");
+    }
+
     /** Destroys a provider host; the node stays as DESTROYING until the provider stops listing it. */
     public void destroyHost(OpsNode node) {
         OpsProvider p = providers.get(node.provider);
         if (p == null || node.providerId == null) {
             return;
         }
+        HostStatus was = node.status;
         node.status = HostStatus.DESTROYING;
         topology.touched(node);
         event(OpsEvent.Kind.STEP, node.id, Bundle.OpsHub_destroying(node.label));
@@ -636,13 +718,17 @@ public final class OpsHub {
             try {
                 p.destroyHost(node.providerId);
                 edt.accept(() -> {
+                    endWatch(node);
                     topology.remove(node.id);
+                    deploys.remove(node.id);
                     forgetHostKey(node);
                     event(OpsEvent.Kind.OK, node.id, Bundle.OpsHub_destroyed(node.label));
                 });
             } catch (IOException | RuntimeException ex) {
                 edt.accept(() -> {
-                    node.status = HostStatus.READY;
+                    // it is what it was before the attempt — never READY by default: an unreachable
+                    // server whose destroy failed is still unreachable
+                    node.status = was;
                     node.lastProblem = ex.getMessage();
                     topology.touched(node);
                     event(OpsEvent.Kind.FAIL, node.id, Bundle.OpsHub_destroyFailed(ex.getMessage()));
@@ -665,7 +751,7 @@ public final class OpsHub {
         if (file == null || node.address == null || !Files.exists(Path.of(file))) {
             return;
         }
-        String host = node.sshPort == 22 ? node.address : "[" + node.address + "]:" + node.sshPort;
+        String host = knownHostsName(node.address, node.sshPort);
         onSsh(() -> {
             try {
                 org.nmox.studio.core.process.ProcessSupport.runBounded(
@@ -676,11 +762,23 @@ public final class OpsHub {
         });
     }
 
+    /** The name ssh files a host's key under: the bare address on port 22, {@code [address]:port} otherwise. */
+    static String knownHostsName(String address, int port) {
+        String bare = address.startsWith("[") && address.endsWith("]") ? address.substring(1, address.length() - 1) : address;
+        return port == 22 ? bare : "[" + bare + "]:" + port;
+    }
+
     // ---- probing ----
 
+    /** A simulated node's "ssh" once its world is gone: it says so, and never becomes a real ssh to a made-up address. */
+    private static final RemoteRunner NO_SIMULATION = (target, command, stdin, onLine, timeout) -> {
+        onLine.accept("the simulation is off");
+        return new RemoteRunner.Result(255, "the simulation is off", false);
+    };
+
     private RemoteRunner runnerFor(OpsNode node) {
-        if (node.simulated && simulation != null) {
-            return simulation.world().runner();
+        if (node.simulated) {
+            return simulation != null ? simulation.world().runner() : NO_SIMULATION;
         }
         return sshRunner;
     }
@@ -690,46 +788,87 @@ public final class OpsHub {
         probeThen(node, null);
     }
 
+    /**
+     * Probes a node and hands the answer to {@code then} (null for
+     * silence). One probe per node at a time: a second ask while one is
+     * in flight does not start another — it WAITS for that one's answer,
+     * so nobody who asked is ever left without one (the provisioning
+     * watch reschedules itself from this callback, and dropping it on a
+     * collision with the poll ended the watch without a word).
+     */
     private void probeThen(OpsNode node, Consumer<HostFacts> then) {
         SshTarget target = targetOf(node);
-        if (target == null || !probing.add(node.id)) {
-            if (then != null && target == null) {
+        if (target == null) {
+            if (then != null) {
                 then.accept(null);
             }
             return;
         }
+        List<Consumer<HostFacts>> waiting = probing.get(node);
+        if (waiting != null) {
+            if (then != null) {
+                waiting.add(then);
+            }
+            return;
+        }
+        waiting = new ArrayList<>();
+        if (then != null) {
+            waiting.add(then);
+        }
+        probing.put(node, waiting);
         RemoteRunner runner = runnerFor(node);
         onSsh(() -> {
-            HostFacts facts;
+            HostProbe.Reading reading;
             try {
-                facts = HostProbe.probe(runner, target);
+                reading = HostProbe.read(runner, target);
             } catch (RuntimeException ex) {
                 LOG.log(Level.WARNING, "probe failed for " + node.id, ex);
-                facts = null;
-            } finally {
-                probing.remove(node.id);
+                reading = new HostProbe.Reading(null, String.valueOf(ex.getMessage()));
             }
-            HostFacts read = facts;
+            HostProbe.Reading read = reading;
             edt.accept(() -> {
-                if (topology.node(node.id) != null) {
-                    applyProbe(node, read);
+                List<Consumer<HostFacts>> asked = probing.remove(node);
+                // by identity: an answer for a node that was forgotten (or replaced by one with the same id) is nobody's
+                if (topology.node(node.id) == node) {
+                    applyReading(node, read);
                 }
-                if (then != null) {
-                    then.accept(read);
+                if (asked != null) {
+                    for (Consumer<HostFacts> c : asked) {
+                        c.accept(read.facts());
+                    }
                 }
             });
         });
     }
 
-    /** What a probe's answer (or silence) does to the node and its services. EDT. */
+    /** A probe's answer, or its reason for having none, onto the node. EDT. */
+    void applyReading(OpsNode node, HostProbe.Reading reading) {
+        if (reading.ok()) {
+            applyProbe(node, reading.facts());
+            return;
+        }
+        HostStatus before = node.status;
+        boolean changed = !java.util.Objects.equals(node.lastProblem, reading.problem());
+        node.lastProblem = reading.problem();
+        if (before.reachable()) {
+            node.status = HostStatus.UNREACHABLE;
+            event(OpsEvent.Kind.FAIL, node.id, Bundle.OpsHub_stoppedAnswering(node.label, reading.problem()));
+        } else if (before == HostStatus.BOOTING && !watched.contains(node)) {
+            // nobody is bringing this one up: a host added by hand with a typo, or one whose key the
+            // account does not hold. "Booting" forever would be a lie — it does not answer, and here is why
+            node.status = HostStatus.UNREACHABLE;
+            event(OpsEvent.Kind.FAIL, node.id, Bundle.OpsHub_doesNotAnswer(node.label, reading.problem()));
+        }
+        if (changed || before != node.status) {
+            topology.touched(node);
+        }
+    }
+
+    /** What a probe's answer does to the node and its services. EDT. */
     void applyProbe(OpsNode node, HostFacts facts) {
         HostStatus before = node.status;
         if (facts == null) {
-            if (before.reachable()) {
-                node.status = HostStatus.UNREACHABLE;
-                event(OpsEvent.Kind.FAIL, node.id, Bundle.OpsHub_stoppedAnswering(node.label));
-            }
-            topology.touched(node);
+            applyReading(node, new HostProbe.Reading(null, "no answer"));
             return;
         }
         node.lastSeenMillis = clock.getAsLong();
@@ -744,13 +883,26 @@ public final class OpsHub {
         if (facts.cloudInit() != null) {
             node.facts.put("cloud-init", facts.cloudInit());
         }
+        if (facts.containersNotShown() > 0) {
+            node.facts.put("containers", Bundle.OpsHub_containersNotShown(Integer.toString(facts.containersNotShown())));
+        } else {
+            node.facts.remove("containers");
+        }
         boolean configuring = "running".equals(facts.cloudInit()) || "not".equals(facts.cloudInit());
+        // cloud-init's own word decides what "ready" may claim: only "done" (or no cloud-init at all) is done
+        boolean trouble = facts.cloudInit() != null && !configuring && !"done".equals(facts.cloudInit())
+                && !"disabled".equals(facts.cloudInit());
         node.status = configuring ? HostStatus.CONFIGURING : HostStatus.READY;
+        if (trouble) {
+            node.lastProblem = Bundle.OpsHub_readyCloudInitTrouble(node.label, facts.cloudInit());
+        }
         if (before != node.status) {
-            if (!before.reachable()) {
-                event(OpsEvent.Kind.OK, node.id, configuring ? Bundle.OpsHub_answersSshConfiguring(node.label) : Bundle.OpsHub_answersSsh(node.label));
+            if (trouble) {
+                linkEvent(OpsEvent.Kind.FAIL, node.id, Bundle.OpsHub_readyCloudInitTrouble(node.label, facts.cloudInit()));
+            } else if (!before.reachable()) {
+                linkEvent(OpsEvent.Kind.OK, node.id, configuring ? Bundle.OpsHub_answersSshConfiguring(node.label) : Bundle.OpsHub_answersSsh(node.label));
             } else if (node.status == HostStatus.READY) {
-                event(OpsEvent.Kind.OK, node.id, Bundle.OpsHub_ready(node.label));
+                linkEvent(OpsEvent.Kind.OK, node.id, Bundle.OpsHub_ready(node.label));
             }
         }
         syncServices(node, facts);
@@ -792,7 +944,7 @@ public final class OpsHub {
             s.lastSeenMillis = clock.getAsLong();
             topology.put(s);
             if (fresh) {
-                event(OpsEvent.Kind.INFO, id, Bundle.OpsHub_runs(host.label, s.label, c.image()));
+                linkEvent(OpsEvent.Kind.INFO, id, Bundle.OpsHub_runs(host.label, s.label, c.image()));
             }
             seen.add(id);
             byService.put(c.serviceName(), id);
@@ -826,7 +978,7 @@ public final class OpsHub {
         for (OpsNode s : topology.servicesOf(host.id)) {
             if (!seen.contains(s.id)) {
                 topology.remove(s.id);
-                event(OpsEvent.Kind.INFO, s.id, Bundle.OpsHub_noLongerRuns(host.label, s.label));
+                linkEvent(OpsEvent.Kind.INFO, s.id, Bundle.OpsHub_noLongerRuns(host.label, s.label));
             }
         }
         topology.replaceEdges(e -> e.from().equals(host.id) && e.kind().equals("runs")
@@ -861,7 +1013,14 @@ public final class OpsHub {
         if (!polling.get()) {
             return;
         }
-        edt.accept(this::probeAll);
+        edt.accept(() -> {
+            probeAll();
+            // once a minute the providers are asked again too: a server made, powered off or destroyed
+            // somewhere else shows up without anyone pressing Refresh
+            if (++pollTicks % REFRESH_EVERY_TICKS == 0) {
+                refresh();
+            }
+        });
         pollCancel = ssh.post(this::pollTick, POLL_SECONDS * 1000L);
     }
 
@@ -936,19 +1095,38 @@ public final class OpsHub {
                 });
             }
 
+            /** Lines printed since the last hand-over; a build prints hundreds a second. */
+            private final java.util.concurrent.ConcurrentLinkedQueue<String> pending = new java.util.concurrent.ConcurrentLinkedQueue<>();
+            private final AtomicBoolean handOverQueued = new AtomicBoolean();
+
             @Override
             public void line(Deployer.Step step, String line) {
-                edt.accept(() -> {
-                    run.line(line);
+                // ONE event-thread task per burst, however many lines it carries: a task per line
+                // floods the queue the whole IDE paints from, and each one rebuilt the tracker
+                pending.add(line);
+                if (handOverQueued.compareAndSet(false, true)) {
+                    edt.accept(this::handOver);
+                }
+            }
+
+            private void handOver() {
+                handOverQueued.set(false);
+                boolean any = false;
+                for (String l = pending.poll(); l != null; l = pending.poll()) {
+                    run.line(l);
+                    any = true;
+                }
+                if (any) {
                     fireState();
-                });
+                }
             }
 
             @Override
             public void stepFinished(Deployer.Step step, boolean ok) {
                 edt.accept(() -> {
+                    handOver();
                     run.steps.put(step, ok ? DeployRun.StepState.OK : DeployRun.StepState.FAILED);
-                    event(ok ? OpsEvent.Kind.OK : OpsEvent.Kind.FAIL, host.id, ok
+                    linkEvent(ok ? OpsEvent.Kind.OK : OpsEvent.Kind.FAIL, host.id, ok
                             ? Bundle.OpsHub_stepOk(stepName(step)) : Bundle.OpsHub_stepFailed(stepName(step)));
                     fireState();
                 });
@@ -1088,7 +1266,16 @@ public final class OpsHub {
     // ---- events ----
 
     void event(OpsEvent.Kind kind, String nodeId, String text) {
-        OpsEvent e = new OpsEvent(clock.getAsLong(), kind, nodeId, text);
+        event(kind, nodeId, text, false);
+    }
+
+    /** An event that is the host's own answer over ssh: the HUD runs a pulse along its link for these alone. */
+    private void linkEvent(OpsEvent.Kind kind, String nodeId, String text) {
+        event(kind, nodeId, text, true);
+    }
+
+    private void event(OpsEvent.Kind kind, String nodeId, String text, boolean overLink) {
+        OpsEvent e = new OpsEvent(clock.getAsLong(), kind, nodeId, text, overLink);
         feed.addLast(e);
         while (feed.size() > FEED_CAPACITY) {
             feed.removeFirst();

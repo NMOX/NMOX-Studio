@@ -75,7 +75,13 @@ public final class ProjectBundle {
             children = s.sorted(java.util.Comparator.comparing(c -> c.getFileName().toString())).toList();
         }
         for (Path child : children) {
-            String rel = base.relativize(child).toString().replace('\\', '/');
+            // the tar's separator is '/', so Windows' is rewritten — and ONLY Windows': on every other
+            // system a backslash is an ordinary character of a NAME, and rewriting it there would turn a
+            // file a cloned repository calls "..\\..\\.ssh\\id_rsa" into a path that climbs out of the project
+            String rel = base.relativize(child).toString();
+            if (java.io.File.separatorChar == '\\') {
+                rel = rel.replace('\\', '/');
+            }
             String name = child.getFileName().toString();
             if (Files.isSymbolicLink(child)) {
                 skipped.add(rel + " (a symlink)");
@@ -139,7 +145,13 @@ public final class ProjectBundle {
                         from = next + 1;
                     }
                 }
-                tar.file(rel, base.resolve(rel));
+                // every path is proven inside the project again at the moment it is opened: the plan was
+                // made a moment ago, and a manifest is a list of strings
+                Path file = base.resolve(rel).normalize();
+                if (!file.startsWith(base)) {
+                    throw new IOException(rel + " is not inside the project");
+                }
+                tar.file(rel, file);
             }
         }
     }
