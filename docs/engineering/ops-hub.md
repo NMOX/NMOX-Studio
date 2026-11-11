@@ -202,7 +202,12 @@ What a server that is up needs next, and what the first slice got wrong.
   A review of the class against that reader found each of Java's own
   notions could hide an exception line (a mark or a no-break space
   before the `!`) or split one name into two (a form feed), and either
-  one leaves out more than docker would. What it leaves out does not count against the bundle's
+  one leaves out more than docker would. Two whole files are not
+  applied for the same reason: one beside a `Dockerfile.dockerignore`
+  (BuildKit reads that file INSTEAD and the classic builder reads this
+  one; the host's builder is not known here), and one whose name on
+  disk is not exactly `.dockerignore` (a filesystem that ignores case
+  answers to `.DockerIgnore`; the host's does not). What it leaves out does not count against the bundle's
   caps. It matches segment by segment with a memo instead of a regular
   expression: a line is a stranger's text. A refused bundle travels as
   `ProjectBundle.Refusal` (kind, figure, where) and is worded by the Hub.
@@ -273,7 +278,7 @@ door were the real ones). Each row was fixed and walked again.
 
 ## What was verified, and how
 
-- **142 unit tests** in `infra` over the Hub (44 with 3.11.0): the pure
+- **149 unit tests** in `infra` over the Hub (44 with 3.11.0): the pure
   cores (the ssh argv and its quoting, the connect rule, the probe
   parser against real `docker ps` JSON, its bounds and its typed
   reasons, the bundle's skips, refusals and containment, the tar against
@@ -288,7 +293,8 @@ door were the real ones). Each row was fixed and walked again.
   inspector laid out at its pane's own width.
 - **Mutants by name**: 10 on the camera, 31 on the review's fixes, 31 on
   the walks' and the translators' fixes, 14 on the bundle's ignore file
-  and refusals; every one killed by a named
+  and refusals, 17 on the ignore file's reading after its own review;
+  every one killed by a named
   test except one written down as equivalent (the column's `tracksViewportWidth`, which its own
   preferred width already implies). Several were killed only after the
   TEST was repaired — the wrap test and the fact-word test first let

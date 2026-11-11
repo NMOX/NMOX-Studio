@@ -1699,8 +1699,9 @@ arrow keys, Enter and Escape to move without a mouse.
 A deploy uploads the project without `node_modules`, `.git` and `.env`
 files, and without what the project's `.dockerignore` names. The ignore
 file is applied only where the result is certain: a file with an
-exception line (`!keep.me`) is not applied to the upload at all, and
-docker applies it on the host as it always does. The deploy's log says
+exception line (`!keep.me`), or with a `Dockerfile.dockerignore` beside
+it, is not applied to the upload at all, and docker applies it on the
+host as it always does. The deploy's log says
 what stayed home and why.
 
 Move around the picture as you do in the Infra Designer: the wheel

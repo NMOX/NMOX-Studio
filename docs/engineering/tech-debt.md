@@ -66,9 +66,13 @@ open, each with its door, none built:
 - **`.dockerignore` is applied to the upload only where it is certain.**
   3.12.0 applies it (`DockerIgnore`): names and paths anchored at the
   context root, `*` and `?` within a segment, `**` across segments. A
-  file with ANY exception line (`!x`) is not applied at all, and a line
-  with a character class or an escape is passed over; the log says so
-  and the server's `docker build` applies the whole file as before. The
+  file with ANY exception line (`!x`) is not applied at all, nor is one
+  beside a `Dockerfile.dockerignore`, and a line with a character
+  class, an escape or one of `+ ( ) | { } ^` is passed over; the log
+  says so and the server's `docker build` applies the whole file as
+  before. The class was reviewed against moby's reader from memory of
+  its source, not against a running docker: the rules it keeps are the
+  ones where being wrong leaves out LESS. The
   consequence is the old one for those projects: a whitelist-style
   ignore file (`*` then `!src`) uploads everything and can still meet
   the caps. Applying exceptions needs docker's own matcher, tested

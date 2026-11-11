@@ -58,7 +58,11 @@ walks of the four-day-old Hub found wrong in it.
   line, and space is trimmed by Go's definition, so an exception line
   behind a mark or a no-break space is still seen as one. A name with
   `+ ( ) | { }` or `^` is passed over as well, because docker's
-  releases disagree about those characters.
+  releases disagree about those characters. And two files are not
+  applied at all: one with a `Dockerfile.dockerignore` beside it
+  (BuildKit reads that one instead, the classic builder does not), and
+  one spelled another way on a disk that ignores case (`.DockerIgnore`
+  answers to the name on macOS and Windows and is not read on the host).
 - `BundleEncodingGateTest.noValuePrintsItsOwnLineBreak` reads every
   bundle of every NMOX jar in the assembled cluster for a line break
   that would be printed as a backslash and a letter.
