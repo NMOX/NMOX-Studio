@@ -23,8 +23,10 @@ import java.util.List;
  *   <li>a file with ANY exception line ({@code !keep.me}) is not applied
  *       at all — an exception can bring back something an earlier line
  *       excluded, and getting half of that right is getting it wrong;</li>
- *   <li>a line with a character class ({@code [a-z]}) or an escape
- *       ({@code \}) is passed over;</li>
+ *   <li>a line with a character class ({@code [a-z]}), an escape
+ *       ({@code \}), one of {@code + ( ) | { } ^} (docker's releases
+ *       disagree with each other about those), a control character or
+ *       bytes that were not text is passed over;</li>
  *   <li>a line that climbs ({@code ..}) or names the context itself
  *       ({@code .}) is passed over.</li>
  * </ul>
@@ -50,30 +52,96 @@ public final class DockerIgnore {
         this.hasExceptions = hasExceptions;
     }
 
-    /** Reads a {@code .dockerignore}'s text. Never throws: a line it cannot be sure of is passed over. */
+    /**
+     * Reads a {@code .dockerignore}'s text the way docker's own reader
+     * does, because where the two would differ this class would be
+     * applying a file docker reads differently. Never throws: a line it
+     * cannot be sure of is passed over.
+     *
+     * <p>Docker's reader (moby, {@code ignorefile.ReadAll}): lines end at
+     * a line feed and nowhere else; a byte-order mark is taken off the
+     * first line only; a line whose FIRST character is {@code #} is a
+     * comment; then the line is trimmed of Unicode space, and a line that
+     * then begins with {@code !} is an exception. Java's own notions
+     * differ in each place (a {@code \R} split also ends a line at a form
+     * feed or U+2028; {@code strip()} leaves a no-break space and takes
+     * the separator controls U+001C to U+001F; neither knows a byte-order
+     * mark), and each difference could hide an exception line or split
+     * one name into two.
+     */
     public static DockerIgnore parse(String text) {
         if (text == null || text.isBlank()) {
             return NONE;
         }
+        if (text.charAt(0) == BYTE_ORDER_MARK) {
+            text = text.substring(1);
+        }
         List<List<String>> excludes = new ArrayList<>();
         List<String> passedOver = new ArrayList<>();
-        for (String raw : text.split("\\R")) {
-            String line = raw.strip();
-            if (line.isEmpty() || line.startsWith("#")) {
+        for (String raw : text.split("\n", -1)) {
+            // a carriage return before the line feed needs no step of its own: it is space, and trimmed below
+            if (raw.startsWith("#")) {
+                continue;
+            }
+            String line = trimAsDockerDoes(raw);
+            if (line.isEmpty()) {
                 continue;
             }
             if (line.startsWith("!")) {
                 // one exception makes every earlier line conditional: apply none of the file
                 return new DockerIgnore(List.of(), List.of(), true);
             }
+            if (line.startsWith("#")) {
+                // "  #name": docker reads a pattern for a file called #name; the line's author meant a
+                // comment. Applying neither reading is the safe one.
+                continue;
+            }
             List<String> p = segmentsOf(line);
             if (p == null) {
-                passedOver.add(line);
+                passedOver.add(printable(line));
             } else {
                 excludes.add(p);
             }
         }
         return new DockerIgnore(List.copyOf(excludes), List.copyOf(passedOver), false);
+    }
+
+    private static final char BYTE_ORDER_MARK = '\uFEFF';
+    /** What a decoder leaves where the file's bytes were not text. */
+    private static final char REPLACEMENT = '\uFFFD';
+    /** How much of a passed-over line is repeated in the log. */
+    private static final int MAX_SHOWN = 80;
+
+    /** Go's {@code strings.TrimSpace}: {@code unicode.IsSpace} from both ends. */
+    static String trimAsDockerDoes(String s) {
+        int from = 0;
+        int to = s.length();
+        while (from < to && goSpace(s.charAt(from))) {
+            from++;
+        }
+        while (to > from && goSpace(s.charAt(to - 1))) {
+            to--;
+        }
+        return s.substring(from, to);
+    }
+
+    /** {@code unicode.IsSpace}: tab to carriage return, NEL, and the Z categories (space and no-break space among them). */
+    private static boolean goSpace(char c) {
+        return (c >= '\t' && c <= '\r') || c == '\u0085' || Character.isSpaceChar(c);
+    }
+
+    /** A passed-over line as the log may repeat it: one line, no control characters, not longer than a path. */
+    private static String printable(String line) {
+        int shown = Math.min(line.length(), MAX_SHOWN);
+        if (shown < line.length() && Character.isHighSurrogate(line.charAt(shown - 1))) {
+            shown--;
+        }
+        StringBuilder b = new StringBuilder(shown + 1);
+        for (int i = 0; i < shown; i++) {
+            char c = line.charAt(i);
+            b.append(Character.isISOControl(c) || c == REPLACEMENT ? '?' : c);
+        }
+        return shown < line.length() ? b.append('\u2026').toString() : b.toString();
     }
 
     /** True when the file has an exception line and was therefore not applied at all. */
@@ -118,14 +186,32 @@ public final class DockerIgnore {
     private static final int MAX_SEGMENTS = 32;
 
     /**
+     * Characters whose line is passed over. A class ({@code [}) and an
+     * escape (a backslash) are docker features this class does not
+     * implement. The rest are ordinary characters of a NAME that docker
+     * turns into a regular expression together with the line's stars:
+     * its newer releases escape {@code + ( ) | { }} first and its older
+     * ones did not ({@code c++*} was "one or more c" there), and none
+     * escapes {@code ^}. Which release builds on the host is not known
+     * here, so a line holding one is the host's to apply.
+     */
+    private static final String UNCERTAIN = "[]\\+()|{}^";
+
+    /**
      * One line as its path segments, cleaned the way docker cleans a
      * pattern (no leading or trailing slash, no doubled slashes, no
      * {@code .} segments), or null when the line is of a form that is
      * passed over.
      */
     static List<String> segmentsOf(String line) {
-        if (line.length() > MAX_LINE || line.indexOf('[') >= 0 || line.indexOf('\\') >= 0) {
+        if (line.length() > MAX_LINE) {
             return null;
+        }
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (UNCERTAIN.indexOf(c) >= 0 || Character.isISOControl(c) || c == REPLACEMENT) {
+                return null;
+            }
         }
         List<String> segments = new ArrayList<>();
         for (String seg : line.split("/")) {
