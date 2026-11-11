@@ -30,14 +30,19 @@ What the night taught, in the order it cost:
    translators then asked for "created here", which made the test
    possible. Where a machine key and its English label are the same
    string, a test of the mapping needs a row where they differ.
-4. **The translators are a second walk.** Three rounds, fourteen
+4. **The translators are a second walk.** Five rounds, fourteen
    languages, and every round returned defects in the English or the
    code: a refusal untrue in one of its two uses, five kinds of English
    built in the engine below every bundle gate (fact keys, edge kinds,
    edge sources, a probe's own reasons, the Simulation's name), yes/no
    answering a has-question, an ISO instant shown raw, a dialog whose
-   shell commands a right-to-left window would reorder. Budget the
-   second and third round; the first one's remarks are the review.
+   shell commands a right-to-left window would reorder, an edge that
+   read backwards from its far end (three groups, unable to see each
+   other, reported it in the same round). Budget the later rounds: the
+   first one's remarks are the review, and each fix exposes the layer
+   under it. Resume the same agents rather than starting new ones —
+   they hold the vocabulary, and a round of fifteen strings then costs
+   a minute.
 5. **A stub is honest only if it is labeled everywhere it is quoted.**
    No docker daemon ran on the walking machine, so the service doors
    and the rollback were walked over real ssh against a stub `docker`

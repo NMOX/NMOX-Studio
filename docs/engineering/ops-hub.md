@@ -251,11 +251,13 @@ door were the real ones). Each row was fixed and walked again.
 | "Billable: create a server?" in the Simulation | Its own question: nothing real is made, nothing is billed |
 | The first Logs of a session opened behind the Terminal's own local tab | Brought forward (ledger 141 says how, and that it is a timer) |
 | A host never probed: "the host has no mosh-server" | "has not said yet" (`ConnectPlan.SSH_REMOTE_UNKNOWN`) |
-| The translators, reading the new English in two rounds: a refusal untrue in one of its two uses, a pronoun with no antecedent, one action under three verbs, yes/no answering "does it have docker?", the rollback question as one string with shell lines inside it, an ISO instant shown raw, and five kinds of English built in the engine | Reworded, split, typed, or moved to the bundle; a third round translated the result |
+| A host forgotten and added again under another name showed the forgotten one's last rollback as its own | A manual host's run goes when the host does |
+| The deploy log showed the middle of every line (its caret sat at the end of docker's longest) | The caret goes to the last line's start |
+| The translators, reading the new English in five rounds: a refusal untrue in one of its two uses, a pronoun with no antecedent, one action under three verbs, yes/no answering "does it have docker?", the rollback question as one string with shell lines inside it, an ISO instant shown raw, and five kinds of English built in the engine | Reworded, split, typed, or moved to the bundle; each later round translated the result and found the next layer (an edge that read backwards from its far end, an arrow that pointed against a right-to-left line, the verify step's own two sentences) |
 
 ## What was verified, and how
 
-- **128 unit tests** in `infra` over the Hub (44 with 3.11.0): the pure
+- **130 unit tests** in `infra` over the Hub (44 with 3.11.0): the pure
   cores (the ssh argv and its quoting, the connect rule, the probe
   parser against real `docker ps` JSON, its bounds and its typed
   reasons, the bundle's skips, refusals and containment, the tar against
@@ -268,9 +270,9 @@ door were the real ones). Each row was fixed and walked again.
   every refusal, the search copy), the camera's arithmetic, the canvas's
   gestures and named key actions, the layout's two caption laws, and the
   inspector laid out at its pane's own width.
-- **Mutants by name**: 10 on the camera, 31 on the review's fixes, 26 on
-  the walks' fixes; every one killed by a named test except one written
-  down as equivalent (the column's `tracksViewportWidth`, which its own
+- **Mutants by name**: 10 on the camera, 31 on the review's fixes, 31 on
+  the walks' and the translators' fixes; every one killed by a named
+  test except one written down as equivalent (the column's `tracksViewportWidth`, which its own
   preferred width already implies). Several were killed only after the
   TEST was repaired — the wrap test and the fact-word test first let
   their mutants live (the plan's addendum of 2026-11-10 says why).

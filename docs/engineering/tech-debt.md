@@ -96,6 +96,16 @@ open, each with its door, none built:
   `known_hosts` is not consulted or written for it. Nothing to fix
   without overriding the user's ssh; written down so a missing line
   there is not read as a defect.
+- **The Simulation's own data is English.** Its region is "Simulated
+  region 1", its account's key is "this machine (simulated)", its build
+  output is scripted English. The Simulation's NAME is translated
+  (3.12.0); what it pretends a provider said is not, as a real
+  provider's region name would not be.
+- **A `reaches` edge says more than it knows, from either end.** It is
+  inferred from two services sharing a docker network, which makes each
+  reachable from the other; the rows say "reaches" under one and
+  "reached by" under the other, by whichever the engine listed first.
+  The row's evidence word says "inferred", which is the honest half.
 - **`created` is the only provider fact the inspector formats.** A
   provider's other facts (a size slug, a region's name) are shown as the
   provider wrote them, which is right; a new provider that reports

@@ -124,17 +124,31 @@ host over ssh:
   canvas. A fan is used only when no ring reaches into a caption.
 - A host that had never been probed was said to have no mosh-server;
   it says that the host has not said yet.
-- Three of the probe's own reasons were English sentences built in the
-  engine; a pulse ran along a link for a silence as well as an answer.
+- **A forgotten host's last run reappeared on the next host at that
+  address.** A host added by hand is identified by its address, and
+  forgetting it left its deploy tracker behind.
+- A pulse ran along a link for a silence as well as an answer; the
+  deploy log scrolled sideways to the end of docker's longest line; a
+  failed swap forgot what the host had printed.
 
 ### Translations
 
-Every new and changed string is in all fifteen languages. The
-translators' remarks on the English were acted on before the second
-round: eleven sentences were reworded (a pronoun with no antecedent, a
-refusal that was untrue in one of its two uses, one action under three
-verbs), and the rollback question became four strings so that a
-right-to-left window does not reorder its shell commands.
+Every new and changed string is in all fifteen languages, after five
+rounds: each round's remarks on the English were acted on before the
+next. Sentences were reworded (a pronoun with no antecedent, a refusal
+untrue in one of its two uses, one action under three verbs, "nothing
+is made" about a host that appears on screen). The rollback question's
+shell commands moved to a box of their own, which a right-to-left
+window does not reorder. And the translators found English that no
+bundle gate could see because it was built in the engine: the
+inspector's fact labels and its yes/no, an edge's verb and where it was
+read, a probe's and a deploy's own reasons for failing, the
+Simulation's name. Those are data now, worded where they are shown: an
+edge is said from the end it is read on (`runs` on the host's row,
+`runs on` on the service's), "does it have docker?" is answered
+`installed`, a provider's creation instant is a date in the reader's
+format, and in Hebrew and Arabic the row's arrow points the way the
+line reads.
 
 ### Not verified
 
