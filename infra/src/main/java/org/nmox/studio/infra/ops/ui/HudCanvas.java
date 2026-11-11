@@ -70,7 +70,7 @@ import org.openide.util.NbBundle.Messages;
     "# {1} - how many services",
     "HudCanvas_accessibleDescription=Fleet: hosts {0}, services {1}. Arrows move, Enter opens a host, Escape returns. Plus and minus zoom, zero fits, Shift with an arrow pans.",
     "# {0} - the zoom as a whole percentage",
-    "HudCanvas_zoomReadout={0}% — 0 fits",
+    "HudCanvas_zoomReadout={0}% · press 0 to fit",
     "# {0} - the node's label",
     "# {1} - its kind",
     "# {2} - its status",

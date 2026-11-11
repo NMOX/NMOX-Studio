@@ -81,6 +81,56 @@ class BundleEncodingGateTest {
                 + "merged by the @Messages processor must hold only ASCII (write \\uXXXX)").isEmpty();
     }
 
+    /**
+     * No shipped string prints its own line break.
+     *
+     * <p>3.11.0's two most serious questions — "Billable: create a server?" and
+     * "Destroy a server" — reached the user as {@code Destroy alpha at
+     * DigitalOcean?\n\nEverything on it is gone for good}, the backslash and the
+     * {@code n} printed as characters, in English and in fourteen translations.
+     * The {@code @Messages} strings were written with a DOUBLED backslash; the
+     * processor escaped it faithfully, and the translations were copied from the
+     * English. Found when the next release's bundle was read for its translators.
+     * Every other message in the product writes one backslash; nothing compared.
+     *
+     * <p>A value that MEANS a backslash followed by {@code n} or {@code t} (a
+     * Windows path in a sentence, a regular expression shown to the user) would
+     * be a real exception and is to be named here with its reason. There is none.
+     */
+    @Test
+    @DisplayName("no shipped bundle value shows a line break or a tab as backslash-and-letter")
+    void noValuePrintsItsOwnLineBreak() throws IOException {
+        Pattern escaped = Pattern.compile("\\\\[nt](?![A-Za-z0-9])");
+        List<String> broken = new ArrayList<>();
+        int bundles = 0;
+        for (Path jar : jars()) {
+            try (ZipFile zip = new ZipFile(jar.toFile())) {
+                for (ZipEntry e : zip.stream().toList()) {
+                    String n = e.getName();
+                    if (!n.endsWith(".properties") || !n.substring(n.lastIndexOf('/') + 1).startsWith("Bundle")) {
+                        continue;
+                    }
+                    bundles++;
+                    Properties p = new Properties();
+                    try (InputStream in = zip.getInputStream(e)) {
+                        p.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+                    }
+                    for (String key : p.stringPropertyNames()) {
+                        Matcher m = escaped.matcher(p.getProperty(key));
+                        if (m.find()) {
+                            String value = p.getProperty(key);
+                            broken.add(jar.getFileName() + "!" + n + " " + key + " … "
+                                    + value.substring(Math.max(0, m.start() - 24), Math.min(value.length(), m.end() + 12)));
+                        }
+                    }
+                }
+            }
+        }
+        assertThat(bundles).as("bundles read from the assembled cluster").isGreaterThan(500);
+        assertThat(broken).as("values a reader will see a literal \\n or \\t in: write ONE backslash in the "
+                + "@Messages string and in the .properties file").isEmpty();
+    }
+
     private static String escape(String s) {
         StringBuilder b = new StringBuilder();
         for (char c : s.toCharArray()) {

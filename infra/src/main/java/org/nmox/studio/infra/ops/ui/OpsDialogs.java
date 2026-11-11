@@ -66,7 +66,7 @@ import org.openide.util.NbBundle.Messages;
     "# {2} - size",
     "# {3} - region",
     "# {4} - monthly price",
-    "NewServer_confirm=Create {0} at {1}?\\n\\n{2} in {3}, ≈ ${4}/month until you destroy it.",
+    "NewServer_confirm=Create {0} at {1}?\n\n{2} in {3}, ≈ ${4}/month until you destroy it.",
     "NewServer_confirmTitle=Billable: create a server?",
     // add host
     "AddHost_title=Add Host",
@@ -91,7 +91,7 @@ import org.openide.util.NbBundle.Messages;
     // destroy
     "# {0} - the host's label",
     "# {1} - the provider",
-    "Destroy_question=Destroy {0} at {1}?\\n\\nEverything on it is gone for good. Billing stops.",
+    "Destroy_question=Destroy {0} at {1}?\n\nEverything on it is gone for good. Billing stops.",
     "Destroy_title=Destroy a server",
     // rollback
     "# {0} - the app slug",
@@ -99,7 +99,7 @@ import org.openide.util.NbBundle.Messages;
     "# {2} - the stamp running now",
     "# {3} - the stamp going back to",
     "# {4} - the two lines that will run on the host",
-    "Rollback_question=Roll {0} on {1} back from {2} to {3}?\\n\\nThis runs on the host:\\n{4}\\n\\nNothing is uploaded or built. The newer image stays on the host.",
+    "Rollback_question=Roll {0} on {1} back from {2} to {3}?\n\nThis runs on the host:\n{4}\n\nNothing is uploaded or built. The newer image stays on the host.",
     "Rollback_title=Roll back a deploy",
     // tokens
     "Tokens_title=DigitalOcean API token",

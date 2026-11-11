@@ -94,7 +94,7 @@ import org.openide.util.NbBundle.Messages;
     "Inspector_stepFailed=✕ {0}",
     "# {0} - mosh or ssh",
     "# {1} - why",
-    "Inspector_connectHow=Recommended door: {0} — {1}",
+    "Inspector_connectHow=Recommended: {0} — {1}",
     "Inspector_logs=Logs",
     "Inspector_logsTooltip=Follow this container's output in the IDE's Terminal (docker logs -f); Ctrl+C ends the follow, not the container",
     "Inspector_shell=Shell",
