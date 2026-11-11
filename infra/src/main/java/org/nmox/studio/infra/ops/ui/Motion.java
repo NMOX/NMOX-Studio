@@ -64,8 +64,8 @@ public final class Motion {
     public static final double LAYOUT_K = 80;
     /** Gauges follow a reading a little faster. */
     public static final double GAUGE_K = 140;
-    /** Camera moves (view changes) are slower than node moves, so the eye follows. */
-    public static final double CAMERA_K = 40;
+    /** The camera (a fit, a zoom key, a reveal) arrives a little after the nodes do, so the eye follows. */
+    public static final double CAMERA_K = 64;
 
     private Motion() {
     }

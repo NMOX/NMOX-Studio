@@ -162,6 +162,29 @@ public final class HudLayout {
         return out;
     }
 
+    /**
+     * The box around everything a view shows: each visible node's own
+     * circle, nothing added for labels (those are drawn at a fixed size
+     * and the camera leaves screen room for them). Null when the view
+     * shows nothing.
+     */
+    public static java.awt.geom.Rectangle2D bounds(Map<String, Place> places) {
+        double minX = Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE;
+        double maxY = -Double.MAX_VALUE;
+        for (Place p : places.values()) {
+            if (p.r() <= 0) {
+                continue;
+            }
+            minX = Math.min(minX, p.x() - p.r());
+            minY = Math.min(minY, p.y() - p.r());
+            maxX = Math.max(maxX, p.x() + p.r());
+            maxY = Math.max(maxY, p.y() + p.r());
+        }
+        return minX > maxX ? null : new java.awt.geom.Rectangle2D.Double(minX, minY, maxX - minX, maxY - minY);
+    }
+
     /** The ids a view shows (radius above zero), in layout order — what keyboard navigation cycles. */
     public static List<String> visible(Map<String, Place> places) {
         List<String> out = new ArrayList<>();

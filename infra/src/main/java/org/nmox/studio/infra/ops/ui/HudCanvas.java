@@ -52,12 +52,25 @@ import org.openide.util.NbBundle.Messages;
  * a host, Escape climbs out, and the accessible name reads the selection
  * so a screen reader hears what the eye sees. A right-click (or the
  * context-menu key) opens the inspector's actions for the node under it.
+ *
+ * <p>A {@link HudCamera} stands between the layout's world and the
+ * pixels: the wheel zooms about the cursor, a drag on empty space pans,
+ * {@code +}/{@code -} zoom, {@code 0} fits, Shift+arrows pan, and a
+ * double-click on empty space fits. Positions and radii follow the
+ * camera; text never does — a label is the same size at every zoom, and
+ * a node too small to carry its readings simply stops printing them, so
+ * zooming out is a level of abstraction and not a squint. Every place a
+ * node's position is read (paint, hit test, the context-menu key, the
+ * accessible bounds a screen reader is pointed at) goes through
+ * {@link #sx}, {@link #sy} and {@link #sr}.
  */
 @Messages({
     "HudCanvas_accessibleName=Ops Hub topology",
     "# {0} - how many hosts",
     "# {1} - how many services",
-    "HudCanvas_accessibleDescription=Fleet: hosts {0}, services {1}. Arrows move, Enter opens a host, Escape returns.",
+    "HudCanvas_accessibleDescription=Fleet: hosts {0}, services {1}. Arrows move, Enter opens a host, Escape returns. Plus and minus zoom, zero fits, Shift with an arrow pans.",
+    "# {0} - the zoom as a whole percentage",
+    "HudCanvas_zoomReadout={0}% — 0 fits",
     "# {0} - the node's label",
     "# {1} - its kind",
     "# {2} - its status",
@@ -124,6 +137,8 @@ public final class HudCanvas extends JPanel {
 
     private static final int FRAME_MS = 16;
     private static final long PULSE_MS = 900;
+    /** One Shift+arrow, in pixels. */
+    private static final int PAN_STEP = 80;
 
     private final OpsHub hub;
     private final Topology topology;
@@ -135,6 +150,11 @@ public final class HudCanvas extends JPanel {
     private String selected;
     private String hovered;
     private long lastFrame;
+    private final HudCamera camera = new HudCamera();
+    /** Where a drag on empty space began (screen), or null when no pan is under way. */
+    private java.awt.Point panFrom;
+    private boolean panned;
+    private Runnable onCamera = () -> { };
     private Consumer<String> onSelect = id -> { };
     private Consumer<HudView> onView = v -> { };
     private java.util.function.BiConsumer<String, Point2D> onContextMenu = (id, at) -> { };
@@ -179,16 +199,62 @@ public final class HudCanvas extends JPanel {
                     popup(id, e);
                     return;
                 }
-                select(id);
-                if (e.getClickCount() == 2 && id != null) {
-                    drillInto(id);
+                if (id != null) {
+                    select(id);
                 }
+                if (e.getClickCount() == 2) {
+                    if (id != null) {
+                        drillInto(id);
+                    } else {
+                        fit();
+                    }
+                }
+                // empty space: this press may become a pan, and a pan must not cost the user their selection —
+                // so the deselect waits for the release and happens only if nothing was dragged
+                panFrom = id == null && javax.swing.SwingUtilities.isLeftMouseButton(e) ? e.getPoint() : null;
+                panned = false;
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                if (panFrom != null) {
+                    panFrom = null;
+                    setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+                    if (!panned && e.getClickCount() < 2) {
+                        select(null);
+                    }
+                }
                 if (e.isPopupTrigger()) {
                     popup(nodeAt(e.getX(), e.getY()), e);
+                }
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (panFrom == null) {
+                    return;
+                }
+                int dx = e.getX() - panFrom.x;
+                int dy = e.getY() - panFrom.y;
+                if (dx == 0 && dy == 0) {
+                    return;
+                }
+                panFrom = e.getPoint();
+                panned = true;
+                setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.MOVE_CURSOR));
+                camera.panBy(dx, dy, false);
+                cameraMoved();
+            }
+
+            @Override
+            public void mouseWheelMoved(java.awt.event.MouseWheelEvent e) {
+                double notches = e.getPreciseWheelRotation();
+                if (notches == 0) {
+                    return;
+                }
+                // a wheel is the user's hand: it moves the picture now, never on a spring
+                if (camera.zoomAbout(e.getX(), e.getY(), Math.pow(HudCamera.WHEEL_STEP, -notches), false)) {
+                    cameraMoved();
                 }
             }
 
@@ -213,6 +279,7 @@ public final class HudCanvas extends JPanel {
         };
         addMouseListener(mouse);
         addMouseMotionListener(mouse);
+        addMouseWheelListener(mouse);
         bindKeys();
         addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
@@ -237,14 +304,32 @@ public final class HudCanvas extends JPanel {
             if (selected != null) {
                 Glide g = glides.get(selected);
                 onContextMenu.accept(selected, g == null ? new Point2D.Double(10, 10)
-                        : new Point2D.Double(g.x.value(), g.y.value()));
+                        : new Point2D.Double(sx(g), sy(g)));
             }
         });
         bind("shift F10", () -> getActionMap().get("CONTEXT_MENU").actionPerformed(null));
+        // the camera: typed characters, so the key that PRINTS + zooms in on every layout
+        bind(KeyStroke.getKeyStroke('+'), "zoom-in", this::zoomIn);
+        bind(KeyStroke.getKeyStroke('='), "zoom-in", this::zoomIn);
+        bind(KeyStroke.getKeyStroke('-'), "zoom-out", this::zoomOut);
+        bind(KeyStroke.getKeyStroke('0'), "fit", this::fit);
+        bind(KeyStroke.getKeyStroke("HOME"), "fit", this::fit);
+        bind(KeyStroke.getKeyStroke("shift LEFT"), "pan-left", () -> panBy(PAN_STEP, 0));
+        bind(KeyStroke.getKeyStroke("shift RIGHT"), "pan-right", () -> panBy(-PAN_STEP, 0));
+        bind(KeyStroke.getKeyStroke("shift UP"), "pan-up", () -> panBy(0, PAN_STEP));
+        bind(KeyStroke.getKeyStroke("shift DOWN"), "pan-down", () -> panBy(0, -PAN_STEP));
     }
 
     private void bind(String stroke, Runnable r) {
-        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke(stroke), stroke);
+        bind(KeyStroke.getKeyStroke(stroke), stroke, r);
+    }
+
+    private void bind(KeyStroke stroke, String name, Runnable r) {
+        getInputMap(WHEN_FOCUSED).put(stroke, name);
+        bindAction(name, r);
+    }
+
+    private void bindAction(String stroke, Runnable r) {
         getActionMap().put(stroke, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -283,8 +368,76 @@ public final class HudCanvas extends JPanel {
         this.onContextMenu = listener;
     }
 
+    /** Told whenever the camera moves or changes mode — the window's Fit button and zoom readout follow it. */
+    public void onCameraChanged(Runnable listener) {
+        this.onCamera = listener;
+    }
+
     public HudView view() {
         return view;
+    }
+
+    /** The camera, for reading: its zoom, whether the user has moved it. */
+    public HudCamera camera() {
+        return camera;
+    }
+
+    // ---- the camera's doors ----
+
+    /** Frames the whole view again and hands the camera back to the layout. */
+    public void fit() {
+        camera.fit(HudLayout.bounds(places), getWidth(), getHeight(), !ReducedMotion.reduced());
+        cameraMoved();
+    }
+
+    public void zoomIn() {
+        zoomAtCentre(HudCamera.KEY_STEP);
+    }
+
+    public void zoomOut() {
+        zoomAtCentre(1 / HudCamera.KEY_STEP);
+    }
+
+    private void zoomAtCentre(double factor) {
+        // about the selection when there is one on screen (that is what the user is looking at), else the middle
+        double cx = getWidth() / 2.0;
+        double cy = getHeight() / 2.0;
+        Glide g = selected == null ? null : glides.get(selected);
+        if (g != null && g.r.value() > 0 && sx(g) >= 0 && sx(g) <= getWidth() && sy(g) >= 0 && sy(g) <= getHeight()) {
+            cx = sx(g);
+            cy = sy(g);
+        }
+        if (camera.zoomAbout(cx, cy, factor, !ReducedMotion.reduced())) {
+            cameraMoved();
+        }
+    }
+
+    private void panBy(int dx, int dy) {
+        camera.panBy(dx, dy, !ReducedMotion.reduced());
+        cameraMoved();
+    }
+
+    /** After any camera move: keep the content reachable, tell the window, animate or repaint. */
+    private void cameraMoved() {
+        if (camera.manual()) {
+            camera.clamp(HudLayout.bounds(places), getWidth(), getHeight());
+        }
+        onCamera.run();
+        ensureFrames();
+        repaint();
+    }
+
+    /** A glide's centre and radius on screen: the one place world becomes pixels. */
+    private double sx(Glide g) {
+        return camera.sx(g.x.value());
+    }
+
+    private double sy(Glide g) {
+        return camera.sy(g.y.value());
+    }
+
+    private double sr(Glide g) {
+        return g.r.value() * camera.zoom();
     }
 
     public String selected() {
@@ -297,6 +450,8 @@ public final class HudCanvas extends JPanel {
         }
         view = v;
         onView.accept(v);
+        // another view is another picture: frame it, whatever the user did to the last one
+        camera.release();
         relayout();
     }
 
@@ -332,6 +487,11 @@ public final class HudCanvas extends JPanel {
         int at = selected == null ? -1 : order.indexOf(selected);
         int next = at < 0 ? (delta > 0 ? 0 : order.size() - 1) : Math.floorMod(at + delta, order.size());
         select(order.get(next));
+        // the keyboard's selection must stay where the eye can follow: reveal it by its TARGET place
+        HudLayout.Place p = places.get(order.get(next));
+        if (p != null && camera.reveal(p.x(), p.y(), p.r(), getWidth(), getHeight(), !ReducedMotion.reduced())) {
+            cameraMoved();
+        }
     }
 
     private void popup(String id, MouseEvent e) {
@@ -372,6 +532,14 @@ public final class HudCanvas extends JPanel {
         glides.keySet().removeIf(id -> topology.node(id) == null && !places.containsKey(id));
         if (selected != null && topology.node(selected) == null) {
             select(null);
+        }
+        if (getWidth() > 0 && getHeight() > 0) {
+            if (camera.manual()) {
+                camera.clamp(HudLayout.bounds(places), getWidth(), getHeight());
+            } else {
+                camera.fit(HudLayout.bounds(places), getWidth(), getHeight(), !snap);
+            }
+            onCamera.run();
         }
         if (accessible != null) {
             accessible.firePropertyChange(javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY,
@@ -447,7 +615,7 @@ public final class HudCanvas extends JPanel {
     }
 
     private boolean animating() {
-        if (!pulses.isEmpty()) {
+        if (!pulses.isEmpty() || !camera.settled()) {
             return true;
         }
         for (Glide g : glides.values()) {
@@ -473,6 +641,10 @@ public final class HudCanvas extends JPanel {
         for (Glide g : glides.values()) {
             g.step(dt);
         }
+        if (!camera.settled()) {
+            camera.step(dt);
+            onCamera.run();
+        }
         pulses.removeIf(p -> now - p.startedAt > p.duration || glides.get(p.from) == null || glides.get(p.to) == null);
         if (!animating()) {
             frames.stop();
@@ -490,8 +662,8 @@ public final class HudCanvas extends JPanel {
             if (g.r.value() <= 0) {
                 continue;
             }
-            double d = Point2D.distance(px, py, g.x.value(), g.y.value());
-            double hit = g.r.value() + 8;
+            double d = Point2D.distance(px, py, sx(g), sy(g));
+            double hit = sr(g) + 8;
             if (d <= hit && d < bestD) {
                 bestD = d;
                 best = e.getKey();
@@ -538,31 +710,39 @@ public final class HudCanvas extends JPanel {
         return ids;
     }
 
+    /** The grid is the world's floor: it slides and scales with the camera, so a pan is felt and not only inferred. */
     private void paintGrid(Graphics2D g) {
         int w = getWidth();
         int h = getHeight();
-        g.setColor(HudStyle.GRID);
-        for (int x = 0; x < w; x += 24) {
-            g.drawLine(x, 0, x, h);
-        }
-        for (int y = 0; y < h; y += 24) {
-            g.drawLine(0, y, w, y);
+        double fine = 24 * camera.zoom();
+        if (fine >= 9) {
+            // below nine pixels the fine lines are noise; the strong ones carry the floor alone
+            g.setColor(HudStyle.GRID);
+            gridLines(g, fine, w, h);
         }
         g.setColor(HudStyle.GRID_STRONG);
-        for (int x = 0; x < w; x += 120) {
-            g.drawLine(x, 0, x, h);
+        gridLines(g, fine * 5, w, h);
+    }
+
+    private void gridLines(Graphics2D g, double step, int w, int h) {
+        double x0 = Math.floorMod((long) Math.round(camera.panX() * 1000), (long) Math.round(step * 1000)) / 1000.0;
+        double y0 = Math.floorMod((long) Math.round(camera.panY() * 1000), (long) Math.round(step * 1000)) / 1000.0;
+        for (double x = x0; x < w; x += step) {
+            int xi = (int) Math.round(x);
+            g.drawLine(xi, 0, xi, h);
         }
-        for (int y = 0; y < h; y += 120) {
-            g.drawLine(0, y, w, y);
+        for (double y = y0; y < h; y += step) {
+            int yi = (int) Math.round(y);
+            g.drawLine(0, yi, w, yi);
         }
     }
 
     /** The curve an edge follows between two glides: a quad bowed a little off the straight line. */
     private QuadCurve2D curve(Glide a, Glide b) {
-        double ax = a.x.value();
-        double ay = a.y.value();
-        double bx = b.x.value();
-        double by = b.y.value();
+        double ax = sx(a);
+        double ay = sy(a);
+        double bx = sx(b);
+        double by = sy(b);
         double mx = (ax + bx) / 2;
         double my = (ay + by) / 2;
         double dx = bx - ax;
@@ -616,12 +796,12 @@ public final class HudCanvas extends JPanel {
         if (gl == null || n == null) {
             return;
         }
-        double r = gl.r.value();
+        double r = sr(gl);
         if (r < 1) {
             return;
         }
-        double x = gl.x.value();
-        double y = gl.y.value();
+        double x = sx(gl);
+        double y = sy(gl);
         boolean sel = id.equals(selected);
         boolean hov = id.equals(hovered);
         switch (n.kind) {
@@ -769,6 +949,10 @@ public final class HudCanvas extends JPanel {
         FontMetrics fm = g.getFontMetrics();
         String legend = Bundle.HudCanvas_legend();
         g.drawString(legend, w - fm.stringWidth(legend) - 12, h - 10);
+        if (!camera.identity()) {
+            // said only while it is true: an untouched HUD carries no readout
+            g.drawString(Bundle.HudCanvas_zoomReadout(Long.toString(Math.round(camera.targetZoom() * 100))), 12, h - 10);
+        }
         if (topology.nodes(OpsKind.HOST).isEmpty()) {
             g.setFont(HudStyle.ui(18f, true));
             g.setColor(HudStyle.TEXT);
@@ -1072,8 +1256,9 @@ public final class HudCanvas extends JPanel {
             if (g == null) {
                 return new java.awt.Rectangle(0, 0, 0, 0);
             }
-            int r = (int) Math.max(8, g.r.value()) + 4;
-            return new java.awt.Rectangle((int) g.x.value() - r, (int) g.y.value() - r, 2 * r, 2 * r);
+            // where it is PAINTED: through the camera, or a screen reader is pointed at the world
+            int r = (int) Math.max(8, sr(g)) + 4;
+            return new java.awt.Rectangle((int) sx(g) - r, (int) sy(g) - r, 2 * r, 2 * r);
         }
 
         @Override

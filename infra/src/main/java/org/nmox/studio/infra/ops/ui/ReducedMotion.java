@@ -31,15 +31,24 @@ public final class ReducedMotion {
         return NbPreferences.forModule(ReducedMotion.class).node("ops");
     }
 
+    /** The stored choice, read once: {@link #reduced()} is asked per node per frame and must not be a preferences read. */
+    private static volatile Choice cached;
+
     public static Choice choice() {
-        try {
-            return Choice.valueOf(prefs().get(KEY, Choice.AUTO.name()));
-        } catch (IllegalArgumentException junk) {
-            return Choice.AUTO;
+        Choice c = cached;
+        if (c == null) {
+            try {
+                c = Choice.valueOf(prefs().get(KEY, Choice.AUTO.name()));
+            } catch (IllegalArgumentException junk) {
+                c = Choice.AUTO;
+            }
+            cached = c;
         }
+        return c;
     }
 
     public static void setChoice(Choice c) {
+        cached = c;
         prefs().put(KEY, c.name());
     }
 

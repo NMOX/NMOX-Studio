@@ -1,5 +1,15 @@
 # The Plan
 
+*Currency note 2026-11-07. Item (2) of the 2026-10-30 list is closed on
+David's say-so: the GitHub description now reads "Desktop IDE for web
+developers: editor, debugger, browser, DB and API clients, and a task
+rack you wire like studio hardware. macOS · Windows · Linux ·
+Apache-2.0" (the README's own first sentence, shortened), and the
+topics gained `netbeans-platform`, `java`, `typescript`, `javascript`,
+`angular`, `devops`. A repository setting lives in no file here, which
+is why this note is the record. Of the three items only David could do,
+the Windows signing purchase (86b) is the one left.*
+
 *Currency addendum 2026-11-06, later the same day (3.11.0, the Ops Hub).
 David's brief: the WarGames terminal crossed with a Hollywood command
 centre, on one condition — everything on the screen is real. The first

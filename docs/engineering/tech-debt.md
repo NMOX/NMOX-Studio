@@ -49,6 +49,17 @@ longer roadmap):
   has written.
 - **No logs door.** `docker logs -f` into an Output tab is the obvious
   next action on a service node.
+- **No camera.** The HUD has no zoom and no pan: `HudLayout` fits every
+  node into the canvas on each resize and the levels of abstraction are
+  three VIEWS (fleet → host → workloads), not a scale. Honest to about a
+  dozen hosts; past that the fan crowds. A camera is one unit, done
+  whole or not at all: a view transform applied once in the paint and
+  inverted in hit-testing, keyboard focus and the ACCESSIBLE children's
+  bounds (a screen reader must be pointed at the screen, not the
+  world), wheel-zoom about the cursor, drag-to-pan on empty space, a
+  fit command recomputed on a view switch, floor and ceiling so labels
+  stay legible, Reduce Motion honoured for the camera as for the
+  springs. Asked by David on 2026-11-07.
 - **No chord.** Every `⌥⌘` digit is taken; the Hub opens from Window,
   the Welcome's TOOLING column and nothing else. Quick Search does not
   reach hosts yet.
