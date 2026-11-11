@@ -105,7 +105,7 @@ import org.openide.windows.TopComponent;
     "OpsHub_menuShell=Shell in container",
     "OpsHub_menuRollback=Roll back…",
     "# {0} - the container's name as the host printed it",
-    "OpsHub_badContainerName=The host reports a container named \u201c{0}\u201d, which is not a name docker accepts, so Logs and Shell are not offered for it.",
+    "OpsHub_badContainerName=The host reports a container named \u201c{0}\u201d, which is not a name docker accepts, so Logs and Shell cannot be opened for it.",
     "OpsHub_hostGone=That service or its host is no longer on the Hub."
 })
 public final class OpsHubTopComponent extends TopComponent {

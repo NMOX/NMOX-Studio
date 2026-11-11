@@ -106,7 +106,7 @@ public final class Deployer {
         listener.stepFinished(Step.UPLOAD, true);
 
         if (!step(Step.SWAP, plan.swap(), target, listener, SHORT_TIMEOUT)) {
-            return new Outcome(Step.SWAP, null, null, "swap failed");
+            return new Outcome(Step.SWAP, null, null, null); // its output went to the listener; a silent failure is worded by whoever shows it
         }
         // a build prints for twenty minutes: the reason for a failure is its LAST words, so only those are kept
         String[] buildLast = {null};
@@ -116,7 +116,7 @@ public final class Deployer {
                 buildLast[0] = l;
             }
         }, listener, BUILD_TIMEOUT)) {
-            return new Outcome(Step.BUILD, null, null, buildLast[0] == null ? "failed" : buildLast[0]);
+            return new Outcome(Step.BUILD, null, null, buildLast[0]);
         }
         return runAndVerify(plan, target, listener);
     }
@@ -130,7 +130,7 @@ public final class Deployer {
                 runLast[0] = l;
             }
         }, listener, SHORT_TIMEOUT)) {
-            return new Outcome(Step.RUN, null, null, runLast[0] == null ? "failed" : runLast[0]);
+            return new Outcome(Step.RUN, null, null, runLast[0]);
         }
 
         listener.stepStarted(Step.VERIFY);

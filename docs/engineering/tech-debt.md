@@ -27,9 +27,10 @@ guess. These are decisions.
 3.11.0 shipped Create → watch → connect → deploy → observe. 3.12.0 took
 four items off this list (the camera David asked about on 2026-11-07,
 the logs door with a shell beside it, rollback, Quick Search's reach)
-and a hostile review of the first slice took sixteen defects out of it
-(`docs/engineering/ops-hub.md` carries the table). What is still open,
-each with its door, none built:
+and a hostile review of the first slice took sixteen defects out of it;
+three walks of the new build took out a dozen more
+(`docs/engineering/ops-hub.md` carries both tables). What is still
+open, each with its door, none built:
 
 - **No live DigitalOcean create has been run.** `DigitalOceanOpsTest`
   proves the request body (tag, keys, cloud-init, monitoring), the
@@ -71,7 +72,35 @@ each with its door, none built:
   somewhere else.
 - **Opening the Terminal container opens the platform's own local shell
   tab beside ours.** The container's own `componentOpened` does that;
-  the Hub's tab is the second one. Cosmetic, the platform's.
+  the Hub's tab is the second one. Ours is brought forward (walked: it
+  had opened BEHIND that tab), by selecting it again when its process
+  starts and once more 1.2 s later — a timer where an event belongs,
+  because the platform's tab announces nothing when it selects itself.
+- **A crowded fan can still put a service under a neighbour's caption.**
+  Services stand beside their host three to a column, and the layout
+  holds two laws by test: no service on its OWN host's caption, however
+  many, and no FIRST column on anybody's. A second column of a host in
+  a crowded fan (five hosts with six services each) can reach under the
+  host above it. The camera and the host view are the answer today.
+- **The zoom and pan KEYS and Quick Search's row were not pressed in a
+  walk.** The background tools deliver neither a typed `0`/`+`/`-` nor a
+  Shift+arrow to a Swing canvas, and they cannot drive the Quick Search
+  popup (the 3.6.0 walk law). The wheel, Fit, the buttons and the
+  dialogs were walked; the keys are held by tests that fire the
+  canvas's own named actions, the search by tests of the provider and
+  by the layer entry read out of the built jar.
+- **The Hub's ssh obeys the user's own ssh configuration.** That is the
+  design ("ssh does everything after"), and it has a consequence found
+  in the walk: with `ControlMaster` in `~/.ssh/config`, a connection
+  that reuses an existing master checks no host key, so the Hub's own
+  `known_hosts` is not consulted or written for it. Nothing to fix
+  without overriding the user's ssh; written down so a missing line
+  there is not read as a defect.
+- **`created` is the only provider fact the inspector formats.** A
+  provider's other facts (a size slug, a region's name) are shown as the
+  provider wrote them, which is right; a new provider that reports
+  another instant will show it raw until it is added to
+  `InspectorPanel.factValue`.
 - **A forgotten manual host keeps its known_hosts line.** Keys are pruned
   when a provider's host is destroyed or stops being listed; a host
   added by hand and forgotten keeps its line. Harmless (a changed key is

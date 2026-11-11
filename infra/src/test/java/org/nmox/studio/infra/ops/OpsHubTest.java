@@ -27,6 +27,7 @@ import org.nmox.studio.infra.ops.provider.HostRecord;
 import org.nmox.studio.infra.ops.provider.HostSpec;
 import org.nmox.studio.infra.ops.provider.OpsProvider;
 import org.nmox.studio.infra.ops.provider.SimulatedWorld;
+import org.nmox.studio.infra.ops.remote.Deployer;
 import org.nmox.studio.infra.ops.remote.HostProbe;
 import org.nmox.studio.infra.ops.remote.RemoteRunner;
 import org.nmox.studio.infra.ops.remote.SshTarget;
@@ -854,5 +855,30 @@ class OpsHubTest {
         assertThat(OpsHub.problemText(HostProbe.Reading.trouble(HostProbe.Trouble.TOO_MANY_LINES, 2000))).contains("more than 2000 lines");
         assertThat(OpsHub.problemText(HostProbe.Reading.said("Connection refused"))).isEqualTo("Connection refused");
         assertThat(OpsHub.problemText(HostProbe.Reading.of(null))).as("no trouble, no words").isNull();
+        // a step that failed and printed nothing: the feed says so in the reader's language, not "failed"
+        assertThat(OpsHub.reasonOf(new Deployer.Outcome(Deployer.Step.SWAP, null, null, null))).isEqualTo("the host said nothing");
+        assertThat(OpsHub.reasonOf(new Deployer.Outcome(Deployer.Step.BUILD, null, null, "  "))).isEqualTo("the host said nothing");
+        assertThat(OpsHub.reasonOf(new Deployer.Outcome(Deployer.Step.BUILD, null, null, "no space left on device")))
+                .isEqualTo("no space left on device");
+    }
+
+    @Test
+    @DisplayName("containers past the cap are counted on the host as a number under a key, and the count goes when they do")
+    void uncountedContainersAreAFact() {
+        OpsHubFixture f = new OpsHubFixture();
+        OpsNode host = f.host("crowded", 9);
+        String[] many = new String[HostProbe.MAX_CONTAINERS + 5];
+        for (int i = 0; i < many.length; i++) {
+            many[i] = OpsHubFixture.container("c" + i, "busybox", "", "");
+        }
+        f.answer(many);
+        f.drain();
+        assertThat(f.hub.topology().servicesOf(host.id)).hasSize(HostProbe.MAX_CONTAINERS);
+        // the engine keeps the NUMBER under a key; the words for it are the inspector's, in the reader's language
+        assertThat(host.facts).containsEntry("containers not drawn", "5").doesNotContainKey("containers");
+        f.answer(OpsHubFixture.container("c0", "busybox", "", ""));
+        f.hub.probe(host);
+        f.drain();
+        assertThat(host.facts).doesNotContainKey("containers not drawn");
     }
 }

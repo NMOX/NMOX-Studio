@@ -1,5 +1,60 @@
 # The Plan
 
+*Currency addendum 2026-11-10 (3.12.0, the Ops Hub's second slice —
+prepared on a branch overnight; shipping it is David's call). The brief
+was an improvement sprint, "thoughtful improvements to existing
+workflows over disconnected features", so the sprint stayed inside the
+newest and least-walked surface: the camera David had asked about, the
+three things a server that is up needs next (logs, a shell, rollback),
+Quick Search's reach, and a hostile read of the four-day-old code.
+What the night taught, in the order it cost:
+
+1. **A feature can be built, tested, and not on screen.** Roll back…
+   had four green tests and a mutant each, and in the assembled app the
+   button was past the right edge of a 300-pixel pane and absent from
+   the accessibility tree. The same row had hidden Probe now and
+   Destroy… on a host since 3.11.0. *The walk belongs before the claim*
+   (the v2.182.0 scar), and a pane's own width is a fixture a layout
+   test must use.
+2. **A layout test passes for the wrong reason more easily than any
+   other kind.** The first wrap test survived replacing WrapLayout with
+   FlowLayout, because a FlowLayout also breaks the row — and then
+   reports one row's height, so the second row is laid out below the
+   panel and never painted. The assertion that kills it asks whether
+   each button is inside its row's own height. And `validate()` lays
+   NOTHING out in a hierarchy with no window (measured on JDK 25): a
+   headless layout test calls `doLayout` down the tree by hand.
+3. **A key that equals its English word cannot be tested in English.**
+   `factLabel("made here")` returning the bundle's "made here" is
+   indistinguishable from returning the key; two mutants lived. The
+   translators then asked for "created here", which made the test
+   possible. Where a machine key and its English label are the same
+   string, a test of the mapping needs a row where they differ.
+4. **The translators are a second walk.** Three rounds, fourteen
+   languages, and every round returned defects in the English or the
+   code: a refusal untrue in one of its two uses, five kinds of English
+   built in the engine below every bundle gate (fact keys, edge kinds,
+   edge sources, a probe's own reasons, the Simulation's name), yes/no
+   answering a has-question, an ISO instant shown raw, a dialog whose
+   shell commands a right-to-left window would reorder. Budget the
+   second and third round; the first one's remarks are the review.
+5. **A stub is honest only if it is labeled everywhere it is quoted.**
+   No docker daemon ran on the walking machine, so the service doors
+   and the rollback were walked over real ssh against a stub `docker`
+   that prints docker's shapes. It found `HTTP 000none` (curl's `000`
+   plus the line's own `none`), which the simulation never could. The
+   changelog, the design document and ledger 141 each say it was a stub.
+6. **The user's ssh configuration is part of every measurement.** A
+   `ControlMaster` in `~/.ssh/config` made the first known_hosts
+   measurement void (no host key is checked on a reused master) and
+   later explained an empty known_hosts after a walk. Measure ssh
+   behaviour with `-F /dev/null`; close masters when done.
+
+Next, in order: David's live DigitalOcean create (cents, one click); a
+real docker host for the doors and the rollback; then Hetzner, or the
+Designer's wires as DECLARED edges — whichever the first real use asks
+for.*
+
 *Currency note 2026-11-07. Item (2) of the 2026-10-30 list is closed on
 David's say-so: the GitHub description now reads "Desktop IDE for web
 developers: editor, debugger, browser, DB and API clients, and a task

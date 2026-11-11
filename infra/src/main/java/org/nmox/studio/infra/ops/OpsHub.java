@@ -174,6 +174,7 @@ import org.openide.util.RequestProcessor;
     "# {0} - the step",
     "# {1} - the reason",
     "OpsHub_deployStopped=Deploy stopped at {0}: {1}",
+    "OpsHub_saidNothing=the host said nothing",
     "OpsHub_stepBundle=bundle",
     "OpsHub_stepUpload=upload",
     "OpsHub_stepSwap=swap",
@@ -1147,14 +1148,18 @@ public final class OpsHub {
                     event(OpsEvent.Kind.OK, host.id, Bundle.OpsHub_deployUp(plan.app(), host.label,
                             Integer.toString(plan.hostPort()), httpWord(outcome)));
                 } else {
-                    event(OpsEvent.Kind.FAIL, host.id, Bundle.OpsHub_deployStopped(stepName(outcome.failedAt()),
-                            outcome.reason() == null ? "" : outcome.reason()));
+                    event(OpsEvent.Kind.FAIL, host.id, Bundle.OpsHub_deployStopped(stepName(outcome.failedAt()), reasonOf(outcome)));
                 }
                 fireState();
                 probe(host);
             });
         });
         return run;
+    }
+
+    /** Why a run stopped: the host's or the tool's own words, or — when a step failed and printed nothing — that it did. */
+    static String reasonOf(Deployer.Outcome outcome) {
+        return outcome.reason() == null || outcome.reason().isBlank() ? Bundle.OpsHub_saidNothing() : outcome.reason();
     }
 
     private static String httpWord(Deployer.Outcome outcome) {
@@ -1321,8 +1326,7 @@ public final class OpsHub {
                 if (outcome.ok()) {
                     event(OpsEvent.Kind.OK, host.id, Bundle.OpsHub_rolledBack(plan.app(), host.label, plan.stamp(), httpWord(outcome)));
                 } else {
-                    event(OpsEvent.Kind.FAIL, host.id, Bundle.OpsHub_rollbackStopped(stepName(outcome.failedAt()),
-                            outcome.reason() == null ? "" : outcome.reason()));
+                    event(OpsEvent.Kind.FAIL, host.id, Bundle.OpsHub_rollbackStopped(stepName(outcome.failedAt()), reasonOf(outcome)));
                 }
                 fireState();
                 probe(host);

@@ -269,8 +269,10 @@ class InspectorPanelTest {
                 .isEqualTo(org.nmox.studio.core.util.Clocks.displayDateTime(java.time.Instant.parse("2026-11-10T18:00:00Z").toEpochMilli()))
                 .doesNotContain("T18:00:00Z");
         assertThat(InspectorPanel.factValue("created", "last Tuesday")).isEqualTo("last Tuesday");
-        assertThat(InspectorPanel.kindWord("depends")).as("the machine word is not the reader's").isEqualTo("depends on");
-        assertThat(InspectorPanel.kindWord("ssh")).as("a name").isEqualTo("ssh");
+        assertThat(InspectorPanel.kindWord("depends", true)).as("the machine word is not the reader's").isEqualTo("depends on");
+        assertThat(InspectorPanel.kindWord("depends", false)).as("read from the other end").isEqualTo("needed by");
+        assertThat(InspectorPanel.kindWord("runs", false)).isEqualTo("runs on");
+        assertThat(InspectorPanel.kindWord("ssh", false)).as("a name").isEqualTo("ssh");
     }
 
     @Test

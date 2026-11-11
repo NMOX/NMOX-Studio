@@ -96,6 +96,9 @@ import org.openide.util.NbBundle.Messages;
     "Inspector_edgeRuns=runs",
     "Inspector_edgeDepends=depends on",
     "Inspector_edgeReaches=reaches",
+    "Inspector_edgeRunsBack=runs on",
+    "Inspector_edgeDependsBack=needed by",
+    "Inspector_edgeReachesBack=reached by",
     "Inspector_evidenceObserved=observed",
     "Inspector_evidenceInferred=inferred",
     "Inspector_evidenceDeclared=declared",
@@ -374,7 +377,7 @@ public final class InspectorPanel extends JPanel {
                 String otherId = e.from().equals(node.id) ? e.to() : e.from();
                 OpsNode other = hub.topology().node(otherId);
                 String arrow = e.from().equals(node.id) ? "→ " : "← ";
-                String row1 = Bundle.Inspector_edgeRow(arrow + kindWord(e.kind()),
+                String row1 = Bundle.Inspector_edgeRow(arrow + kindWord(e.kind(), e.from().equals(node.id)),
                         other == null ? otherId : other.label, evidenceWord(e), e.source());
                 // the evidence is the point of the row ("observed: docker ps on …"), so it wraps and is never cut
                 JTextArea l = still(org.nmox.studio.core.util.PlainDialogs.plain(row1, row1));
@@ -625,12 +628,21 @@ public final class InspectorPanel extends JPanel {
         return p != null ? p.displayName() : node.provider;
     }
 
-    /** An edge's kind is a machine word; the ones that are ordinary verbs are said in the reader's language, ssh and vpc are names. */
-    static String kindWord(String kind) {
+    /**
+     * An edge's kind is a machine word; the ones that are ordinary verbs
+     * are said in the reader's language, and said from the side the row is
+     * read on: a host "runs" its service, and on the service's own row the
+     * same edge is "runs on" the host. One word for both directions read
+     * backwards on one of them ("← runs box" under a service; three groups
+     * of translators reported it independently). ssh and vpc are names.
+     *
+     * @param outgoing the row belongs to the edge's FROM node
+     */
+    static String kindWord(String kind, boolean outgoing) {
         return switch (kind) {
-            case "runs" -> Bundle.Inspector_edgeRuns();
-            case "depends" -> Bundle.Inspector_edgeDepends();
-            case "reaches" -> Bundle.Inspector_edgeReaches();
+            case "runs" -> outgoing ? Bundle.Inspector_edgeRuns() : Bundle.Inspector_edgeRunsBack();
+            case "depends" -> outgoing ? Bundle.Inspector_edgeDepends() : Bundle.Inspector_edgeDependsBack();
+            case "reaches" -> outgoing ? Bundle.Inspector_edgeReaches() : Bundle.Inspector_edgeReachesBack();
             default -> kind;
         };
     }

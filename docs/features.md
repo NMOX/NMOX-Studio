@@ -674,7 +674,16 @@ step — accepted, provisioning, active, ssh answering, cloud-init done
 a session in the IDE's own Terminal under a pty; a plain click picks mosh
 when both ends have it and says why otherwise. **Deploy…** shows the
 exact remote lines, builds the aimed project's Dockerfile on the host,
-runs it labeled, and reads the container back. Every reachable host is
+runs it labeled, and reads the container back. A container is a service
+node with doors of its own: **Logs** follows `docker logs -f` and
+**Shell** runs `docker exec`, each a Terminal tab over the same ssh, and
+**Roll back…** (on a service this product deployed) asks the host which
+earlier images it still holds, shows the two commands, and starts the
+one before — nothing uploaded, nothing built, Enter answers No. The
+wheel zooms about the pointer, a drag on empty space pans, **Fit** (or
+`0`) frames everything again, and Quick Search finds a host or a service
+by name once the Hub has been opened. A host that does not answer says
+why in ssh's own words. Every reachable host is
 probed every 15 s while the window shows (load, memory, disk, `docker
 ps`), its containers become service nodes, and every link says how the
 Hub knows — solid observed, dashed inferred (a shared network), dotted

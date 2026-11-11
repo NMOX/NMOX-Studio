@@ -170,15 +170,17 @@ What a server that is up needs next, and what the first slice got wrong.
   `ContainerDoors` holds it to docker's own alphabet for a name before it
   nears a shell and refuses anything else by name.
 - **Rollback.** A deploy tags every build `nmox/<app>:<stamp>` and removes
-  none, so the host holds the history. **Roll Back…** asks the host which
+  none, so the host holds the history. **Roll back…** asks the host which
   tags it has (`Rollback.imagesCommand`), picks the newest one OLDER than
-  what runs, shows the two lines it will run, and on a yes runs the last
+  what runs, shows the two lines it will run in a left-to-right box of
+  their own (a shell line set inside a sentence is reordered by a
+  right-to-left window), and on a yes (Enter answers No) runs the last
   two steps of a deploy with that stamp — nothing uploaded, nothing built,
   the newer image left in place. Offered only on a service that carries
   the `nmox.ops.app` label AND runs an image of ours; the label is the
   host's word and a label that is not a slug is "not ours", never quoted.
   The tracker shows the two steps a rollback has.
-- **Quick Search** (⌘I) finds a server by name, address or status and a
+- **Quick Search** (⌘I) finds a host by name, address or status and a
   service by name or host, and opens the Hub on it. It reads the Hub's
   own immutable copy (`OpsHub.findable()`), rebuilt on the event thread;
   it never makes a Hub from a keystroke (`OpsHub.peek()`).
@@ -187,6 +189,24 @@ What a server that is up needs next, and what the first slice got wrong.
   replaced under the user's hand. It is rebuilt only when the set of
   actions or their enablement changes, focus returns to the same action,
   and a button acts on the node shown when it is pressed.
+
+- **The inspector is a column the width of its pane.** `ColumnLayout`
+  gives every row its width FIRST and asks its height second, which is
+  what a row of buttons that wraps and a sentence that wraps both need;
+  a BoxLayout asks first and gets the one-line answer. Nothing in the
+  inspector can be behind a horizontal scrollbar, a fact value is cut in
+  its middle with the whole on the tooltip, the last problem and the
+  evidence of every edge wrap whole, and a refresh neither rebuilds the
+  action row nor scrolls the pane.
+- **Services stand beside their host** in the fleet view, three to a
+  column on its outer side with their names beside them (cut to the
+  column at the current zoom). They orbited it before, and a host's
+  name, address and readings are written under it.
+- **Words are chosen where they are shown.** The engine's fact keys, an
+  edge's kind and source, a probe's own three reasons for having no
+  answer and the Simulation's name were English built in the engine;
+  they are data now (`HostProbe.Trouble`, the fact key, the edge kind)
+  or come from the engine's bundle, and the inspector says them.
 
 ### What the review of 3.11.0 found
 
@@ -211,6 +231,27 @@ fixed with a test that fails on the code as shipped:
 | A crash-looping container was "up" (docker lists `Restarting`) | Only `Up …` is up; docker's own status is the reason |
 | The two gravest questions printed a literal `\n\n` (a doubled backslash in the message, copied into fourteen translations) | One backslash; `BundleEncodingGateTest` reads every shipped bundle for it |
 | Every event with a node pulsed its link, a silence included | Only what the host answered (`OpsEvent.overLink`) |
+
+### What walking the second slice found
+
+Three walks of the assembled build, in a throwaway home: the simulation
+end to end, then a real host over real ssh (a user-mode sshd on this
+machine whose `docker` was a labeled stub that keeps one container's
+state in a file — the Hub's ssh, probe parser, deployer and Terminal
+door were the real ones). Each row was fixed and walked again.
+
+| Seen | Now |
+|---|---|
+| **Roll back… was not on screen.** The inspector's action row ran past the pane: on a service the fourth button was behind a horizontal scrollbar and absent from the accessibility tree; on a host, Probe now and Destroy… had been since 3.11.0 | The row wraps; the column is the pane's width |
+| The inspector jumped down past its own title on a refresh | Its wrapped labels keep their carets; another node starts at the top, the same node stays where it was scrolled |
+| On a real host with two containers the lower one covered the host's address | Services stand beside the host |
+| A second host's ring covered the first one's readings when the Terminal took half the window | A fan is used only when no ring reaches into a caption; otherwise the grid |
+| `HTTP 000none` after a rollback: curl prints `000` when nothing answers and the verify line appended `none` to it | The line prints curl's own word; the reader takes only a real status |
+| The deploy dialog previewed `nmox/project:0`, then built another tag | One stamp for the dialog's life |
+| "Billable: create a server?" in the Simulation | Its own question: nothing real is made, nothing is billed |
+| The first Logs of a session opened behind the Terminal's own local tab | Brought forward (ledger 141 says how, and that it is a timer) |
+| A host never probed: "the host has no mosh-server" | "has not said yet" (`ConnectPlan.SSH_REMOTE_UNKNOWN`) |
+| The translators, reading the new English in two rounds: a refusal untrue in one of its two uses, a pronoun with no antecedent, one action under three verbs, yes/no answering "does it have docker?", the rollback question as one string with shell lines inside it, an ISO instant shown raw, and five kinds of English built in the engine | Reworded, split, typed, or moved to the bundle; a third round translated the result |
 
 ## What was verified, and how
 
