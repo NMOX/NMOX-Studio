@@ -258,4 +258,33 @@ class InspectorPanelTest {
         assertThat(InspectorPanel.factValue("image", "yes")).as("an image named yes is an image").isEqualTo("yes");
         assertThat(InspectorPanel.factValue("docker", "maybe")).isEqualTo("maybe");
     }
+
+    @Test
+    @DisplayName("a refresh never scrolls the inspector: its wrapped labels keep their carets, and another node starts at its title")
+    void refreshDoesNotScroll() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            OpsHubFixture f = new OpsHubFixture();
+            f.mosh(false);
+            OpsNode host = f.host("box", 5);
+            f.answer(OpsHubFixture.container("nmox-shop", "nmox/shop:300", "0.0.0.0:8080->3000/tcp", "nmox.ops.app=shop"));
+            f.drain();
+            host.lastProblem = "a sentence long enough to matter, set on every refresh of the node it belongs to";
+            InspectorPanel panel = new InspectorPanel(f.hub, new Pressed());
+            panel.show(host);
+            for (javax.swing.JTextArea a : areas(panel)) {
+                if (!a.isEditable() && a.getCaret() instanceof javax.swing.text.DefaultCaret c && a.getLineWrap()) {
+                    assertThat(c.getUpdatePolicy()).as("a label that wraps does not follow its text: " + a.getAccessibleContext().getAccessibleName())
+                            .isEqualTo(javax.swing.text.DefaultCaret.NEVER_UPDATE);
+                }
+            }
+            // a short dock: the column is taller than the pane
+            layOut(panel, 300, 160);
+            javax.swing.JViewport port = (javax.swing.JViewport) SwingUtilities.getAncestorOfClass(javax.swing.JViewport.class, areas(panel).get(0));
+            port.setViewPosition(new java.awt.Point(0, 60));
+            panel.show(host);
+            assertThat(port.getViewPosition().y).as("the same node, refreshed, stays where the reader left it").isEqualTo(60);
+            panel.show(f.hub.topology().nodes(OpsKind.SERVICE).get(0));
+            assertThat(port.getViewPosition().y).as("another node starts at its title").isZero();
+        });
+    }
 }

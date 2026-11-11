@@ -156,11 +156,11 @@ public final class InspectorPanel extends JPanel {
     private final OpsHub hub;
     private final Actions actions;
     private final JLabel title = new JLabel();
-    private final JTextArea hint = org.nmox.studio.core.util.PlainDialogs.plain(Bundle.Inspector_nothingSelected(), Bundle.Inspector_title());
+    private final JTextArea hint = still(org.nmox.studio.core.util.PlainDialogs.plain(Bundle.Inspector_nothingSelected(), Bundle.Inspector_title()));
     private final JPanel facts = new JPanel(new GridBagLayout());
     private final JLabel problemKey = new JLabel(PlainText.plain(Bundle.Inspector_factProblem()));
     /** The last problem, whole: it is the sentence that says why a host is red, so it wraps and is never cut. */
-    private final JTextArea problem = org.nmox.studio.core.util.PlainDialogs.plain("", Bundle.Inspector_factProblem());
+    private final JTextArea problem = still(org.nmox.studio.core.util.PlainDialogs.plain("", Bundle.Inspector_factProblem()));
     private final JProgressBar load = new JProgressBar(0, 100);
     private final JProgressBar mem = new JProgressBar(0, 100);
     private final JProgressBar disk = new JProgressBar(0, 100);
@@ -168,11 +168,12 @@ public final class InspectorPanel extends JPanel {
     private final JPanel edges = new JPanel(new ColumnLayout(2));
     /** Wraps: five actions do not fit one row of a 300-pixel pane, and a row that ran on put two of them out of reach. */
     private final JPanel buttons = new JPanel(new org.nmox.studio.core.util.WrapLayout(FlowLayout.LEADING, 4, 2));
-    private final JTextArea connectHow = org.nmox.studio.core.util.PlainDialogs.plain("", Bundle.Inspector_connectHowName());
+    private final JTextArea connectHow = still(org.nmox.studio.core.util.PlainDialogs.plain("", Bundle.Inspector_connectHowName()));
     private final JPanel deployBox = new JPanel(new BorderLayout(0, 4));
     private final JPanel steps = new JPanel();
     private final JTextArea deployLog = TextDirection.keepLeftToRight(new JTextArea(6, 30));
     private final JLabel trackerTitle = new JLabel(Bundle.Inspector_deployTracker());
+    private JScrollPane scroll;
     private OpsNode shown;
     /** The node and the (text, enabled) of every button last built; equal means the row is left alone. */
     private java.util.List<String> buttonsBuiltFor = java.util.List.of();
@@ -213,7 +214,7 @@ public final class InspectorPanel extends JPanel {
         deployBox.add(new JScrollPane(deployLog), BorderLayout.PAGE_END);
         deployBox.setVisible(false);
         column.add(deployBox);
-        JScrollPane scroll = new JScrollPane(column, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+        scroll = new JScrollPane(column, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.setBorder(null);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
@@ -268,6 +269,20 @@ public final class InspectorPanel extends JPanel {
         }
     }
 
+    /**
+     * A text area that never scrolls its pane. A caret follows its text,
+     * and following means asking the enclosing scroll pane to show it: a
+     * sentence set on a refresh pulled the inspector down past its own
+     * title (walked, in a short dock). These are labels that wrap; their
+     * carets stay where they are.
+     */
+    private static JTextArea still(JTextArea area) {
+        if (area.getCaret() instanceof javax.swing.text.DefaultCaret caret) {
+            caret.setUpdatePolicy(javax.swing.text.DefaultCaret.NEVER_UPDATE);
+        }
+        return area;
+    }
+
     private static void gauge(JPanel into, int row, String name, JProgressBar bar) {
         GridBagConstraints c = new GridBagConstraints();
         c.gridy = row;
@@ -287,7 +302,12 @@ public final class InspectorPanel extends JPanel {
 
     /** Shows a node (or the empty hint for null). Cheap; called on every change of the selection or the node. */
     public void show(OpsNode node) {
+        // another node starts at its title; the same node, refreshed, stays where the reader scrolled it
+        boolean another = !java.util.Objects.equals(node == null ? null : node.id, shown == null ? null : shown.id);
         shown = node;
+        if (another && scroll != null) {
+            scroll.getViewport().setViewPosition(new java.awt.Point(0, 0));
+        }
         facts.removeAll();
         edges.removeAll();
         hint.setVisible(node == null);
@@ -352,7 +372,7 @@ public final class InspectorPanel extends JPanel {
                 String row1 = Bundle.Inspector_edgeRow(arrow + e.kind(),
                         other == null ? otherId : other.label, evidenceWord(e), e.source());
                 // the evidence is the point of the row ("observed: docker ps on …"), so it wraps and is never cut
-                JTextArea l = org.nmox.studio.core.util.PlainDialogs.plain(row1, row1);
+                JTextArea l = still(org.nmox.studio.core.util.PlainDialogs.plain(row1, row1));
                 l.setFont(HudStyle.ui(11f, false));
                 edges.add(l);
             }
