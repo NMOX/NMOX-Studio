@@ -943,9 +943,22 @@ public final class HudCanvas extends JPanel {
         g.draw(box);
         g.setColor(HudStyle.SERVICE);
         g.fill(new Ellipse2D.Double(x - r * 0.25, y - r * 0.25, r * 0.5, r * 0.5));
-        if (r >= 16) {
+        String ports = n.facts.get("ports");
+        if (view.level() == HudView.Level.FLEET) {
+            // beside the glyph, not under it: under it is the next service of the column. The name gets the
+            // column's width at this zoom and is cut to it; zoomed far out there is no room and no name
+            // (the selection and the inspector still say it)
+            int room = (int) (HudLayout.SATELLITE_COLUMN * camera.zoom() - 2 * r - 14);
+            if (r >= 9 && room >= 24) {
+                boolean large = r >= 16;
+                sideLabel(g, n.label, x + r + 6, y + (large && ports != null && r >= 22 ? -2 : 4), room,
+                        large ? HudStyle.TEXT : HudStyle.MUTED, HudStyle.ui(large ? 11f : 9.5f, false));
+                if (ports != null && r >= 22) {
+                    sideLabel(g, ports, x + r + 6, y + 11, room, HudStyle.MUTED, HudStyle.mono(9.5f));
+                }
+            }
+        } else if (r >= 16) {
             label(g, n.label, x, y + r + 14, HudStyle.TEXT, HudStyle.ui(11f, false));
-            String ports = n.facts.get("ports");
             if (ports != null && r >= 22) {
                 label(g, ports.length() > 28 ? ports.substring(0, 27) + "…" : ports, x, y + r + 27, HudStyle.MUTED, HudStyle.mono(9.5f));
             }
@@ -1029,6 +1042,14 @@ public final class HudCanvas extends JPanel {
         g.setColor(color);
         FontMetrics fm = g.getFontMetrics();
         g.drawString(text, (float) (cx - fm.stringWidth(text) / 2.0), (float) baseline);
+    }
+
+    /** A label that starts at {@code x} and is cut at the end, on a word where one is near, to fit {@code room} pixels. */
+    private void sideLabel(Graphics2D g, String text, double x, double baseline, int room, Color color, Font font) {
+        g.setFont(font);
+        g.setColor(color);
+        FontMetrics fm = g.getFontMetrics();
+        g.drawString(org.nmox.studio.core.util.FitLabel.fitEnd(text, fm::stringWidth, room), (float) x, (float) baseline);
     }
 
     private void badge(Graphics2D g, String text, double x, double y) {

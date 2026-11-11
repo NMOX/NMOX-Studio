@@ -48,6 +48,62 @@ class HudLayoutTest {
                 .isEqualTo(HudLayout.layout(fleet(3, 1), HudView.FLEET, 1000, 600));
     }
 
+    /** What is written under a host: three centred lines, from its rim down. */
+    private static java.awt.geom.Rectangle2D caption(HudLayout.Place host) {
+        return new java.awt.geom.Rectangle2D.Double(host.x() - 62, host.y() + host.r() + 2, 124, 46);
+    }
+
+    private static boolean covers(HudLayout.Place sat, java.awt.geom.Rectangle2D caption) {
+        return caption.intersects(sat.x() - sat.r(), sat.y() - sat.r(), 2 * sat.r(), 2 * sat.r());
+    }
+
+    @Test
+    @DisplayName("no service sits on its own host's caption, however many there are, and a first column sits on nobody's")
+    void satellitesKeepOffTheCaptions() {
+        for (int[] size : new int[][]{{1200, 700}, {900, 520}, {640, 420}}) {
+            for (int hosts : new int[]{1, 2, 3, 5, 12}) {
+                for (int services : new int[]{1, 2, 3, 6, 9}) {
+                    Map<String, HudLayout.Place> p = HudLayout.layout(fleet(hosts, services), HudView.FLEET, size[0], size[1]);
+                    String where = size[0] + "x" + size[1] + ", " + hosts + " hosts with " + services + " services: ";
+                    for (int h = 0; h < hosts; h++) {
+                        HudLayout.Place host = p.get("h" + h);
+                        for (int v = 0; v < services; v++) {
+                            // the name, address and readings under a host stay readable (the walk: a real
+                            // host's second container sat on its address)
+                            assertThat(covers(p.get("h" + h + "/s" + v), caption(host)))
+                                    .as(where + "h" + h + "/s" + v + " over its own host's caption").isFalse();
+                            assertThat(p.get("h" + h + "/s" + v).x()).as(where + "beside the host, on its outer side")
+                                    .isGreaterThan(host.x() + host.r());
+                        }
+                        // a neighbour's caption: held for the first column, which is every service of a host
+                        // with three or fewer. A second column of a crowded fan can still reach under the
+                        // host above it (5 hosts with 6 services each does) — ledger 141 says so
+                        for (int g = 0; g < hosts && hosts <= 9; g++) {
+                            for (int v = 0; v < Math.min(services, HudLayout.SATELLITE_ROWS); v++) {
+                                assertThat(covers(p.get("h" + g + "/s" + v), caption(host)))
+                                        .as(where + "h" + g + "/s" + v + " over the caption of h" + h).isFalse();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("services stand three to a column, each column a name's width from the last, centred on the host")
+    void satelliteColumns() {
+        Map<String, HudLayout.Place> p = HudLayout.layout(fleet(1, 5), HudView.FLEET, 1200, 700);
+        HudLayout.Place host = p.get("h0");
+        assertThat(p.get("h0/s0").x()).isEqualTo(p.get("h0/s1").x()).isEqualTo(p.get("h0/s2").x());
+        assertThat(p.get("h0/s3").x() - p.get("h0/s0").x()).as("the second column").isEqualTo(HudLayout.SATELLITE_COLUMN);
+        assertThat(p.get("h0/s1").y()).as("a full column is centred on the host").isEqualTo(host.y());
+        assertThat((p.get("h0/s3").y() + p.get("h0/s4").y()) / 2).as("and so is a short one").isEqualTo(host.y());
+        assertThat(p.get("h0/s1").y() - p.get("h0/s0").y()).isEqualTo(HudLayout.SATELLITE_PITCH);
+        HudLayout.Place alone = HudLayout.layout(fleet(1, 1), HudView.FLEET, 1200, 700).get("h0/s0");
+        assertThat(alone.y()).as("one service is level with its host").isEqualTo(HudLayout.layout(fleet(1, 1), HudView.FLEET, 1200, 700).get("h0").y());
+    }
+
     @Test
     @DisplayName("two hosts on a short canvas never overlap (the walk found them on top of each other)")
     void shortCanvas() {

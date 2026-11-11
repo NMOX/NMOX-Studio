@@ -36,6 +36,13 @@ public final class HudLayout {
         };
     }
 
+    /** How many of a host's services stand in one column of the fleet view. */
+    static final int SATELLITE_ROWS = 3;
+    /** From one service to the next below it. */
+    static final double SATELLITE_PITCH = 24;
+    /** From one column of services to the next: a glyph and room for its name beside it. */
+    static final double SATELLITE_COLUMN = 104;
+
     // ---- fleet: this machine on the left, hosts fanned out to the right, services as satellites ----
 
     static Map<String, Place> fleet(Topology t, int w, int h) {
@@ -86,16 +93,21 @@ public final class HudLayout {
                 out.put(hosts.get(i).id, new Place(left + cellW * (c + 0.5), 40 + cellH * (r + 0.5), hostR));
             }
         }
-        // services orbit their host, small, starting at the host's outer side
+        // services stand beside their host, small, in short columns on its outer side — and nowhere else.
+        // A host's name, address and readings are written under it and its upper neighbour's are written
+        // above it, and a satellite in either place sat on top of them (walked on a real host with two
+        // containers: the lower one covered the address). Three to a column keeps a column shorter than
+        // the host; each column is wide enough for its names, which the canvas writes beside the glyphs.
         for (OpsNode host : hosts) {
             Place hp = out.get(host.id);
             List<OpsNode> services = t.servicesOf(host.id);
             int m = services.size();
-            double orbit = hostR + 34;
-            double angleFrom = Math.atan2(hp.y - wy, hp.x - wx);
+            double first = Math.max(hostR + 40, 74);
             for (int i = 0; i < m; i++) {
-                double a = angleFrom + (m == 1 ? 0 : -Math.PI / 3 + (2 * Math.PI / 3) * i / (m - 1));
-                out.put(services.get(i).id, new Place(hp.x + Math.cos(a) * orbit, hp.y + Math.sin(a) * orbit, 11));
+                int col = i / SATELLITE_ROWS;
+                int inColumn = Math.min(SATELLITE_ROWS, m - col * SATELLITE_ROWS);
+                double dy = (i % SATELLITE_ROWS - (inColumn - 1) / 2.0) * SATELLITE_PITCH;
+                out.put(services.get(i).id, new Place(hp.x + first + col * SATELLITE_COLUMN, hp.y + dy, 11));
             }
         }
         return out;
