@@ -26,6 +26,16 @@ class ClocksTest {
     }
 
     @Test
+    @DisplayName("a date with its time follows the reader too: the day, the month's own word, the reader's clock")
+    void dateTimeFollowsTheReader() {
+        String german = Clocks.displayDateTime(AFTERNOON, UTC, Locale.GERMANY);
+        assertThat(german).contains("09.09.2026").contains("14:32");
+        String american = Clocks.displayDateTime(AFTERNOON, UTC, Locale.US);
+        assertThat(american).contains("Sep 9, 2026").contains("2:32").doesNotContain("14:32");
+        assertThat(german).as("not one shape for everyone").isNotEqualTo(american);
+    }
+
+    @Test
     @DisplayName("the stable clock does not move for anyone — a record two people compare must line up")
     void stableIsTheSameEverywhere() {
         String reference = Clocks.stable(AFTERNOON, UTC);

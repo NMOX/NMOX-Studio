@@ -664,7 +664,7 @@ class OpsHubTest {
         ssh.drain(1);
         cloud.drain(1);
         assertThat(hub.topology().node("scripted:7")).as("the provider says there is no such server").isNull();
-        assertThat(hub.feed()).extracting(OpsEvent::text).anyMatch(t -> t.contains("brief is no longer listed by Scripted"));
+        assertThat(hub.feed()).extracting(OpsEvent::text).anyMatch(t -> t.contains("Scripted no longer has brief, which was still coming up"));
     }
 
     @Test
@@ -848,7 +848,7 @@ class OpsHubTest {
     @Test
     @DisplayName("a probe's own reasons are worded where they are shown; somebody else's words are passed on as said")
     void probeReasonsAreWorded() {
-        assertThat(OpsHub.problemText(HostProbe.Reading.trouble(HostProbe.Trouble.NO_ANSWER, 25))).isEqualTo("no answer within 25 seconds");
+        assertThat(OpsHub.problemText(HostProbe.Reading.trouble(HostProbe.Trouble.NO_ANSWER, 25))).isEqualTo("no answer within 25 s");
         assertThat(OpsHub.problemText(HostProbe.Reading.trouble(HostProbe.Trouble.SILENT_EXIT, 255)))
                 .isEqualTo("ssh ended with exit code 255 and said nothing");
         assertThat(OpsHub.problemText(HostProbe.Reading.trouble(HostProbe.Trouble.TOO_MANY_LINES, 2000))).contains("more than 2000 lines");

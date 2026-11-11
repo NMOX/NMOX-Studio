@@ -211,6 +211,10 @@ class InspectorPanelTest {
                     assertThat(r.x + r.width).as(b.getAccessibleContext().getAccessibleName() + " ends inside the pane")
                             .isLessThanOrEqualTo(300);
                     assertThat(r.width).as("and is whole").isGreaterThanOrEqualTo(b.getPreferredSize().width);
+                    // a FlowLayout also breaks the row at the edge — and then says it is one row tall, so
+                    // the second row is laid out below the panel's own bottom and never painted
+                    assertThat(b.getY() + b.getHeight()).as(b.getAccessibleContext().getAccessibleName() + " is inside its row's own height")
+                            .isLessThanOrEqualTo(b.getParent().getHeight());
                 }
             }
         });
@@ -249,14 +253,24 @@ class InspectorPanelTest {
     @Test
     @DisplayName("the engine's fact keys are data: ordinary words are said by the inspector, names are left as they are")
     void factsAreWorded() {
-        assertThat(InspectorPanel.factLabel("made here")).isEqualTo(Bundle.Inspector_factMadeHere());
+        assertThat(InspectorPanel.factLabel("made here")).as("the engine's key is not the reader's word").isEqualTo("created here");
         assertThat(InspectorPanel.factLabel("containers not drawn")).isEqualTo(Bundle.Inspector_factContainersNotDrawn());
         assertThat(InspectorPanel.factLabel("mosh-server")).as("a name").isEqualTo("mosh-server");
         assertThat(InspectorPanel.factLabel("vpc")).isEqualTo("vpc");
-        assertThat(InspectorPanel.factValue("docker", "yes")).isEqualTo(Bundle.Inspector_yes());
-        assertThat(InspectorPanel.factValue("mosh-server", "no")).isEqualTo(Bundle.Inspector_no());
-        assertThat(InspectorPanel.factValue("image", "yes")).as("an image named yes is an image").isEqualTo("yes");
+        assertThat(InspectorPanel.factValue("made here", "yes")).isEqualTo(Bundle.Inspector_yes());
+        assertThat(InspectorPanel.factValue("docker", "yes")).as("a has-question is not answered yes").isEqualTo("installed");
+        assertThat(InspectorPanel.factValue("mosh-server", "no")).isEqualTo("not installed");
+        assertThat(InspectorPanel.factValue("image", "installed")).as("only the flags are reworded").isEqualTo("installed");
+        assertThat(InspectorPanel.factValue("region", "no")).as("a region named no is a region").isEqualTo("no");
+        assertThat(InspectorPanel.factValue("docker", "no")).isNotEqualTo("no");
         assertThat(InspectorPanel.factValue("docker", "maybe")).isEqualTo("maybe");
+        // a provider's instant is shown as a date a person reads; what is not an instant is shown as it came
+        assertThat(InspectorPanel.factValue("created", "2026-11-10T18:00:00Z"))
+                .isEqualTo(org.nmox.studio.core.util.Clocks.displayDateTime(java.time.Instant.parse("2026-11-10T18:00:00Z").toEpochMilli()))
+                .doesNotContain("T18:00:00Z");
+        assertThat(InspectorPanel.factValue("created", "last Tuesday")).isEqualTo("last Tuesday");
+        assertThat(InspectorPanel.kindWord("runs")).isEqualTo(Bundle.Inspector_edgeRuns());
+        assertThat(InspectorPanel.kindWord("ssh")).as("a name").isEqualTo("ssh");
     }
 
     @Test

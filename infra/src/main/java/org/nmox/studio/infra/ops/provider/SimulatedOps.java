@@ -20,9 +20,19 @@ public final class SimulatedOps implements OpsProvider {
     public static final String ID = "simulation";
 
     private final SimulatedWorld world;
+    private final String name;
 
     public SimulatedOps(SimulatedWorld world) {
+        this(world, "Simulation");
+    }
+
+    /**
+     * @param name what the simulation is called wherever a provider is named ("listed by …",
+     *             "Create … at …"): the Hub hands it the reader's word for it, the one on its checkbox
+     */
+    public SimulatedOps(SimulatedWorld world, String name) {
         this.world = world;
+        this.name = name;
     }
 
     public SimulatedWorld world() {
@@ -36,7 +46,7 @@ public final class SimulatedOps implements OpsProvider {
 
     @Override
     public String displayName() {
-        return "Simulation";
+        return name;
     }
 
     @Override

@@ -71,7 +71,7 @@ import org.openide.util.NbBundle.Messages;
     "# {0} - the name",
     "# {1} - the size",
     "# {2} - the region",
-    "NewServer_confirmSimulated=Create {0} in the Simulation?\n\n{1} in {2}. Nothing is made and nothing is billed.",
+    "NewServer_confirmSimulated=Create {0} in the Simulation?\n\n{1} in {2}. Nothing real is made, and nothing is billed.",
     "NewServer_confirmSimulatedTitle=Simulation: create a server?",
     // add host
     "AddHost_title=Add Host",
@@ -103,10 +103,9 @@ import org.openide.util.NbBundle.Messages;
     "# {1} - the host",
     "# {2} - the stamp running now",
     "# {3} - the stamp going back to",
-    "Rollback_question=Roll {0} on {1} back from image {2} to image {3}?",
-    "Rollback_commands=These commands run on the host",
-    "Rollback_after=The running container is replaced by one from the earlier image. Nothing is uploaded or built, and the newer image stays on the host.",
-    "Rollback_title=Roll back to the earlier image?",
+    "Rollback_question=Roll {0} on {1} back from image {2} to image {3}?\n\nThe running container is replaced by one from the earlier image. Nothing is uploaded or built, and the newer image stays on the host.",
+    "Rollback_commands=These commands will run on the host",
+    "Rollback_title=Roll back to an earlier image",
     // tokens
     "Tokens_title=DigitalOcean API token",
     "Tokens_field=API token (stored in the OS keychain; blank keeps the current one)",
@@ -417,7 +416,6 @@ public final class OpsDialogs {
         middle.add(runs, java.awt.BorderLayout.PAGE_START);
         middle.add(scroll, java.awt.BorderLayout.CENTER);
         form.add(middle, java.awt.BorderLayout.CENTER);
-        form.add(PlainDialogs.plain(Bundle.Rollback_after(), Bundle.Rollback_title()), java.awt.BorderLayout.PAGE_END);
         // the full constructor: a Confirmation's own default is Yes, and Enter must answer No (the v1.98.0 law)
         NotifyDescriptor d = new NotifyDescriptor(form, Bundle.Rollback_title(),
                 NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE,

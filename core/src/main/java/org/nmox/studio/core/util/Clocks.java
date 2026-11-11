@@ -58,6 +58,22 @@ public final class Clocks {
     }
 
     /**
+     * A date AND a time as this user's language writes them — for an instant
+     * that may be days or months old (when a server was created), where a
+     * bare time of day would be a riddle. Reads the locale at call time, as
+     * {@link #display(long)} does.
+     */
+    public static String displayDateTime(long epochMillis) {
+        return displayDateTime(epochMillis, ZoneId.systemDefault(), Locale.getDefault());
+    }
+
+    static String displayDateTime(long epochMillis, ZoneId zone, Locale locale) {
+        return DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
+                .withLocale(locale)
+                .format(Instant.ofEpochMilli(epochMillis).atZone(zone));
+    }
+
+    /**
      * A locale-aware short-time formatter, for the few callers that hold a
      * {@code LocalTime} rather than an instant. Built per call on purpose:
      * a cached formatter would keep the language it was created in, and

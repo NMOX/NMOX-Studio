@@ -60,6 +60,14 @@ import org.openide.util.RequestProcessor;
 @org.openide.util.NbBundle.Messages({
     "OpsHub_simulationOn=Simulation on: hosts made here are not real",
     "OpsHub_simulationOff=Simulation off",
+    "OpsHub_simulationName=Simulation",
+    "OpsHub_sourceAddedByYou=added by you",
+    "# {0} - the provider's name",
+    "OpsHub_sourceListedBy=listed by {0}",
+    "# {0} - the host's label",
+    "OpsHub_sourceDockerPs=docker ps on {0}",
+    "# {0} - the network's name",
+    "OpsHub_sourceSharedNetwork=shared network {0}",
     "# {0} - the host's label",
     "# {1} - user@address",
     "OpsHub_addedHost=Added {0} ({1})",
@@ -92,7 +100,7 @@ import org.openide.util.RequestProcessor;
     "OpsHub_watchGaveUp={0} is not ready after 15 minutes. The Hub no longer waits for it; from here on it is checked like every other host",
     "# {0} - the host's label",
     "# {1} - the provider's name",
-    "OpsHub_goneWhileWatched={0} is no longer listed by {1}",
+    "OpsHub_goneWhileWatched={1} no longer has {0}, which was still coming up",
     "# {0} - the error",
     "OpsHub_watchFailed=watch: {0}",
     "# {0} - the host's label",
@@ -113,7 +121,7 @@ import org.openide.util.RequestProcessor;
     "# {1} - what ssh said",
     "OpsHub_doesNotAnswer={0} does not answer ssh: {1}",
     "# {0} - seconds",
-    "OpsHub_probeNoAnswer=no answer within {0} seconds",
+    "OpsHub_probeNoAnswer=no answer within {0} s",
     "# {0} - ssh's exit code",
     "OpsHub_probeSilentExit=ssh ended with exit code {0} and said nothing",
     "# {0} - a number of lines",
@@ -174,10 +182,10 @@ import org.openide.util.RequestProcessor;
     "OpsHub_stepVerify=verify",
     "# {0} - the service's label",
     "OpsHub_refuseNotOurs={0} was not deployed from NMOX Studio, so the Hub cannot tell which image ran before it",
-    "# {0} - the service's label",
     "# {0} - the service",
     "# {1} - the image it runs",
     "OpsHub_refuseForeignImage={0} runs {1}, which is not an image NMOX Studio tagged, so the Hub cannot tell which one ran before it",
+    "# {0} - the service's label",
     "OpsHub_refuseNoPorts={0} has no port mapping the Hub can read (none, or a range) — a rollback would not know which ports to give the container",
     "# {0} - the app slug",
     "# {1} - the stamp of the image running now",
@@ -418,7 +426,7 @@ public final class OpsHub {
             return;
         }
         if (on) {
-            simulation = new SimulatedOps(new SimulatedWorld(clock));
+            simulation = new SimulatedOps(new SimulatedWorld(clock), Bundle.OpsHub_simulationName());
             providers.put(simulation.id(), simulation);
             event(OpsEvent.Kind.INFO, null, Bundle.OpsHub_simulationOn());
         } else {
@@ -480,7 +488,7 @@ public final class OpsHub {
             node.identityFile = target.identityFile();
             node.status = HostStatus.BOOTING; // nothing observed yet
             topology.put(node);
-            topology.connect(new OpsEdge(Topology.WORKSTATION_ID, id, "ssh", Evidence.DECLARED, "added by you"));
+            topology.connect(new OpsEdge(Topology.WORKSTATION_ID, id, "ssh", Evidence.DECLARED, Bundle.OpsHub_sourceAddedByYou()));
             saveManualHosts();
             event(OpsEvent.Kind.INFO, id, Bundle.OpsHub_addedHost(node.label, target.spec()));
         }
@@ -514,7 +522,7 @@ public final class OpsHub {
                     node.identityFile = t.identityFile();
                     node.status = HostStatus.BOOTING;
                     topology.put(node);
-                    topology.connect(new OpsEdge(Topology.WORKSTATION_ID, key, "ssh", Evidence.DECLARED, "added by you"));
+                    topology.connect(new OpsEdge(Topology.WORKSTATION_ID, key, "ssh", Evidence.DECLARED, Bundle.OpsHub_sourceAddedByYou()));
                 } catch (RuntimeException bad) {
                     LOG.log(Level.WARNING, "Ignoring a saved host that does not parse: {0}", key);
                 }
@@ -629,7 +637,7 @@ public final class OpsHub {
         if (fresh) {
             topology.put(node);
             topology.connect(new OpsEdge(Topology.WORKSTATION_ID, id, "ssh", Evidence.OBSERVED,
-                    "listed by " + p.displayName()));
+                    Bundle.OpsHub_sourceListedBy(p.displayName())));
             event(OpsEvent.Kind.INFO, id, node.address != null
                     ? Bundle.OpsHub_listsAt(p.displayName(), node.label, node.address)
                     : Bundle.OpsHub_lists(p.displayName(), node.label));
@@ -1018,7 +1026,7 @@ public final class OpsHub {
             }
             seen.add(id);
             byService.put(c.serviceName(), id);
-            edges.add(new OpsEdge(host.id, id, "runs", Evidence.OBSERVED, "docker ps on " + host.label));
+            edges.add(new OpsEdge(host.id, id, "runs", Evidence.OBSERVED, Bundle.OpsHub_sourceDockerPs(host.label)));
         }
         // declared dependencies, from compose's own labels
         for (HostFacts.ContainerFact c : facts.containers()) {
@@ -1040,7 +1048,7 @@ public final class OpsHub {
                     String a = byService.get(cs.get(i).serviceName());
                     String b = byService.get(cs.get(j).serviceName());
                     if (a != null && b != null) {
-                        edges.add(new OpsEdge(a, b, "reaches", Evidence.INFERRED, "shared network " + shared.get(0)));
+                        edges.add(new OpsEdge(a, b, "reaches", Evidence.INFERRED, Bundle.OpsHub_sourceSharedNetwork(shared.get(0))));
                     }
                 }
             }

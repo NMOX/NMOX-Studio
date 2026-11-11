@@ -71,7 +71,7 @@ import org.openide.util.NbBundle.Messages;
     "Inspector_factRegion=region",
     "Inspector_factSize=size",
     "Inspector_factImage=image",
-    "Inspector_factMadeHere=made here",
+    "Inspector_factMadeHere=created here",
     "Inspector_factProviderStatus=provider status",
     "Inspector_factCreated=created",
     "Inspector_factContainer=container",
@@ -81,6 +81,8 @@ import org.openide.util.NbBundle.Messages;
     "Inspector_factContainersNotDrawn=containers not drawn",
     "Inspector_yes=yes",
     "Inspector_no=no",
+    "Inspector_installed=installed",
+    "Inspector_notInstalled=not installed",
     "Inspector_gaugeLoad=load per core",
     "Inspector_gaugeMemory=memory",
     "Inspector_gaugeDisk=disk",
@@ -91,6 +93,9 @@ import org.openide.util.NbBundle.Messages;
     "# {2} - observed / inferred / declared",
     "# {3} - where it was read",
     "Inspector_edgeRow={0} {1} — {2}: {3}",
+    "Inspector_edgeRuns=runs",
+    "Inspector_edgeDepends=depends on",
+    "Inspector_edgeReaches=reaches",
     "Inspector_evidenceObserved=observed",
     "Inspector_evidenceInferred=inferred",
     "Inspector_evidenceDeclared=declared",
@@ -369,7 +374,7 @@ public final class InspectorPanel extends JPanel {
                 String otherId = e.from().equals(node.id) ? e.to() : e.from();
                 OpsNode other = hub.topology().node(otherId);
                 String arrow = e.from().equals(node.id) ? "→ " : "← ";
-                String row1 = Bundle.Inspector_edgeRow(arrow + e.kind(),
+                String row1 = Bundle.Inspector_edgeRow(arrow + kindWord(e.kind()),
                         other == null ? otherId : other.label, evidenceWord(e), e.source());
                 // the evidence is the point of the row ("observed: docker ps on …"), so it wraps and is never cut
                 JTextArea l = still(org.nmox.studio.core.util.PlainDialogs.plain(row1, row1));
@@ -551,10 +556,28 @@ public final class InspectorPanel extends JPanel {
         };
     }
 
-    /** The engine's yes and no are flags, not prose: only the three facts that are flags are translated. */
+    /**
+     * The engine's yes and no are flags, not prose, and they answer two
+     * different questions: "was it created here?" is yes or no, while
+     * "does it have docker?" is installed or not — in most languages the
+     * second is not a yes at all. Only the three facts that are flags
+     * are reworded.
+     */
     static String factValue(String key, String value) {
-        if (key.equals("made here") || key.equals("mosh-server") || key.equals("docker")) {
+        if (key.equals("made here")) {
             return "yes".equals(value) ? Bundle.Inspector_yes() : "no".equals(value) ? Bundle.Inspector_no() : value;
+        }
+        if (key.equals("mosh-server") || key.equals("docker")) {
+            return "yes".equals(value) ? Bundle.Inspector_installed()
+                    : "no".equals(value) ? Bundle.Inspector_notInstalled() : value;
+        }
+        if (key.equals("created") && value != null) {
+            // the provider's instant (2026-11-10T18:00:00Z) as the reader's own date and time; anything else as it came
+            try {
+                return org.nmox.studio.core.util.Clocks.displayDateTime(java.time.Instant.parse(value).toEpochMilli());
+            } catch (java.time.format.DateTimeParseException notAnInstant) {
+                return value;
+            }
         }
         return value;
     }
@@ -600,6 +623,16 @@ public final class InspectorPanel extends JPanel {
         }
         var p = hub.provider(node.provider);
         return p != null ? p.displayName() : node.provider;
+    }
+
+    /** An edge's kind is a machine word; the ones that are ordinary verbs are said in the reader's language, ssh and vpc are names. */
+    static String kindWord(String kind) {
+        return switch (kind) {
+            case "runs" -> Bundle.Inspector_edgeRuns();
+            case "depends" -> Bundle.Inspector_edgeDepends();
+            case "reaches" -> Bundle.Inspector_edgeReaches();
+            default -> kind;
+        };
     }
 
     private static String evidenceWord(OpsEdge e) {
