@@ -255,21 +255,46 @@ door were the real ones). Each row was fixed and walked again.
 
 ## What was verified, and how
 
-- 40 unit tests over the pure cores: the ssh argv, the connect rule, the
-  probe parser against real `docker ps` JSON (including compose's
-  comma-bearing `depends_on` label, which the first parser split), the
-  bundle's skips and refusals, the tar against both a Java reader and the
-  system's `tar`, the plan's lines, the deployer's order and stops, the
-  DigitalOcean parsing and request bodies through a fake transport (the
-  token is proven absent from errors), the simulation's timeline, and the
-  engine's listing merge, probe-to-services sync, provisioning watch,
-  deploy refusals and manual-host persistence — all with a hand-driven
-  clock and lanes.
-- Walked in the assembled app (see the changelog for the run): the
-  simulation end to end, and a real host (the local sshd) probed,
-  connected and — where docker was available — deployed to.
+- **128 unit tests** in `infra` over the Hub (44 with 3.11.0): the pure
+  cores (the ssh argv and its quoting, the connect rule, the probe
+  parser against real `docker ps` JSON, its bounds and its typed
+  reasons, the bundle's skips, refusals and containment, the tar against
+  a Java reader and the system's `tar`, the plan's lines, the deployer's
+  order, stops and its reading of curl's status, the rollback's choice
+  of image, the container-name rule, the DigitalOcean parsing, paging
+  and request bodies through a fake transport, the simulation), the
+  engine with a hand-driven clock and lanes (listing merge, the watch
+  and each way it ends, probe-to-services sync, deploy and rollback with
+  every refusal, the search copy), the camera's arithmetic, the canvas's
+  gestures and named key actions, the layout's two caption laws, and the
+  inspector laid out at its pane's own width.
+- **Mutants by name**: 10 on the camera, 31 on the review's fixes, 26 on
+  the walks' fixes; every one killed by a named test except one written
+  down as equivalent (the column's `tracksViewportWidth`, which its own
+  preferred width already implies). Several were killed only after the
+  TEST was repaired — the wrap test and the fact-word test first let
+  their mutants live (the plan's addendum of 2026-11-10 says why).
+- **Walked in the assembled app, three times, in a throwaway home**:
+  the simulation end to end (create with its own confirm, two deploys, a
+  rollback, the wheel to 250% about the pointer and Fit back), and a
+  real host over real ssh — a user-mode sshd on this machine — probed
+  (real load and disk), a host that refuses connections added beside it
+  ("does not answer ssh: … Connection refused", wrapped in the
+  inspector), Logs and Shell opened as Terminal tabs under a real pty,
+  Roll back… run to the earlier tag and read back, and a deploy stopped
+  at upload in the host's own words (`mkdir: /srv: Read-only file
+  system`). Zero SEVERE in the log.
+- **What stood in for docker**: no daemon ran on the walking machine, so
+  the sshd's `docker` was a stub script, labeled in its own output, that
+  keeps one container's state in a file and prints docker's shapes. The
+  Hub's ssh, probe parser, deployer and Terminal door were the real
+  ones; docker was not. A real daemon is the next walk.
+- **Not pressed**: the zoom and pan keys and the Quick Search row (the
+  background tools deliver neither; tests fire the canvas's named
+  actions and the provider, and the layer entry was read out of the
+  built jar).
 - **Not verified live**: a DigitalOcean droplet was not created, because
-  that bills David's account; the request body, the listing, the
+  that bills David's account; the request body, the paged listing, the
   provisioning watch and the destroy are proven against a fake API whose
   answers are the API's documented shapes. The first live create is a
   one-click walk once David decides to spend the few cents.
