@@ -10,10 +10,10 @@ public enum ConnectPlan {
     MOSH,
     /** ssh because mosh is not installed on this machine. */
     SSH_NO_LOCAL_MOSH,
-    /** ssh because the host has no mosh-server (or has not said yet). */
+    /** ssh because the host's probe found no mosh-server. */
     SSH_NO_REMOTE_MOSH,
-    /** ssh because the host runs a system where mosh-server is not expected (its probe said so). */
-    SSH_PREFERRED;
+    /** ssh because the host has not answered a probe yet, so nobody knows whether it has mosh-server. */
+    SSH_REMOTE_UNKNOWN;
 
     public boolean mosh() {
         return this == MOSH;
@@ -27,7 +27,11 @@ public enum ConnectPlan {
         if (!moshOnPath) {
             return SSH_NO_LOCAL_MOSH;
         }
-        if (remoteMosh == null || !remoteMosh) {
+        if (remoteMosh == null) {
+            // not "it has none": a host that never answered was said to lack what nobody had asked it for
+            return SSH_REMOTE_UNKNOWN;
+        }
+        if (!remoteMosh) {
             return SSH_NO_REMOTE_MOSH;
         }
         return MOSH;

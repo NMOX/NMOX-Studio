@@ -192,4 +192,18 @@ class DeployerTest {
                 .isInstanceOf(IOException.class).hasMessageContaining("refused");
         assertThat(r.commands).isEmpty();
     }
+
+    @Test
+    @DisplayName("the verify line's status is a real HTTP status or none: curl's 000 for no answer is not a status")
+    void httpCodeIsAStatusOrNone() {
+        assertThat(Deployer.httpCode("http 80 200")).isEqualTo("200");
+        assertThat(Deployer.httpCode("http 8080 503")).isEqualTo("503");
+        assertThat(Deployer.httpCode("http 80 000")).as("curl's word for no answer").isEqualTo("none");
+        assertThat(Deployer.httpCode("http 80 000none")).as("what 3.11.0's line printed on a refused connection").isEqualTo("none");
+        assertThat(Deployer.httpCode("http 80 none")).isEqualTo("none");
+        assertThat(Deployer.httpCode("http 80")).as("no curl on the host").isEqualTo("none");
+        assertThat(Deployer.httpCode("http 80 2000")).isEqualTo("none");
+        // and the line that runs: curl's own output alone, with a word for the case where there is none
+        assertThat(new DeployPlan("shop", 80, 3000, "1").verify()).contains("echo http 80 ${code:-none}").doesNotContain("|| echo none");
+    }
 }

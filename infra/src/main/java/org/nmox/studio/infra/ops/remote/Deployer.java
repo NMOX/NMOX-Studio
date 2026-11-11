@@ -144,8 +144,7 @@ public final class Deployer {
                     seen[0] = c;
                 }
             } else if (line.startsWith("http ")) {
-                String[] parts = line.split("\\s+");
-                http[0] = parts.length >= 3 ? parts[2] : null;
+                http[0] = httpCode(line);
             }
         }, SHORT_TIMEOUT);
         // docker lists a crash-looping container too ("Restarting (1) 2 seconds ago"): only "Up …" is running
@@ -184,5 +183,18 @@ public final class Deployer {
     private static String lastLine(String tail) {
         String[] lines = tail.strip().split("\\R");
         return lines[lines.length - 1].strip();
+    }
+
+    /**
+     * The status in a verify line ({@code http <port> <code>}): three
+     * digits of a real HTTP status, or {@code "none"}. curl prints
+     * {@code 000} when nothing answered, and the 3.11.0 line appended its
+     * own "none" to that — a real host whose app was not up yet read
+     * "HTTP 000none" on the feed (walked; the simulation always said 200).
+     */
+    static String httpCode(String line) {
+        String[] parts = line.trim().split("\\s+");
+        String code = parts.length >= 3 ? parts[2] : "";
+        return code.matches("[1-5][0-9][0-9]") ? code : "none";
     }
 }

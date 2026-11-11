@@ -36,6 +36,31 @@ public final class HudLayout {
         };
     }
 
+    /** What the canvas writes under a host — its name, its address or status, its readings — as a box from its rim down. */
+    static java.awt.geom.Rectangle2D caption(Place host) {
+        return new java.awt.geom.Rectangle2D.Double(host.x - 62, host.y + host.r + 2, 124, 46);
+    }
+
+    /**
+     * True when no host's ring reaches into another host's caption. Two
+     * rings that clear each other can still do that — a caption is as tall
+     * as a ring's radius — and on a short canvas the fan put the lower
+     * host's ring over the upper one's readings (walked: a second host
+     * added while the Terminal took the lower half of the window).
+     */
+    static boolean captionsClear(java.util.Collection<Place> hosts) {
+        for (Place a : hosts) {
+            java.awt.geom.Rectangle2D box = caption(a);
+            for (Place b : hosts) {
+                double glow = b.r + 6;
+                if (a != b && box.intersects(b.x - glow, b.y - glow, 2 * glow, 2 * glow)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     /** How many of a host's services stand in one column of the fleet view. */
     static final int SATELLITE_ROWS = 3;
     /** From one service to the next below it. */
@@ -75,7 +100,7 @@ public final class HudLayout {
                 }
                 fan.put(hosts.get(i).id, new Place(x, y, hostR));
             }
-            if (n == 1 || minGap >= apart * 0.8) {
+            if (n == 1 || (minGap >= apart * 0.8 && captionsClear(fan.values()))) {
                 out.putAll(fan);
                 fanned = true;
             }

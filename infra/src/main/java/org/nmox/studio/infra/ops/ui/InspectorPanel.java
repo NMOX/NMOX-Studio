@@ -120,6 +120,7 @@ import org.openide.util.NbBundle.Messages;
     "Inspector_planSsh=ssh",
     "Inspector_whyNoLocalMosh=mosh is not installed on this machine",
     "Inspector_whyNoRemoteMosh=the host has no mosh-server",
+    "Inspector_whyRemoteUnknown=the host has not said yet whether it has mosh-server",
     "Inspector_whyMosh=both ends have mosh",
     "Inspector_simulatedConnect=simulated host: there is nothing to connect to",
     "Inspector_never=never"
@@ -593,7 +594,8 @@ public final class InspectorPanel extends JPanel {
         return switch (plan) {
             case MOSH -> Bundle.Inspector_whyMosh();
             case SSH_NO_LOCAL_MOSH -> Bundle.Inspector_whyNoLocalMosh();
-            case SSH_NO_REMOTE_MOSH, SSH_PREFERRED -> Bundle.Inspector_whyNoRemoteMosh();
+            case SSH_NO_REMOTE_MOSH -> Bundle.Inspector_whyNoRemoteMosh();
+            case SSH_REMOTE_UNKNOWN -> Bundle.Inspector_whyRemoteUnknown();
         };
     }
 

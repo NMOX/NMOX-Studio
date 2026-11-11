@@ -50,7 +50,26 @@ class HudLayoutTest {
 
     /** What is written under a host: three centred lines, from its rim down. */
     private static java.awt.geom.Rectangle2D caption(HudLayout.Place host) {
-        return new java.awt.geom.Rectangle2D.Double(host.x() - 62, host.y() + host.r() + 2, 124, 46);
+        return HudLayout.caption(host);
+    }
+
+    @Test
+    @DisplayName("no host's ring reaches into another host's caption, on a tall canvas or a short one")
+    void ringsKeepOffTheCaptions() {
+        for (int[] size : new int[][]{{1200, 700}, {900, 360}, {632, 358}, {640, 330}, {640, 420}}) {
+            for (int n : new int[]{2, 3, 4, 5, 8, 9}) {
+                Map<String, HudLayout.Place> p = HudLayout.layout(fleet(n, 0), HudView.FLEET, size[0], size[1]);
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < n; j++) {
+                        HudLayout.Place other = p.get("h" + j);
+                        double glow = other.r() + 6;
+                        assertThat(i != j && caption(p.get("h" + i)).intersects(other.x() - glow, other.y() - glow, 2 * glow, 2 * glow))
+                                .as(size[0] + "x" + size[1] + ", " + n + " hosts: the ring of h" + j + " over the caption of h" + i)
+                                .isFalse();
+                    }
+                }
+            }
+        }
     }
 
     private static boolean covers(HudLayout.Place sat, java.awt.geom.Rectangle2D caption) {
