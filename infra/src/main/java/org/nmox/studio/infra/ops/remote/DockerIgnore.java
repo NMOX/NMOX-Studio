@@ -80,9 +80,6 @@ public final class DockerIgnore {
         List<String> passedOver = new ArrayList<>();
         for (String raw : text.split("\n", -1)) {
             // a carriage return before the line feed needs no step of its own: it is space, and trimmed below
-            if (raw.startsWith("#")) {
-                continue;
-            }
             String line = trimAsDockerDoes(raw);
             if (line.isEmpty()) {
                 continue;
@@ -92,8 +89,8 @@ public final class DockerIgnore {
                 return new DockerIgnore(List.of(), List.of(), true);
             }
             if (line.startsWith("#")) {
-                // "  #name": docker reads a pattern for a file called #name; the line's author meant a
-                // comment. Applying neither reading is the safe one.
+                // a comment — and "  #name" with it: docker reads that one as a pattern for a file called
+                // #name, its author meant a comment, and applying neither reading is the safe one
                 continue;
             }
             List<String> p = segmentsOf(line);
@@ -162,12 +159,13 @@ public final class DockerIgnore {
     /**
      * Whether docker would leave this path out of the build context.
      * The Dockerfile and the ignore file themselves always travel:
-     * docker sends them to the daemon whatever the file says.
+     * docker sends them to the daemon whatever the file says (and takes
+     * a lower-case {@code dockerfile} when there is no other).
      *
      * @param relative the path from the context root, {@code /}-separated, no leading slash
      */
     public boolean excludes(String relative) {
-        if (relative.equals("Dockerfile") || relative.equals(".dockerignore")) {
+        if (relative.equals("Dockerfile") || relative.equals("dockerfile") || relative.equals(".dockerignore")) {
             return false;
         }
         String[] path = relative.split("/");

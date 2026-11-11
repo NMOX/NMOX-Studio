@@ -55,6 +55,7 @@ class DockerIgnoreTest {
         assertThat(d.excludes("src")).isTrue();
         assertThat(d.excludes("Dockerfile")).isFalse();
         assertThat(d.excludes(".dockerignore")).isFalse();
+        assertThat(d.excludes("dockerfile")).as("docker takes the lower-case name when there is no other").isFalse();
         assertThat(d.excludes("sub/Dockerfile")).as("only the context's own").isFalse();
         assertThat(DockerIgnore.parse("**\n").excludes("sub/Dockerfile")).isTrue();
     }

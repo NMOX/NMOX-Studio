@@ -90,6 +90,48 @@ class ProjectBundleTest {
     }
 
     @Test
+    @DisplayName("a Dockerfile.dockerignore beside it: which file docker reads depends on its builder, so the upload applies neither")
+    void perDockerfileIgnoreSwitchesItOff(@TempDir Path root) throws IOException {
+        Files.writeString(root.resolve("Dockerfile"), "FROM scratch\n");
+        Files.writeString(root.resolve(".dockerignore"), "data\n");
+        Files.writeString(root.resolve("Dockerfile.dockerignore"), "src\n");
+        Files.createDirectories(root.resolve("data"));
+        Files.writeString(root.resolve("data/blob"), "BuildKit would send this: its file names src, not data");
+        Files.createDirectories(root.resolve("src"));
+        Files.writeString(root.resolve("src/index.js"), "the classic builder would send this");
+        ProjectBundle.Manifest m = ProjectBundle.plan(root);
+        assertThat(m.files()).contains("data/blob", "src/index.js", ".dockerignore", "Dockerfile.dockerignore");
+        assertThat(m.notes()).singleElement().asString().startsWith("Dockerfile.dockerignore is present");
+        // without it the same file is applied
+        Files.delete(root.resolve("Dockerfile.dockerignore"));
+        m = ProjectBundle.plan(root);
+        assertThat(m.files()).doesNotContain("data/blob");
+        assertThat(m.notes()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("an ignore file spelled another way on disk is not the host's docker's file, so it is not the upload's either")
+    void anIgnoreFileIsItsExactName(@TempDir Path root) throws IOException {
+        Files.writeString(root.resolve("Dockerfile"), "FROM scratch\n");
+        Files.writeString(root.resolve(".DockerIgnore"), "data\n");
+        Files.createDirectories(root.resolve("data"));
+        Files.writeString(root.resolve("data/blob"), "the host's docker, on a filesystem that minds case, sends this");
+        ProjectBundle.Manifest m = ProjectBundle.plan(root);
+        assertThat(m.files()).contains("data/blob");
+        if (Files.isRegularFile(root.resolve(".dockerignore"))) {
+            // this filesystem ignores case (macOS, Windows): the file answered to the name, and was still not applied
+            assertThat(m.notes()).singleElement().asString().contains("not spelled .dockerignore on disk");
+            assertThat(ProjectBundle.spelledOnDiskAs(root.resolve(".dockerignore"), ".dockerignore")).isFalse();
+        } else {
+            assertThat(m.notes()).isEmpty();
+        }
+        Files.delete(root.resolve(".DockerIgnore"));
+        Files.writeString(root.resolve(".dockerignore"), "data\n");
+        assertThat(ProjectBundle.spelledOnDiskAs(root.resolve(".dockerignore"), ".dockerignore")).isTrue();
+        assertThat(ProjectBundle.plan(root).files()).doesNotContain("data/blob");
+    }
+
+    @Test
     @DisplayName("many ignored entries are named up to a point and counted after it: the log is a log, not a listing")
     void manyIgnoredEntriesAreCounted(@TempDir Path root) throws IOException {
         Files.writeString(root.resolve("Dockerfile"), "FROM scratch\n");

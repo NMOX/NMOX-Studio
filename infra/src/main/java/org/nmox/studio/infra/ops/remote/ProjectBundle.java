@@ -110,6 +110,19 @@ public final class ProjectBundle {
         if (!Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)) {
             return DockerIgnore.NONE;
         }
+        // Two cases where the host's docker would not read this file as it stands, so the upload does not
+        // either (leaving out less than docker is the safe side). The name as the DISK spells it: on a
+        // filesystem that ignores case ".DockerIgnore" answers to this path, and the host's does not.
+        if (!spelledOnDiskAs(file, ".dockerignore")) {
+            notes.add("the ignore file is not spelled .dockerignore on disk, so it was not applied to the upload; docker on the host would not read it");
+            return DockerIgnore.NONE;
+        }
+        // And a Dockerfile.dockerignore beside it: BuildKit reads THAT one instead, the classic builder
+        // reads this one, and which builds on the host is not known here.
+        if (Files.isRegularFile(base.resolve("Dockerfile.dockerignore"), LinkOption.NOFOLLOW_LINKS)) {
+            notes.add("Dockerfile.dockerignore is present, so .dockerignore was not applied to the upload: which of the two docker reads depends on its builder; docker applies its own on the host");
+            return DockerIgnore.NONE;
+        }
         String text;
         try {
             text = org.nmox.studio.core.util.BoundedReads.read(file.toFile(), MAX_IGNORE_BYTES);
@@ -126,6 +139,16 @@ public final class ProjectBundle {
             notes.add(".dockerignore line not applied to the upload: " + line);
         }
         return ignore;
+    }
+
+    /** Whether the file's own directory entry has exactly this name (a case-insensitive filesystem answers to others). */
+    static boolean spelledOnDiskAs(Path file, String name) {
+        try {
+            Path real = file.toRealPath(LinkOption.NOFOLLOW_LINKS).getFileName();
+            return real != null && real.toString().equals(name);
+        } catch (IOException gone) {
+            return false;
+        }
     }
 
     /** A refusal in English, for the deploy's log. */

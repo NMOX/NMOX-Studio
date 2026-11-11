@@ -192,9 +192,17 @@ What a server that is up needs next, and what the first slice got wrong.
 
 - **The upload honours `.dockerignore`, one-sidedly.** `DockerIgnore`
   applies the lines it is certain about and nothing else (no file with
-  an exception line; no character classes or escapes), because leaving
-  out less than docker would is always safe and leaving out more builds
-  another image. What it leaves out does not count against the bundle's
+  an exception line; no character classes or escapes; no name holding
+  `+ ( ) | { } ^`, which docker's releases turn into a regular
+  expression differently), because leaving out less than docker would
+  is always safe and leaving out more builds another image. It reads
+  the file as moby's `ignorefile.ReadAll` does and not as Java would:
+  lines end at a line feed only, a byte-order mark comes off the first
+  line only, `#` is a comment, and trimming is Go's `unicode.IsSpace`.
+  A review of the class against that reader found each of Java's own
+  notions could hide an exception line (a mark or a no-break space
+  before the `!`) or split one name into two (a form feed), and either
+  one leaves out more than docker would. What it leaves out does not count against the bundle's
   caps. It matches segment by segment with a memo instead of a regular
   expression: a line is a stranger's text. A refused bundle travels as
   `ProjectBundle.Refusal` (kind, figure, where) and is worded by the Hub.

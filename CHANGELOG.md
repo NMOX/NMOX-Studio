@@ -52,7 +52,13 @@ walks of the four-day-old Hub found wrong in it.
   (`!keep.me`) is not applied at all, a line with a character class or
   an escape is passed over, and the deploy's log says which. The
   Dockerfile and the ignore file always travel, and `.env` files stay
-  home whatever the file says.
+  home whatever the file says. The file is read the way docker's own
+  reader reads it, which is not the way Java reads text: a line ends at
+  a line feed and nowhere else, a byte-order mark comes off the first
+  line, and space is trimmed by Go's definition, so an exception line
+  behind a mark or a no-break space is still seen as one. A name with
+  `+ ( ) | { }` or `^` is passed over as well, because docker's
+  releases disagree about those characters.
 - `BundleEncodingGateTest.noValuePrintsItsOwnLineBreak` reads every
   bundle of every NMOX jar in the assembled cluster for a line break
   that would be printed as a backslash and a letter.
