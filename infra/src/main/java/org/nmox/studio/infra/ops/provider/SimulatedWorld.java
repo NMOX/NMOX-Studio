@@ -36,6 +36,8 @@ public final class SimulatedWorld {
         final long createdAt;
         final Map<String, String> facts = new LinkedHashMap<>();
         final List<SimContainer> containers = new ArrayList<>();
+        /** Every image a simulated build made, as {@code nmox/app:stamp} — what a rollback reads back. */
+        final List<String> images = new ArrayList<>();
         boolean destroyed;
 
         SimHost(String id, String name, String address, long createdAt) {
@@ -202,6 +204,23 @@ public final class SimulatedWorld {
                 onLine.accept(line);
                 pause(350);
             }
+            synchronized (this) {
+                if (!h.images.contains(image)) {
+                    h.images.add(image);
+                }
+            }
+            return new RemoteRunner.Result(0, "", false);
+        }
+        if (command.startsWith("docker images nmox/")) {
+            String repo = command.split("\\s+")[2];
+            synchronized (this) {
+                for (String image : h.images) {
+                    if (image.startsWith(repo + ":")) {
+                        onLine.accept(image.substring(repo.length() + 1));
+                    }
+                }
+            }
+            onLine.accept("latest");
             return new RemoteRunner.Result(0, "", false);
         }
         if (command.startsWith("docker rm -f")) {

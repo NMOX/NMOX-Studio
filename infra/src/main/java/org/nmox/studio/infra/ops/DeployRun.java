@@ -14,6 +14,10 @@ import org.nmox.studio.infra.ops.remote.Deployer;
  * passed or failed, the last lines of output. One per host at a time;
  * the Hub refuses a second while one runs. EDT-confined like the
  * topology.
+ *
+ * <p>A rollback is a run too — the same tracker, the same refusal while
+ * one is in flight — with only the steps it has: it starts an image the
+ * host already holds, so there is nothing to bundle, upload or build.
  */
 public final class DeployRun {
 
@@ -25,17 +29,27 @@ public final class DeployRun {
     public final String hostId;
     public final DeployPlan plan;
     public final long startedAt;
+    /** The steps this run has, in order: all six for a deploy, RUN and VERIFY for a rollback. */
     public final Map<Deployer.Step, StepState> steps = new EnumMap<>(Deployer.Step.class);
+    /** True when this run starts an earlier image instead of building a new one. */
+    public final boolean rollback;
     private final Deque<String> tail = new ArrayDeque<>();
     public Deployer.Outcome outcome;
     public boolean finished;
 
     public DeployRun(String hostId, DeployPlan plan, long startedAt) {
+        this(hostId, plan, startedAt, false);
+    }
+
+    public DeployRun(String hostId, DeployPlan plan, long startedAt, boolean rollback) {
         this.hostId = hostId;
         this.plan = plan;
         this.startedAt = startedAt;
+        this.rollback = rollback;
         for (Deployer.Step s : Deployer.Step.values()) {
-            steps.put(s, StepState.PENDING);
+            if (!rollback || s == Deployer.Step.RUN || s == Deployer.Step.VERIFY) {
+                steps.put(s, StepState.PENDING);
+            }
         }
     }
 
@@ -51,9 +65,9 @@ public final class DeployRun {
     }
 
     public Deployer.Step current() {
-        for (Deployer.Step s : Deployer.Step.values()) {
-            if (steps.get(s) == StepState.RUNNING) {
-                return s;
+        for (Map.Entry<Deployer.Step, StepState> e : steps.entrySet()) {
+            if (e.getValue() == StepState.RUNNING) {
+                return e.getKey();
             }
         }
         return null;

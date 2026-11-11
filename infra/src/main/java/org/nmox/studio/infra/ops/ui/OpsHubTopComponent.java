@@ -25,7 +25,6 @@ import org.nmox.studio.infra.ops.model.OpsKind;
 import org.nmox.studio.infra.ops.model.OpsNode;
 import org.nmox.studio.infra.ops.provider.OpsProvider;
 import org.nmox.studio.infra.ops.provider.ProviderOptions;
-import org.nmox.studio.infra.ops.remote.ConnectPlan;
 import org.nmox.studio.infra.ops.remote.DeployPlan;
 import org.nmox.studio.infra.ops.remote.SshTarget;
 import org.openide.awt.ActionID;
@@ -71,6 +70,8 @@ import org.openide.windows.TopComponent;
     "OpsHub_viewFleet=Fleet",
     "OpsHub_viewServices=Workloads",
     "OpsHub_viewTooltip=The physical picture, or the logical one",
+    "OpsHub_fit=Fit",
+    "OpsHub_fitTooltip=Frame the whole view again (0). The wheel zooms, a drag on empty space pans, + and − zoom.",
     "OpsHub_motion=Motion",
     "OpsHub_motionTooltip=Let the HUD glide; off snaps every change into place (the system's Reduce Motion is honoured when this is on)",
     "OpsHub_providerLive=DigitalOcean: live",
@@ -99,7 +100,13 @@ import org.openide.windows.TopComponent;
     "OpsHub_menuDeploy=Deploy here…",
     "OpsHub_menuProbe=Probe now",
     "OpsHub_menuDestroy=Destroy…",
-    "OpsHub_menuForget=Forget"
+    "OpsHub_menuForget=Forget",
+    "OpsHub_menuLogs=Follow logs",
+    "OpsHub_menuShell=Shell in container",
+    "OpsHub_menuRollback=Roll back…",
+    "# {0} - the container's name as the host printed it",
+    "OpsHub_badContainerName=The host reports a container named \u201c{0}\u201d, which is not a name docker accepts — the Hub will not put it in a command.",
+    "OpsHub_hostGone=That service's host is no longer on the Hub."
 })
 public final class OpsHubTopComponent extends TopComponent {
 
@@ -114,6 +121,7 @@ public final class OpsHubTopComponent extends TopComponent {
     private final JToggleButton fleetView = new JToggleButton(Bundle.OpsHub_viewFleet(), true);
     private final JToggleButton servicesView = new JToggleButton(Bundle.OpsHub_viewServices());
     private final JCheckBox motion = new JCheckBox(Bundle.OpsHub_motion());
+    private final JButton fit = button(Bundle.OpsHub_fit(), Bundle.OpsHub_fitTooltip(), () -> { });
     private final OpsHub.Listener hubListener = new OpsHub.Listener() {
         @Override
         public void event(OpsEvent event) {
@@ -162,12 +170,21 @@ public final class OpsHubTopComponent extends TopComponent {
             servicesView.setSelected(v.level() == HudView.Level.SERVICES);
         });
         canvas.onContextMenu(this::contextMenu);
+        fit.addActionListener(e -> {
+            canvas.fit();
+            canvas.requestFocusInWindow();
+        });
+        // Fit is a door only while there is somewhere to come back from
+        canvas.onCameraChanged(() -> fit.setEnabled(canvas.camera().manual() || !canvas.camera().identity()));
+        fit.setEnabled(false);
         getAccessibleContext().setAccessibleName(Bundle.CTL_OpsHubTopComponent());
         getAccessibleContext().setAccessibleDescription(Bundle.HINT_OpsHubTopComponent());
     }
 
     private JPanel toolbar() {
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEADING, 6, 4));
+        // WrapLayout, not FlowLayout: nine controls do not fit a narrow dock, and a FlowLayout's
+        // preferred height lies one row (ledger 75), clipping the second row off the edge
+        JPanel bar = new JPanel(new org.nmox.studio.core.util.WrapLayout(FlowLayout.LEADING, 6, 4));
         bar.add(button(Bundle.OpsHub_newServer(), Bundle.OpsHub_newServerTooltip(), this::newServer));
         bar.add(button(Bundle.OpsHub_addHost(), Bundle.OpsHub_addHostTooltip(), this::addHost));
         bar.add(button(Bundle.OpsHub_refresh(), Bundle.OpsHub_refreshTooltip(), () -> {
@@ -193,6 +210,7 @@ public final class OpsHubTopComponent extends TopComponent {
         servicesView.addActionListener(e -> canvas.setView(HudView.SERVICES));
         bar.add(fleetView);
         bar.add(servicesView);
+        bar.add(fit);
         motion.setSelected(ReducedMotion.choice() != ReducedMotion.Choice.OFF);
         motion.setToolTipText(PlainText.plain(Bundle.OpsHub_motionTooltip()));
         motion.getAccessibleContext().setAccessibleName(Bundle.OpsHub_motion());
@@ -333,6 +351,11 @@ public final class OpsHubTopComponent extends TopComponent {
             if (port != null) {
                 item(menu, Bundle.Inspector_open(), () -> openInBrowser(node, port)).setEnabled(!node.simulated);
             }
+            item(menu, Bundle.OpsHub_menuLogs(), () -> serviceDoor(node, false)).setEnabled(!node.simulated);
+            item(menu, Bundle.OpsHub_menuShell(), () -> serviceDoor(node, true)).setEnabled(!node.simulated);
+            if (node.app != null) {
+                item(menu, Bundle.OpsHub_menuRollback(), () -> rollback(node));
+            }
             if (node.hostId != null) {
                 item(menu, Bundle.OpsHub_menuOpen(), () -> canvas.setView(HudView.host(node.hostId)));
             }
@@ -375,10 +398,56 @@ public final class OpsHubTopComponent extends TopComponent {
         });
     }
 
-    /** A plain click's connect: the automatic choice. */
-    void connectDefault(OpsNode node) {
-        ConnectPlan plan = hub.connectPlan(node);
-        connect(node, plan.mosh());
+    /**
+     * A service's two terminal doors: follow its logs, or a shell inside
+     * it. The container's name is the host's word, so it is checked
+     * against docker's own rule before it is put in a remote line, and a
+     * name that fails is refused by name.
+     */
+    private void serviceDoor(OpsNode service, boolean shell) {
+        OpsNode host = service.hostId == null ? null : hub.topology().node(service.hostId);
+        SshTarget target = host == null ? null : hub.targetOf(host);
+        if (target == null || service.simulated) {
+            if (!service.simulated) {
+                OpsDialogs.message(Bundle.OpsHub_hostGone());
+            }
+            return;
+        }
+        String container = service.facts.get("container");
+        if (!org.nmox.studio.infra.ops.remote.ContainerDoors.nameIsSafe(container)) {
+            OpsDialogs.message(Bundle.OpsHub_badContainerName(String.valueOf(container)));
+            return;
+        }
+        String remote = shell ? org.nmox.studio.infra.ops.remote.ContainerDoors.shell(container)
+                : org.nmox.studio.infra.ops.remote.ContainerDoors.logs(container);
+        String title = shell ? Bundle.TerminalDoor_shellTitle(service.label) : Bundle.TerminalDoor_logsTitle(service.label);
+        TerminalDoor.open(title, target.interactiveSsh(hub.knownHosts(), remote), System.getProperty("user.home"), outcome -> {
+            String status = switch (outcome) {
+                case OPENED -> Bundle.OpsHub_opened(title);
+                case COPIED_FALLBACK -> Bundle.OpsHub_copied();
+                case NO_TOOL -> Bundle.OpsHub_noSsh();
+            };
+            StatusDisplayer.getDefault().setStatusText(PlainStatus.text(status));
+        });
+    }
+
+    /** Asks the host what it still holds, shows what going back would run, and runs it on a yes. */
+    private void rollback(OpsNode service) {
+        hub.rollbackOffer(service, offer -> {
+            if (!offer.ok()) {
+                OpsDialogs.message(offer.refusal());
+                return;
+            }
+            // the answer came back from the host: the service or its host may be gone by now
+            OpsNode host = service.hostId == null ? null : hub.topology().node(service.hostId);
+            if (host == null || hub.topology().node(service.id) == null) {
+                OpsDialogs.message(Bundle.OpsHub_hostGone());
+                return;
+            }
+            if (OpsDialogs.confirmRollback(host, offer.plan(), offer.fromStamp())) {
+                hub.rollback(host, offer.plan(), offer.fromStamp());
+            }
+        });
     }
 
     private void deploy(OpsNode node) {
@@ -451,6 +520,21 @@ public final class OpsHubTopComponent extends TopComponent {
         @Override
         public void forget(OpsNode host) {
             hub.forgetManualHost(host);
+        }
+
+        @Override
+        public void logs(OpsNode service) {
+            serviceDoor(service, false);
+        }
+
+        @Override
+        public void shell(OpsNode service) {
+            serviceDoor(service, true);
+        }
+
+        @Override
+        public void rollback(OpsNode service) {
+            OpsHubTopComponent.this.rollback(service);
         }
     }
 

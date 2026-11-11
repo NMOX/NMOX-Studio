@@ -152,7 +152,36 @@ import org.openide.util.RequestProcessor;
     "OpsHub_stepSwap=swap",
     "OpsHub_stepBuild=build",
     "OpsHub_stepRun=run",
-    "OpsHub_stepVerify=verify"
+    "OpsHub_stepVerify=verify",
+    "# {0} - the service's label",
+    "OpsHub_refuseNotOurs={0} was not deployed from NMOX Studio — the Hub knows no earlier image of it",
+    "# {0} - the service's label",
+    "OpsHub_refuseNoPorts={0} publishes no single port the Hub can read — a rollback would not know what to publish",
+    "# {0} - the app slug",
+    "# {1} - the stamp of the image running now",
+    "OpsHub_refuseNoEarlier=the host holds no image of {0} older than the one running ({1})",
+    "# {0} - the app slug",
+    "# {1} - the host's label",
+    "# {2} - what ssh or docker said",
+    "OpsHub_refuseImagesUnread=could not read the images of {0} on {1}: {2}",
+    "# {0} - the reason",
+    "OpsHub_rollbackRefused=Rollback refused: {0}",
+    "# {0} - the app slug",
+    "# {1} - the host's label",
+    "OpsHub_readingImages=Reading the images of {0} on {1}…",
+    "# {0} - the app slug",
+    "# {1} - the host's label",
+    "# {2} - the stamp running now",
+    "# {3} - the stamp going back to",
+    "OpsHub_rollingBack=Rolling {0} on {1} back from {2} to {3}",
+    "# {0} - the app slug",
+    "# {1} - the host's label",
+    "# {2} - the stamp now running",
+    "# {3} - the HTTP answer",
+    "OpsHub_rolledBack={0} on {1} is back on {2} ({3})",
+    "# {0} - the step",
+    "# {1} - the reason",
+    "OpsHub_rollbackStopped=Rollback stopped at {0}: {1}"
 })
 public final class OpsHub {
 
@@ -751,8 +780,11 @@ public final class OpsHub {
                 s.facts.put("ports", c.ports());
             }
             String app = c.labels().get(DeployPlan.LABEL);
+            s.app = app;
             if (app != null) {
                 s.facts.put("deployed by", Bundle.OpsHub_deployedByFact(app));
+            } else {
+                s.facts.remove("deployed by");
             }
             if (c.composeProject() != null) {
                 s.facts.put("compose project", c.composeProject());
@@ -870,43 +902,168 @@ public final class OpsHub {
         SshTarget target = targetOf(host);
         RemoteRunner runner = runnerFor(host);
         onSsh(() -> {
-            Deployer.Outcome outcome = new Deployer(runner).deploy(project.toPath(), plan, target, new Deployer.Listener() {
-                @Override
-                public void stepStarted(Deployer.Step step) {
-                    edt.accept(() -> {
-                        run.steps.put(step, DeployRun.StepState.RUNNING);
-                        fireState();
-                    });
-                }
-
-                @Override
-                public void line(Deployer.Step step, String line) {
-                    edt.accept(() -> {
-                        run.line(line);
-                        fireState();
-                    });
-                }
-
-                @Override
-                public void stepFinished(Deployer.Step step, boolean ok) {
-                    edt.accept(() -> {
-                        run.steps.put(step, ok ? DeployRun.StepState.OK : DeployRun.StepState.FAILED);
-                        event(ok ? OpsEvent.Kind.OK : OpsEvent.Kind.FAIL, host.id, ok
-                                ? Bundle.OpsHub_stepOk(stepName(step)) : Bundle.OpsHub_stepFailed(stepName(step)));
-                        fireState();
-                    });
-                }
-            });
+            Deployer.Outcome outcome = new Deployer(runner).deploy(project.toPath(), plan, target, tracker(run, host));
             edt.accept(() -> {
                 run.outcome = outcome;
                 run.finished = true;
                 if (outcome.ok()) {
-                    String http = outcome.httpCode() == null || "none".equals(outcome.httpCode())
-                            ? Bundle.OpsHub_noHttpAnswerYet() : "HTTP " + outcome.httpCode();
                     event(OpsEvent.Kind.OK, host.id, Bundle.OpsHub_deployUp(plan.app(), host.label,
-                            Integer.toString(plan.hostPort()), http));
+                            Integer.toString(plan.hostPort()), httpWord(outcome)));
                 } else {
                     event(OpsEvent.Kind.FAIL, host.id, Bundle.OpsHub_deployStopped(stepName(outcome.failedAt()),
+                            outcome.reason() == null ? "" : outcome.reason()));
+                }
+                fireState();
+                probe(host);
+            });
+        });
+        return run;
+    }
+
+    private static String httpWord(Deployer.Outcome outcome) {
+        return outcome.httpCode() == null || "none".equals(outcome.httpCode())
+                ? Bundle.OpsHub_noHttpAnswerYet() : "HTTP " + outcome.httpCode();
+    }
+
+    /** A run's steps and lines, carried to the EDT as they happen: the tracker the inspector reads and the feed's step lines. */
+    private Deployer.Listener tracker(DeployRun run, OpsNode host) {
+        return new Deployer.Listener() {
+            @Override
+            public void stepStarted(Deployer.Step step) {
+                edt.accept(() -> {
+                    run.steps.put(step, DeployRun.StepState.RUNNING);
+                    fireState();
+                });
+            }
+
+            @Override
+            public void line(Deployer.Step step, String line) {
+                edt.accept(() -> {
+                    run.line(line);
+                    fireState();
+                });
+            }
+
+            @Override
+            public void stepFinished(Deployer.Step step, boolean ok) {
+                edt.accept(() -> {
+                    run.steps.put(step, ok ? DeployRun.StepState.OK : DeployRun.StepState.FAILED);
+                    event(ok ? OpsEvent.Kind.OK : OpsEvent.Kind.FAIL, host.id, ok
+                            ? Bundle.OpsHub_stepOk(stepName(step)) : Bundle.OpsHub_stepFailed(stepName(step)));
+                    fireState();
+                });
+            }
+        };
+    }
+
+    // ---- rollback ----
+
+    /**
+     * What going back would do, or why it cannot be done.
+     *
+     * @param plan the run and verify lines with the earlier stamp; null when refused
+     * @param fromStamp the stamp running now
+     * @param refusal the sentence to show; null when the offer stands
+     */
+    public record RollbackOffer(DeployPlan plan, String fromStamp, String refusal) {
+
+        public boolean ok() {
+            return refusal == null;
+        }
+
+        static RollbackOffer refused(String why) {
+            return new RollbackOffer(null, null, why);
+        }
+    }
+
+    /**
+     * Answers, on the EDT, with what rolling a deployed service back
+     * would run — after asking the HOST which images of it it still
+     * holds — or with the reason it cannot. Everything spliced into a
+     * remote line is validated here first: the app is the container's
+     * label, which is the host's word, and a label that is not a slug is
+     * refused as "not ours" rather than quoted.
+     */
+    public void rollbackOffer(OpsNode service, Consumer<RollbackOffer> then) {
+        OpsNode host = service == null || service.hostId == null ? null : topology.node(service.hostId);
+        if (service == null || service.kind != OpsKind.SERVICE || host == null) {
+            then.accept(RollbackOffer.refused(Bundle.OpsHub_refusePickHost()));
+            return;
+        }
+        String app = service.app;
+        if (app == null || !DeployPlan.SLUG.matcher(app).matches()) {
+            then.accept(RollbackOffer.refused(Bundle.OpsHub_refuseNotOurs(service.label)));
+            return;
+        }
+        SshTarget target = targetOf(host);
+        if (target == null || !host.status.reachable()) {
+            then.accept(RollbackOffer.refused(Bundle.OpsHub_refuseNotReachable(host.label)));
+            return;
+        }
+        DeployRun running = deploys.get(host.id);
+        if (running != null && !running.finished) {
+            then.accept(RollbackOffer.refused(Bundle.OpsHub_refuseDeployRunning(host.label)));
+            return;
+        }
+        String current = org.nmox.studio.infra.ops.remote.Rollback.stampOf(service.facts.get("image"), app);
+        if (current == null) {
+            then.accept(RollbackOffer.refused(Bundle.OpsHub_refuseNotOurs(service.label)));
+            return;
+        }
+        int[] ports = new HostFacts.ContainerFact("", "", "", "", service.facts.get("ports"), Map.of(), List.of()).firstMapping();
+        if (ports == null) {
+            then.accept(RollbackOffer.refused(Bundle.OpsHub_refuseNoPorts(service.label)));
+            return;
+        }
+        event(OpsEvent.Kind.INFO, service.id, Bundle.OpsHub_readingImages(app, host.label));
+        RemoteRunner runner = runnerFor(host);
+        onSsh(() -> {
+            List<String> lines = Collections.synchronizedList(new ArrayList<>());
+            RemoteRunner.Result r = runner.run(target, org.nmox.studio.infra.ops.remote.Rollback.imagesCommand(app),
+                    null, lines::add, java.time.Duration.ofSeconds(20));
+            RollbackOffer offer;
+            if (!r.ok()) {
+                String said = lines.isEmpty() ? r.tail() : lines.get(lines.size() - 1);
+                offer = RollbackOffer.refused(Bundle.OpsHub_refuseImagesUnread(app, host.label, said == null ? "" : said));
+            } else {
+                String previous = org.nmox.studio.infra.ops.remote.Rollback.previous(current, new ArrayList<>(lines));
+                offer = previous == null
+                        ? RollbackOffer.refused(Bundle.OpsHub_refuseNoEarlier(app, current))
+                        : new RollbackOffer(new DeployPlan(app, ports[0], ports[1], previous), current, null);
+            }
+            edt.accept(() -> then.accept(offer));
+        });
+    }
+
+    /**
+     * Starts the earlier image: the run is observable through {@link #deployOf} like a deploy,
+     * and the same one-run-per-host rule refuses a second.
+     */
+    public DeployRun rollback(OpsNode host, DeployPlan plan, String fromStamp) {
+        String refusal = host == null || host.kind != OpsKind.HOST ? Bundle.OpsHub_refusePickHost()
+                : targetOf(host) == null || !host.status.reachable() ? Bundle.OpsHub_refuseNotReachable(host.label)
+                : deploys.get(host.id) != null && !deploys.get(host.id).finished ? Bundle.OpsHub_refuseDeployRunning(host.label)
+                : null;
+        if (refusal != null) {
+            event(OpsEvent.Kind.FAIL, host == null ? null : host.id, Bundle.OpsHub_rollbackRefused(refusal));
+            return null;
+        }
+        DeployRun run = new DeployRun(host.id, plan, clock.getAsLong(), true);
+        deploys.put(host.id, run);
+        fireState();
+        event(OpsEvent.Kind.STEP, host.id, Bundle.OpsHub_rollingBack(plan.app(), host.label,
+                fromStamp == null ? "?" : fromStamp, plan.stamp()));
+        SshTarget target = targetOf(host);
+        RemoteRunner runner = runnerFor(host);
+        onSsh(() -> {
+            Deployer.Outcome outcome = new Deployer(runner).rollback(plan, target, tracker(run, host));
+            edt.accept(() -> {
+                run.outcome = outcome;
+                run.finished = true;
+                if (outcome.ok()) {
+                    event(OpsEvent.Kind.OK, host.id, Bundle.OpsHub_rolledBack(plan.app(), host.label, plan.stamp(), httpWord(outcome)));
+                } else {
+                    event(OpsEvent.Kind.FAIL, host.id, Bundle.OpsHub_rollbackStopped(stepName(outcome.failedAt()),
                             outcome.reason() == null ? "" : outcome.reason()));
                 }
                 fireState();

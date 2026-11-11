@@ -30,6 +30,11 @@ public final class OpsHubFixture {
         runner.lines = OpsHubTest.probe(containerLines);
     }
 
+    /** Says whether this machine has mosh, so no test looks at the real PATH. */
+    public void mosh(boolean present) {
+        hub.moshOnPath(present);
+    }
+
     /** Runs everything queued on both lanes. */
     public void drain() {
         for (int i = 0; i < 4; i++) {

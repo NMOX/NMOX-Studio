@@ -34,6 +34,10 @@ import org.openide.windows.TopComponent;
     "# {0} - the host's label",
     "# {1} - mosh or ssh",
     "TerminalDoor_tabTitle={0} ({1})",
+    "# {0} - the service's label",
+    "TerminalDoor_logsTitle={0} logs",
+    "# {0} - the service's label",
+    "TerminalDoor_shellTitle={0} shell",
     "TerminalDoor_copiedFallback=The Terminal could not run it here; the command is on the clipboard — paste it into the terminal that opened"
 })
 public final class TerminalDoor {

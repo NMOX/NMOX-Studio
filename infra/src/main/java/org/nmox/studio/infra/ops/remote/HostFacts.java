@@ -56,6 +56,39 @@ public record HostFacts(String os, double load1, int cpus, long memTotalKb, long
             return out;
         }
 
+        /**
+         * The first published mapping as {@code {hostPort, containerPort}}, from docker's
+         * {@code 0.0.0.0:8080->3000/tcp}; null when nothing is published or docker printed a range.
+         */
+        public int[] firstMapping() {
+            if (ports == null) {
+                return null;
+            }
+            for (String part : ports.split(",")) {
+                String p = part.trim();
+                int arrow = p.indexOf("->");
+                if (arrow < 0) {
+                    continue;
+                }
+                String left = p.substring(0, arrow);
+                int colon = left.lastIndexOf(':');
+                String host = (colon >= 0 ? left.substring(colon + 1) : left).trim();
+                String right = p.substring(arrow + 2);
+                int slash = right.indexOf('/');
+                String inside = (slash >= 0 ? right.substring(0, slash) : right).trim();
+                try {
+                    int h = Integer.parseInt(host);
+                    int c = Integer.parseInt(inside);
+                    if (h >= 1 && h <= 65535 && c >= 1 && c <= 65535) {
+                        return new int[]{h, c};
+                    }
+                } catch (NumberFormatException notAPort) {
+                    // a range, or something docker prints that is not a single mapping: try the next
+                }
+            }
+            return null;
+        }
+
         /** The compose service name when compose started it, else the container name. */
         public String serviceName() {
             String compose = labels.get("com.docker.compose.service");

@@ -80,6 +80,34 @@ class SimulatedWorldTest {
     }
 
     @Test
+    @DisplayName("the simulation keeps its image history: two deploys can be listed, and the earlier one started again")
+    void rollback(@TempDir Path project) throws Exception {
+        Files.writeString(project.resolve("Dockerfile"), "FROM scratch\nEXPOSE 3000\n");
+        AtomicLong now = new AtomicLong(0);
+        SimulatedWorld world = new SimulatedWorld(now::get).unpaced();
+        SimulatedOps ops = new SimulatedOps(world);
+        HostRecord r = ops.createHost(new HostSpec("demo", "sim1", "s-1vcpu-1gb", "ubuntu-24-04-x64", List.of(), ""));
+        now.set(SimulatedWorld.CLOUD_INIT_DONE_AFTER_S * 1000L + 1);
+        SshTarget t = new SshTarget("root", ops.readHost(r.providerId()).address(), 22, null);
+        Deployer.Listener quiet = new Deployer.Listener() {
+            public void stepStarted(Deployer.Step step) { }
+            public void line(Deployer.Step step, String line) { }
+            public void stepFinished(Deployer.Step step, boolean ok) { }
+        };
+        assertThat(new Deployer(world.runner()).deploy(project, new DeployPlan("shop", 80, 3000, "100"), t, quiet).ok()).isTrue();
+        assertThat(new Deployer(world.runner()).deploy(project, new DeployPlan("shop", 80, 3000, "200"), t, quiet).ok()).isTrue();
+        List<String> tags = new java.util.ArrayList<>();
+        assertThat(world.runner().run(t, org.nmox.studio.infra.ops.remote.Rollback.imagesCommand("shop"), null,
+                tags::add, java.time.Duration.ofSeconds(5)).ok()).isTrue();
+        assertThat(org.nmox.studio.infra.ops.remote.Rollback.previous("200", tags)).isEqualTo("100");
+        Deployer.Outcome back = new Deployer(world.runner()).rollback(new DeployPlan("shop", 80, 3000, "100"), t, quiet);
+        assertThat(back.ok()).as(String.valueOf(back.reason())).isTrue();
+        HostFacts facts = HostProbe.probe(world.runner(), t);
+        assertThat(facts.containers()).hasSize(1);
+        assertThat(facts.containers().get(0).image()).isEqualTo("nmox/shop:100");
+    }
+
+    @Test
     @DisplayName("before cloud-init is done, docker is not there and a deploy says so")
     void tooEarly(@TempDir Path project) throws Exception {
         Files.writeString(project.resolve("Dockerfile"), "FROM scratch\n");

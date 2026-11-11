@@ -125,6 +125,20 @@ public record SshTarget(String user, String address, int port, String identityFi
     }
 
     /**
+     * An interactive {@code ssh} that runs ONE remote line under a pty
+     * ({@code -t}) instead of a login shell: a log to follow, a shell
+     * inside a container. The line is the caller's to have built from
+     * validated parts; it travels as one argument after {@code --}.
+     */
+    public List<String> interactiveSsh(String knownHostsFile, String remoteCommand) {
+        List<String> argv = interactiveSsh(knownHostsFile);
+        argv.add(1, "-t");
+        argv.add("--");
+        argv.add(remoteCommand);
+        return argv;
+    }
+
+    /**
      * The interactive {@code mosh} a terminal runs. mosh takes its ssh
      * command as ONE string it splits on whitespace, so every option is
      * passed in that string; a known_hosts path with a space or a quote

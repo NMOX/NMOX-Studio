@@ -112,6 +112,11 @@ public final class Deployer {
         }, listener, BUILD_TIMEOUT)) {
             return new Outcome(Step.BUILD, null, null, lastNonBlank(buildTail));
         }
+        return runAndVerify(plan, target, listener);
+    }
+
+    /** RUN then VERIFY: replace the container by name, then read back what docker runs. */
+    private Outcome runAndVerify(DeployPlan plan, SshTarget target, Listener listener) {
         List<String> runTail = new java.util.ArrayList<>();
         if (!step(Step.RUN, plan.run(), target, l -> {
             listener.line(Step.RUN, l);
@@ -141,6 +146,15 @@ public final class Deployer {
             return new Outcome(Step.VERIFY, http[0], null, "the container is not running after start");
         }
         return new Outcome(null, http[0], seen[0], null);
+    }
+
+    /**
+     * Starts an image the host already holds: the RUN and VERIFY steps of
+     * a deploy whose stamp is an earlier build's. Nothing is uploaded and
+     * nothing is built; the newer image stays on the host.
+     */
+    public Outcome rollback(DeployPlan plan, SshTarget target, Listener listener) {
+        return runAndVerify(plan, target, listener);
     }
 
     private boolean step(Step step, String command, SshTarget target, Listener listener, Duration timeout) {

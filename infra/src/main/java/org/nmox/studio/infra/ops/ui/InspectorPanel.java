@@ -36,6 +36,15 @@ import org.openide.util.NbBundle.Messages;
  * each a real button with a real name. Below, the deploy tracker for a
  * host with a run in flight. Ordinary Swing, so a screen reader and the
  * Tab key get it for free.
+ *
+ * <p>The panel is refreshed on every probe of the node it shows — every
+ * fifteen seconds, more often while a server is coming up — so what it
+ * rebuilds matters: the action buttons are rebuilt ONLY when the set of
+ * actions or their enablement changes (and focus returns to the same
+ * action when they are), because a button replaced under the user's
+ * hand takes the keyboard focus, the hover and the press with it. A
+ * button acts on whatever node is shown when it is pressed, never on
+ * one captured when it was made.
  */
 @Messages({
     "Inspector_nothingSelected=Select a node on the HUD — or press Tab, then the arrow keys",
@@ -83,15 +92,23 @@ import org.openide.util.NbBundle.Messages;
     "Inspector_stepOk=● {0}",
     "# {0} - the step",
     "Inspector_stepFailed=✕ {0}",
-    "Inspector_connectHow=A click on the host opens {0}: {1}",
+    "# {0} - mosh or ssh",
+    "# {1} - why",
+    "Inspector_connectHow=Recommended door: {0} — {1}",
+    "Inspector_logs=Logs",
+    "Inspector_logsTooltip=Follow this container's output in the IDE's Terminal (docker logs -f); Ctrl+C ends the follow, not the container",
+    "Inspector_shell=Shell",
+    "Inspector_shellTooltip=Open a shell inside this container in the IDE's Terminal (docker exec)",
+    "Inspector_rollback=Roll Back…",
+    "Inspector_rollbackTooltip=Start the image that ran before this one — the host still holds it",
+    "Inspector_rollbackTracker=Rollback",
+    "Inspector_simulatedService=simulated service: there is nothing to follow or enter",
     "Inspector_planMosh=mosh",
     "Inspector_planSsh=ssh",
     "Inspector_whyNoLocalMosh=mosh is not installed on this machine",
     "Inspector_whyNoRemoteMosh=the host has no mosh-server",
     "Inspector_whyMosh=both ends have mosh",
     "Inspector_simulatedConnect=simulated host: there is nothing to connect to",
-    "# {0} - seconds",
-    "Inspector_secondsAgo={0} s ago",
     "Inspector_never=never"
 })
 public final class InspectorPanel extends JPanel {
@@ -107,6 +124,19 @@ public final class InspectorPanel extends JPanel {
         void destroy(OpsNode host);
 
         void forget(OpsNode host);
+
+        /** Follow a service's logs in the Terminal. */
+        void logs(OpsNode service);
+
+        /** A shell inside a service's container, in the Terminal. */
+        void shell(OpsNode service);
+
+        /** Offer to start the image that ran before. */
+        void rollback(OpsNode service);
+    }
+
+    /** One action button as data: what it says, whether it can be pressed, what it does to the node shown. */
+    private record ButtonSpec(String text, String tooltip, boolean enabled, Consumer<OpsNode> action) {
     }
 
     private final OpsHub hub;
@@ -124,7 +154,10 @@ public final class InspectorPanel extends JPanel {
     private final JPanel deployBox = new JPanel(new BorderLayout(0, 4));
     private final JPanel steps = new JPanel();
     private final JTextArea deployLog = TextDirection.keepLeftToRight(new JTextArea(6, 30));
+    private final JLabel trackerTitle = new JLabel(Bundle.Inspector_deployTracker());
     private OpsNode shown;
+    /** The node and the (text, enabled) of every button last built; equal means the row is left alone. */
+    private java.util.List<String> buttonsBuiltFor = java.util.List.of();
 
     public InspectorPanel(OpsHub hub, Actions actions) {
         super(new BorderLayout());
@@ -160,7 +193,6 @@ public final class InspectorPanel extends JPanel {
         deployLog.setFont(HudStyle.mono(10.5f));
         deployLog.setLineWrap(false);
         deployLog.getAccessibleContext().setAccessibleName(Bundle.Inspector_deployLog());
-        JLabel trackerTitle = new JLabel(Bundle.Inspector_deployTracker());
         trackerTitle.setFont(HudStyle.ui(12f, true));
         deployBox.add(trackerTitle, BorderLayout.PAGE_START);
         deployBox.add(steps, BorderLayout.CENTER);
@@ -204,7 +236,6 @@ public final class InspectorPanel extends JPanel {
     public void show(OpsNode node) {
         shown = node;
         facts.removeAll();
-        buttons.removeAll();
         edges.removeAll();
         hint.setVisible(node == null);
         title.setVisible(node != null);
@@ -213,6 +244,7 @@ public final class InspectorPanel extends JPanel {
             connectHow.setText("");
             gauges.setVisible(false);
             deployBox.setVisible(false);
+            setButtons(null, java.util.List.of());
             revalidate();
             repaint();
             return;
@@ -226,8 +258,10 @@ public final class InspectorPanel extends JPanel {
                 row = fact(row, Bundle.Inspector_factAddress(), node.sshSpec());
             }
             row = fact(row, Bundle.Inspector_factProvider(), providerName(node));
+            // a clock time, not an age: the panel is repainted when the host ANSWERS, so an age would read
+            // "0 s ago" for as long as it answers and freeze at its last value the moment it stops
             row = fact(row, Bundle.Inspector_factLastSeen(), node.lastSeenMillis == 0 ? Bundle.Inspector_never()
-                    : Bundle.Inspector_secondsAgo(Long.toString(Math.max(0, (System.currentTimeMillis() - node.lastSeenMillis) / 1000))));
+                    : org.nmox.studio.core.util.Clocks.display(node.lastSeenMillis));
         } else if (node.kind == OpsKind.SERVICE) {
             OpsNode host = node.hostId == null ? null : hub.topology().node(node.hostId);
             row = fact(row, Bundle.Inspector_factHost(), host == null ? "?" : host.label);
@@ -266,23 +300,22 @@ public final class InspectorPanel extends JPanel {
             }
         }
         // actions
+        java.util.List<ButtonSpec> specs = new java.util.ArrayList<>();
         if (node.kind == OpsKind.HOST) {
             boolean canConnect = node.address != null && !node.simulated;
-            JButton mosh = button(Bundle.Inspector_connectMosh(), Bundle.Inspector_connectMoshTooltip(),
-                    () -> actions.connect(node, true));
-            mosh.setEnabled(canConnect && hub.moshOnPath());
-            JButton ssh = button(Bundle.Inspector_connectSsh(), Bundle.Inspector_connectSshTooltip(),
-                    () -> actions.connect(node, false));
-            ssh.setEnabled(canConnect);
-            JButton deploy = button(Bundle.Inspector_deploy(), Bundle.Inspector_deployTooltip(), () -> actions.deploy(node));
-            deploy.setEnabled(node.status.reachable());
-            button(Bundle.Inspector_probe(), Bundle.Inspector_probeTooltip(), () -> hub.probe(node))
-                    .setEnabled(node.address != null);
+            specs.add(new ButtonSpec(Bundle.Inspector_connectMosh(), Bundle.Inspector_connectMoshTooltip(),
+                    canConnect && hub.moshOnPath(), n -> actions.connect(n, true)));
+            specs.add(new ButtonSpec(Bundle.Inspector_connectSsh(), Bundle.Inspector_connectSshTooltip(),
+                    canConnect, n -> actions.connect(n, false)));
+            specs.add(new ButtonSpec(Bundle.Inspector_deploy(), Bundle.Inspector_deployTooltip(),
+                    node.status.reachable(), actions::deploy));
+            specs.add(new ButtonSpec(Bundle.Inspector_probe(), Bundle.Inspector_probeTooltip(),
+                    node.address != null, hub::probe));
             if (node.providerId != null) {
-                button(Bundle.Inspector_destroy(), Bundle.Inspector_destroyTooltip(), () -> actions.destroy(node));
+                specs.add(new ButtonSpec(Bundle.Inspector_destroy(), Bundle.Inspector_destroyTooltip(), true, actions::destroy));
             }
             if ("manual".equals(node.provider)) {
-                button(Bundle.Inspector_forget(), Bundle.Inspector_forgetTooltip(), () -> actions.forget(node));
+                specs.add(new ButtonSpec(Bundle.Inspector_forget(), Bundle.Inspector_forgetTooltip(), true, actions::forget));
             }
             if (node.simulated) {
                 connectHow.setText(PlainText.plain(Bundle.Inspector_simulatedConnect()));
@@ -292,15 +325,25 @@ public final class InspectorPanel extends JPanel {
                         plan.mosh() ? Bundle.Inspector_planMosh() : Bundle.Inspector_planSsh(), why(plan))));
             }
         } else if (node.kind == OpsKind.SERVICE) {
-            connectHow.setText("");
-            Integer port = firstPort(node);
-            if (port != null) {
-                button(Bundle.Inspector_open(), Bundle.Inspector_openTooltip(), () -> actions.openInBrowser(node, port))
-                        .setEnabled(!node.simulated);
+            connectHow.setText(node.simulated ? PlainText.plain(Bundle.Inspector_simulatedService()) : "");
+            if (firstPort(node) != null) {
+                specs.add(new ButtonSpec(Bundle.Inspector_open(), Bundle.Inspector_openTooltip(), !node.simulated, n -> {
+                    Integer port = firstPort(n);
+                    if (port != null) {
+                        actions.openInBrowser(n, port);
+                    }
+                }));
+            }
+            specs.add(new ButtonSpec(Bundle.Inspector_logs(), Bundle.Inspector_logsTooltip(), !node.simulated, actions::logs));
+            specs.add(new ButtonSpec(Bundle.Inspector_shell(), Bundle.Inspector_shellTooltip(), !node.simulated, actions::shell));
+            if (node.app != null) {
+                // only what this product deployed has a history the Hub can read
+                specs.add(new ButtonSpec(Bundle.Inspector_rollback(), Bundle.Inspector_rollbackTooltip(), true, actions::rollback));
             }
         } else {
             connectHow.setText("");
         }
+        setButtons(node, specs);
         showDeploy(node);
         revalidate();
         repaint();
@@ -313,16 +356,35 @@ public final class InspectorPanel extends JPanel {
         }
     }
 
+    /**
+     * The run to show beside a node: a host's own, or — on a service —
+     * the run that is replacing THAT container (a rollback is asked for
+     * on the service, and its progress belongs where it was asked).
+     */
+    private DeployRun runFor(OpsNode node) {
+        if (node.kind == OpsKind.HOST) {
+            return hub.deployOf(node.id);
+        }
+        if (node.kind == OpsKind.SERVICE && node.hostId != null) {
+            DeployRun run = hub.deployOf(node.hostId);
+            if (run != null && run.plan.container().equals(node.facts.get("container"))) {
+                return run;
+            }
+        }
+        return null;
+    }
+
     private void showDeploy(OpsNode node) {
-        DeployRun run = node.kind == OpsKind.HOST ? hub.deployOf(node.id) : null;
+        DeployRun run = runFor(node);
         deployBox.setVisible(run != null);
         if (run == null) {
             return;
         }
+        trackerTitle.setText(PlainText.plain(run.rollback ? Bundle.Inspector_rollbackTracker() : Bundle.Inspector_deployTracker()));
         steps.removeAll();
-        for (Deployer.Step step : Deployer.Step.values()) {
-            String name = OpsHub.stepName(step);
-            String text = switch (run.steps.get(step)) {
+        for (Map.Entry<Deployer.Step, DeployRun.StepState> e : run.steps.entrySet()) {
+            String name = OpsHub.stepName(e.getKey());
+            String text = switch (e.getValue()) {
                 case PENDING -> Bundle.Inspector_stepPending(name);
                 case RUNNING -> Bundle.Inspector_stepRunning(name);
                 case OK -> Bundle.Inspector_stepOk(name);
@@ -337,14 +399,52 @@ public final class InspectorPanel extends JPanel {
         steps.revalidate();
     }
 
-    private JButton button(String text, String tooltip, Runnable action) {
-        JButton b = new JButton(PlainText.plain(text));
-        b.setToolTipText(PlainText.plain(tooltip));
-        b.getAccessibleContext().setAccessibleName(text);
-        b.addActionListener(e -> action.run());
-        buttons.add(b);
-        return b;
+    /**
+     * Puts the action row in step with {@code specs} — and does nothing
+     * when it already is, which is the usual case: the same node, probed
+     * again. When the row must change, the action that had the keyboard
+     * focus keeps it.
+     */
+    private void setButtons(OpsNode node, java.util.List<ButtonSpec> specs) {
+        java.util.List<String> key = new java.util.ArrayList<>();
+        key.add(node == null ? "" : node.id);
+        for (ButtonSpec s : specs) {
+            key.add(s.text() + (s.enabled() ? "|on" : "|off"));
+        }
+        if (key.equals(buttonsBuiltFor)) {
+            return;
+        }
+        String focused = null;
+        for (java.awt.Component c : buttons.getComponents()) {
+            if (c instanceof JButton b && b.isFocusOwner()) {
+                focused = b.getAccessibleContext().getAccessibleName();
+            }
+        }
+        boolean sameNode = !buttonsBuiltFor.isEmpty() && buttonsBuiltFor.get(0).equals(key.get(0));
+        buttonsBuiltFor = key;
+        buttonRowBuilds++;
+        buttons.removeAll();
+        for (ButtonSpec s : specs) {
+            JButton b = new JButton(PlainText.plain(s.text()));
+            b.setToolTipText(PlainText.plain(s.tooltip()));
+            b.getAccessibleContext().setAccessibleName(s.text());
+            b.setEnabled(s.enabled());
+            b.addActionListener(e -> {
+                if (shown != null) {
+                    s.action().accept(shown);
+                }
+            });
+            buttons.add(b);
+            if (sameNode && s.text().equals(focused) && s.enabled()) {
+                b.requestFocusInWindow();
+            }
+        }
+        buttons.revalidate();
+        buttons.repaint();
     }
+
+    /** How many times the action row has been rebuilt — a test's window onto "left alone". */
+    int buttonRowBuilds;
 
     private int fact(int row, String key, String value) {
         GridBagConstraints c = new GridBagConstraints();

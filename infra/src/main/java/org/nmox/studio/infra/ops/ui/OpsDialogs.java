@@ -93,6 +93,14 @@ import org.openide.util.NbBundle.Messages;
     "# {1} - the provider",
     "Destroy_question=Destroy {0} at {1}?\\n\\nEverything on it is gone for good. Billing stops.",
     "Destroy_title=Destroy a server",
+    // rollback
+    "# {0} - the app slug",
+    "# {1} - the host's label",
+    "# {2} - the stamp running now",
+    "# {3} - the stamp going back to",
+    "# {4} - the two lines that will run on the host",
+    "Rollback_question=Roll {0} on {1} back from {2} to {3}?\\n\\nThis runs on the host:\\n{4}\\n\\nNothing is uploaded or built. The newer image stays on the host.",
+    "Rollback_title=Roll back a deploy",
     // tokens
     "Tokens_title=DigitalOcean API token",
     "Tokens_field=API token (stored in the OS keychain; blank keeps the current one)",
@@ -371,6 +379,14 @@ public final class OpsDialogs {
 
     public static boolean confirmDestroy(OpsNode host, String providerName) {
         return confirm(Bundle.Destroy_question(host.label, providerName), Bundle.Destroy_title());
+    }
+
+    // ---- Rollback ----
+
+    /** Shows exactly what a rollback runs and asks, defaulting to No. */
+    public static boolean confirmRollback(OpsNode host, DeployPlan plan, String fromStamp) {
+        return confirm(Bundle.Rollback_question(plan.app(), host.label, fromStamp, plan.stamp(),
+                plan.run() + "\n" + plan.verify()), Bundle.Rollback_title());
     }
 
     // ---- Tokens ----

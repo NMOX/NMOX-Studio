@@ -101,6 +101,36 @@ class DeployerTest {
     }
 
     @Test
+    @DisplayName("a rollback runs exactly the run and verify lines of the earlier stamp: nothing uploaded, nothing built")
+    void rollback() {
+        Recorder r = new Recorder();
+        Steps steps = new Steps();
+        DeployPlan earlier = new DeployPlan("shop", 80, 3000, "6");
+        Deployer.Outcome out = new Deployer(r).rollback(earlier, new SshTarget("root", "203.0.113.4", 22, null), steps);
+        assertThat(out.ok()).isTrue();
+        assertThat(r.commands).containsExactly(earlier.run(), earlier.verify());
+        assertThat(r.commands.get(0)).endsWith(" nmox/shop:6");
+        assertThat(r.uploadedBytes).as("no stdin on any step").isEqualTo(-1);
+        assertThat(steps.trace).containsExactly("start RUN", "ok RUN", "start VERIFY", "ok VERIFY");
+        assertThat(out.httpCode()).isEqualTo("200");
+    }
+
+    @Test
+    @DisplayName("a rollback whose container does not start stops at run with the host's last words")
+    void rollbackStops() {
+        Recorder r = new Recorder();
+        r.failAt = "docker rm -f";
+        Steps steps = new Steps();
+        Deployer.Outcome out = new Deployer(r).rollback(new DeployPlan("shop", 80, 3000, "6"),
+                new SshTarget("root", "203.0.113.4", 22, null), steps);
+        assertThat(out.ok()).isFalse();
+        assertThat(out.failedAt()).isEqualTo(Deployer.Step.RUN);
+        assertThat(out.reason()).contains("something the host printed");
+        assertThat(r.commands).as("verify never ran").hasSize(1);
+        assertThat(steps.trace).containsExactly("start RUN", "fail RUN");
+    }
+
+    @Test
     @DisplayName("a refused bundle never opens ssh")
     void refusedBundle(@TempDir Path root) throws IOException {
         for (int i = 0; i < 3; i++) {
