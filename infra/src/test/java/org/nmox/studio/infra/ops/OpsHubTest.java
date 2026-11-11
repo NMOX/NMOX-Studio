@@ -100,7 +100,8 @@ class OpsHubTest {
         public boolean simulated() { return false; }
         public boolean configured() { return true; }
         public org.nmox.studio.infra.ops.provider.ProviderOptions options() { return null; }
-        public List<HostRecord> listHosts() { return new ArrayList<>(listed); }
+        int listings;
+        public List<HostRecord> listHosts() { listings++; return new ArrayList<>(listed); }
         public HostRecord createHost(HostSpec spec) { throw new UnsupportedOperationException(); }
         public HostRecord readHost(String id) { return listed.stream().filter(r -> r.providerId().equals(id)).findFirst().orElse(null); }
         public void destroyHost(String id) { listed.removeIf(r -> r.providerId().equals(id)); }
@@ -110,12 +111,17 @@ class OpsHubTest {
     /** A runner that answers every host with the same probe lines. */
     static final class FixedRunner implements RemoteRunner {
         List<String> lines = List.of();
+        /** What ssh itself says when the host does not answer (lines empty). */
+        String refusal;
         int calls;
 
         @Override
         public Result run(SshTarget target, String remoteCommand, InputStream stdin, Consumer<String> onLine, Duration timeout) {
             calls++;
             lines.forEach(onLine);
+            if (lines.isEmpty() && refusal != null) {
+                onLine.accept(refusal);
+            }
             return new Result(lines.isEmpty() ? 255 : 0, "", false);
         }
     }
@@ -271,7 +277,7 @@ class OpsHubTest {
     }
 
     /** A runner that plays a deploy: records commands, answers verify with a container, fails where told. */
-    static final class DeployRunner implements RemoteRunner {
+    static class DeployRunner implements RemoteRunner {
         final List<String> commands = new ArrayList<>();
         String failAt;
 
@@ -553,5 +559,287 @@ class OpsHubTest {
         assertThat(SimulatedWorld.owns("203.0.113.42")).isTrue();
         assertThat(SimulatedWorld.owns("203.0.114.1")).isFalse();
         assertThat(SimulatedWorld.owns(null)).isFalse();
+    }
+
+    // ---- the review of 3.11.0: each of these failed on the code as shipped ----
+
+    @Test
+    @DisplayName("a host that never answers says so once, with ssh's own reason, and stops pretending to boot")
+    void neverAnsweringHostSpeaks() {
+        OpsHub hub = hub();
+        runner.refusal = "root@203.0.113.5: Permission denied (publickey).";
+        OpsNode host = hub.addManualHost(new SshTarget("root", "203.0.113.5", 22, null), "typo");
+        assertThat(host.status).isEqualTo(HostStatus.BOOTING);
+        ssh.drain(2);
+        assertThat(host.status).as("nobody is bringing it up: booting forever would be a lie").isEqualTo(HostStatus.UNREACHABLE);
+        assertThat(host.lastProblem).isEqualTo("root@203.0.113.5: Permission denied (publickey).");
+        hub.probe(host);
+        ssh.drain(2);
+        hub.probe(host);
+        ssh.drain(2);
+        assertThat(hub.feed()).extracting(OpsEvent::text).filteredOn(t -> t.contains("does not answer ssh"))
+                .as("said once, not on every poll").hasSize(1).first().asString().contains("Permission denied (publickey)");
+        // and when it does answer, the problem is gone and the feed says so
+        runner.lines = probe();
+        hub.probe(host);
+        ssh.drain(2);
+        assertThat(host.status).isEqualTo(HostStatus.READY);
+        assertThat(host.lastProblem).isNull();
+        assertThat(hub.feed()).extracting(OpsEvent::text).anyMatch(t -> t.contains("ssh answers on typo"));
+        // then silence again: this time it STOPPED, and the reason travels
+        runner.lines = List.of();
+        runner.refusal = "ssh: connect to host 203.0.113.5 port 22: Operation timed out";
+        hub.probe(host);
+        ssh.drain(2);
+        assertThat(hub.feed()).extracting(OpsEvent::text)
+                .anyMatch(t -> t.contains("typo stopped answering ssh") && t.contains("Operation timed out"));
+    }
+
+    /** A provider whose servers are active with an address the moment they are made, as a fast one's can be. */
+    static final class InstantProvider extends ScriptedProvider {
+        RuntimeException readFails;
+        boolean gone;
+
+        @Override
+        public HostRecord createHost(HostSpec spec) {
+            HostRecord r = new HostRecord("7", spec.name(), "203.0.113.7", true, "active", Map.of());
+            listed.add(r);
+            return r;
+        }
+
+        @Override
+        public HostRecord readHost(String id) {
+            if (readFails != null) {
+                throw readFails;
+            }
+            return gone ? null : super.readHost(id);
+        }
+    }
+
+    @Test
+    @DisplayName("the provisioning watch survives meeting another probe of the same host: its ask waits for that answer")
+    void watchSurvivesAProbeInFlight() {
+        InstantProvider fast = new InstantProvider();
+        OpsHub hub = new OpsHub(clock::get, Runnable::run, runner, prefs, cloud, ssh).withProviders(List.of(fast));
+        hub.createHost(fast, new HostSpec("quick", "r", "s", "i", List.of(), ""));
+        cloud.drain(1); // accepted: the node is BOOTING and its first probe is already in flight
+        OpsNode node = hub.topology().node("scripted:7");
+        assertThat(node.status).isEqualTo(HostStatus.BOOTING);
+        assertThat(ssh.jobs).as("one probe in flight").hasSize(1);
+        cloud.drain(1); // the watch reads the provider and asks for a probe — while that one is still out
+        assertThat(ssh.jobs).as("it did not start a second").hasSize(1);
+        ssh.drain(1);   // ssh refuses: the host is still booting
+        assertThat(node.status).as("refused is expected while it is being brought up").isEqualTo(HostStatus.BOOTING);
+        assertThat(cloud.jobs).as("the watch heard the answer and scheduled its next look").isNotEmpty();
+        assertThat(hub.feed()).extracting(OpsEvent::text).noneMatch(t -> t.contains("does not answer"));
+        runner.lines = probe();
+        for (int i = 0; i < 6 && node.status != HostStatus.READY; i++) {
+            cloud.drain(1);
+            ssh.drain(1);
+        }
+        assertThat(node.status).isEqualTo(HostStatus.READY);
+        assertThat(node.facts).doesNotContainKey("watch");
+    }
+
+    @Test
+    @DisplayName("a watched server the provider no longer has is removed and said; an unreadable provider is said once")
+    void watchMeetsAGoneServerAndAFailingProvider() {
+        InstantProvider fast = new InstantProvider();
+        OpsHub hub = new OpsHub(clock::get, Runnable::run, runner, prefs, cloud, ssh).withProviders(List.of(fast));
+        hub.createHost(fast, new HostSpec("brief", "r", "s", "i", List.of(), ""));
+        cloud.drain(1);
+        fast.readFails = new RuntimeException("HTTP 503: try later");
+        for (int i = 0; i < 4; i++) {
+            cloud.drain(1);
+            ssh.drain(1);
+        }
+        assertThat(hub.feed()).extracting(OpsEvent::text).filteredOn(t -> t.contains("HTTP 503"))
+                .as("four failed reads, one sentence").hasSize(1);
+        assertThat(hub.topology().node("scripted:7")).as("still there, still watched").isNotNull();
+        fast.readFails = null;
+        fast.gone = true;
+        cloud.drain(1);
+        ssh.drain(1);
+        cloud.drain(1);
+        assertThat(hub.topology().node("scripted:7")).as("the provider says there is no such server").isNull();
+        assertThat(hub.feed()).extracting(OpsEvent::text).anyMatch(t -> t.contains("brief no longer exists at Scripted"));
+    }
+
+    @Test
+    @DisplayName("a watch that runs out of time stops the sweep: the host is unreachable, not forever becoming")
+    void watchGivesUpHonestly() {
+        InstantProvider fast = new InstantProvider();
+        OpsHub hub = new OpsHub(clock::get, Runnable::run, runner, prefs, cloud, ssh).withProviders(List.of(fast));
+        hub.createHost(fast, new HostSpec("slow", "r", "s", "i", List.of(), ""));
+        cloud.drain(1);
+        OpsNode node = hub.topology().node("scripted:7");
+        clock.addAndGet(OpsHub.WATCH_LIMIT_MILLIS + 60_000);
+        for (int i = 0; i < 4; i++) {
+            cloud.drain(1);
+            ssh.drain(1);
+        }
+        assertThat(hub.feed()).extracting(OpsEvent::text).anyMatch(t -> t.contains("did not become ready within 15 minutes"));
+        assertThat(node.status).isEqualTo(HostStatus.UNREACHABLE);
+        assertThat(node.status.inProgress()).isFalse();
+    }
+
+    @Test
+    @DisplayName("a failed destroy leaves the host what it was — an unreachable server does not turn green")
+    void failedDestroyRestoresTheStatus() {
+        OpsProvider stubborn = new ScriptedProvider() {
+            @Override
+            public void destroyHost(String id) {
+                throw new RuntimeException("HTTP 422: locked");
+            }
+        };
+        OpsHub hub = new OpsHub(clock::get, Runnable::run, runner, prefs, cloud, ssh).withProviders(List.of(stubborn));
+        OpsNode node = hub.applyRecord(stubborn, new HostRecord("2", "beta", "203.0.113.2", true, "active", Map.of()));
+        ssh.drain(2); // nobody answers
+        assertThat(node.status).isEqualTo(HostStatus.UNREACHABLE);
+        hub.destroyHost(node);
+        cloud.drain(2);
+        assertThat(node.status).isEqualTo(HostStatus.UNREACHABLE);
+        assertThat(node.lastProblem).contains("locked");
+    }
+
+    @Test
+    @DisplayName("a server the provider reports off is not 'provisioning': it is unreachable, and the provider's word is the reason")
+    void poweredOffIsNotProvisioning() {
+        OpsHub hub = hub();
+        OpsNode off = hub.applyRecord(provider, new HostRecord("3", "gamma", "203.0.113.3", false, "off", Map.of()));
+        assertThat(off.status).isEqualTo(HostStatus.UNREACHABLE);
+        assertThat(off.status.inProgress()).as("nothing to sweep for").isFalse();
+        assertThat(off.lastProblem).isEqualTo("Scripted reports it off");
+        OpsNode fresh = hub.applyRecord(provider, new HostRecord("4", "delta", null, false, "new", Map.of()));
+        assertThat(fresh.status).isEqualTo(HostStatus.PROVISIONING);
+    }
+
+    @Test
+    @DisplayName("cloud-init that ended in error is not announced as done")
+    void cloudInitErrorIsNotDone() {
+        OpsHub hub = hub();
+        OpsNode host = hub.addManualHost(new SshTarget("root", "203.0.113.5", 22, null), "box");
+        List<String> lines = new ArrayList<>(probe());
+        lines.replaceAll(l -> l.startsWith("cloudinit ") ? "cloudinit running" : l);
+        runner.lines = lines;
+        ssh.drain(2);
+        assertThat(host.status).isEqualTo(HostStatus.CONFIGURING);
+        lines = new ArrayList<>(probe());
+        lines.replaceAll(l -> l.startsWith("cloudinit ") ? "cloudinit error" : l);
+        runner.lines = lines;
+        hub.probe(host);
+        ssh.drain(2);
+        assertThat(host.status).as("ssh answers: it is reachable").isEqualTo(HostStatus.READY);
+        assertThat(hub.feed()).extracting(OpsEvent::text)
+                .anyMatch(t -> t.contains("cloud-init ended in error"))
+                .noneMatch(t -> t.contains("cloud-init done"));
+        assertThat(host.lastProblem).contains("cloud-init ended in error");
+    }
+
+    @Test
+    @DisplayName("only what the host itself answered marks its link: a listing and a silence cross nothing")
+    void onlyAnswersCrossTheLink() {
+        OpsHub hub = hub();
+        provider.listed.add(new HostRecord("1", "alpha", "203.0.113.1", true, "active", Map.of()));
+        hub.refresh();
+        cloud.drain(2);
+        runner.lines = probe(WEB);
+        ssh.drain(2);
+        runner.lines = List.of();
+        hub.probe(hub.topology().node("scripted:1"));
+        ssh.drain(2);
+        java.util.function.Function<String, OpsEvent> the = part -> hub.feed().stream()
+                .filter(e -> e.text().contains(part)).findFirst().orElseThrow(() -> new AssertionError(part));
+        assertThat(the.apply("is listed by").overLink()).as("the provider said it, not the host").isFalse();
+        assertThat(the.apply("ssh answers on").overLink()).isTrue();
+        assertThat(the.apply("is running on").overLink()).as("docker ps came back over the link").isTrue();
+        assertThat(the.apply("stopped answering").overLink()).as("a silence crossed nothing").isFalse();
+    }
+
+    @Test
+    @DisplayName("while polling, the providers are listed again once a minute, not only when Refresh is pressed")
+    void pollingRelistsProviders() {
+        OpsHub hub = hub();
+        hub.startPolling();
+        int before = provider.listings;
+        for (int tick = 1; tick <= OpsHub.REFRESH_EVERY_TICKS * 2; tick++) {
+            ssh.drain(1);
+            cloud.drain(1);
+            assertThat(provider.listings - before).as("after tick " + tick).isEqualTo(tick / OpsHub.REFRESH_EVERY_TICKS);
+        }
+        hub.stopPolling();
+    }
+
+    @Test
+    @DisplayName("a build's flood of output reaches the event thread as a handful of tasks, not one per line")
+    void deployOutputIsCoalesced(@TempDir Path project) throws Exception {
+        Files.writeString(project.resolve("Dockerfile"), "FROM scratch\nEXPOSE 3000\n");
+        Deque<Runnable> edtQueue = new ArrayDeque<>();
+        int[] posted = {0};
+        Consumer<Runnable> queued = r -> {
+            posted[0]++;
+            edtQueue.add(r);
+        };
+        Runnable pump = () -> {
+            for (Runnable r = edtQueue.poll(); r != null; r = edtQueue.poll()) {
+                r.run();
+            }
+        };
+        DeployRunner chatty = new DeployRunner() {
+            @Override
+            public Result run(SshTarget target, String remoteCommand, InputStream stdin, Consumer<String> onLine, Duration timeout) {
+                if (remoteCommand.startsWith("docker build")) {
+                    for (int i = 0; i < 5_000; i++) {
+                        onLine.accept("#7 step line " + i);
+                    }
+                }
+                return super.run(target, remoteCommand, stdin, onLine, timeout);
+            }
+        };
+        OpsHub hub = new OpsHub(clock::get, queued, chatty, prefs, cloud, ssh).withProviders(List.of(provider));
+        OpsNode host = hub.addManualHost(new SshTarget("root", "203.0.113.5", 22, null), "box");
+        ssh.drain(1);
+        pump.run();
+        DeployRun run = hub.deploy(host, project.toFile(), new org.nmox.studio.infra.ops.remote.DeployPlan("shop", 80, 3000, "1"));
+        posted[0] = 0;
+        ssh.drain(1); // the whole deploy runs here, with nobody pumping the event thread
+        assertThat(posted[0]).as("five thousand lines, a handful of tasks").isLessThan(40);
+        pump.run();
+        ssh.drain(2);
+        pump.run();
+        assertThat(run.ok()).isTrue();
+        assertThat(run.tail()).hasSize(DeployRun.TAIL).last().asString().contains("http 80 200");
+        assertThat(run.tail()).as("the build's last words were kept").anyMatch(l -> l.contains("#7 step line 4999"));
+    }
+
+    @Test
+    @DisplayName("switching the simulation off takes its runs with it: a new world's first host does not open on the last one's deploy")
+    void simulationOffForgetsItsRuns(@TempDir Path project) throws Exception {
+        Files.writeString(project.resolve("Dockerfile"), "FROM scratch\nEXPOSE 3000\n");
+        OpsHub hub = new OpsHub(clock::get, Runnable::run, runner, prefs, cloud, ssh).withProviders(List.of());
+        hub.setSimulation(true);
+        OpsProvider sim = hub.provider("simulation");
+        ((org.nmox.studio.infra.ops.provider.SimulatedOps) sim).world().unpaced();
+        hub.createHost(sim, new HostSpec("demo", "sim1", "s-1vcpu-1gb", "ubuntu-24-04-x64", List.of(), ""));
+        cloud.drain(1);
+        OpsNode node = hub.topology().nodes(OpsKind.HOST).get(0);
+        for (int i = 0; i < 40 && node.status != HostStatus.READY; i++) {
+            cloud.drain(1);
+            ssh.drain(1);
+        }
+        assertThat(hub.deploy(node, project.toFile(), new org.nmox.studio.infra.ops.remote.DeployPlan("shop", 80, 3000, "1"))).isNotNull();
+        ssh.drain(3);
+        assertThat(hub.deployOf(node.id)).isNotNull();
+        hub.setSimulation(false);
+        assertThat(hub.deployOf(node.id)).isNull();
+    }
+
+    @Test
+    @DisplayName("ssh files a key under the bare address on port 22 and [address]:port otherwise — brackets never doubled")
+    void knownHostsNames() {
+        assertThat(OpsHub.knownHostsName("203.0.113.5", 22)).isEqualTo("203.0.113.5");
+        assertThat(OpsHub.knownHostsName("203.0.113.5", 2222)).isEqualTo("[203.0.113.5]:2222");
+        assertThat(OpsHub.knownHostsName("[::1]", 22)).isEqualTo("::1");
+        assertThat(OpsHub.knownHostsName("[::1]", 2222)).isEqualTo("[::1]:2222");
     }
 }

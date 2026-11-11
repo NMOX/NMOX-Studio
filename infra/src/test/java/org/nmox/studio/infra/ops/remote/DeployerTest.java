@@ -131,6 +131,53 @@ class DeployerTest {
     }
 
     @Test
+    @DisplayName("a container docker lists as restarting is not up: verify fails and quotes docker's own status")
+    void crashLoopIsNotUp(@TempDir Path root) throws IOException {
+        RemoteRunner crashing = (target, command, stdin, onLine, timeout) -> {
+            if (stdin != null) {
+                try {
+                    stdin.readAllBytes();
+                } catch (IOException ex) {
+                    throw new AssertionError(ex);
+                }
+            }
+            if (command.startsWith("sleep 2; docker ps")) {
+                onLine.accept("{\"Names\":\"nmox-shop\",\"Image\":\"nmox/shop:7\",\"Status\":\"Restarting (1) 2 seconds ago\",\"Ports\":\"\",\"Labels\":\"nmox.ops.app=shop\",\"Networks\":\"bridge\"}");
+                onLine.accept("http 80 none");
+            }
+            return new RemoteRunner.Result(0, "", false);
+        };
+        Steps steps = new Steps();
+        Deployer.Outcome out = new Deployer(crashing).deploy(project(root), new DeployPlan("shop", 80, 3000, "7"),
+                new SshTarget("root", "203.0.113.4", 22, null), steps);
+        assertThat(out.ok()).isFalse();
+        assertThat(out.failedAt()).isEqualTo(Deployer.Step.VERIFY);
+        assertThat(out.reason()).isEqualTo("the container did not stay up: Restarting (1) 2 seconds ago");
+        assertThat(steps.trace).endsWith("fail VERIFY");
+    }
+
+    @Test
+    @DisplayName("an upload the host hung up on is explained in the host's words, not as a closed pipe")
+    void uploadFailureUsesTheHostsWords(@TempDir Path root) throws IOException {
+        byte[] noise = new byte[1_500_000];
+        new java.util.Random(7).nextBytes(noise); // incompressible, and larger than the pipe between tar and ssh
+        Files.write(project(root).resolve("big.bin"), noise);
+        RemoteRunner hangsUp = (target, command, stdin, onLine, timeout) -> {
+            try {
+                stdin.close(); // the remote tar died at once: nothing reads the pipe
+            } catch (IOException ex) {
+                throw new AssertionError(ex);
+            }
+            onLine.accept("mkdir: cannot create directory '/srv/nmox': Permission denied");
+            return new RemoteRunner.Result(1, "mkdir: cannot create directory '/srv/nmox': Permission denied", false);
+        };
+        Deployer.Outcome out = new Deployer(hangsUp).deploy(root, new DeployPlan("shop", 80, 3000, "7"),
+                new SshTarget("deploy", "203.0.113.4", 22, null), new Steps());
+        assertThat(out.failedAt()).isEqualTo(Deployer.Step.UPLOAD);
+        assertThat(out.reason()).isEqualTo("mkdir: cannot create directory '/srv/nmox': Permission denied");
+    }
+
+    @Test
     @DisplayName("a refused bundle never opens ssh")
     void refusedBundle(@TempDir Path root) throws IOException {
         for (int i = 0; i < 3; i++) {

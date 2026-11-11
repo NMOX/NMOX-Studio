@@ -247,4 +247,18 @@ class HudCanvasCameraTest {
             assertThat(cam.sy(p.y()) + r).isLessThanOrEqualTo(600.5);
         });
     }
+
+    @Test
+    @DisplayName("a host view whose host is gone returns to the fleet instead of standing inside nothing")
+    void vanishedHostLeavesItsView() throws Exception {
+        build(2, 900, 600);
+        edt(() -> {
+            OpsNode first = fixture.hub.topology().nodes(org.nmox.studio.infra.ops.model.OpsKind.HOST).get(0);
+            canvas.setView(HudView.host(first.id));
+            assertThat(canvas.view().level()).isEqualTo(HudView.Level.HOST);
+            fixture.hub.forgetManualHost(first);
+            canvas.relayout();
+            assertThat(canvas.view()).isEqualTo(HudView.FLEET);
+        });
+    }
 }

@@ -48,6 +48,26 @@ class SshTargetTest {
     }
 
     @Test
+    @DisplayName("a known_hosts path with a space travels in quotes: bare, ssh splits it and files the key somewhere else")
+    void knownHostsPathWithASpace() {
+        // measured on OpenSSH 10.5 against a throwaway sshd: the bare form wrote the host key to a file named
+        // for the path up to its first space; the quoted form wrote and found it in the file that was meant
+        assertThat(SshTarget.knownHostsOption("/home/a/.nmox/ops/known_hosts"))
+                .isEqualTo("UserKnownHostsFile=/home/a/.nmox/ops/known_hosts");
+        assertThat(SshTarget.knownHostsOption("/Users/First Last/.nmox/ops/known_hosts"))
+                .isEqualTo("UserKnownHostsFile=\"/Users/First Last/.nmox/ops/known_hosts\"");
+        assertThat(SshTarget.knownHostsOption("C:\\Users\\First Last\\.nmox\\ops\\known_hosts"))
+                .startsWith("UserKnownHostsFile=\"C:\\Users\\First Last").endsWith("\"");
+        assertThat(SshTarget.knownHostsOption("/odd/qu\"ote/known")).as("cannot be said to ssh: left out").isNull();
+        assertThat(SshTarget.knownHostsOption(null)).isNull();
+        SshTarget t = new SshTarget("root", "203.0.113.9", 22, null);
+        String spaced = "/Users/First Last/known";
+        assertThat(t.sshCommand(spaced, "true")).contains("UserKnownHostsFile=\"" + spaced + "\"");
+        assertThat(t.interactiveSsh(spaced)).contains("UserKnownHostsFile=\"" + spaced + "\"");
+        assertThat(t.sshCommand("/odd/qu\"ote/known", "true")).noneMatch(a -> a.startsWith("UserKnownHostsFile"));
+    }
+
+    @Test
     @DisplayName("mosh gets its ssh options as one string; a known_hosts path with a space is left out rather than broken")
     void mosh() {
         SshTarget t = new SshTarget("root", "203.0.113.9", 2222, null);

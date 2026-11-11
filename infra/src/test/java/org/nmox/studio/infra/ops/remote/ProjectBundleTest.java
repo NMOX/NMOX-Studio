@@ -94,4 +94,51 @@ class ProjectBundleTest {
             // no tar on this machine: the Java read above stands
         }
     }
+
+    @Test
+    @org.junit.jupiter.api.condition.DisabledOnOs(org.junit.jupiter.api.condition.OS.WINDOWS)
+    @DisplayName("a file NAMED with backslashes is a name, not a path: nothing outside the project is read")
+    void backslashNameDoesNotClimbOut(@TempDir Path outer) throws Exception {
+        // a cloned repository can carry a file literally called "..\..\secret.txt"; rewriting '\' to '/' on a
+        // system where '\' is an ordinary character turned that name into a path two levels above the project
+        Path project = Files.createDirectories(outer.resolve("a/b/project"));
+        Files.writeString(outer.resolve("a/secret.txt"), "OUTSIDE-SECRET");
+        Files.writeString(project.resolve("Dockerfile"), "FROM scratch\n");
+        Files.writeString(project.resolve("..\\..\\secret.txt"), "inside, oddly named");
+        ProjectBundle.Manifest m = ProjectBundle.plan(project);
+        assertThat(m.files()).containsExactlyInAnyOrder("Dockerfile", "..\\..\\secret.txt");
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        ProjectBundle.write(project, m, out);
+        String tar = new String(new java.util.zip.GZIPInputStream(new java.io.ByteArrayInputStream(out.toByteArray())).readAllBytes(),
+                java.nio.charset.StandardCharsets.ISO_8859_1);
+        assertThat(tar).contains("inside, oddly named").doesNotContain("OUTSIDE-SECRET");
+    }
+
+    @Test
+    @DisplayName("a manifest naming a path outside the project is refused when it is opened, by name")
+    void writeRefusesAnEscape(@TempDir Path outer) throws Exception {
+        Path project = Files.createDirectories(outer.resolve("project"));
+        Files.writeString(outer.resolve("secret.txt"), "OUTSIDE-SECRET");
+        Files.writeString(project.resolve("Dockerfile"), "FROM scratch\n");
+        ProjectBundle.Manifest forged = new ProjectBundle.Manifest(List.of("Dockerfile", "../secret.txt"), 20, List.of(), null);
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> ProjectBundle.write(project, forged, out))
+                .isInstanceOf(java.io.IOException.class).hasMessageContaining("../secret.txt is not inside the project");
+    }
+
+    @Test
+    @org.junit.jupiter.api.condition.DisabledOnOs(org.junit.jupiter.api.condition.OS.WINDOWS)
+    @DisplayName("a file swapped for a symlink after the plan is not followed")
+    void swappedSymlinkIsNotFollowed(@TempDir Path outer) throws Exception {
+        Path project = Files.createDirectories(outer.resolve("project"));
+        Files.writeString(outer.resolve("secret.txt"), "OUTSIDE-SECRET");
+        Files.writeString(project.resolve("Dockerfile"), "FROM scratch\n");
+        Files.writeString(project.resolve("notes.txt"), "plain");
+        ProjectBundle.Manifest m = ProjectBundle.plan(project);
+        Files.delete(project.resolve("notes.txt"));
+        Files.createSymbolicLink(project.resolve("notes.txt"), outer.resolve("secret.txt"));
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> ProjectBundle.write(project, m, out))
+                .isInstanceOf(java.io.IOException.class).hasMessageContaining("notes.txt is no longer a regular file");
+    }
 }
