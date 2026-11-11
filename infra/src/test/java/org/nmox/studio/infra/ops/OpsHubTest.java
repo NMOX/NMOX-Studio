@@ -856,8 +856,14 @@ class OpsHubTest {
         assertThat(OpsHub.problemText(HostProbe.Reading.said("Connection refused"))).isEqualTo("Connection refused");
         assertThat(OpsHub.problemText(HostProbe.Reading.of(null))).as("no trouble, no words").isNull();
         // a step that failed and printed nothing: the feed says so in the reader's language, not "failed"
-        assertThat(OpsHub.reasonOf(new Deployer.Outcome(Deployer.Step.SWAP, null, null, null))).isEqualTo("the host said nothing");
-        assertThat(OpsHub.reasonOf(new Deployer.Outcome(Deployer.Step.BUILD, null, null, "  "))).isEqualTo("the host said nothing");
+        assertThat(OpsHub.reasonOf(new Deployer.Outcome(Deployer.Step.SWAP, null, null, null))).isEqualTo("the step printed nothing");
+        assertThat(OpsHub.reasonOf(new Deployer.Outcome(Deployer.Step.BUILD, null, null, "  "))).isEqualTo("the step printed nothing");
+        // a verify that found the container not up: docker's status for it, or that it is not listed
+        var looping = new org.nmox.studio.infra.ops.remote.HostFacts.ContainerFact("abc", "nmox-shop", "nmox/shop:1", "Restarting (1) 2 seconds ago", "", Map.of(), List.of());
+        assertThat(OpsHub.reasonOf(new Deployer.Outcome(Deployer.Step.VERIFY, "none", looping, null)))
+                .isEqualTo("the container did not stay up: Restarting (1) 2 seconds ago");
+        assertThat(OpsHub.reasonOf(new Deployer.Outcome(Deployer.Step.VERIFY, "none", null, null)))
+                .isEqualTo("the container is not running after start");
         assertThat(OpsHub.reasonOf(new Deployer.Outcome(Deployer.Step.BUILD, null, null, "no space left on device")))
                 .isEqualTo("no space left on device");
     }

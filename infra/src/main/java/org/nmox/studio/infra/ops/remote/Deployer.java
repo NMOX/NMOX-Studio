@@ -152,9 +152,9 @@ public final class Deployer {
         boolean running = listed && seen[0].status().startsWith("Up");
         listener.stepFinished(Step.VERIFY, running);
         if (!running) {
-            return new Outcome(Step.VERIFY, http[0], null, listed
-                    ? "the container did not stay up: " + seen[0].status()
-                    : "the container is not running after start");
+            // no sentence from here: the container as docker listed it (or none) IS the reason, and
+            // whoever shows it says so in the reader's language
+            return new Outcome(Step.VERIFY, http[0], listed ? seen[0] : null, null);
         }
         return new Outcome(null, http[0], seen[0], null);
     }

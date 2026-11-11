@@ -273,6 +273,11 @@ class InspectorPanelTest {
         assertThat(InspectorPanel.kindWord("depends", false)).as("read from the other end").isEqualTo("needed by");
         assertThat(InspectorPanel.kindWord("runs", false)).isEqualTo("runs on");
         assertThat(InspectorPanel.kindWord("ssh", false)).as("a name").isEqualTo("ssh");
+        // the arrow points the way the line is read for an outgoing edge, whichever way that is
+        assertThat(InspectorPanel.arrow(true, true)).isEqualTo("→ ");
+        assertThat(InspectorPanel.arrow(false, true)).isEqualTo("← ");
+        assertThat(InspectorPanel.arrow(true, false)).isEqualTo("← ");
+        assertThat(InspectorPanel.arrow(false, false)).isEqualTo("→ ");
     }
 
     @Test

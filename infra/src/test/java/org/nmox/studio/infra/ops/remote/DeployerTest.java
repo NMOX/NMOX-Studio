@@ -152,7 +152,9 @@ class DeployerTest {
                 new SshTarget("root", "203.0.113.4", 22, null), steps);
         assertThat(out.ok()).isFalse();
         assertThat(out.failedAt()).isEqualTo(Deployer.Step.VERIFY);
-        assertThat(out.reason()).isEqualTo("the container did not stay up: Restarting (1) 2 seconds ago");
+        // the reason is the container as docker listed it, not a sentence built here: the Hub words it
+        assertThat(out.reason()).isNull();
+        assertThat(out.container().status()).isEqualTo("Restarting (1) 2 seconds ago");
         assertThat(steps.trace).endsWith("fail VERIFY");
     }
 

@@ -174,7 +174,10 @@ import org.openide.util.RequestProcessor;
     "# {0} - the step",
     "# {1} - the reason",
     "OpsHub_deployStopped=Deploy stopped at {0}: {1}",
-    "OpsHub_saidNothing=the host said nothing",
+    "OpsHub_saidNothing=the step printed nothing",
+    "# {0} - docker's own status for the container",
+    "OpsHub_didNotStayUp=the container did not stay up: {0}",
+    "OpsHub_notRunningAfterStart=the container is not running after start",
     "OpsHub_stepBundle=bundle",
     "OpsHub_stepUpload=upload",
     "OpsHub_stepSwap=swap",
@@ -1161,9 +1164,21 @@ public final class OpsHub {
         return run;
     }
 
-    /** Why a run stopped: the host's or the tool's own words, or — when a step failed and printed nothing — that it did. */
+    /**
+     * Why a run stopped: the host's or the tool's own words; for a verify
+     * that found the container not up, docker's own status for it (or that
+     * it is not listed at all); and when a step failed and printed
+     * nothing, that it did.
+     */
     static String reasonOf(Deployer.Outcome outcome) {
-        return outcome.reason() == null || outcome.reason().isBlank() ? Bundle.OpsHub_saidNothing() : outcome.reason();
+        if (outcome.reason() != null && !outcome.reason().isBlank()) {
+            return outcome.reason();
+        }
+        if (outcome.failedAt() == Deployer.Step.VERIFY) {
+            return outcome.container() != null ? Bundle.OpsHub_didNotStayUp(outcome.container().status())
+                    : Bundle.OpsHub_notRunningAfterStart();
+        }
+        return Bundle.OpsHub_saidNothing();
     }
 
     private static String httpWord(Deployer.Outcome outcome) {

@@ -376,8 +376,9 @@ public final class InspectorPanel extends JPanel {
             for (OpsEdge e : touching) {
                 String otherId = e.from().equals(node.id) ? e.to() : e.from();
                 OpsNode other = hub.topology().node(otherId);
-                String arrow = e.from().equals(node.id) ? "→ " : "← ";
-                String row1 = Bundle.Inspector_edgeRow(arrow + kindWord(e.kind(), e.from().equals(node.id)),
+                boolean outgoing = e.from().equals(node.id);
+                String row1 = Bundle.Inspector_edgeRow(arrow(outgoing, getComponentOrientation().isLeftToRight())
+                        + kindWord(e.kind(), outgoing),
                         other == null ? otherId : other.label, evidenceWord(e), e.source());
                 // the evidence is the point of the row ("observed: docker ps on …"), so it wraps and is never cut
                 JTextArea l = still(org.nmox.studio.core.util.PlainDialogs.plain(row1, row1));
@@ -651,6 +652,16 @@ public final class InspectorPanel extends JPanel {
             case "reaches" -> outgoing ? Bundle.Inspector_edgeReaches() : Bundle.Inspector_edgeReachesBack();
             default -> kind;
         };
+    }
+
+    /**
+     * The arrow that opens a row: an outgoing edge points the way the line
+     * is read, an incoming one against it — so in a right-to-left window
+     * the two glyphs change places (an arrow that pointed away from the
+     * name it introduces was the he/ar translators' find).
+     */
+    static String arrow(boolean outgoing, boolean leftToRight) {
+        return outgoing == leftToRight ? "→ " : "← ";
     }
 
     private static String evidenceWord(OpsEdge e) {
