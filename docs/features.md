@@ -673,8 +673,10 @@ step — accepted, provisioning, active, ssh answering, cloud-init done
 (docker, mosh-server and curl installed). **mosh** and **ssh** each open
 a session in the IDE's own Terminal under a pty; a plain click picks mosh
 when both ends have it and says why otherwise. **Deploy…** shows the
-exact remote lines, builds the aimed project's Dockerfile on the host,
-runs it labeled, and reads the container back. A container is a service
+exact remote lines, uploads the aimed project (leaving home what
+`.dockerignore` names, when the file can be applied with certainty),
+builds its Dockerfile on the host, runs it labeled, and reads the
+container back. A container is a service
 node with doors of its own: **Logs** follows `docker logs -f` and
 **Shell** runs `docker exec`, each a Terminal tab over the same ssh, and
 **Roll back…** (on a service this product deployed) asks the host which

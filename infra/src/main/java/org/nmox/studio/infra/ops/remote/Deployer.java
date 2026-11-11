@@ -29,7 +29,13 @@ public final class Deployer {
     }
 
     /** The outcome: the step that failed (null when none), the published port's answer, and docker's view of the container. */
-    public record Outcome(Step failedAt, String httpCode, HostFacts.ContainerFact container, String reason) {
+    public record Outcome(Step failedAt, String httpCode, HostFacts.ContainerFact container, String reason,
+            ProjectBundle.Refusal refused) {
+
+        /** Every outcome but a refused bundle. */
+        public Outcome(Step failedAt, String httpCode, HostFacts.ContainerFact container, String reason) {
+            this(failedAt, httpCode, container, reason, null);
+        }
 
         public boolean ok() {
             return failedAt == null;
@@ -47,11 +53,16 @@ public final class Deployer {
     }
 
     public Outcome deploy(Path project, DeployPlan plan, SshTarget target, Listener listener) {
+        return deploy(project, plan, target, listener, ProjectBundle.MAX_FILES, ProjectBundle.MAX_BYTES);
+    }
+
+    /** The deploy with the bundle's caps as parameters, so a test reaches a refusal without 20,000 files. */
+    Outcome deploy(Path project, DeployPlan plan, SshTarget target, Listener listener, int maxFiles, long maxBytes) {
         // BUNDLE: decide what travels before a byte moves
         listener.stepStarted(Step.BUNDLE);
         ProjectBundle.Manifest manifest;
         try {
-            manifest = ProjectBundle.plan(project);
+            manifest = ProjectBundle.plan(project, maxFiles, maxBytes);
         } catch (IOException cannotRead) {
             listener.line(Step.BUNDLE, "cannot read the project: " + cannotRead.getMessage());
             listener.stepFinished(Step.BUNDLE, false);
@@ -60,7 +71,11 @@ public final class Deployer {
         if (manifest.refused()) {
             listener.line(Step.BUNDLE, "refused: " + manifest.refusal());
             listener.stepFinished(Step.BUNDLE, false);
-            return new Outcome(Step.BUNDLE, null, null, manifest.refusal());
+            // the refusal as data: the Hub says it in the reader's language; the log line above is the log's
+            return new Outcome(Step.BUNDLE, null, null, null, manifest.why());
+        }
+        for (String note : manifest.notes()) {
+            listener.line(Step.BUNDLE, note);
         }
         for (String s : manifest.skipped()) {
             listener.line(Step.BUNDLE, "skipped " + s);

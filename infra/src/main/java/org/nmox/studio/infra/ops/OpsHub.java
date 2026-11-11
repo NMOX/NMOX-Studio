@@ -175,6 +175,13 @@ import org.openide.util.RequestProcessor;
     "# {1} - the reason",
     "OpsHub_deployStopped=Deploy stopped at {0}: {1}",
     "OpsHub_saidNothing=the step printed nothing",
+    "# {0} - the cap, a number of files",
+    "OpsHub_bundleTooManyFiles=the project holds more than {0} files after what stays home",
+    "# {0} - the cap in megabytes",
+    "OpsHub_bundleTooBig=the project is larger than {0} MB after what stays home",
+    "# {0} - the cap, a number of levels",
+    "# {1} - the folder",
+    "OpsHub_bundleTooDeep=folders are nested more than {0} levels deep under {1}",
     "# {0} - docker's own status for the container",
     "OpsHub_didNotStayUp=the container did not stay up: {0}",
     "OpsHub_notRunningAfterStart=the container is not running after start",
@@ -1173,6 +1180,14 @@ public final class OpsHub {
     static String reasonOf(Deployer.Outcome outcome) {
         if (outcome.reason() != null && !outcome.reason().isBlank()) {
             return outcome.reason();
+        }
+        if (outcome.refused() != null) {
+            String n = Long.toString(outcome.refused().number());
+            return switch (outcome.refused().kind()) {
+                case TOO_MANY_FILES -> Bundle.OpsHub_bundleTooManyFiles(n);
+                case TOO_BIG -> Bundle.OpsHub_bundleTooBig(n);
+                case TOO_DEEP -> Bundle.OpsHub_bundleTooDeep(n, outcome.refused().where());
+            };
         }
         if (outcome.failedAt() == Deployer.Step.VERIFY) {
             return outcome.container() != null ? Bundle.OpsHub_didNotStayUp(outcome.container().status())

@@ -42,6 +42,17 @@ walks of the four-day-old Hub found wrong in it.
   opens the Hub on it. The search reads a copy the Hub keeps for it and
   never creates a Hub from a keystroke, so it finds nothing until the
   Hub has been opened in the session.
+- **A deploy applies the project's `.dockerignore` to its upload.** What
+  docker would drop on arrival no longer travels, and no longer counts
+  against the bundle's caps: a project with a large ignored `data/` was
+  refused for 20,000 files that no image would have held. The rule is
+  one-sided on purpose. Leaving out less than docker would is always
+  safe, because docker applies the file again on the host; leaving out
+  more would build a different image. So a file with an exception line
+  (`!keep.me`) is not applied at all, a line with a character class or
+  an escape is passed over, and the deploy's log says which. The
+  Dockerfile and the ignore file always travel, and `.env` files stay
+  home whatever the file says.
 - `BundleEncodingGateTest.noValuePrintsItsOwnLineBreak` reads every
   bundle of every NMOX jar in the assembled cluster for a line break
   that would be printed as a backslash and a letter.
@@ -67,6 +78,9 @@ walks of the four-day-old Hub found wrong in it.
   They were English in every translated build.
 - The Quick Search category is named **Ops Hub**, and a row says `host`,
   the word the window uses.
+- A deploy refused for its size says so in the reader's language ("the
+  project holds more than 20000 files after what stays home"). The
+  three refusals were English sentences built in the engine.
 
 ### Fixed
 
@@ -133,7 +147,7 @@ host over ssh:
 
 ### Translations
 
-Every new and changed string is in all fifteen languages, after five
+Every new and changed string is in all fifteen languages, after six
 rounds: each round's remarks on the English were acted on before the
 next. Sentences were reworded (a pronoun with no antecedent, a refusal
 untrue in one of its two uses, one action under three verbs, "nothing

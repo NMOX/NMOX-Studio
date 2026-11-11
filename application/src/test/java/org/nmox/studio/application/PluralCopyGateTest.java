@@ -195,6 +195,10 @@ class PluralCopyGateTest {
         m.put("ContractSizeCheck_verdict",
                 "CONSTANT: {2} is the EIP byte limit, already thousands-formatted for reading");
 
+        m.put("OpsHub_bundleTooManyFiles",
+                "CONSTANT: {0} is ProjectBundle.MAX_FILES (20,000), said only when a project holds more");
+        m.put("OpsHub_bundleTooDeep",
+                "CONSTANT: {0} is ProjectBundle.MAX_DEPTH (32), said only when folders nest deeper");
         m.put("OpsHub_probeTooManyLines",
                 "OVER A CAP: {0} is HostProbe.MAX_LINES (2,000), said only once a probe printed more "
                 + "than that — \"more than 1 lines\" cannot be reached");

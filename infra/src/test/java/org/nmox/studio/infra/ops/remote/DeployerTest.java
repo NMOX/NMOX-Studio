@@ -225,6 +225,34 @@ class DeployerTest {
     }
 
     @Test
+    @DisplayName("a refused bundle is an outcome of data: its kind and figure, no sentence, and the log keeps its own line and notes")
+    void refusedBundleIsData(@TempDir Path root) throws IOException {
+        Files.writeString(root.resolve("Dockerfile"), "FROM scratch\n");
+        Files.writeString(root.resolve(".dockerignore"), "*.md\n!README.md\n");
+        for (int i = 0; i < 4; i++) {
+            Files.writeString(root.resolve("f" + i), "0123456789");
+        }
+        Recorder r = new Recorder();
+        List<String> log = new ArrayList<>();
+        Deployer.Listener listener = new Deployer.Listener() {
+            public void stepStarted(Deployer.Step step) { }
+            public void line(Deployer.Step step, String line) { log.add(line); }
+            public void stepFinished(Deployer.Step step, boolean ok) { }
+        };
+        Deployer.Outcome out = new Deployer(r).deploy(root, new DeployPlan("shop", 80, 3000, "7"),
+                new SshTarget("root", "203.0.113.4", 22, null), listener, 3, 1_000_000);
+        assertThat(out.failedAt()).isEqualTo(Deployer.Step.BUNDLE);
+        assertThat(out.reason()).as("no English sentence travels as the reason").isNull();
+        assertThat(out.refused()).isEqualTo(new ProjectBundle.Refusal(ProjectBundle.Refusal.Kind.TOO_MANY_FILES, 3, null));
+        assertThat(log).contains("refused: more than 3 files");
+        assertThat(r.commands).as("nothing was opened").isEmpty();
+        // and a bundle that goes says what it did not apply before it lists what stayed home
+        log.clear();
+        new Deployer(r).deploy(root, new DeployPlan("shop", 80, 3000, "7"), new SshTarget("root", "203.0.113.4", 22, null), listener);
+        assertThat(log.get(0)).contains(".dockerignore has exception lines");
+    }
+
+    @Test
     @DisplayName("the verify line's status is a real HTTP status or none: curl's 000 for no answer is not a status")
     void httpCodeIsAStatusOrNone() {
         assertThat(Deployer.httpCode("http 80 200")).isEqualTo("200");

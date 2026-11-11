@@ -26,13 +26,47 @@ public final class ProjectBundle {
     public static final long MAX_BYTES = 200L * 1024 * 1024;
     public static final int MAX_DEPTH = 32;
 
-    /** What the walk decided: the entries that go, the entries left behind with reasons, and a refusal. */
-    public record Manifest(List<String> files, long bytes, List<String> skipped, String refusal) {
+    /**
+     * Why a bundle was refused, as data: the kind and its one figure (and,
+     * for depth, where). The words a reader sees are chosen where they
+     * are shown; {@link Manifest#refusal()} is the same thing in English
+     * for the deploy's own log, which is a log.
+     */
+    public record Refusal(Kind kind, long number, String where) {
+
+        /** What a bundle can be refused for. */
+        public enum Kind {
+            /** More files than {@link #MAX_FILES}; the number is the cap. */
+            TOO_MANY_FILES,
+            /** More bytes than {@link #MAX_BYTES}; the number is the cap in megabytes. */
+            TOO_BIG,
+            /** Folders nested deeper than {@link #MAX_DEPTH}; the number is the cap, {@code where} the folder. */
+            TOO_DEEP
+        }
+    }
+
+    /**
+     * What the walk decided: the entries that go, the entries left behind
+     * with reasons, a refusal (in English for the log, and as data), and
+     * notes about what was and was not applied.
+     */
+    public record Manifest(List<String> files, long bytes, List<String> skipped, String refusal, Refusal why,
+            List<String> notes) {
+
+        /** A manifest with no typed refusal and no notes: a test's, or one made by hand. */
+        public Manifest(List<String> files, long bytes, List<String> skipped, String refusal) {
+            this(files, bytes, skipped, refusal, null, List.of());
+        }
 
         public boolean refused() {
             return refusal != null;
         }
     }
+
+    /** The most a {@code .dockerignore} may weigh and still be read; a larger one is not applied. */
+    static final int MAX_IGNORE_BYTES = 64 * 1024;
+    /** How many entries left out by {@code .dockerignore} are named in the log before they are only counted. */
+    static final int MAX_IGNORED_NAMED = 20;
 
     private ProjectBundle() {
     }
@@ -51,20 +85,66 @@ public final class ProjectBundle {
     static Manifest plan(Path root, int maxFiles, long maxBytes) throws IOException {
         List<String> files = new ArrayList<>();
         List<String> skipped = new ArrayList<>();
+        List<String> notes = new ArrayList<>();
         long[] bytes = {0};
-        String[] refusal = {null};
+        Refusal[] refusal = {null};
         Path base = root.toAbsolutePath().normalize();
-        walk(base, base, 0, files, skipped, bytes, refusal, maxFiles, maxBytes);
-        return new Manifest(files, bytes[0], skipped, refusal[0]);
+        DockerIgnore ignore = readIgnore(base, notes);
+        int[] ignored = {0};
+        walk(base, base, 0, files, skipped, bytes, refusal, maxFiles, maxBytes, ignore, ignored);
+        if (ignored[0] > MAX_IGNORED_NAMED) {
+            skipped.add((ignored[0] - MAX_IGNORED_NAMED) + " more entries (.dockerignore)");
+        }
+        return new Manifest(files, bytes[0], skipped, refusal[0] == null ? null : english(refusal[0]), refusal[0],
+                List.copyOf(notes));
+    }
+
+    /**
+     * The project's {@code .dockerignore}, as far as it can be applied to
+     * the upload with certainty ({@link DockerIgnore} says what that is).
+     * What is not applied is noted, so the log says why a folder the file
+     * names still travelled.
+     */
+    private static DockerIgnore readIgnore(Path base, List<String> notes) {
+        Path file = base.resolve(".dockerignore");
+        if (!Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)) {
+            return DockerIgnore.NONE;
+        }
+        String text;
+        try {
+            text = org.nmox.studio.core.util.BoundedReads.read(file.toFile(), MAX_IGNORE_BYTES);
+        } catch (IOException tooBigOrUnreadable) {
+            notes.add(".dockerignore was not applied to the upload (" + tooBigOrUnreadable.getMessage()
+                    + "); docker applies it on the host");
+            return DockerIgnore.NONE;
+        }
+        DockerIgnore ignore = DockerIgnore.parse(text);
+        if (ignore.hasExceptions()) {
+            notes.add(".dockerignore has exception lines (!), so it was not applied to the upload; docker applies it on the host");
+        }
+        for (String line : ignore.passedOver()) {
+            notes.add(".dockerignore line not applied to the upload: " + line);
+        }
+        return ignore;
+    }
+
+    /** A refusal in English, for the deploy's log. */
+    private static String english(Refusal r) {
+        return switch (r.kind()) {
+            case TOO_MANY_FILES -> "more than " + r.number() + " files";
+            case TOO_BIG -> "more than " + r.number() + " MB";
+            case TOO_DEEP -> "folders nested deeper than " + r.number() + " levels under " + r.where();
+        };
     }
 
     private static void walk(Path base, Path dir, int depth, List<String> files, List<String> skipped,
-            long[] bytes, String[] refusal, int maxFiles, long maxBytes) throws IOException {
+            long[] bytes, Refusal[] refusal, int maxFiles, long maxBytes, DockerIgnore ignore, int[] ignored)
+            throws IOException {
         if (refusal[0] != null) {
             return;
         }
         if (depth > MAX_DEPTH) {
-            refusal[0] = "folders nested deeper than " + MAX_DEPTH + " levels under " + base.relativize(dir);
+            refusal[0] = new Refusal(Refusal.Kind.TOO_DEEP, MAX_DEPTH, base.relativize(dir).toString());
             return;
         }
         List<Path> children;
@@ -87,12 +167,21 @@ public final class ProjectBundle {
                 skipped.add(rel + " (a symlink)");
                 continue;
             }
-            if (Files.isDirectory(child, LinkOption.NOFOLLOW_LINKS)) {
+            boolean directory = Files.isDirectory(child, LinkOption.NOFOLLOW_LINKS);
+            if (ignore.excludes(rel)) {
+                // what docker would drop on arrival does not travel, and does not count against the caps;
+                // a folder goes whole, as it does for docker
+                if (ignored[0]++ < MAX_IGNORED_NAMED) {
+                    skipped.add(rel + (directory ? "/" : "") + " (.dockerignore)");
+                }
+                continue;
+            }
+            if (directory) {
                 if (HeavyDirs.isHeavy(name) || name.equals(".git")) {
                     skipped.add(rel + "/ (the server builds its own)");
                     continue;
                 }
-                walk(base, child, depth + 1, files, skipped, bytes, refusal, maxFiles, maxBytes);
+                walk(base, child, depth + 1, files, skipped, bytes, refusal, maxFiles, maxBytes, ignore, ignored);
                 if (refusal[0] != null) {
                     return;
                 }
@@ -109,11 +198,11 @@ public final class ProjectBundle {
             files.add(rel);
             bytes[0] += Files.size(child);
             if (files.size() > maxFiles) {
-                refusal[0] = "more than " + maxFiles + " files";
+                refusal[0] = new Refusal(Refusal.Kind.TOO_MANY_FILES, maxFiles, null);
                 return;
             }
             if (bytes[0] > maxBytes) {
-                refusal[0] = "more than " + (maxBytes / (1024 * 1024)) + " MB";
+                refusal[0] = new Refusal(Refusal.Kind.TOO_BIG, maxBytes / (1024 * 1024), null);
                 return;
             }
         }

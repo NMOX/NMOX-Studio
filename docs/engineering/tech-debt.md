@@ -63,9 +63,21 @@ open, each with its door, none built:
   wire should be a DECLARED edge on the Hub, and a droplet the Designer
   created should carry the Hub's tag; today each is right about its own
   half.
-- **The deploy's project walk honours no `.dockerignore`.** The server's
-  `docker build` honours it, so the image is right; the upload may carry
-  more than it needs.
+- **`.dockerignore` is applied to the upload only where it is certain.**
+  3.12.0 applies it (`DockerIgnore`): names and paths anchored at the
+  context root, `*` and `?` within a segment, `**` across segments. A
+  file with ANY exception line (`!x`) is not applied at all, and a line
+  with a character class or an escape is passed over; the log says so
+  and the server's `docker build` applies the whole file as before. The
+  consequence is the old one for those projects: a whitelist-style
+  ignore file (`*` then `!src`) uploads everything and can still meet
+  the caps. Applying exceptions needs docker's own matcher, tested
+  against docker, and no daemon ran on the machine that built this.
+- **The deploy's LOG is English.** "refused: more than 20000 files",
+  "skipped data/ (.dockerignore)", "12 files, 40 KB" are lines of a log
+  beside docker's own English output, and stay so by the ledger-106
+  rule (a parser's or a tool's own words belong in the log). What
+  reaches the FEED as a reason is worded in the reader's language.
 - **`/srv/nmox` is the only place an app lives.** A host whose ssh user
   cannot write there refuses the upload — now in the host's own words
   ("mkdir: … Permission denied") — and there is no field to say

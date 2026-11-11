@@ -190,6 +190,14 @@ What a server that is up needs next, and what the first slice got wrong.
   actions or their enablement changes, focus returns to the same action,
   and a button acts on the node shown when it is pressed.
 
+- **The upload honours `.dockerignore`, one-sidedly.** `DockerIgnore`
+  applies the lines it is certain about and nothing else (no file with
+  an exception line; no character classes or escapes), because leaving
+  out less than docker would is always safe and leaving out more builds
+  another image. What it leaves out does not count against the bundle's
+  caps. It matches segment by segment with a memo instead of a regular
+  expression: a line is a stranger's text. A refused bundle travels as
+  `ProjectBundle.Refusal` (kind, figure, where) and is worded by the Hub.
 - **The inspector is a column the width of its pane.** `ColumnLayout`
   gives every row its width FIRST and asks its height second, which is
   what a row of buttons that wraps and a sentence that wraps both need;
@@ -257,7 +265,7 @@ door were the real ones). Each row was fixed and walked again.
 
 ## What was verified, and how
 
-- **130 unit tests** in `infra` over the Hub (44 with 3.11.0): the pure
+- **142 unit tests** in `infra` over the Hub (44 with 3.11.0): the pure
   cores (the ssh argv and its quoting, the connect rule, the probe
   parser against real `docker ps` JSON, its bounds and its typed
   reasons, the bundle's skips, refusals and containment, the tar against
