@@ -34,6 +34,10 @@ import org.openide.windows.TopComponent;
     "# {0} - the host's label",
     "# {1} - mosh or ssh",
     "TerminalDoor_tabTitle={0} ({1})",
+    "# {0} - the service's label",
+    "TerminalDoor_logsTitle={0} logs",
+    "# {0} - the service's label",
+    "TerminalDoor_shellTitle={0} shell",
     "TerminalDoor_copiedFallback=The Terminal could not run it here; the command is on the clipboard — paste it into the terminal that opened"
 })
 public final class TerminalDoor {
@@ -88,8 +92,33 @@ public final class TerminalDoor {
                 outcome = Outcome.COPIED_FALLBACK;
             }
             Outcome done = outcome;
-            javax.swing.SwingUtilities.invokeLater(() -> then.accept(done));
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                if (done == Outcome.OPENED) {
+                    bringForward(io);
+                }
+                then.accept(done);
+            });
         });
+    }
+
+    /**
+     * Shows the tab that was asked for. The first time the Terminal
+     * window opens it makes a local shell tab of its own and selects it
+     * when that shell starts — after ours was selected — so the session
+     * the user pressed a button for sat behind a prompt they did not ask
+     * for (walked: the first Logs of a session). Selected again once our
+     * process runs, and once more a moment later for the platform's tab
+     * that starts after it.
+     */
+    private static void bringForward(InputOutput io) {
+        io.select();
+        javax.swing.Timer again = new javax.swing.Timer(1200, e -> {
+            if (!io.isClosed()) {
+                io.select();
+            }
+        });
+        again.setRepeats(false);
+        again.start();
     }
 
     /** The tab, on the EDT: the terminal container, one InputOutput in it, xterm emulation. */

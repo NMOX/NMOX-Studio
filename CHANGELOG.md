@@ -4,6 +4,200 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.12.0] - 2026-11-11
+
+**The Ops Hub's second slice: a picture you can move around in, a
+service you can look inside, and a deploy you can take back.** 3.11.0
+made a server appear and run your Dockerfile. This is what a server
+that is up needs next, and it is also what a hostile read and three
+walks of the four-day-old Hub found wrong in it.
+
+### Added
+
+- **Zoom, pan and fit on the HUD.** The wheel zooms about the pointer, a
+  drag on empty space pans, **Fit** (or `0`, or Home) frames everything
+  again, `+` and `-` zoom, Shift with an arrow pans. The conventions are
+  the Infra Designer's (the range 35% to 250%; a fit never enlarges).
+  Until you move it the camera fits by itself, so an untouched Hub looks
+  as it did; once you move it, it stays where you put it, clamped so the
+  picture cannot be lost off an edge. The keyboard's selection is always
+  brought into view. Text keeps its size at every zoom. A readout says
+  the zoom only while it is not 100%.
+- **Logs and Shell for a container.** A service node has two new doors,
+  as buttons and as menu rows: **Logs** follows `docker logs -f` and
+  **Shell** runs `docker exec`, each as a tab in the IDE's Terminal over
+  the same ssh the Hub already uses. The container's name is the host's
+  word, so it is held to docker's own alphabet before it goes near a
+  remote shell and refused by name otherwise.
+- **Roll back…** on a service this product deployed. A deploy tags every
+  image `nmox/<app>:<stamp>` and removes none, so the host holds the
+  history: the Hub asks the host which it has, picks the newest one
+  older than what runs, shows the two commands in their own
+  left-to-right box, and on a yes (Enter answers No) starts it. Nothing
+  is uploaded or built. Each refusal says why: not deployed from here,
+  an image this product did not tag, no earlier image, no readable port
+  mapping, a deploy already running.
+- **Quick Search reaches the Hub.** A host is found by its name, address
+  or status and a service by its name or its host's, and the result
+  opens the Hub on it. The search reads a copy the Hub keeps for it and
+  never creates a Hub from a keystroke, so it finds nothing until the
+  Hub has been opened in the session.
+- **A deploy applies the project's `.dockerignore` to its upload.** What
+  docker would drop on arrival no longer travels, and no longer counts
+  against the bundle's caps: a project with a large ignored `data/` was
+  refused for 20,000 files that no image would have held. The rule is
+  one-sided on purpose. Leaving out less than docker would is always
+  safe, because docker applies the file again on the host; leaving out
+  more would build a different image. So a file with an exception line
+  (`!keep.me`) is not applied at all, a line with a character class or
+  an escape is passed over, and the deploy's log says which. The
+  Dockerfile and the ignore file always travel, and `.env` files stay
+  home whatever the file says. The file is read the way docker's own
+  reader reads it, which is not the way Java reads text: a line ends at
+  a line feed and nowhere else, a byte-order mark comes off the first
+  line, and space is trimmed by Go's definition, so an exception line
+  behind a mark or a no-break space is still seen as one. A name with
+  `+ ( ) | { }` or `^` is passed over as well, because docker's
+  releases disagree about those characters. And two files are not
+  applied at all: one with a `Dockerfile.dockerignore` beside it
+  (BuildKit reads that one instead, the classic builder does not), and
+  one spelled another way on a disk that ignores case (`.DockerIgnore`
+  answers to the name on macOS and Windows and is not read on the host).
+- `BundleEncodingGateTest.noValuePrintsItsOwnLineBreak` reads every
+  bundle of every NMOX jar in the assembled cluster for a line break
+  that would be printed as a backslash and a letter.
+
+### Changed
+
+- **The inspector fits its pane.** Its action row wraps, its sentences
+  wrap, a long value is cut in the middle with the whole of it on the
+  tooltip, and it scrolls only down. Before, at the pane's own width,
+  Probe now and Destroy… on a host were behind a horizontal scrollbar,
+  and the two new buttons on a service would have been too.
+- **The action row is left alone by a refresh.** It was rebuilt on every
+  probe of the node it showed, so every fifteen seconds a focused button
+  was replaced under the hand. It is rebuilt only when the actions or
+  their enablement change, and focus returns to the same action. A
+  refresh no longer scrolls the pane either.
+- **Services stand beside their host**, three to a column with their
+  names beside them, instead of orbiting it. On a real host with two
+  containers the lower one sat on the host's address.
+- **The toolbar wraps** in a narrow dock.
+- The inspector's fact labels (`region`, `made here`, `provider status`
+  and the rest) and their `yes`/`no` are said in the reader's language.
+  They were English in every translated build.
+- The Quick Search category is named **Ops Hub**, and a row says `host`,
+  the word the window uses.
+- A deploy refused for its size says so in the reader's language ("the
+  project holds more than 20000 files, not counting what stays on this
+  machine"), and one refused for depth names where the chain of folders
+  starts instead of a path thirty-three levels long. The three refusals
+  were English sentences built in the engine.
+
+### Fixed
+
+Found by reading 3.11.0's code with hostile lenses, each traced, then
+fixed with a test that fails on the code as it shipped:
+
+- **A file named `..\..\x` in a cloned repository was bundled from two
+  levels above the project** on macOS and Linux, where a backslash is an
+  ordinary character in a name: it was rewritten to a slash everywhere.
+  It is rewritten only where it is the separator, every path is proven
+  inside the project when it is opened, a link is not followed, and
+  exactly the planned size is copied.
+- **A host that never answered sat "booting" forever** and ssh's reason
+  was thrown away. It is unreachable on the first failed probe unless a
+  watch is bringing it up, and ssh's own last words (`Permission denied
+  (publickey)`, `Connection refused`) are on the feed and in the
+  inspector.
+- **A probe held every line a host printed** for 25 seconds, every 15
+  seconds. It holds 2,000 and then refuses by name; 200 containers are
+  drawn and the rest counted.
+- **The provisioning watch could end silently** when its probe met
+  another in flight. A second ask now waits for the first one's answer.
+- A powered-off server swept as "provisioning" forever; a cloud-init
+  that ended in `error` was announced "ready (cloud-init done)"; a
+  failed destroy turned an unreachable host READY; a crash-looping
+  container counted as up; a server deleted elsewhere was watched for
+  fifteen minutes and kept its host key on file.
+- **Only the first hundred servers of an account were listed**, and what
+  a listing does not name is removed from the Hub. Every page is read,
+  and an account past the cap is refused whole.
+- **The uploaded ssh key was sent to the account before the price was
+  confirmed**, and waited for on the event thread. It is sent after the
+  yes, from a worker; the keychain and `PATH` are asked off the event
+  thread too.
+- **A `known_hosts` path with a space in it was split by ssh.** Measured
+  on OpenSSH 10.5: the key went to a file named for the path up to the
+  space. The option is quoted.
+- **The two gravest questions printed a literal `\n\n`.** A doubled
+  backslash in the message, copied into fourteen translations: Create a
+  server and Destroy showed `?\n\ns-1vcpu…` on one line.
+
+Found by walking the assembled app, on the simulation and on a real
+host over ssh:
+
+- **`HTTP 000none` on the feed.** curl prints `000` when nothing
+  answers, and the verify line appended its own `none` to that. The
+  simulation always said 200, so only a real host showed it.
+- **The deploy dialog previewed `nmox/<app>:0`** and then built another
+  tag. The preview names the tag that will be built.
+- **"Billable: create a server?" in the Simulation.** The simulation has
+  its own question, which says that nothing is made and nothing billed.
+- **The first Logs of a session opened behind a local shell tab** the
+  Terminal makes for itself. The tab that was asked for is in front.
+- **A second host's ring covered the first host's readings** on a short
+  canvas. A fan is used only when no ring reaches into a caption.
+- A host that had never been probed was said to have no mosh-server;
+  it says that the host has not said yet.
+- **A forgotten host's last run reappeared on the next host at that
+  address.** A host added by hand is identified by its address, and
+  forgetting it left its deploy tracker behind.
+- A pulse ran along a link for a silence as well as an answer; the
+  deploy log scrolled sideways to the end of docker's longest line; a
+  failed swap forgot what the host had printed.
+
+Found by the pull request's own Linux lane:
+
+- **Four tests failed in their cleanup, not in an assertion.** A fresh
+  runner can have no `~/.java/.userPrefs` to lock, and removing a
+  throwaway preferences node then throws after every assertion has
+  passed (the v1.286.0 class, in the four tests that fix did not
+  reach). The removal is best-effort; no assertion is excused. No
+  product change.
+
+### Translations
+
+Every new and changed string is in all fifteen languages, after six
+rounds: each round's remarks on the English were acted on before the
+next. Sentences were reworded (a pronoun with no antecedent, a refusal
+untrue in one of its two uses, one action under three verbs, "nothing
+is made" about a host that appears on screen). The rollback question's
+shell commands moved to a box of their own, which a right-to-left
+window does not reorder. And the translators found English that no
+bundle gate could see because it was built in the engine: the
+inspector's fact labels and its yes/no, an edge's verb and where it was
+read, a probe's and a deploy's own reasons for failing, the
+Simulation's name. Those are data now, worded where they are shown: an
+edge is said from the end it is read on (`runs` on the host's row,
+`runs on` on the service's), "does it have docker?" is answered
+`installed`, a provider's creation instant is a date in the reader's
+format, and in Hebrew and Arabic the row's arrow points the way the
+line reads.
+
+### Not verified
+
+- **A live DigitalOcean droplet**, still: it bills. Everything provider
+  side is proven against a fake API in the documented shapes.
+- **Logs, Shell and Roll back… against a real docker.** They were walked
+  over real ssh to a throwaway sshd whose `docker` was a labeled stub
+  that keeps one container's state in a file; the Hub's ssh, probe
+  parser, deployer and Terminal door were the real ones.
+- **The zoom and pan keys, and Quick Search**, were not pressed in the
+  walk: the background tools deliver neither. The wheel, a drag-free
+  Fit and the buttons were; the keys are held by tests that fire the
+  canvas's own actions.
+
 ## [3.11.0] - 2026-11-06
 
 **The Ops Hub: a DevOps HUD where everything on screen is real.** The
@@ -26194,6 +26388,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.12.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.11.0...v3.12.0
 [3.11.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.10.0...v3.11.0
 [3.10.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.9.0...v3.10.0
 [3.9.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.8.2...v3.9.0

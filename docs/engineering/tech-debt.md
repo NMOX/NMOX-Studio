@@ -20,51 +20,122 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
-## Open — added by 3.11.0
+## Open — added by 3.11.0, narrowed by 3.12.0
 
-### 141. The Ops Hub's first slice: what it does not do yet
+### 141. The Ops Hub: what it does not do yet
 
-3.11.0 ships Create → watch → connect → deploy → observe, proven on the
-simulation end to end and on a real host over ssh (this machine's own
-sshd), with the DigitalOcean half proven against a fake API and NOT
-against a live account, because a droplet bills David. Recorded, each
-with its door, none built (`docs/engineering/ops-hub.md` holds the
-longer roadmap):
+3.11.0 shipped Create → watch → connect → deploy → observe. 3.12.0 took
+four items off this list (the camera David asked about on 2026-11-07,
+the logs door with a shell beside it, rollback, Quick Search's reach)
+and a hostile review of the first slice took sixteen defects out of it;
+three walks of the new build took out a dozen more
+(`docs/engineering/ops-hub.md` carries both tables). What is still
+open, each with its door, none built:
 
 - **No live DigitalOcean create has been run.** `DigitalOceanOpsTest`
   proves the request body (tag, keys, cloud-init, monitoring), the
-  listing, the 404-is-gone read and the destroy against documented
-  shapes. The first live walk is one click in the Hub once David
-  decides to spend the cents; expect the first real difference to be a
-  shape the documentation did not show.
+  paged listing, the 404-is-gone read and the destroy against
+  documented shapes. The first live walk is one click in the Hub once
+  David decides to spend the cents; expect the first real difference to
+  be a shape the documentation did not show.
+- **No real docker has been deployed to.** The deploy, the rollback and
+  the service doors are proven against recording runners, the
+  simulation, and — over real ssh and a real pty — a STUB docker on a
+  throwaway sshd (3.12.0's walk; the stub prints docker's shapes and is
+  not docker). A daemon was not running on the machine that walked.
 - **One provider.** Hetzner is a class (`OpsProvider` is found through
   Lookup); the dialog, the watch and the HUD need nothing new.
 - **Service telemetry is a probe, not a stream.** Load, memory and disk
   come from one ssh round trip every 15 s; containers from `docker ps`.
   No `docker stats`, no traffic delta — so a pulse on a link means the
-  HUB did something (a probe answered, a deploy step ended), never that
-  users did.
-- **No rollback door.** The deploy keeps the previous image and
-  `src.prev` on the host; running the previous tag is a button nobody
-  has written.
-- **No logs door.** `docker logs -f` into an Output tab is the obvious
-  next action on a service node.
+  host answered the HUB (a probe, a deploy step), never that users did.
+- **A rollback leaves the folder behind.** It starts the earlier IMAGE;
+  `/srv/nmox/<app>/src` stays the newer source until the next deploy,
+  and nothing prunes old images. Both are said in the design document;
+  neither is a button.
 - **No chord.** Every `⌥⌘` digit is taken; the Hub opens from Window,
-  the Welcome's TOOLING column and nothing else. Quick Search does not
-  reach hosts yet.
+  the Welcome's TOOLING column and Quick Search.
+- **Quick Search finds nothing until the Hub has been opened once in the
+  session.** By design (a keystroke never makes the engine), and the
+  Infra Designer's provider behaves the same; a saved host is therefore
+  not findable on a fresh start.
 - **The Infra Designer and the Hub do not know each other.** A designed
   wire should be a DECLARED edge on the Hub, and a droplet the Designer
   created should carry the Hub's tag; today each is right about its own
   half.
-- **The deploy's project walk honours no `.dockerignore`.** The server's
-  `docker build` honours it, so the image is right; the upload may carry
-  more than it needs.
+- **`.dockerignore` is applied to the upload only where it is certain.**
+  3.12.0 applies it (`DockerIgnore`): names and paths anchored at the
+  context root, `*` and `?` within a segment, `**` across segments. A
+  file with ANY exception line (`!x`) is not applied at all, nor is one
+  beside a `Dockerfile.dockerignore`, and a line with a character
+  class, an escape or one of `+ ( ) | { } ^` is passed over; the log
+  says so and the server's `docker build` applies the whole file as
+  before. The class was reviewed against moby's reader from memory of
+  its source, not against a running docker: the rules it keeps are the
+  ones where being wrong leaves out LESS. The
+  consequence is the old one for those projects: a whitelist-style
+  ignore file (`*` then `!src`) uploads everything and can still meet
+  the caps. Applying exceptions needs docker's own matcher, tested
+  against docker, and no daemon ran on the machine that built this.
+- **The deploy's LOG is English.** "refused: more than 20000 files",
+  "skipped data/ (.dockerignore)", "12 files, 40 KB" are lines of a log
+  beside docker's own English output, and stay so by the ledger-106
+  rule (a parser's or a tool's own words belong in the log). What
+  reaches the FEED as a reason is worded in the reader's language.
+- **`/srv/nmox` is the only place an app lives.** A host whose ssh user
+  cannot write there refuses the upload — now in the host's own words
+  ("mkdir: … Permission denied") — and there is no field to say
+  somewhere else.
 - **Opening the Terminal container opens the platform's own local shell
   tab beside ours.** The container's own `componentOpened` does that;
-  the Hub's tab is the second one. Cosmetic, the platform's.
-- **The Hub's known_hosts is pruned only on destroy.** A manual host
-  forgotten from the Hub keeps its line; harmless (a changed key is still
-  refused), but the file grows.
+  the Hub's tab is the second one. Ours is brought forward (walked: it
+  had opened BEHIND that tab), by selecting it again when its process
+  starts and once more 1.2 s later — a timer where an event belongs,
+  because the platform's tab announces nothing when it selects itself.
+- **A crowded fan can still put a service under a neighbour's caption.**
+  Services stand beside their host three to a column, and the layout
+  holds two laws by test: no service on its OWN host's caption, however
+  many, and no FIRST column on anybody's. A second column of a host in
+  a crowded fan (five hosts with six services each) can reach under the
+  host above it. The camera and the host view are the answer today.
+- **The zoom and pan KEYS and Quick Search's row were not pressed in a
+  walk.** The background tools deliver neither a typed `0`/`+`/`-` nor a
+  Shift+arrow to a Swing canvas, and they cannot drive the Quick Search
+  popup (the 3.6.0 walk law). The wheel, Fit, the buttons and the
+  dialogs were walked; the keys are held by tests that fire the
+  canvas's own named actions, the search by tests of the provider and
+  by the layer entry read out of the built jar.
+- **The Hub's ssh obeys the user's own ssh configuration.** That is the
+  design ("ssh does everything after"), and it has a consequence found
+  in the walk: with `ControlMaster` in `~/.ssh/config`, a connection
+  that reuses an existing master checks no host key, so the Hub's own
+  `known_hosts` is not consulted or written for it. Nothing to fix
+  without overriding the user's ssh; written down so a missing line
+  there is not read as a defect.
+- **The Simulation's own data is English.** Its region is "Simulated
+  region 1", its account's key is "this machine (simulated)", its build
+  output is scripted English. The Simulation's NAME is translated
+  (3.12.0); what it pretends a provider said is not, as a real
+  provider's region name would not be.
+- **A `reaches` edge says more than it knows, from either end.** It is
+  inferred from two services sharing a docker network, which makes each
+  reachable from the other; the rows say "reaches" under one and
+  "reached by" under the other, by whichever the engine listed first.
+  The row's evidence word says "inferred", which is the honest half.
+- **`created` is the only provider fact the inspector formats.** A
+  provider's other facts (a size slug, a region's name) are shown as the
+  provider wrote them, which is right; a new provider that reports
+  another instant will show it raw until it is added to
+  `InspectorPanel.factValue`.
+- **A forgotten manual host keeps its known_hosts line.** Keys are pruned
+  when a provider's host is destroyed or stops being listed; a host
+  added by hand and forgotten keeps its line. Harmless (a changed key is
+  still refused), but the file grows.
+- **Two of the review's lesser finds were left**: the window's
+  first-ever token and PATH questions are asked on a worker, but nothing
+  GATES a new caller from asking on the event thread; and the inspector's
+  facts and edges are still rebuilt on every probe (labels, so no focus
+  is lost — only the action row had to be stable).
 
 ## Open — added by 3.10.0
 

@@ -13,7 +13,7 @@ class ConnectPlanTest {
         assertThat(ConnectPlan.choose(true, true)).isEqualTo(ConnectPlan.MOSH);
         assertThat(ConnectPlan.choose(false, true)).isEqualTo(ConnectPlan.SSH_NO_LOCAL_MOSH);
         assertThat(ConnectPlan.choose(true, false)).isEqualTo(ConnectPlan.SSH_NO_REMOTE_MOSH);
-        assertThat(ConnectPlan.choose(true, null)).isEqualTo(ConnectPlan.SSH_NO_REMOTE_MOSH);
+        assertThat(ConnectPlan.choose(true, null)).as("unknown is not absent").isEqualTo(ConnectPlan.SSH_REMOTE_UNKNOWN);
         assertThat(ConnectPlan.choose(false, null).mosh()).isFalse();
     }
 }

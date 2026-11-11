@@ -116,6 +116,30 @@ class DigitalOceanOpsTest {
     }
 
     @Test
+    @DisplayName("the listing reads every page: a second page's servers are servers too")
+    void listingFollowsPages() throws Exception {
+        String second = DROPLET.replace("4242", "4343").replace("nmox-a1", "nmox-b2");
+        FakeApi api = new FakeApi(Map.of(
+                "GET /v2/droplets?page=1&per_page=100", "{\"droplets\":[" + DROPLET + "],\"links\":{\"pages\":{\"next\":\"https://api.digitalocean.com/v2/droplets?page=2&per_page=100\"}}}",
+                "GET /v2/droplets?page=2&per_page=100", "{\"droplets\":[" + second + "],\"links\":{\"pages\":{}}}"));
+        List<HostRecord> listed = new DigitalOceanOps(api).listHosts();
+        assertThat(listed).extracting(HostRecord::providerId).containsExactly("4242", "4343");
+        assertThat(api.calls).containsExactly("GET /v2/droplets?page=1&per_page=100", "GET /v2/droplets?page=2&per_page=100");
+        FakeApi one = new FakeApi(Map.of("GET /v2/droplets?page=1&per_page=100", "{\"droplets\":[" + DROPLET + "],\"links\":{}}"));
+        assertThat(new DigitalOceanOps(one).listHosts()).hasSize(1);
+        assertThat(one.calls).as("no next link, no second request").hasSize(1);
+    }
+
+    @Test
+    @DisplayName("an account past the cap is refused whole: a partial listing would report real servers as gone")
+    void listingPastTheCapIsRefused() {
+        CloudHttp.Transport endless = (method, path, body) -> new JSONObject(
+                "{\"droplets\":[" + DROPLET + "],\"links\":{\"pages\":{\"next\":\"more\"}}}");
+        assertThatThrownBy(() -> new DigitalOceanOps(endless).listHosts())
+                .isInstanceOf(IOException.class).hasMessageContaining("more than 2000 servers");
+    }
+
+    @Test
     @DisplayName("an error from the cloud never carries the token")
     void tokenNeverInErrors() {
         assertThatThrownBy(() -> CloudHttp.send("http://127.0.0.1:9", "dop_v1_secret", "GET", "/x", null))

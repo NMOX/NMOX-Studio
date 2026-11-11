@@ -36,6 +36,8 @@ public final class SimulatedWorld {
         final long createdAt;
         final Map<String, String> facts = new LinkedHashMap<>();
         final List<SimContainer> containers = new ArrayList<>();
+        /** Every image a simulated build made, as {@code nmox/app:stamp} — what a rollback reads back. */
+        final List<String> images = new ArrayList<>();
         boolean destroyed;
 
         SimHost(String id, String name, String address, long createdAt) {
@@ -159,7 +161,12 @@ public final class SimulatedWorld {
         out.add("mosh " + (configured ? "yes" : "no"));
         out.add("docker " + (configured ? "yes" : "no"));
         out.add("cloudinit " + (configured ? "done" : "running"));
-        for (SimContainer c : h.containers) {
+        List<SimContainer> running;
+        synchronized (this) {
+            // a deploy step replaces the container on another thread while a probe reads the list
+            running = new ArrayList<>(h.containers);
+        }
+        for (SimContainer c : running) {
             out.add("container {\"ID\":\"" + Integer.toHexString(c.name.hashCode()) + "\",\"Names\":\"" + c.name
                     + "\",\"Image\":\"" + c.image + "\",\"Status\":\"Up " + ((clock.getAsLong() - c.since) / 1000)
                     + " seconds\",\"Ports\":\"0.0.0.0:" + c.hostPort + "->" + c.containerPort
@@ -202,6 +209,23 @@ public final class SimulatedWorld {
                 onLine.accept(line);
                 pause(350);
             }
+            synchronized (this) {
+                if (!h.images.contains(image)) {
+                    h.images.add(image);
+                }
+            }
+            return new RemoteRunner.Result(0, "", false);
+        }
+        if (command.startsWith("docker images nmox/")) {
+            String repo = command.split("\\s+")[2];
+            synchronized (this) {
+                for (String image : h.images) {
+                    if (image.startsWith(repo + ":")) {
+                        onLine.accept(image.substring(repo.length() + 1));
+                    }
+                }
+            }
+            onLine.accept("latest");
             return new RemoteRunner.Result(0, "", false);
         }
         if (command.startsWith("docker rm -f")) {

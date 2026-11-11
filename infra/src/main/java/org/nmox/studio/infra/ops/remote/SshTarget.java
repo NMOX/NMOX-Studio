@@ -46,6 +46,25 @@ public record SshTarget(String user, String address, int port, String identityFi
     }
 
     /**
+     * The {@code UserKnownHostsFile=…} option for a path, or null when
+     * there is none to give. ssh reads the option's value as a LIST of
+     * files separated by whitespace, so a path with a space in it — any
+     * home directory named "First Last" — must travel in double quotes:
+     * measured on OpenSSH 10.5, the bare form wrote the new host's key to
+     * a file named for the path up to its first space, and the quoted
+     * form wrote and found it in the right one. A path that itself holds
+     * a double quote cannot be said this way and is left out (the user's
+     * own known_hosts then applies).
+     */
+    static String knownHostsOption(String knownHostsFile) {
+        if (knownHostsFile == null || knownHostsFile.indexOf('"') >= 0) {
+            return null;
+        }
+        boolean spaced = knownHostsFile.chars().anyMatch(Character::isWhitespace);
+        return "UserKnownHostsFile=" + (spaced ? "\"" + knownHostsFile + "\"" : knownHostsFile);
+    }
+
+    /**
      * Parses {@code [user@]host[:port]}; the user defaults to root, the port to 22.
      * A bracketed IPv6 address keeps its colons: {@code root@[::1]:2222}.
      */
@@ -80,9 +99,10 @@ public record SshTarget(String user, String address, int port, String identityFi
         o.add("ConnectTimeout=" + connectTimeoutSeconds);
         o.add("-o");
         o.add("StrictHostKeyChecking=accept-new");
-        if (knownHostsFile != null) {
+        String known = knownHostsOption(knownHostsFile);
+        if (known != null) {
             o.add("-o");
-            o.add("UserKnownHostsFile=" + knownHostsFile);
+            o.add(known);
         }
         o.add("-p");
         o.add(Integer.toString(port));
@@ -110,9 +130,10 @@ public record SshTarget(String user, String address, int port, String identityFi
         argv.add("ssh");
         argv.add("-o");
         argv.add("StrictHostKeyChecking=accept-new");
-        if (knownHostsFile != null) {
+        String known = knownHostsOption(knownHostsFile);
+        if (known != null) {
             argv.add("-o");
-            argv.add("UserKnownHostsFile=" + knownHostsFile);
+            argv.add(known);
         }
         argv.add("-p");
         argv.add(Integer.toString(port));
@@ -121,6 +142,20 @@ public record SshTarget(String user, String address, int port, String identityFi
             argv.add(identityFile);
         }
         argv.add(spec());
+        return argv;
+    }
+
+    /**
+     * An interactive {@code ssh} that runs ONE remote line under a pty
+     * ({@code -t}) instead of a login shell: a log to follow, a shell
+     * inside a container. The line is the caller's to have built from
+     * validated parts; it travels as one argument after {@code --}.
+     */
+    public List<String> interactiveSsh(String knownHostsFile, String remoteCommand) {
+        List<String> argv = interactiveSsh(knownHostsFile);
+        argv.add(1, "-t");
+        argv.add("--");
+        argv.add(remoteCommand);
         return argv;
     }
 

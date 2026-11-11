@@ -19,11 +19,12 @@ import java.util.Map;
  * @param moshServer {@code mosh-server} resolves on the host
  * @param docker {@code docker} resolves on the host
  * @param cloudInit cloud-init's first status word ({@code done}, {@code running}, {@code error}), or null when absent
- * @param containers the running containers, as docker printed them
+ * @param containers the running containers, as docker printed them — at most {@link HostProbe#MAX_CONTAINERS}
+ * @param containersNotShown how many more the host listed past that cap (0 almost always)
  */
 public record HostFacts(String os, double load1, int cpus, long memTotalKb, long memUsedKb,
         long diskTotalKb, long diskUsedKb, long uptimeSeconds, boolean moshServer, boolean docker,
-        String cloudInit, List<ContainerFact> containers) {
+        String cloudInit, List<ContainerFact> containers, int containersNotShown) {
 
     /** One running container, from {@code docker ps --format '{{json .}}'}. */
     public record ContainerFact(String id, String name, String image, String status,
@@ -54,6 +55,39 @@ public record HostFacts(String os, double load1, int cpus, long memTotalKb, long
                 }
             }
             return out;
+        }
+
+        /**
+         * The first published mapping as {@code {hostPort, containerPort}}, from docker's
+         * {@code 0.0.0.0:8080->3000/tcp}; null when nothing is published or docker printed a range.
+         */
+        public int[] firstMapping() {
+            if (ports == null) {
+                return null;
+            }
+            for (String part : ports.split(",")) {
+                String p = part.trim();
+                int arrow = p.indexOf("->");
+                if (arrow < 0) {
+                    continue;
+                }
+                String left = p.substring(0, arrow);
+                int colon = left.lastIndexOf(':');
+                String host = (colon >= 0 ? left.substring(colon + 1) : left).trim();
+                String right = p.substring(arrow + 2);
+                int slash = right.indexOf('/');
+                String inside = (slash >= 0 ? right.substring(0, slash) : right).trim();
+                try {
+                    int h = Integer.parseInt(host);
+                    int c = Integer.parseInt(inside);
+                    if (h >= 1 && h <= 65535 && c >= 1 && c <= 65535) {
+                        return new int[]{h, c};
+                    }
+                } catch (NumberFormatException notAPort) {
+                    // a range, or something docker prints that is not a single mapping: try the next
+                }
+            }
+            return null;
         }
 
         /** The compose service name when compose started it, else the container name. */

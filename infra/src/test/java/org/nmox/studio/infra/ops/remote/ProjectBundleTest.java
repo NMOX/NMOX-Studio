@@ -45,6 +45,129 @@ class ProjectBundleTest {
     }
 
     @Test
+    @DisplayName("what .dockerignore names stays home and does not count against the caps; the Dockerfile and secrets keep their own rules")
+    void dockerignoreIsApplied(@TempDir Path root) throws IOException {
+        Files.writeString(root.resolve("Dockerfile"), "FROM scratch\n");
+        Files.writeString(root.resolve(".dockerignore"), "# what the image never needs\ndata\n*.log\n**/*.tmp\nDockerfile\n");
+        Files.createDirectories(root.resolve("data/deep"));
+        for (int i = 0; i < 40; i++) {
+            Files.writeString(root.resolve("data/deep/blob" + i), "0123456789");
+        }
+        Files.createDirectories(root.resolve("src"));
+        Files.writeString(root.resolve("src/index.js"), "console.log(1)");
+        Files.writeString(root.resolve("src/scratch.tmp"), "x");
+        Files.writeString(root.resolve("debug.log"), "x");
+        Files.writeString(root.resolve("src/kept.log"), "a root-anchored *.log does not reach here");
+        Files.writeString(root.resolve(".env"), "SECRET=1");
+        // a cap of five files: the forty under data/ would refuse the bundle if they counted
+        ProjectBundle.Manifest m = ProjectBundle.plan(root, 5, 1_000_000);
+        assertThat(m.refused()).as(String.valueOf(m.refusal())).isFalse();
+        assertThat(m.files()).containsExactly(".dockerignore", "Dockerfile", "src/index.js", "src/kept.log");
+        assertThat(m.skipped()).contains("data/ (.dockerignore)", "debug.log (.dockerignore)", "src/scratch.tmp (.dockerignore)")
+                .anyMatch(s -> s.startsWith(".env ("));
+        assertThat(m.notes()).isEmpty();
+        // and the bytes that travel are those files and no others
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        ProjectBundle.write(root, m, out);
+        assertThat(untar(out.toByteArray())).contains("src/index.js").doesNotContain("blob").doesNotContain("debug.log");
+    }
+
+    @Test
+    @DisplayName("an ignore file with an exception line is not applied at all, and the log says why the folder travelled")
+    void dockerignoreWithExceptionsIsNotApplied(@TempDir Path root) throws IOException {
+        Files.writeString(root.resolve("Dockerfile"), "FROM scratch\n");
+        Files.writeString(root.resolve(".dockerignore"), "*.md\n!README.md\n");
+        Files.writeString(root.resolve("README.md"), "kept by docker");
+        Files.writeString(root.resolve("NOTES.md"), "dropped by docker, on the host");
+        ProjectBundle.Manifest m = ProjectBundle.plan(root);
+        assertThat(m.files()).as("everything travels; docker applies its own file there").contains("README.md", "NOTES.md");
+        assertThat(m.notes()).singleElement().asString().contains("exception lines").contains("docker applies it on the host");
+        // a line this class does not vouch for is passed over by name; the rest of the file still applies
+        Files.writeString(root.resolve(".dockerignore"), "[N]OTES.md\nREADME.md\n");
+        m = ProjectBundle.plan(root);
+        assertThat(m.files()).contains("NOTES.md").doesNotContain("README.md");
+        assertThat(m.notes()).containsExactly(".dockerignore line not applied to the upload: [N]OTES.md");
+    }
+
+    @Test
+    @DisplayName("a Dockerfile.dockerignore beside it: which file docker reads depends on its builder, so the upload applies neither")
+    void perDockerfileIgnoreSwitchesItOff(@TempDir Path root) throws IOException {
+        Files.writeString(root.resolve("Dockerfile"), "FROM scratch\n");
+        Files.writeString(root.resolve(".dockerignore"), "data\n");
+        Files.writeString(root.resolve("Dockerfile.dockerignore"), "src\n");
+        Files.createDirectories(root.resolve("data"));
+        Files.writeString(root.resolve("data/blob"), "BuildKit would send this: its file names src, not data");
+        Files.createDirectories(root.resolve("src"));
+        Files.writeString(root.resolve("src/index.js"), "the classic builder would send this");
+        ProjectBundle.Manifest m = ProjectBundle.plan(root);
+        assertThat(m.files()).contains("data/blob", "src/index.js", ".dockerignore", "Dockerfile.dockerignore");
+        assertThat(m.notes()).singleElement().asString().startsWith("Dockerfile.dockerignore is present");
+        // without it the same file is applied
+        Files.delete(root.resolve("Dockerfile.dockerignore"));
+        m = ProjectBundle.plan(root);
+        assertThat(m.files()).doesNotContain("data/blob");
+        assertThat(m.notes()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("an ignore file spelled another way on disk is not the host's docker's file, so it is not the upload's either")
+    void anIgnoreFileIsItsExactName(@TempDir Path root) throws IOException {
+        Files.writeString(root.resolve("Dockerfile"), "FROM scratch\n");
+        Files.writeString(root.resolve(".DockerIgnore"), "data\n");
+        Files.createDirectories(root.resolve("data"));
+        Files.writeString(root.resolve("data/blob"), "the host's docker, on a filesystem that minds case, sends this");
+        ProjectBundle.Manifest m = ProjectBundle.plan(root);
+        assertThat(m.files()).contains("data/blob");
+        if (Files.isRegularFile(root.resolve(".dockerignore"))) {
+            // this filesystem ignores case (macOS, Windows): the file answered to the name, and was still not applied
+            assertThat(m.notes()).singleElement().asString().contains("not spelled .dockerignore on disk");
+            assertThat(ProjectBundle.spelledOnDiskAs(root.resolve(".dockerignore"), ".dockerignore")).isFalse();
+        } else {
+            assertThat(m.notes()).isEmpty();
+        }
+        Files.delete(root.resolve(".DockerIgnore"));
+        Files.writeString(root.resolve(".dockerignore"), "data\n");
+        assertThat(ProjectBundle.spelledOnDiskAs(root.resolve(".dockerignore"), ".dockerignore")).isTrue();
+        assertThat(ProjectBundle.plan(root).files()).doesNotContain("data/blob");
+    }
+
+    @Test
+    @DisplayName("many ignored entries are named up to a point and counted after it: the log is a log, not a listing")
+    void manyIgnoredEntriesAreCounted(@TempDir Path root) throws IOException {
+        Files.writeString(root.resolve("Dockerfile"), "FROM scratch\n");
+        Files.writeString(root.resolve(".dockerignore"), "*.tmp\n");
+        for (int i = 0; i < ProjectBundle.MAX_IGNORED_NAMED + 7; i++) {
+            Files.writeString(root.resolve("f" + i + ".tmp"), "x");
+        }
+        ProjectBundle.Manifest m = ProjectBundle.plan(root);
+        assertThat(m.files()).containsExactly(".dockerignore", "Dockerfile");
+        assertThat(m.skipped()).hasSize(ProjectBundle.MAX_IGNORED_NAMED + 1).last().isEqualTo("7 more entries (.dockerignore)");
+    }
+
+    @Test
+    @DisplayName("a refusal is data as well as a log line: its kind, its figure, and where")
+    void refusalIsTyped(@TempDir Path root) throws IOException {
+        for (int i = 0; i < 5; i++) {
+            Files.writeString(root.resolve("f" + i), "0123456789");
+        }
+        ProjectBundle.Manifest many = ProjectBundle.plan(root, 3, 1_000_000);
+        assertThat(many.why()).isEqualTo(new ProjectBundle.Refusal(ProjectBundle.Refusal.Kind.TOO_MANY_FILES, 3, null));
+        assertThat(many.refusal()).isEqualTo("more than 3 files");
+        ProjectBundle.Manifest big = ProjectBundle.plan(root, 100, 25);
+        assertThat(big.why().kind()).isEqualTo(ProjectBundle.Refusal.Kind.TOO_BIG);
+        assertThat(ProjectBundle.plan(root, 100, 1_000_000).why()).isNull();
+        // too deep: the refusal names where the chain starts, in two levels, not a path of thirty-three
+        Path deep = root.resolve("top");
+        for (int i = 0; i <= ProjectBundle.MAX_DEPTH + 1; i++) {
+            deep = deep.resolve("d" + i);
+        }
+        Files.createDirectories(deep);
+        ProjectBundle.Manifest nested = ProjectBundle.plan(root, 100, 1_000_000);
+        assertThat(nested.why()).isEqualTo(new ProjectBundle.Refusal(ProjectBundle.Refusal.Kind.TOO_DEEP, ProjectBundle.MAX_DEPTH, "top/d0"));
+        assertThat(nested.refusal()).isEqualTo("folders nested deeper than 32 levels under top/d0");
+    }
+
+    @Test
     @DisplayName("past the caps the bundle is refused whole, never cut")
     void caps(@TempDir Path root) throws IOException {
         for (int i = 0; i < 5; i++) {
@@ -92,6 +215,70 @@ class ProjectBundleTest {
             }
         } catch (IOException | InterruptedException noTar) {
             // no tar on this machine: the Java read above stands
+        }
+    }
+
+    @Test
+    @org.junit.jupiter.api.condition.DisabledOnOs(org.junit.jupiter.api.condition.OS.WINDOWS)
+    @DisplayName("a file NAMED with backslashes is a name, not a path: nothing outside the project is read")
+    void backslashNameDoesNotClimbOut(@TempDir Path outer) throws Exception {
+        // a cloned repository can carry a file literally called "..\..\secret.txt"; rewriting '\' to '/' on a
+        // system where '\' is an ordinary character turned that name into a path two levels above the project
+        Path project = Files.createDirectories(outer.resolve("a/b/project"));
+        Files.writeString(outer.resolve("a/secret.txt"), "OUTSIDE-SECRET");
+        Files.writeString(project.resolve("Dockerfile"), "FROM scratch\n");
+        Files.writeString(project.resolve("..\\..\\secret.txt"), "inside, oddly named");
+        ProjectBundle.Manifest m = ProjectBundle.plan(project);
+        assertThat(m.files()).containsExactlyInAnyOrder("Dockerfile", "..\\..\\secret.txt");
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        ProjectBundle.write(project, m, out);
+        String tar = new String(new java.util.zip.GZIPInputStream(new java.io.ByteArrayInputStream(out.toByteArray())).readAllBytes(),
+                java.nio.charset.StandardCharsets.ISO_8859_1);
+        assertThat(tar).contains("inside, oddly named").doesNotContain("OUTSIDE-SECRET");
+    }
+
+    @Test
+    @DisplayName("a manifest naming a path outside the project is refused when it is opened, by name")
+    void writeRefusesAnEscape(@TempDir Path outer) throws Exception {
+        Path project = Files.createDirectories(outer.resolve("project"));
+        Files.writeString(outer.resolve("secret.txt"), "OUTSIDE-SECRET");
+        Files.writeString(project.resolve("Dockerfile"), "FROM scratch\n");
+        ProjectBundle.Manifest forged = new ProjectBundle.Manifest(List.of("Dockerfile", "../secret.txt"), 20, List.of(), null);
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> ProjectBundle.write(project, forged, out))
+                .isInstanceOf(java.io.IOException.class).hasMessageContaining("../secret.txt is not inside the project");
+    }
+
+    @Test
+    @org.junit.jupiter.api.condition.DisabledOnOs(org.junit.jupiter.api.condition.OS.WINDOWS)
+    @DisplayName("a file swapped for a symlink after the plan is not followed, whether the link leads out or stays inside")
+    void swappedSymlinkIsNotFollowed(@TempDir Path outer) throws Exception {
+        Path project = Files.createDirectories(outer.resolve("project"));
+        Files.writeString(outer.resolve("secret.txt"), "OUTSIDE-SECRET");
+        Files.writeString(project.resolve("Dockerfile"), "FROM scratch\n");
+        Files.writeString(project.resolve("notes.txt"), "plain");
+        ProjectBundle.Manifest m = ProjectBundle.plan(project);
+        Files.delete(project.resolve("notes.txt"));
+        Files.createSymbolicLink(project.resolve("notes.txt"), outer.resolve("secret.txt"));
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        // a link that leads out: the one containment guard refuses it
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> ProjectBundle.write(project, m, out))
+                .isInstanceOf(java.io.IOException.class).hasMessageContaining("notes.txt is not inside the project");
+        assertThat(out.toString(java.nio.charset.StandardCharsets.ISO_8859_1)).doesNotContain("OUTSIDE-SECRET");
+        // a link that stays inside passes the guard, and is still not followed: the plan left some files home
+        // on purpose (.env), and a link to one of them must not carry it out under another name
+        Files.writeString(project.resolve(".env"), "TOKEN=inside-secret");
+        Files.delete(project.resolve("notes.txt"));
+        Files.createSymbolicLink(project.resolve("notes.txt"), project.resolve(".env"));
+        java.io.ByteArrayOutputStream again = new java.io.ByteArrayOutputStream();
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> ProjectBundle.write(project, m, again))
+                .isInstanceOf(java.io.IOException.class).hasMessageContaining("notes.txt is no longer a regular file");
+    }
+
+    /** A bundle's bytes as text: names and contents are ASCII in these fixtures, so a search is enough. */
+    private static String untar(byte[] gz) throws IOException {
+        try (GZIPInputStream in = new GZIPInputStream(new ByteArrayInputStream(gz))) {
+            return new String(in.readAllBytes(), java.nio.charset.StandardCharsets.ISO_8859_1);
         }
     }
 }

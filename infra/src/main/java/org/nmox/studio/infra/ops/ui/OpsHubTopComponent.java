@@ -25,7 +25,6 @@ import org.nmox.studio.infra.ops.model.OpsKind;
 import org.nmox.studio.infra.ops.model.OpsNode;
 import org.nmox.studio.infra.ops.provider.OpsProvider;
 import org.nmox.studio.infra.ops.provider.ProviderOptions;
-import org.nmox.studio.infra.ops.remote.ConnectPlan;
 import org.nmox.studio.infra.ops.remote.DeployPlan;
 import org.nmox.studio.infra.ops.remote.SshTarget;
 import org.openide.awt.ActionID;
@@ -71,6 +70,8 @@ import org.openide.windows.TopComponent;
     "OpsHub_viewFleet=Fleet",
     "OpsHub_viewServices=Workloads",
     "OpsHub_viewTooltip=The physical picture, or the logical one",
+    "OpsHub_fit=Fit",
+    "OpsHub_fitTooltip=Fit everything in view again (press 0). The wheel zooms in and out, and so do + and -; a drag on empty space pans.",
     "OpsHub_motion=Motion",
     "OpsHub_motionTooltip=Let the HUD glide; off snaps every change into place (the system's Reduce Motion is honoured when this is on)",
     "OpsHub_providerLive=DigitalOcean: live",
@@ -99,7 +100,13 @@ import org.openide.windows.TopComponent;
     "OpsHub_menuDeploy=Deploy here…",
     "OpsHub_menuProbe=Probe now",
     "OpsHub_menuDestroy=Destroy…",
-    "OpsHub_menuForget=Forget"
+    "OpsHub_menuForget=Forget",
+    "OpsHub_menuLogs=Follow logs",
+    "OpsHub_menuShell=Shell in container",
+    "OpsHub_menuRollback=Roll back…",
+    "# {0} - the container's name as the host printed it",
+    "OpsHub_badContainerName=The host reports a container named \u201c{0}\u201d, which is not a name docker accepts, so Logs and Shell cannot be opened for it.",
+    "OpsHub_hostGone=That service or its host is no longer on the Hub."
 })
 public final class OpsHubTopComponent extends TopComponent {
 
@@ -114,6 +121,7 @@ public final class OpsHubTopComponent extends TopComponent {
     private final JToggleButton fleetView = new JToggleButton(Bundle.OpsHub_viewFleet(), true);
     private final JToggleButton servicesView = new JToggleButton(Bundle.OpsHub_viewServices());
     private final JCheckBox motion = new JCheckBox(Bundle.OpsHub_motion());
+    private final JButton fit = button(Bundle.OpsHub_fit(), Bundle.OpsHub_fitTooltip(), () -> { });
     private final OpsHub.Listener hubListener = new OpsHub.Listener() {
         @Override
         public void event(OpsEvent event) {
@@ -162,12 +170,21 @@ public final class OpsHubTopComponent extends TopComponent {
             servicesView.setSelected(v.level() == HudView.Level.SERVICES);
         });
         canvas.onContextMenu(this::contextMenu);
+        fit.addActionListener(e -> {
+            canvas.fit();
+            canvas.requestFocusInWindow();
+        });
+        // Fit is a door only while there is somewhere to come back from
+        canvas.onCameraChanged(() -> fit.setEnabled(canvas.camera().manual() || !canvas.camera().identity()));
+        fit.setEnabled(false);
         getAccessibleContext().setAccessibleName(Bundle.CTL_OpsHubTopComponent());
         getAccessibleContext().setAccessibleDescription(Bundle.HINT_OpsHubTopComponent());
     }
 
     private JPanel toolbar() {
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEADING, 6, 4));
+        // WrapLayout, not FlowLayout: nine controls do not fit a narrow dock, and a FlowLayout's
+        // preferred height lies one row (ledger 75), clipping the second row off the edge
+        JPanel bar = new JPanel(new org.nmox.studio.core.util.WrapLayout(FlowLayout.LEADING, 6, 4));
         bar.add(button(Bundle.OpsHub_newServer(), Bundle.OpsHub_newServerTooltip(), this::newServer));
         bar.add(button(Bundle.OpsHub_addHost(), Bundle.OpsHub_addHostTooltip(), this::addHost));
         bar.add(button(Bundle.OpsHub_refresh(), Bundle.OpsHub_refreshTooltip(), () -> {
@@ -193,6 +210,7 @@ public final class OpsHubTopComponent extends TopComponent {
         servicesView.addActionListener(e -> canvas.setView(HudView.SERVICES));
         bar.add(fleetView);
         bar.add(servicesView);
+        bar.add(fit);
         motion.setSelected(ReducedMotion.choice() != ReducedMotion.Choice.OFF);
         motion.setToolTipText(PlainText.plain(Bundle.OpsHub_motionTooltip()));
         motion.getAccessibleContext().setAccessibleName(Bundle.OpsHub_motion());
@@ -215,12 +233,36 @@ public final class OpsHubTopComponent extends TopComponent {
         return b;
     }
 
+    /**
+     * The toolbar's facts. Whether a token is set is a KEYCHAIN read the
+     * first time it is asked (the provider caches it after), so until
+     * {@link #primeOffEdt} has asked once on a worker the chip says
+     * nothing rather than ask on the event thread.
+     */
     private void syncChrome() {
+        simulation.setSelected(hub.simulating());
+        if (!primed) {
+            providerChip.setText("");
+            return;
+        }
         OpsProvider digitalOcean = hub.provider(org.nmox.studio.infra.ops.provider.DigitalOceanOps.ID);
         boolean live = digitalOcean != null && digitalOcean.configured();
         providerChip.setText(PlainText.plain(live ? Bundle.OpsHub_providerLive() : Bundle.OpsHub_providerNoToken()));
         providerChip.setForeground(live ? HudStyle.READY.darker() : javax.swing.UIManager.getColor("Label.disabledForeground"));
-        simulation.setSelected(hub.simulating());
+    }
+
+    private volatile boolean primed;
+
+    /** Asks the two slow questions once, on a worker: is there a token (the keychain), is mosh here (the PATH). */
+    private void primeOffEdt(Runnable then) {
+        DIALOG_PREP.post(() -> {
+            for (OpsProvider p : hub.providers()) {
+                p.configured();
+            }
+            hub.moshOnPath();
+            primed = true;
+            javax.swing.SwingUtilities.invokeLater(then);
+        });
     }
 
     private void showSelected() {
@@ -269,35 +311,48 @@ public final class OpsHubTopComponent extends TopComponent {
             }
             String[] local = chosen.simulated() ? null : OpsDialogs.localPublicKey();
             javax.swing.SwingUtilities.invokeLater(() -> {
-                OpsDialogs.NewServer answer = OpsDialogs.newServer(chosen, options,
-                        local == null ? null : local[1], local == null ? null : () -> addKey(chosen, local));
-                if (answer != null) {
+                OpsDialogs.NewServer answer = OpsDialogs.newServer(chosen, options, local == null ? null : local[1]);
+                if (answer == null) {
+                    return;
+                }
+                if (answer.addLocalKey() && local != null) {
+                    createWithLocalKey(chosen, answer.spec(), local);
+                } else {
                     hub.createHost(chosen, answer.spec());
                 }
             });
         });
     }
 
-    /** Uploads this machine's key to the account on the EDT's behalf (a dialog is waiting); returns the id or null. */
-    private String addKey(OpsProvider provider, String[] local) {
-        String[] id = {null};
-        String[] err = {null};
-        RequestProcessor.Task t = DIALOG_PREP.post(() -> {
+    /**
+     * The user said yes to the price AND asked for this machine's key on
+     * the account: add the key, then create with it. Both are the
+     * provider's network, so both happen off the event thread (the first
+     * cut waited for the upload ON it, inside the dialog, and uploaded
+     * before the price was confirmed — a No left a key behind).
+     */
+    private void createWithLocalKey(OpsProvider provider, org.nmox.studio.infra.ops.provider.HostSpec spec, String[] local) {
+        DIALOG_PREP.post(() -> {
+            String id;
             try {
-                id[0] = provider.addSshKey("NMOX Studio " + local[1], local[0]);
+                id = provider.addSshKey("NMOX Studio " + local[1], local[0]);
             } catch (java.io.IOException | RuntimeException ex) {
-                err[0] = ex.getMessage();
+                javax.swing.SwingUtilities.invokeLater(() -> OpsDialogs.message(Bundle.OpsHub_keyFailed(String.valueOf(ex.getMessage()))));
+                return;
             } catch (InterruptedException interrupted) {
                 Thread.currentThread().interrupt();
+                return;
             }
+            List<String> keys = new ArrayList<>(spec.sshKeyIds());
+            if (id != null) {
+                keys.add(id);
+            }
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                StatusDisplayer.getDefault().setStatusText(PlainStatus.text(Bundle.OpsHub_keyAdded()));
+                hub.createHost(provider, new org.nmox.studio.infra.ops.provider.HostSpec(spec.name(), spec.region(),
+                        spec.size(), spec.image(), keys, spec.userData()));
+            });
         });
-        t.waitFinished();
-        if (err[0] != null) {
-            OpsDialogs.message(Bundle.OpsHub_keyFailed(err[0]));
-            return null;
-        }
-        StatusDisplayer.getDefault().setStatusText(PlainStatus.text(Bundle.OpsHub_keyAdded()));
-        return id[0];
     }
 
     private void addHost() {
@@ -332,6 +387,11 @@ public final class OpsHubTopComponent extends TopComponent {
             Integer port = InspectorPanel.firstPort(node);
             if (port != null) {
                 item(menu, Bundle.Inspector_open(), () -> openInBrowser(node, port)).setEnabled(!node.simulated);
+            }
+            item(menu, Bundle.OpsHub_menuLogs(), () -> serviceDoor(node, false)).setEnabled(!node.simulated);
+            item(menu, Bundle.OpsHub_menuShell(), () -> serviceDoor(node, true)).setEnabled(!node.simulated);
+            if (node.app != null) {
+                item(menu, Bundle.OpsHub_menuRollback(), () -> rollback(node));
             }
             if (node.hostId != null) {
                 item(menu, Bundle.OpsHub_menuOpen(), () -> canvas.setView(HudView.host(node.hostId)));
@@ -375,10 +435,56 @@ public final class OpsHubTopComponent extends TopComponent {
         });
     }
 
-    /** A plain click's connect: the automatic choice. */
-    void connectDefault(OpsNode node) {
-        ConnectPlan plan = hub.connectPlan(node);
-        connect(node, plan.mosh());
+    /**
+     * A service's two terminal doors: follow its logs, or a shell inside
+     * it. The container's name is the host's word, so it is checked
+     * against docker's own rule before it is put in a remote line, and a
+     * name that fails is refused by name.
+     */
+    private void serviceDoor(OpsNode service, boolean shell) {
+        OpsNode host = service.hostId == null ? null : hub.topology().node(service.hostId);
+        SshTarget target = host == null ? null : hub.targetOf(host);
+        if (target == null || service.simulated) {
+            if (!service.simulated) {
+                OpsDialogs.message(Bundle.OpsHub_hostGone());
+            }
+            return;
+        }
+        String container = service.facts.get("container");
+        if (!org.nmox.studio.infra.ops.remote.ContainerDoors.nameIsSafe(container)) {
+            OpsDialogs.message(Bundle.OpsHub_badContainerName(String.valueOf(container)));
+            return;
+        }
+        String remote = shell ? org.nmox.studio.infra.ops.remote.ContainerDoors.shell(container)
+                : org.nmox.studio.infra.ops.remote.ContainerDoors.logs(container);
+        String title = shell ? Bundle.TerminalDoor_shellTitle(service.label) : Bundle.TerminalDoor_logsTitle(service.label);
+        TerminalDoor.open(title, target.interactiveSsh(hub.knownHosts(), remote), System.getProperty("user.home"), outcome -> {
+            String status = switch (outcome) {
+                case OPENED -> Bundle.OpsHub_opened(title);
+                case COPIED_FALLBACK -> Bundle.OpsHub_copied();
+                case NO_TOOL -> Bundle.OpsHub_noSsh();
+            };
+            StatusDisplayer.getDefault().setStatusText(PlainStatus.text(status));
+        });
+    }
+
+    /** Asks the host what it still holds, shows what going back would run, and runs it on a yes. */
+    private void rollback(OpsNode service) {
+        hub.rollbackOffer(service, offer -> {
+            if (!offer.ok()) {
+                OpsDialogs.message(offer.refusal());
+                return;
+            }
+            // the answer came back from the host: the service or its host may be gone by now
+            OpsNode host = service.hostId == null ? null : hub.topology().node(service.hostId);
+            if (host == null || hub.topology().node(service.id) == null) {
+                OpsDialogs.message(Bundle.OpsHub_hostGone());
+                return;
+            }
+            if (OpsDialogs.confirmRollback(host, offer.plan(), offer.fromStamp())) {
+                hub.rollback(host, offer.plan(), offer.fromStamp());
+            }
+        });
     }
 
     private void deploy(OpsNode node) {
@@ -452,6 +558,33 @@ public final class OpsHubTopComponent extends TopComponent {
         public void forget(OpsNode host) {
             hub.forgetManualHost(host);
         }
+
+        @Override
+        public void logs(OpsNode service) {
+            serviceDoor(service, false);
+        }
+
+        @Override
+        public void shell(OpsNode service) {
+            serviceDoor(service, true);
+        }
+
+        @Override
+        public void rollback(OpsNode service) {
+            OpsHubTopComponent.this.rollback(service);
+        }
+    }
+
+    /** Opens (or fronts) the Hub on one node — Quick Search's landing. */
+    public static void focusNode(String id) {
+        TopComponent tc = org.openide.windows.WindowManager.getDefault().findTopComponent("OpsHubTopComponent");
+        if (tc instanceof OpsHubTopComponent hubWindow) {
+            hubWindow.open();
+            hubWindow.requestActive();
+            if (hubWindow.canvas.show(id)) {
+                hubWindow.canvas.requestFocusInWindow();
+            }
+        }
     }
 
     // ---- lifecycle ----
@@ -462,7 +595,11 @@ public final class OpsHubTopComponent extends TopComponent {
         hub.topology().addListener(topologyListener);
         ReducedMotion.readSystemSettingAsync();
         syncChrome();
-        hub.refresh();
+        primeOffEdt(() -> {
+            syncChrome();
+            showSelected();
+            hub.refresh();
+        });
     }
 
     @Override

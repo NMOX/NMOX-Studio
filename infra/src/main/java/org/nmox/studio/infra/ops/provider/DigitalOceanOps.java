@@ -118,14 +118,31 @@ public final class DigitalOceanOps implements OpsProvider {
 
     @Override
     public List<HostRecord> listHosts() throws IOException, InterruptedException {
+        // the listing is PAGED, and the Hub removes whatever a listing no longer names: reading one page
+        // of a larger account would announce real servers as "no longer listed". Every page is read, and
+        // an account past the cap is refused whole rather than listed in part.
         List<HostRecord> out = new ArrayList<>();
-        JSONObject page = api.send("GET", "/v2/droplets?per_page=100", null);
-        JSONArray ds = page.optJSONArray("droplets");
-        for (int i = 0; ds != null && i < ds.length(); i++) {
-            out.add(parseDroplet(ds.getJSONObject(i)));
+        for (int n = 1; ; n++) {
+            if (n > MAX_PAGES) {
+                throw new IOException("the account lists more than " + (MAX_PAGES * PER_PAGE)
+                        + " servers; the Hub does not list that many");
+            }
+            JSONObject page = api.send("GET", "/v2/droplets?page=" + n + "&per_page=" + PER_PAGE, null);
+            JSONArray ds = page.optJSONArray("droplets");
+            for (int i = 0; ds != null && i < ds.length(); i++) {
+                out.add(parseDroplet(ds.getJSONObject(i)));
+            }
+            JSONObject links = page.optJSONObject("links");
+            JSONObject pages = links == null ? null : links.optJSONObject("pages");
+            boolean more = pages != null && !pages.optString("next", "").isEmpty();
+            if (!more || ds == null || ds.length() == 0) {
+                return out;
+            }
         }
-        return out;
     }
+
+    static final int PER_PAGE = 100;
+    static final int MAX_PAGES = 20;
 
     @Override
     public HostRecord createHost(HostSpec spec) throws IOException, InterruptedException {

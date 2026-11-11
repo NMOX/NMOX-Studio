@@ -36,6 +36,11 @@ public final class OpsNode {
     public HostStatus status = HostStatus.READY;
     /** Service: the host it runs on. */
     public String hostId;
+    /**
+     * Service: the app this product deployed it as (the container's {@code nmox.ops.app} label),
+     * or null for a neighbour. It is the HOST's word — validate it before it nears a shell.
+     */
+    public String app;
     /** Facts the inspector shows, in insertion order (region, size, image, ports…). Values are plain text. */
     public final Map<String, String> facts = new LinkedHashMap<>();
     /** Host measurements; empty for other kinds. */

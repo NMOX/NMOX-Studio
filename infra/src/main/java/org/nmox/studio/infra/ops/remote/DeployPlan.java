@@ -92,7 +92,7 @@ public record DeployPlan(String app, int hostPort, int containerPort, String sta
     public String verify() {
         return "sleep 2; docker ps --filter 'name=^" + container() + "$' --format '{{json .}}'"
                 + "; code=$(curl -s -o /dev/null -m 5 -w '%{http_code}' http://127.0.0.1:" + hostPort
-                + "/ 2>/dev/null || echo none); echo http " + hostPort + " $code";
+                + "/ 2>/dev/null); echo http " + hostPort + " ${code:-none}";
     }
 
     /** The whole plan as the lines the confirm dialog shows. */

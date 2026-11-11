@@ -36,7 +36,39 @@ public final class HudLayout {
         };
     }
 
-    // ---- fleet: this machine on the left, hosts fanned out to the right, services as satellites ----
+    /** What the canvas writes under a host — its name, its address or status, its readings — as a box from its rim down. */
+    static java.awt.geom.Rectangle2D caption(Place host) {
+        return new java.awt.geom.Rectangle2D.Double(host.x - 62, host.y + host.r + 2, 124, 46);
+    }
+
+    /**
+     * True when no host's ring reaches into another host's caption. Two
+     * rings that clear each other can still do that — a caption is as tall
+     * as a ring's radius — and on a short canvas the fan put the lower
+     * host's ring over the upper one's readings (walked: a second host
+     * added while the Terminal took the lower half of the window).
+     */
+    static boolean captionsClear(java.util.Collection<Place> hosts) {
+        for (Place a : hosts) {
+            java.awt.geom.Rectangle2D box = caption(a);
+            for (Place b : hosts) {
+                double glow = b.r + 6;
+                if (a != b && box.intersects(b.x - glow, b.y - glow, 2 * glow, 2 * glow)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** How many of a host's services stand in one column of the fleet view. */
+    static final int SATELLITE_ROWS = 3;
+    /** From one service to the next below it. */
+    static final double SATELLITE_PITCH = 24;
+    /** From one column of services to the next: a glyph and room for its name beside it. */
+    static final double SATELLITE_COLUMN = 104;
+
+    // ---- fleet: this machine on the left, hosts fanned out to the right, services beside their host ----
 
     static Map<String, Place> fleet(Topology t, int w, int h) {
         Map<String, Place> out = new LinkedHashMap<>();
@@ -49,7 +81,7 @@ public final class HudLayout {
             return out;
         }
         double reach = Math.min(w * 0.46, Math.max(160, h * 0.62));
-        // the fan's height leaves room above and below for a host's satellites and labels
+        // the fan's height leaves room above and below for a host's ring and what is written under it
         double reachY = Math.min(reach * 0.78, Math.max(60, h / 2.0 - 110));
         double hostR = n <= 4 ? 40 : n <= 8 ? 34 : 28;
         double apart = 2 * hostR + 70; // two hosts need their rings AND their labels clear of each other
@@ -68,7 +100,7 @@ public final class HudLayout {
                 }
                 fan.put(hosts.get(i).id, new Place(x, y, hostR));
             }
-            if (n == 1 || minGap >= apart * 0.8) {
+            if (n == 1 || (minGap >= apart * 0.8 && captionsClear(fan.values()))) {
                 out.putAll(fan);
                 fanned = true;
             }
@@ -86,16 +118,21 @@ public final class HudLayout {
                 out.put(hosts.get(i).id, new Place(left + cellW * (c + 0.5), 40 + cellH * (r + 0.5), hostR));
             }
         }
-        // services orbit their host, small, starting at the host's outer side
+        // services stand beside their host, small, in short columns on its outer side — and nowhere else.
+        // A host's name, address and readings are written under it and its upper neighbour's are written
+        // above it, and a satellite in either place sat on top of them (walked on a real host with two
+        // containers: the lower one covered the address). Three to a column keeps a column shorter than
+        // the host; each column is wide enough for its names, which the canvas writes beside the glyphs.
         for (OpsNode host : hosts) {
             Place hp = out.get(host.id);
             List<OpsNode> services = t.servicesOf(host.id);
             int m = services.size();
-            double orbit = hostR + 34;
-            double angleFrom = Math.atan2(hp.y - wy, hp.x - wx);
+            double first = Math.max(hostR + 40, 74);
             for (int i = 0; i < m; i++) {
-                double a = angleFrom + (m == 1 ? 0 : -Math.PI / 3 + (2 * Math.PI / 3) * i / (m - 1));
-                out.put(services.get(i).id, new Place(hp.x + Math.cos(a) * orbit, hp.y + Math.sin(a) * orbit, 11));
+                int col = i / SATELLITE_ROWS;
+                int inColumn = Math.min(SATELLITE_ROWS, m - col * SATELLITE_ROWS);
+                double dy = (i % SATELLITE_ROWS - (inColumn - 1) / 2.0) * SATELLITE_PITCH;
+                out.put(services.get(i).id, new Place(hp.x + first + col * SATELLITE_COLUMN, hp.y + dy, 11));
             }
         }
         return out;
@@ -160,6 +197,29 @@ public final class HudLayout {
             }
         }
         return out;
+    }
+
+    /**
+     * The box around everything a view shows: each visible node's own
+     * circle, nothing added for labels (those are drawn at a fixed size
+     * and the camera leaves screen room for them). Null when the view
+     * shows nothing.
+     */
+    public static java.awt.geom.Rectangle2D bounds(Map<String, Place> places) {
+        double minX = Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE;
+        double maxY = -Double.MAX_VALUE;
+        for (Place p : places.values()) {
+            if (p.r() <= 0) {
+                continue;
+            }
+            minX = Math.min(minX, p.x() - p.r());
+            minY = Math.min(minY, p.y() - p.r());
+            maxX = Math.max(maxX, p.x() + p.r());
+            maxY = Math.max(maxY, p.y() + p.r());
+        }
+        return minX > maxX ? null : new java.awt.geom.Rectangle2D.Double(minX, minY, maxX - minX, maxY - minY);
     }
 
     /** The ids a view shows (radius above zero), in layout order — what keyboard navigation cycles. */

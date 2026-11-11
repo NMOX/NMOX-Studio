@@ -1696,6 +1696,36 @@ loop without a bill. The Hub keeps its own `known_hosts` under
 `~/.nmox/ops/` and never writes yours. Tab into the HUD and use the
 arrow keys, Enter and Escape to move without a mouse.
 
+A deploy uploads the project without `node_modules`, `.git` and `.env`
+files, and without what the project's `.dockerignore` names. The ignore
+file is applied only where the result is certain: a file with an
+exception line (`!keep.me`), or with a `Dockerfile.dockerignore` beside
+it, is not applied to the upload at all, and docker applies it on the
+host as it always does. The deploy's log says
+what stayed home and why.
+
+Move around the picture as you do in the Infra Designer: the wheel
+zooms about the pointer, a drag on empty space pans, and **Fit** (or
+`0`) frames everything again; `+` and `-` zoom and Shift with an arrow
+pans. Until you move it, the picture fits itself to the window.
+
+A container the Hub found is a service node with doors of its own.
+**Logs** follows its output (`docker logs -f`; Ctrl+C stops following,
+the container keeps running) and **Shell** opens a shell inside it
+(`docker exec`), each as a tab in the IDE's Terminal over the same ssh.
+On a service that was deployed from here, **Roll back…** asks the host
+which earlier images it still holds, shows you the two commands it
+would run, and starts the image that ran before — nothing is uploaded
+or built, the newer image stays on the host, and Enter answers No. It
+says why when it cannot: the service was not deployed from here, the
+host holds no earlier image, a deploy is already running.
+
+A host that does not answer says why, in ssh's own words (`Permission
+denied (publickey)`, `Connection refused`), on the feed and beside
+**problem** in the inspector. Quick Search finds a host by its name,
+address or status and a service by its name or its host's, once the Hub
+has been opened in the session.
+
 ### IRC (⌥⌘3)
 
 ![A live Libera.Chat session — join, local echo, and /lastlog answering in place](images/irc-libera.png)
