@@ -881,4 +881,23 @@ class OpsHubTest {
         f.drain();
         assertThat(host.facts).doesNotContainKey("containers not drawn");
     }
+
+    @Test
+    @DisplayName("a forgotten host takes its last run with it: the same address added again starts clean")
+    void forgettingAHostForgetsItsRun() {
+        RollbackRunner rr = new RollbackRunner();
+        OpsHub hub = new OpsHub(clock::get, Runnable::run, rr, prefs, cloud, ssh).withProviders(List.of(provider));
+        OpsNode host = hub.addManualHost(new SshTarget("root", "203.0.113.5", 22, null), "box");
+        ssh.drain(2);
+        OpsHub.RollbackOffer[] offer = new OpsHub.RollbackOffer[1];
+        hub.rollbackOffer(onlyService(hub), o -> offer[0] = o);
+        ssh.drain(2);
+        hub.rollback(host, offer[0].plan(), offer[0].fromStamp());
+        ssh.drain(4);
+        assertThat(hub.deployOf(host.id)).as("the run is the host's").isNotNull();
+        hub.forgetManualHost(host);
+        OpsNode again = hub.addManualHost(new SshTarget("root", "203.0.113.5", 22, null), "renamed");
+        assertThat(again.id).as("a manual host's id is its address").isEqualTo(host.id);
+        assertThat(hub.deployOf(again.id)).as("and the run did not outlive the host it ran on").isNull();
+    }
 }

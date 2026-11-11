@@ -500,6 +500,10 @@ public final class OpsHub {
     /** Forgets a manual host (the server is untouched). */
     public void forgetManualHost(OpsNode node) {
         if ("manual".equals(node.provider) && topology.remove(node.id)) {
+            // its run goes with it: a manual host's id is its address, so the same server added again
+            // under another name showed the forgotten one's last rollback as its own (walked)
+            deploys.remove(node.id);
+            watchErrored.remove(node);
             saveManualHosts();
             event(OpsEvent.Kind.INFO, node.id, Bundle.OpsHub_forgotHost(node.label));
         }

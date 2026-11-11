@@ -483,7 +483,13 @@ public final class InspectorPanel extends JPanel {
             steps.add(l);
         }
         deployLog.setText(String.join("\n", run.tail()));
-        deployLog.setCaretPosition(deployLog.getDocument().getLength());
+        // the START of the last line: a caret at its end scrolled a long line (docker's JSON) sideways,
+        // and the box showed the middle of every line above it
+        try {
+            deployLog.setCaretPosition(deployLog.getLineStartOffset(Math.max(0, deployLog.getLineCount() - 1)));
+        } catch (javax.swing.text.BadLocationException noLines) {
+            deployLog.setCaretPosition(0);
+        }
         steps.revalidate();
     }
 
