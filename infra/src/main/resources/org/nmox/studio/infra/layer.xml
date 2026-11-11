@@ -9,6 +9,14 @@
             <attr name="position" intvalue="320"/>
             <file name="org-nmox-studio-infra-search-InfraNodeSearchProvider.instance"/>
         </folder>
+        <!-- The Ops Hub's servers and services. 322: Infra holds 320, API Studio 325.
+             The provider reads the Hub only if this session has opened it; a
+             keystroke never creates it. -->
+        <folder name="OpsHub">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.infra.ops.search.Bundle"/>
+            <attr name="position" intvalue="322"/>
+            <file name="org-nmox-studio-infra-ops-search-OpsSearchProvider.instance"/>
+        </folder>
     </folder>
     <!-- Menu accelerators come from Keymaps-profile shadows, not from
          Shortcuts/ registrations (the v1.38.1 finding, debt #28): without

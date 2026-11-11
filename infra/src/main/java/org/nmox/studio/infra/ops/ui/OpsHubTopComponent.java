@@ -575,6 +575,18 @@ public final class OpsHubTopComponent extends TopComponent {
         }
     }
 
+    /** Opens (or fronts) the Hub on one node — Quick Search's landing. */
+    public static void focusNode(String id) {
+        TopComponent tc = org.openide.windows.WindowManager.getDefault().findTopComponent("OpsHubTopComponent");
+        if (tc instanceof OpsHubTopComponent hubWindow) {
+            hubWindow.open();
+            hubWindow.requestActive();
+            if (hubWindow.canvas.show(id)) {
+                hubWindow.canvas.requestFocusInWindow();
+            }
+        }
+    }
+
     // ---- lifecycle ----
 
     @Override

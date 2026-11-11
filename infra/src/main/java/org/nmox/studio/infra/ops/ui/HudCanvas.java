@@ -382,6 +382,30 @@ public final class HudCanvas extends JPanel {
         return camera;
     }
 
+    /**
+     * Brings a node to the user: the view that shows it (a host in the
+     * fleet, a service inside its host), the selection on it, the
+     * camera moved the least it must. What Quick Search lands on.
+     *
+     * @return false when there is no such node
+     */
+    public boolean show(String id) {
+        OpsNode n = topology.node(id);
+        if (n == null) {
+            return false;
+        }
+        HudLayout.Place p = places.get(id);
+        if (p == null || p.r() <= 0) {
+            setView(n.kind == OpsKind.SERVICE && n.hostId != null ? HudView.host(n.hostId) : HudView.FLEET);
+            p = places.get(id);
+        }
+        select(id);
+        if (p != null && camera.reveal(p.x(), p.y(), p.r(), getWidth(), getHeight(), !ReducedMotion.reduced())) {
+            cameraMoved();
+        }
+        return true;
+    }
+
     // ---- the camera's doors ----
 
     /** Frames the whole view again and hands the camera back to the layout. */
@@ -608,6 +632,11 @@ public final class HudCanvas extends JPanel {
         }
         pulses.add(new Pulse(from, to, System.currentTimeMillis(), PULSE_MS, color));
         ensureFrames();
+    }
+
+    /** How many pulses are travelling now — a test's window onto "only what crossed the link". */
+    int pulseCount() {
+        return pulses.size();
     }
 
     /** Starts the frame timer when there is something to move; stops it when there is not. */

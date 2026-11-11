@@ -253,6 +253,45 @@ public final class OpsHub {
         return instance;
     }
 
+    /** The Hub if this session has made one, else null — for a reader that must never be the one to make it. */
+    public static synchronized OpsHub peek() {
+        return instance;
+    }
+
+    /**
+     * One row of what Quick Search may find: a host or a service, as
+     * plain values. The topology is the event thread's; the search runs
+     * on its own, so it reads this copy, rebuilt on the event thread
+     * whenever the topology changes.
+     *
+     * @param hostLabel a service's host; null on a host
+     * @param status a host's status; null on a service
+     */
+    public record Findable(String id, OpsKind kind, String label, String address, String hostLabel,
+            HostStatus status, boolean simulated) {
+    }
+
+    private volatile List<Findable> findable = List.of();
+
+    /** Hosts and services as they stood at the last change — safe from any thread. */
+    public List<Findable> findable() {
+        return findable;
+    }
+
+    private void reindex() {
+        List<Findable> out = new ArrayList<>();
+        for (OpsNode n : topology.nodes()) {
+            if (n.kind == OpsKind.HOST) {
+                out.add(new Findable(n.id, n.kind, n.label, n.address, null, n.status, n.simulated));
+            } else if (n.kind == OpsKind.SERVICE) {
+                OpsNode host = n.hostId == null ? null : topology.node(n.hostId);
+                out.add(new Findable(n.id, n.kind, n.label, host == null ? null : host.address,
+                        host == null ? null : host.label, null, n.simulated));
+            }
+        }
+        findable = List.copyOf(out);
+    }
+
     private final java.util.function.LongSupplier clock;
     private final Consumer<Runnable> edt;
     private final RemoteRunner sshRunner;
@@ -290,7 +329,19 @@ public final class OpsHub {
         for (OpsProvider p : Lookup.getDefault().lookupAll(OpsProvider.class)) {
             providers.put(p.id(), p);
         }
+        topology.addListener(new Topology.Listener() {
+            @Override
+            public void structureChanged() {
+                reindex();
+            }
+
+            @Override
+            public void nodeChanged(OpsNode node) {
+                reindex();
+            }
+        });
         loadManualHosts();
+        reindex();
     }
 
     /** Test seam: a hub with exactly these providers. */

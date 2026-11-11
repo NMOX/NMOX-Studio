@@ -261,4 +261,28 @@ class HudCanvasCameraTest {
             assertThat(canvas.view()).isEqualTo(HudView.FLEET);
         });
     }
+
+    @Test
+    @DisplayName("a pulse runs only for what the host answered: a silence starts none")
+    void pulsesOnlyForAnswers() throws Exception {
+        ReducedMotion.systemSays(false); // pulses are motion: this one test lets the HUD move
+        SwingUtilities.invokeAndWait(() -> {
+            fixture = new OpsHubFixture();
+            canvas = new HudCanvas(fixture.hub);
+            canvas.setSize(900, 600);
+            canvas.addNotify();
+            try {
+                OpsNode host = fixture.host("box", 5);
+                fixture.drain(); // nobody answers: "does not answer ssh" is said, and nothing crossed the link
+                assertThat(host.status).isEqualTo(org.nmox.studio.infra.ops.model.HostStatus.UNREACHABLE);
+                assertThat(canvas.pulseCount()).as("a silence is not a crossing").isZero();
+                fixture.answer();
+                fixture.hub.probe(host);
+                fixture.drain();
+                assertThat(canvas.pulseCount()).as("the host answered: its link carried that").isPositive();
+            } finally {
+                canvas.removeNotify(); // stops the frame timer
+            }
+        });
+    }
 }
