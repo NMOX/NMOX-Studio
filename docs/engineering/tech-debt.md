@@ -20,49 +20,44 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
-## Open — added by 3.11.0
+## Open — added by 3.11.0, narrowed by 3.12.0
 
-### 141. The Ops Hub's first slice: what it does not do yet
+### 141. The Ops Hub: what it does not do yet
 
-3.11.0 ships Create → watch → connect → deploy → observe, proven on the
-simulation end to end and on a real host over ssh (this machine's own
-sshd), with the DigitalOcean half proven against a fake API and NOT
-against a live account, because a droplet bills David. Recorded, each
-with its door, none built (`docs/engineering/ops-hub.md` holds the
-longer roadmap):
+3.11.0 shipped Create → watch → connect → deploy → observe. 3.12.0 took
+four items off this list (the camera David asked about on 2026-11-07,
+the logs door with a shell beside it, rollback, Quick Search's reach)
+and a hostile review of the first slice took sixteen defects out of it
+(`docs/engineering/ops-hub.md` carries the table). What is still open,
+each with its door, none built:
 
 - **No live DigitalOcean create has been run.** `DigitalOceanOpsTest`
   proves the request body (tag, keys, cloud-init, monitoring), the
-  listing, the 404-is-gone read and the destroy against documented
-  shapes. The first live walk is one click in the Hub once David
-  decides to spend the cents; expect the first real difference to be a
-  shape the documentation did not show.
+  paged listing, the 404-is-gone read and the destroy against
+  documented shapes. The first live walk is one click in the Hub once
+  David decides to spend the cents; expect the first real difference to
+  be a shape the documentation did not show.
+- **No real docker has been deployed to.** The deploy, the rollback and
+  the service doors are proven against recording runners, the
+  simulation, and — over real ssh and a real pty — a STUB docker on a
+  throwaway sshd (3.12.0's walk; the stub prints docker's shapes and is
+  not docker). A daemon was not running on the machine that walked.
 - **One provider.** Hetzner is a class (`OpsProvider` is found through
   Lookup); the dialog, the watch and the HUD need nothing new.
 - **Service telemetry is a probe, not a stream.** Load, memory and disk
   come from one ssh round trip every 15 s; containers from `docker ps`.
   No `docker stats`, no traffic delta — so a pulse on a link means the
-  HUB did something (a probe answered, a deploy step ended), never that
-  users did.
-- **No rollback door.** The deploy keeps the previous image and
-  `src.prev` on the host; running the previous tag is a button nobody
-  has written.
-- **No logs door.** `docker logs -f` into an Output tab is the obvious
-  next action on a service node.
-- **No camera.** The HUD has no zoom and no pan: `HudLayout` fits every
-  node into the canvas on each resize and the levels of abstraction are
-  three VIEWS (fleet → host → workloads), not a scale. Honest to about a
-  dozen hosts; past that the fan crowds. A camera is one unit, done
-  whole or not at all: a view transform applied once in the paint and
-  inverted in hit-testing, keyboard focus and the ACCESSIBLE children's
-  bounds (a screen reader must be pointed at the screen, not the
-  world), wheel-zoom about the cursor, drag-to-pan on empty space, a
-  fit command recomputed on a view switch, floor and ceiling so labels
-  stay legible, Reduce Motion honoured for the camera as for the
-  springs. Asked by David on 2026-11-07.
+  host answered the HUB (a probe, a deploy step), never that users did.
+- **A rollback leaves the folder behind.** It starts the earlier IMAGE;
+  `/srv/nmox/<app>/src` stays the newer source until the next deploy,
+  and nothing prunes old images. Both are said in the design document;
+  neither is a button.
 - **No chord.** Every `⌥⌘` digit is taken; the Hub opens from Window,
-  the Welcome's TOOLING column and nothing else. Quick Search does not
-  reach hosts yet.
+  the Welcome's TOOLING column and Quick Search.
+- **Quick Search finds nothing until the Hub has been opened once in the
+  session.** By design (a keystroke never makes the engine), and the
+  Infra Designer's provider behaves the same; a saved host is therefore
+  not findable on a fresh start.
 - **The Infra Designer and the Hub do not know each other.** A designed
   wire should be a DECLARED edge on the Hub, and a droplet the Designer
   created should carry the Hub's tag; today each is right about its own
@@ -70,12 +65,22 @@ longer roadmap):
 - **The deploy's project walk honours no `.dockerignore`.** The server's
   `docker build` honours it, so the image is right; the upload may carry
   more than it needs.
+- **`/srv/nmox` is the only place an app lives.** A host whose ssh user
+  cannot write there refuses the upload — now in the host's own words
+  ("mkdir: … Permission denied") — and there is no field to say
+  somewhere else.
 - **Opening the Terminal container opens the platform's own local shell
   tab beside ours.** The container's own `componentOpened` does that;
   the Hub's tab is the second one. Cosmetic, the platform's.
-- **The Hub's known_hosts is pruned only on destroy.** A manual host
-  forgotten from the Hub keeps its line; harmless (a changed key is still
-  refused), but the file grows.
+- **A forgotten manual host keeps its known_hosts line.** Keys are pruned
+  when a provider's host is destroyed or stops being listed; a host
+  added by hand and forgotten keeps its line. Harmless (a changed key is
+  still refused), but the file grows.
+- **Two of the review's lesser finds were left**: the window's
+  first-ever token and PATH questions are asked on a worker, but nothing
+  GATES a new caller from asking on the event thread; and the inspector's
+  facts and edges are still rebuilt on every probe (labels, so no focus
+  is lost — only the action row had to be stable).
 
 ## Open — added by 3.10.0
 

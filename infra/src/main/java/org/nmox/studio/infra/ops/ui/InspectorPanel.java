@@ -8,7 +8,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.Map;
 import java.util.function.Consumer;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -69,6 +68,19 @@ import org.openide.util.NbBundle.Messages;
     "Inspector_factHost=host",
     "Inspector_factLastSeen=last seen",
     "Inspector_factProblem=problem",
+    "Inspector_factRegion=region",
+    "Inspector_factSize=size",
+    "Inspector_factImage=image",
+    "Inspector_factMadeHere=made here",
+    "Inspector_factProviderStatus=provider status",
+    "Inspector_factCreated=created",
+    "Inspector_factContainer=container",
+    "Inspector_factPorts=ports",
+    "Inspector_factDeployedBy=deployed by",
+    "Inspector_factComposeProject=compose project",
+    "Inspector_factContainersNotDrawn=containers not drawn",
+    "Inspector_yes=yes",
+    "Inspector_no=no",
     "Inspector_gaugeLoad=load per core",
     "Inspector_gaugeMemory=memory",
     "Inspector_gaugeDisk=disk",
@@ -94,15 +106,16 @@ import org.openide.util.NbBundle.Messages;
     "Inspector_stepFailed=✕ {0}",
     "# {0} - mosh or ssh",
     "# {1} - why",
-    "Inspector_connectHow=Recommended: {0} — {1}",
+    "Inspector_connectHow=Connect with {0}: {1}",
+    "Inspector_connectHowName=How to connect",
     "Inspector_logs=Logs",
-    "Inspector_logsTooltip=Follow this container's output in the IDE's Terminal (docker logs -f); Ctrl+C ends the follow, not the container",
+    "Inspector_logsTooltip=Follow this container's output in the IDE's Terminal (docker logs -f); Ctrl+C stops following; the container keeps running",
     "Inspector_shell=Shell",
     "Inspector_shellTooltip=Open a shell inside this container in the IDE's Terminal (docker exec)",
-    "Inspector_rollback=Roll Back…",
-    "Inspector_rollbackTooltip=Start the image that ran before this one — the host still holds it",
+    "Inspector_rollback=Roll back…",
+    "Inspector_rollbackTooltip=Start the image that ran before this one, if the host still holds it",
     "Inspector_rollbackTracker=Rollback",
-    "Inspector_simulatedService=simulated service: there is nothing to follow or enter",
+    "Inspector_simulatedService=simulated service: there are no logs to follow and no shell to open",
     "Inspector_planMosh=mosh",
     "Inspector_planSsh=ssh",
     "Inspector_whyNoLocalMosh=mosh is not installed on this machine",
@@ -144,13 +157,17 @@ public final class InspectorPanel extends JPanel {
     private final JLabel title = new JLabel();
     private final JTextArea hint = org.nmox.studio.core.util.PlainDialogs.plain(Bundle.Inspector_nothingSelected(), Bundle.Inspector_title());
     private final JPanel facts = new JPanel(new GridBagLayout());
+    private final JLabel problemKey = new JLabel(PlainText.plain(Bundle.Inspector_factProblem()));
+    /** The last problem, whole: it is the sentence that says why a host is red, so it wraps and is never cut. */
+    private final JTextArea problem = org.nmox.studio.core.util.PlainDialogs.plain("", Bundle.Inspector_factProblem());
     private final JProgressBar load = new JProgressBar(0, 100);
     private final JProgressBar mem = new JProgressBar(0, 100);
     private final JProgressBar disk = new JProgressBar(0, 100);
     private final JPanel gauges = new JPanel(new GridBagLayout());
-    private final JPanel edges = new JPanel();
-    private final JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
-    private final JLabel connectHow = new JLabel();
+    private final JPanel edges = new JPanel(new ColumnLayout(2));
+    /** Wraps: five actions do not fit one row of a 300-pixel pane, and a row that ran on put two of them out of reach. */
+    private final JPanel buttons = new JPanel(new org.nmox.studio.core.util.WrapLayout(FlowLayout.LEADING, 4, 2));
+    private final JTextArea connectHow = org.nmox.studio.core.util.PlainDialogs.plain("", Bundle.Inspector_connectHowName());
     private final JPanel deployBox = new JPanel(new BorderLayout(0, 4));
     private final JPanel steps = new JPanel();
     private final JTextArea deployLog = TextDirection.keepLeftToRight(new JTextArea(6, 30));
@@ -166,28 +183,24 @@ public final class InspectorPanel extends JPanel {
         setBorder(new EmptyBorder(8, 10, 8, 10));
         title.setFont(HudStyle.ui(14f, true));
         title.getAccessibleContext().setAccessibleName(Bundle.Inspector_title());
-        JPanel column = new JPanel();
-        column.setLayout(new BoxLayout(column, BoxLayout.PAGE_AXIS));
-        hint.setLineWrap(true);
-        hint.setWrapStyleWord(true);
-        hint.setColumns(24);
-        column.add(leading(hint));
-        column.add(leading(title));
-        column.add(Box.createVerticalStrut(6));
-        column.add(leading(buttons));
+        JPanel column = new Column();
+        column.add(hint);
+        column.add(title);
+        column.add(buttons);
         connectHow.setFont(HudStyle.ui(10.5f, false));
-        column.add(leading(connectHow));
-        column.add(Box.createVerticalStrut(8));
-        column.add(leading(facts));
-        column.add(Box.createVerticalStrut(8));
+        column.add(connectHow);
+        column.add(facts);
+        problemKey.setFont(HudStyle.ui(11f, false));
+        problemKey.setForeground(javax.swing.UIManager.getColor("Label.disabledForeground"));
+        problemKey.setLabelFor(problem);
+        problem.setFont(HudStyle.ui(11f, false));
+        column.add(problemKey);
+        column.add(problem);
         gauge(gauges, 0, Bundle.Inspector_gaugeLoad(), load);
         gauge(gauges, 1, Bundle.Inspector_gaugeMemory(), mem);
         gauge(gauges, 2, Bundle.Inspector_gaugeDisk(), disk);
-        column.add(leading(gauges));
-        column.add(Box.createVerticalStrut(8));
-        edges.setLayout(new BoxLayout(edges, BoxLayout.PAGE_AXIS));
-        column.add(leading(edges));
-        column.add(Box.createVerticalStrut(8));
+        column.add(gauges);
+        column.add(edges);
         steps.setLayout(new BoxLayout(steps, BoxLayout.PAGE_AXIS));
         deployLog.setEditable(false);
         deployLog.setFont(HudStyle.mono(10.5f));
@@ -198,9 +211,9 @@ public final class InspectorPanel extends JPanel {
         deployBox.add(steps, BorderLayout.CENTER);
         deployBox.add(new JScrollPane(deployLog), BorderLayout.PAGE_END);
         deployBox.setVisible(false);
-        column.add(leading(deployBox));
-        column.add(Box.createVerticalGlue());
-        JScrollPane scroll = new JScrollPane(column);
+        column.add(deployBox);
+        JScrollPane scroll = new JScrollPane(column, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.setBorder(null);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
         add(scroll, BorderLayout.CENTER);
@@ -208,11 +221,50 @@ public final class InspectorPanel extends JPanel {
         show(null);
     }
 
-    private static JPanel leading(javax.swing.JComponent c) {
-        JPanel p = new JPanel(new BorderLayout());
-        p.add(c, BorderLayout.LINE_START);
-        p.setAlignmentX(LEFT_ALIGNMENT);
-        return p;
+    /**
+     * The inspector's column: always the viewport's width, so nothing in
+     * it can be behind a horizontal scrollbar, and as tall as its rows
+     * are at that width.
+     */
+    private static final class Column extends JPanel implements javax.swing.Scrollable {
+
+        private final ColumnLayout rows = new ColumnLayout(8);
+
+        Column() {
+            setLayout(rows);
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            // the width that is COMING, not the one the column has: the viewport asks before it resizes its view
+            int width = getParent() instanceof javax.swing.JViewport port ? port.getWidth() : getWidth();
+            return rows.sizeFor(this, width);
+        }
+
+        @Override
+        public Dimension getPreferredScrollableViewportSize() {
+            return getPreferredSize();
+        }
+
+        @Override
+        public int getScrollableUnitIncrement(java.awt.Rectangle visible, int orientation, int direction) {
+            return 16;
+        }
+
+        @Override
+        public int getScrollableBlockIncrement(java.awt.Rectangle visible, int orientation, int direction) {
+            return Math.max(16, visible.height - 16);
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportWidth() {
+            return true;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportHeight() {
+            return false;
+        }
     }
 
     private static void gauge(JPanel into, int row, String name, JProgressBar bar) {
@@ -242,6 +294,9 @@ public final class InspectorPanel extends JPanel {
         if (node == null) {
             title.setText("");
             connectHow.setText("");
+            connectHow.setVisible(false);
+            problemKey.setVisible(false);
+            problem.setVisible(false);
             gauges.setVisible(false);
             deployBox.setVisible(false);
             setButtons(null, java.util.List.of());
@@ -270,11 +325,11 @@ public final class InspectorPanel extends JPanel {
             if (e.getKey().equals("watch")) {
                 continue;
             }
-            row = fact(row, e.getKey(), e.getValue());
+            row = fact(row, factLabel(e.getKey()), factValue(e.getKey(), e.getValue()));
         }
-        if (node.lastProblem != null) {
-            fact(row, Bundle.Inspector_factProblem(), node.lastProblem);
-        }
+        problemKey.setVisible(node.lastProblem != null);
+        problem.setVisible(node.lastProblem != null);
+        problem.setText(node.lastProblem == null ? "" : node.lastProblem);
         // gauges
         Telemetry.Sample s = node.telemetry.latest();
         gauges.setVisible(node.kind == OpsKind.HOST && s != null);
@@ -286,15 +341,17 @@ public final class InspectorPanel extends JPanel {
         // edges with their evidence
         java.util.List<OpsEdge> touching = hub.topology().edgesOf(node.id);
         if (!touching.isEmpty()) {
-            JLabel h = new JLabel(Bundle.Inspector_edges());
+            JLabel h = new JLabel(PlainText.plain(Bundle.Inspector_edges()));
             h.setFont(HudStyle.ui(12f, true));
             edges.add(h);
             for (OpsEdge e : touching) {
                 String otherId = e.from().equals(node.id) ? e.to() : e.from();
                 OpsNode other = hub.topology().node(otherId);
                 String arrow = e.from().equals(node.id) ? "→ " : "← ";
-                JLabel l = new JLabel(PlainText.plain(Bundle.Inspector_edgeRow(arrow + e.kind(),
-                        other == null ? otherId : other.label, evidenceWord(e), e.source())));
+                String row1 = Bundle.Inspector_edgeRow(arrow + e.kind(),
+                        other == null ? otherId : other.label, evidenceWord(e), e.source());
+                // the evidence is the point of the row ("observed: docker ps on …"), so it wraps and is never cut
+                JTextArea l = org.nmox.studio.core.util.PlainDialogs.plain(row1, row1);
                 l.setFont(HudStyle.ui(11f, false));
                 edges.add(l);
             }
@@ -318,14 +375,14 @@ public final class InspectorPanel extends JPanel {
                 specs.add(new ButtonSpec(Bundle.Inspector_forget(), Bundle.Inspector_forgetTooltip(), true, actions::forget));
             }
             if (node.simulated) {
-                connectHow.setText(PlainText.plain(Bundle.Inspector_simulatedConnect()));
+                connectHow.setText(Bundle.Inspector_simulatedConnect());
             } else {
                 ConnectPlan plan = hub.connectPlan(node);
-                connectHow.setText(PlainText.plain(Bundle.Inspector_connectHow(
-                        plan.mosh() ? Bundle.Inspector_planMosh() : Bundle.Inspector_planSsh(), why(plan))));
+                connectHow.setText(Bundle.Inspector_connectHow(
+                        plan.mosh() ? Bundle.Inspector_planMosh() : Bundle.Inspector_planSsh(), why(plan)));
             }
         } else if (node.kind == OpsKind.SERVICE) {
-            connectHow.setText(node.simulated ? PlainText.plain(Bundle.Inspector_simulatedService()) : "");
+            connectHow.setText(node.simulated ? Bundle.Inspector_simulatedService() : "");
             if (firstPort(node) != null) {
                 specs.add(new ButtonSpec(Bundle.Inspector_open(), Bundle.Inspector_openTooltip(), !node.simulated, n -> {
                     Integer port = firstPort(n);
@@ -343,6 +400,8 @@ public final class InspectorPanel extends JPanel {
         } else {
             connectHow.setText("");
         }
+        connectHow.setVisible(!connectHow.getText().isEmpty());
+        edges.setVisible(!touching.isEmpty());
         setButtons(node, specs);
         showDeploy(node);
         revalidate();
@@ -446,6 +505,39 @@ public final class InspectorPanel extends JPanel {
     /** How many times the action row has been rebuilt — a test's window onto "left alone". */
     int buttonRowBuilds;
 
+    /**
+     * The words for a fact. The engine's keys are data (the core returns
+     * data, the consumer renders it): a key that is an ordinary word is
+     * said in the reader's language here, and a key that is a NAME
+     * (docker, mosh-server, cloud-init, os, vpc) or one a provider chose
+     * is shown as it is.
+     */
+    static String factLabel(String key) {
+        return switch (key) {
+            case "region" -> Bundle.Inspector_factRegion();
+            case "size" -> Bundle.Inspector_factSize();
+            case "image" -> Bundle.Inspector_factImage();
+            case "made here" -> Bundle.Inspector_factMadeHere();
+            case "provider status" -> Bundle.Inspector_factProviderStatus();
+            case "created" -> Bundle.Inspector_factCreated();
+            case "container" -> Bundle.Inspector_factContainer();
+            case "status" -> Bundle.Inspector_factStatus();
+            case "ports" -> Bundle.Inspector_factPorts();
+            case "deployed by" -> Bundle.Inspector_factDeployedBy();
+            case "compose project" -> Bundle.Inspector_factComposeProject();
+            case "containers not drawn" -> Bundle.Inspector_factContainersNotDrawn();
+            default -> key;
+        };
+    }
+
+    /** The engine's yes and no are flags, not prose: only the three facts that are flags are translated. */
+    static String factValue(String key, String value) {
+        if (key.equals("made here") || key.equals("mosh-server") || key.equals("docker")) {
+            return "yes".equals(value) ? Bundle.Inspector_yes() : "no".equals(value) ? Bundle.Inspector_no() : value;
+        }
+        return value;
+    }
+
     private int fact(int row, String key, String value) {
         GridBagConstraints c = new GridBagConstraints();
         c.gridy = row;
@@ -458,8 +550,14 @@ public final class InspectorPanel extends JPanel {
         facts.add(k, c);
         c.gridx = 1;
         c.weightx = 1;
-        JLabel v = new JLabel(PlainText.plain(value));
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(1, 0, 1, 0);
+        // a value is an address, an image, a port mapping: both ends name it, so the middle goes first,
+        // and what was cut is on the tooltip
+        org.nmox.studio.core.util.FitLabel v = new org.nmox.studio.core.util.FitLabel(
+                org.nmox.studio.core.util.FitLabel.Cut.MIDDLE, 420, true);
         v.setFont(HudStyle.ui(11f, false));
+        v.setFull(value == null ? "" : value);
         k.setLabelFor(v);
         facts.add(v, c);
         return row + 1;

@@ -61,8 +61,19 @@ class OpsSearchProviderTest {
         OpsHubFixture f = fleet();
         List<String> rows = new ArrayList<>();
         OpsSearchProvider.evaluate("edge", f.hub.findable(), (id, display) -> rows.add(display));
-        assertThat(rows.get(0)).contains("edge-eu").contains("server").contains("ready").contains("203.0.113.5");
+        assertThat(rows.get(0)).contains("edge-eu").contains("host, ready, 203.0.113.5");
         assertThat(rows.get(1)).contains("shop-web-1").contains("service on edge-eu");
+    }
+
+    @Test
+    @DisplayName("a host with no address yet gets a whole sentence, not one that ends in a comma")
+    void rowWithoutAnAddress() {
+        var booting = new org.nmox.studio.infra.ops.OpsHub.Findable("h1", org.nmox.studio.infra.ops.model.OpsKind.HOST,
+                "fresh-1", null, null, org.nmox.studio.infra.ops.model.HostStatus.PROVISIONING, false);
+        List<String> rows = new ArrayList<>();
+        OpsSearchProvider.evaluate("fresh", List.of(booting), (id, display) -> rows.add(display));
+        assertThat(rows).hasSize(1);
+        assertThat(rows.get(0).stripTrailing()).isEqualTo(rows.get(0)).endsWith("host, provisioning");
     }
 
     @Test

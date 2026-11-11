@@ -67,7 +67,11 @@ public class OpsSearchProvider implements SearchProvider {
             return NbBundle.getMessage(OpsSearchProvider.class, "OpsSearchProvider_service",
                     f.label(), f.hostLabel() == null ? "?" : f.hostLabel());
         }
-        return NbBundle.getMessage(OpsSearchProvider.class, "OpsSearchProvider_host",
-                f.label(), f.status() == null ? "" : HudCanvas.statusWord(f.status()), f.address() == null ? "" : f.address());
+        // a host always has a status (OpsNode gives it one at birth); a null here is a service's row asked the wrong question
+        String status = f.status() == null ? "" : HudCanvas.statusWord(f.status());
+        // two sentences, not one with holes: a host with no address yet must not end in a dangling comma
+        return f.address() == null || f.address().isBlank()
+                ? NbBundle.getMessage(OpsSearchProvider.class, "OpsSearchProvider_hostNoAddress", f.label(), status)
+                : NbBundle.getMessage(OpsSearchProvider.class, "OpsSearchProvider_host", f.label(), status, f.address());
     }
 }

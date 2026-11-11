@@ -89,10 +89,10 @@ import org.openide.util.RequestProcessor;
     "# {2} - the provider's id for it",
     "OpsHub_accepted={0} accepted {1} (id {2})",
     "# {0} - the host's label",
-    "OpsHub_watchGaveUp={0} did not become ready within 15 minutes — the Hub keeps asking while its window is open",
+    "OpsHub_watchGaveUp={0} is not ready after 15 minutes. The Hub no longer waits for it; from here on it is checked like every other host",
     "# {0} - the host's label",
     "# {1} - the provider's name",
-    "OpsHub_goneWhileWatched={0} no longer exists at {1}",
+    "OpsHub_goneWhileWatched={0} is no longer listed by {1}",
     "# {0} - the error",
     "OpsHub_watchFailed=watch: {0}",
     "# {0} - the host's label",
@@ -112,14 +112,18 @@ import org.openide.util.RequestProcessor;
     "# {0} - the host's label",
     "# {1} - what ssh said",
     "OpsHub_doesNotAnswer={0} does not answer ssh: {1}",
+    "# {0} - seconds",
+    "OpsHub_probeNoAnswer=no answer within {0} seconds",
+    "# {0} - ssh's exit code",
+    "OpsHub_probeSilentExit=ssh ended with exit code {0} and said nothing",
+    "# {0} - a number of lines",
+    "OpsHub_probeTooManyLines=the host printed more than {0} lines where a few dozen were expected",
     "# {0} - the provider's name",
     "# {1} - the provider's word for the server's state (off, archive)",
-    "OpsHub_providerSaysNotRunning={0} reports it {1}",
+    "OpsHub_providerSaysNotRunning={0} reports this server as: {1}",
     "# {0} - the host's label",
     "# {1} - cloud-init's verdict (error, degraded)",
-    "OpsHub_readyCloudInitTrouble={0} answers ssh, but cloud-init ended in {1} — docker and mosh-server may be missing",
-    "# {0} - how many",
-    "OpsHub_containersNotShown={0} more (not drawn)",
+    "OpsHub_readyCloudInitTrouble={0} answers ssh, but cloud-init reports: {1} — docker and mosh-server may be missing",
     "# {0} - the host's label",
     "OpsHub_answersSshConfiguring=ssh answers on {0} — cloud-init still running",
     "# {0} - the host's label",
@@ -169,9 +173,12 @@ import org.openide.util.RequestProcessor;
     "OpsHub_stepRun=run",
     "OpsHub_stepVerify=verify",
     "# {0} - the service's label",
-    "OpsHub_refuseNotOurs={0} was not deployed from NMOX Studio — the Hub knows no earlier image of it",
+    "OpsHub_refuseNotOurs={0} was not deployed from NMOX Studio, so the Hub cannot tell which image ran before it",
     "# {0} - the service's label",
-    "OpsHub_refuseNoPorts={0} publishes no single port the Hub can read — a rollback would not know what to publish",
+    "# {0} - the service",
+    "# {1} - the image it runs",
+    "OpsHub_refuseForeignImage={0} runs {1}, which is not an image NMOX Studio tagged, so the Hub cannot tell which one ran before it",
+    "OpsHub_refuseNoPorts={0} has no port mapping the Hub can read (none, or a range) — a rollback would not know which ports to give the container",
     "# {0} - the app slug",
     "# {1} - the stamp of the image running now",
     "OpsHub_refuseNoEarlier=the host holds no image of {0} older than the one running ({1})",
@@ -188,12 +195,12 @@ import org.openide.util.RequestProcessor;
     "# {1} - the host's label",
     "# {2} - the stamp running now",
     "# {3} - the stamp going back to",
-    "OpsHub_rollingBack=Rolling {0} on {1} back from {2} to {3}",
+    "OpsHub_rollingBack=Rolling {0} on {1} back from image {2} to image {3}",
     "# {0} - the app slug",
     "# {1} - the host's label",
     "# {2} - the stamp now running",
     "# {3} - the HTTP answer",
-    "OpsHub_rolledBack={0} on {1} is back on {2} ({3})",
+    "OpsHub_rolledBack={0} on {1} runs image {2} again ({3})",
     "# {0} - the step",
     "# {1} - the reason",
     "OpsHub_rollbackStopped=Rollback stopped at {0}: {1}"
@@ -874,7 +881,7 @@ public final class OpsHub {
                 reading = HostProbe.read(runner, target);
             } catch (RuntimeException ex) {
                 LOG.log(Level.WARNING, "probe failed for " + node.id, ex);
-                reading = new HostProbe.Reading(null, String.valueOf(ex.getMessage()));
+                reading = HostProbe.Reading.said(String.valueOf(ex.getMessage()));
             }
             HostProbe.Reading read = reading;
             edt.accept(() -> {
@@ -899,27 +906,39 @@ public final class OpsHub {
             return;
         }
         HostStatus before = node.status;
-        boolean changed = !java.util.Objects.equals(node.lastProblem, reading.problem());
-        node.lastProblem = reading.problem();
+        String problem = problemText(reading);
+        boolean changed = !java.util.Objects.equals(node.lastProblem, problem);
+        node.lastProblem = problem;
         if (before.reachable()) {
             node.status = HostStatus.UNREACHABLE;
-            event(OpsEvent.Kind.FAIL, node.id, Bundle.OpsHub_stoppedAnswering(node.label, reading.problem()));
+            event(OpsEvent.Kind.FAIL, node.id, Bundle.OpsHub_stoppedAnswering(node.label, problem));
         } else if (before == HostStatus.BOOTING && !watched.contains(node)) {
             // nobody is bringing this one up: a host added by hand with a typo, or one whose key the
             // account does not hold. "Booting" forever would be a lie — it does not answer, and here is why
             node.status = HostStatus.UNREACHABLE;
-            event(OpsEvent.Kind.FAIL, node.id, Bundle.OpsHub_doesNotAnswer(node.label, reading.problem()));
+            event(OpsEvent.Kind.FAIL, node.id, Bundle.OpsHub_doesNotAnswer(node.label, problem));
         }
         if (changed || before != node.status) {
             topology.touched(node);
         }
     }
 
+    /** A failed probe's reason in the reader's language: somebody's own words as they were said, ours from the bundle. */
+    static String problemText(HostProbe.Reading reading) {
+        return switch (reading.trouble()) {
+            case NONE -> null;
+            case SAID -> reading.said();
+            case NO_ANSWER -> Bundle.OpsHub_probeNoAnswer(Long.toString(reading.number()));
+            case SILENT_EXIT -> Bundle.OpsHub_probeSilentExit(Long.toString(reading.number()));
+            case TOO_MANY_LINES -> Bundle.OpsHub_probeTooManyLines(Long.toString(reading.number()));
+        };
+    }
+
     /** What a probe's answer does to the node and its services. EDT. */
     void applyProbe(OpsNode node, HostFacts facts) {
         HostStatus before = node.status;
         if (facts == null) {
-            applyReading(node, new HostProbe.Reading(null, "no answer"));
+            applyReading(node, HostProbe.Reading.trouble(HostProbe.Trouble.NO_ANSWER, HostProbe.TIMEOUT.toSeconds()));
             return;
         }
         node.lastSeenMillis = clock.getAsLong();
@@ -935,9 +954,9 @@ public final class OpsHub {
             node.facts.put("cloud-init", facts.cloudInit());
         }
         if (facts.containersNotShown() > 0) {
-            node.facts.put("containers", Bundle.OpsHub_containersNotShown(Integer.toString(facts.containersNotShown())));
+            node.facts.put("containers not drawn", Integer.toString(facts.containersNotShown()));
         } else {
-            node.facts.remove("containers");
+            node.facts.remove("containers not drawn");
         }
         boolean configuring = "running".equals(facts.cloudInit()) || "not".equals(facts.cloudInit());
         // cloud-init's own word decides what "ready" may claim: only "done" (or no cloud-init at all) is done
@@ -1236,7 +1255,9 @@ public final class OpsHub {
         }
         String current = org.nmox.studio.infra.ops.remote.Rollback.stampOf(service.facts.get("image"), app);
         if (current == null) {
-            then.accept(RollbackOffer.refused(Bundle.OpsHub_refuseNotOurs(service.label)));
+            // ours by its label, but running an image this product did not tag: say that, not "not deployed from here"
+            then.accept(RollbackOffer.refused(Bundle.OpsHub_refuseForeignImage(service.label,
+                    String.valueOf(service.facts.get("image")))));
             return;
         }
         int[] ports = new HostFacts.ContainerFact("", "", "", "", service.facts.get("ports"), Map.of(), List.of()).firstMapping();

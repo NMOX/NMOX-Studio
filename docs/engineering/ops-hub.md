@@ -1,6 +1,8 @@
 # Ops Hub — the DevOps HUD
 
-*Written with 3.11.0, the first vertical slice. Read this before touching
+*Written with 3.11.0, the first vertical slice; brought current by 3.12.0,
+the second (the camera, the service doors, rollback, and the review of
+the first). Read this before touching
 `infra/src/main/java/org/nmox/studio/infra/ops`.*
 
 ## The dream, and the rule that keeps it honest
@@ -47,8 +49,10 @@ infra.ops
 ├── model      Topology · OpsNode · OpsEdge(+Evidence) · HostStatus · Telemetry   pure
 ├── provider   OpsProvider ─ DigitalOceanOps (Lookup)  ·  SimulatedOps + SimulatedWorld (behind the switch)
 ├── remote     SshTarget · RemoteRunner ─ ProcessRemoteRunner · HostProbe · ProjectBundle/TarGz · DeployPlan · Deployer
-├── OpsHub     the engine: lanes, the provisioning watch, probing, deploy, the feed, manual hosts
-└── ui         OpsHubTopComponent · HudCanvas · HudLayout · Motion · InspectorPanel · EventFeedPanel · OpsDialogs · TerminalDoor
+│              ContainerDoors (logs, shell) · Rollback
+├── OpsHub     the engine: lanes, the provisioning watch, probing, deploy, rollback, the feed, manual hosts
+├── search     OpsSearchProvider (Quick Search over the Hub's own copy for off-thread readers)
+└── ui         OpsHubTopComponent · HudCanvas · HudCamera · HudLayout · Motion · InspectorPanel · EventFeedPanel · OpsDialogs · TerminalDoor
 ```
 
 **Providers make hosts; ssh does everything else.** An `OpsProvider`
@@ -88,6 +92,31 @@ The frame timer runs only while a spring is unsettled, a sweep is due or
 a pulse is alive; under reduced motion (the user's switch, a system
 property, or macOS's own setting read once) every spring snaps.
 
+**The camera** (`HudCamera`, 3.12.0) stands between the layout's world
+and the pixels: `screen = world × zoom + pan`. It has two modes. Until
+the user moves it, it FITS — every relayout frames the view's content,
+and wherever the content already fits it is the identity, so the picture
+is exactly the layout's. The first wheel, drag or zoom key makes it
+MANUAL, and it then stays where it was put (clamped so the content cannot
+be lost off an edge) until Fit is asked for or the view changes. The
+Infra Designer's canvas set the conventions and the Hub keeps them: the
+wheel zooms about the cursor, a drag on empty space pans, the range is
+0.35–2.5, a fit never enlarges. Three rules are worth knowing before
+touching it:
+
+- **Positions and radii follow the camera; text never does.** A label is
+  the same size at every zoom, and a node too small for its readings
+  stops printing them — zooming out is a level of abstraction, not a
+  squint.
+- **Every reader of a node's position goes through `sx`/`sy`/`sr`**: the
+  paint, the hit test, the context-menu key, and the accessible bounds a
+  screen reader is pointed at. A reader that takes a glide's raw value is
+  in the world while the user is on the screen (`HudCanvasCameraTest`
+  holds the hit test and the accessible bounds to it).
+- **A pan must not cost a selection.** A press on empty space may become
+  a drag, so the deselect waits for the release and happens only if
+  nothing was dragged.
+
 ## The vertical slice (3.11.0)
 
 Create → watch → connect → deploy → observe, end to end:
@@ -100,8 +129,9 @@ Create → watch → connect → deploy → observe, end to end:
    feed narrates each observed transition; cloud-init installs docker,
    mosh-server and curl.
 3. **mosh** / **ssh** buttons (and the context menu) open the IDE's own
-   Terminal tab under a pty; a plain click chooses mosh when both ends
-   have it and says why otherwise. The Hub keeps its own `known_hosts`
+   Terminal tab under a pty; the inspector says which of the two is
+   recommended and why (both ends have mosh, or which end lacks it). The
+   Hub keeps its own `known_hosts`
    under `~/.nmox/ops/` with `accept-new`, so a fresh server is trusted on
    first contact, a changed key is refused, and the user's file is never
    written; a destroyed host's key is pruned so its reused address does
@@ -126,6 +156,61 @@ ssh from the IDE's Terminal.
 timeline (active after 5 s, ssh after 9 s, cloud-init done after 16 s),
 scripted build output, a container that appears in the next probe. Its
 gauges are invented and the banner says so.
+
+## The second slice (3.12.0)
+
+What a server that is up needs next, and what the first slice got wrong.
+
+- **The camera** — zoom, pan, fit, and a keyboard selection that is
+  brought into view (above).
+- **A service's doors.** **Logs** follows `docker logs -f --tail 200` and
+  **Shell** runs `docker exec -it … sh` (bash when the image has one),
+  each in a Terminal tab over `ssh -t`. The container's name is the one
+  string in those lines a HOST chose — it came from `docker ps` — so
+  `ContainerDoors` holds it to docker's own alphabet for a name before it
+  nears a shell and refuses anything else by name.
+- **Rollback.** A deploy tags every build `nmox/<app>:<stamp>` and removes
+  none, so the host holds the history. **Roll Back…** asks the host which
+  tags it has (`Rollback.imagesCommand`), picks the newest one OLDER than
+  what runs, shows the two lines it will run, and on a yes runs the last
+  two steps of a deploy with that stamp — nothing uploaded, nothing built,
+  the newer image left in place. Offered only on a service that carries
+  the `nmox.ops.app` label AND runs an image of ours; the label is the
+  host's word and a label that is not a slug is "not ours", never quoted.
+  The tracker shows the two steps a rollback has.
+- **Quick Search** (⌘I) finds a server by name, address or status and a
+  service by name or host, and opens the Hub on it. It reads the Hub's
+  own immutable copy (`OpsHub.findable()`), rebuilt on the event thread;
+  it never makes a Hub from a keystroke (`OpsHub.peek()`).
+- **The inspector's action row is stable.** It was rebuilt on every probe
+  of the node it showed — every fifteen seconds a focused button was
+  replaced under the user's hand. It is rebuilt only when the set of
+  actions or their enablement changes, focus returns to the same action,
+  and a button acts on the node shown when it is pressed.
+
+### What the review of 3.11.0 found
+
+A hostile read of the four-day-old code, each finding traced and then
+fixed with a test that fails on the code as shipped:
+
+| Found | Now |
+|---|---|
+| A probe collected every line a host printed for 25 s, every 15 s | 2,000 lines, then refused by name; 200 containers drawn, the rest counted |
+| A host that never answered sat BOOTING forever, sweeping, with ssh's reason thrown away | UNREACHABLE on the first failed probe unless a watch is bringing it up; ssh's own last words are the node's problem and the feed's sentence, said once |
+| The provisioning watch ended silently when its probe met another in flight (`then` was dropped) — on a provider whose server is active at once, immediately | A second ask WAITS for the first's answer; probes are keyed by node, not id |
+| A file NAMED `..\..\x` in a cloned repository was read from two levels above the project on macOS/Linux (`\` was rewritten to `/` everywhere) | Rewritten only where `\` is the separator; every path re-proven inside the project when opened; opened without following a link; exactly the planned size copied |
+| A failed destroy turned an unreachable host READY | It is what it was |
+| A powered-off server swept as "provisioning" forever | UNREACHABLE, with the provider's word as the reason |
+| cloud-init ending in `error` was announced "ready (cloud-init done)" | Announced as what it is, and kept as the node's problem |
+| A server deleted elsewhere mid-watch was watched for 15 minutes; an unreadable provider said so every 5 s | Removed and said; said once |
+| One page of 100 servers was listed, and whatever a listing does not name is removed | Every page; an account past the cap is refused whole |
+| A server destroyed elsewhere kept its key on file, refusing the next tenant of its address | Pruned on listing removal too |
+| Each line of a build was its own event-thread task, each rebuilding the tracker | One task per burst |
+| The upload's key was sent to the account before the price was confirmed, and waited for ON the event thread | After the yes, on a worker |
+| A known_hosts path with a space (a home named "First Last") was split by ssh — measured: the key went to a file named for the path up to the space | Quoted; measured to land in the right file |
+| A crash-looping container was "up" (docker lists `Restarting`) | Only `Up …` is up; docker's own status is the reason |
+| The two gravest questions printed a literal `\n\n` (a doubled backslash in the message, copied into fourteen translations) | One backslash; `BundleEncodingGateTest` reads every shipped bundle for it |
+| Every event with a node pulsed its link, a silence included | Only what the host answered (`OpsEvent.overLink`) |
 
 ## What was verified, and how
 
@@ -156,11 +241,14 @@ gauges are invented and the banner says so.
    on the Hub, drift between them highlighted.
 3. **Service telemetry** — `docker stats` per container, request pulses
    from a real traffic delta rather than from the Hub's own operations.
-4. **Rollback** — the previous image and `src.prev` are kept on the host
-   already; a button that runs the previous tag is the missing door.
-5. **Logs** — `docker logs -f` into an Output tab from a service's menu.
+4. ~~**Rollback**~~ — done in 3.12.0 (above). Still missing: a rollback
+   leaves `src` on the host as the NEWER source, so the folder and the
+   running image disagree until the next deploy; and old images are never
+   pruned.
+5. ~~**Logs**~~ — done in 3.12.0, with a shell beside it.
 6. **A chord** — every `⌥⌘` digit is taken; the Hub opens from the Window
-   menu, the Welcome and Quick Search until a free family is chosen.
+   menu, the Welcome and (since 3.12.0) Quick Search until a free family
+   is chosen.
 7. **Firewall and DNS** — a droplet's cloud firewall and a Cloudflare
    record as nodes with OBSERVED edges to the host.
 8. **The bigger dream** — other studios as views over the same ecosystem:

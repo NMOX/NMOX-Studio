@@ -34,12 +34,47 @@ public final class HostProbe {
     public static final int MAX_CONTAINERS = 200;
 
     /**
+     * Why a probe has no facts. Somebody else's words are data and are
+     * carried as they were said; the three reasons that are this
+     * product's own are carried as a KIND and a number, and put into the
+     * reader's language by whoever shows them (3.11.0 built them as
+     * English sentences here, and every translated build showed them).
+     */
+    public enum Trouble {
+        /** There are facts. */
+        NONE,
+        /** ssh or the host said why; {@link Reading#said()} holds it. */
+        SAID,
+        /** Nothing within the leash; the number is the seconds. */
+        NO_ANSWER,
+        /** ssh ended with nothing printed; the number is its exit code. */
+        SILENT_EXIT,
+        /** More output than a probe prints; the number is the cap. */
+        TOO_MANY_LINES
+    }
+
+    /**
      * A probe's answer: the facts, or why there are none. The problem is
      * the host's (or ssh's) own last words where it had any — "Permission
      * denied (publickey)", "Connection refused", "Host key verification
      * failed" — because a host that never answers must be able to say why.
      */
-    public record Reading(HostFacts facts, String problem) {
+    public record Reading(HostFacts facts, Trouble trouble, String said, long number) {
+
+        /** The host's facts. */
+        public static Reading of(HostFacts facts) {
+            return new Reading(facts, Trouble.NONE, null, 0);
+        }
+
+        /** No facts, and somebody's words for why: ssh's, the host's, an exception's. */
+        public static Reading said(String words) {
+            return new Reading(null, Trouble.SAID, clip(words == null ? "" : words), 0);
+        }
+
+        /** No facts, for a reason that is this product's to put into words; {@code number} is its one figure. */
+        public static Reading trouble(Trouble trouble, long number) {
+            return new Reading(null, trouble, null, number);
+        }
 
         public boolean ok() {
             return facts != null;
@@ -88,18 +123,18 @@ public final class HostProbe {
         }, TIMEOUT);
         synchronized (lines) {
             if (dropped[0] > 0) {
-                return new Reading(null, "the host printed more than " + MAX_LINES + " lines to a probe that prints a dozen");
+                return Reading.trouble(Trouble.TOO_MANY_LINES, MAX_LINES);
             }
             if (result.timedOut()) {
-                return new Reading(null, "no answer within " + TIMEOUT.toSeconds() + " s");
+                return Reading.trouble(Trouble.NO_ANSWER, TIMEOUT.toSeconds());
             }
             HostFacts facts = parse(lines);
             if (facts != null) {
-                return new Reading(facts, null);
+                return Reading.of(facts);
             }
             // ssh's own complaint is the last thing printed; a host that answered with something else is named as that
             String said = last[0] != null ? last[0] : result.tail() == null || result.tail().isBlank() ? null : result.tail().strip();
-            return new Reading(null, clip(said == null ? "ssh exited " + result.exitCode() + " without a word" : said));
+            return said == null ? Reading.trouble(Trouble.SILENT_EXIT, result.exitCode()) : Reading.said(said);
         }
     }
 

@@ -68,6 +68,11 @@ import org.openide.util.NbBundle.Messages;
     "# {4} - monthly price",
     "NewServer_confirm=Create {0} at {1}?\n\n{2} in {3}, ≈ ${4}/month until you destroy it.",
     "NewServer_confirmTitle=Billable: create a server?",
+    "# {0} - the name",
+    "# {1} - the size",
+    "# {2} - the region",
+    "NewServer_confirmSimulated=Create {0} in the Simulation?\n\n{1} in {2}. Nothing is made and nothing is billed.",
+    "NewServer_confirmSimulatedTitle=Simulation: create a server?",
     // add host
     "AddHost_title=Add Host",
     "AddHost_spec=user@host[:port]",
@@ -94,13 +99,14 @@ import org.openide.util.NbBundle.Messages;
     "Destroy_question=Destroy {0} at {1}?\n\nEverything on it is gone for good. Billing stops.",
     "Destroy_title=Destroy a server",
     // rollback
-    "# {0} - the app slug",
-    "# {1} - the host's label",
+    "# {0} - the app",
+    "# {1} - the host",
     "# {2} - the stamp running now",
     "# {3} - the stamp going back to",
-    "# {4} - the two lines that will run on the host",
-    "Rollback_question=Roll {0} on {1} back from {2} to {3}?\n\nThis runs on the host:\n{4}\n\nNothing is uploaded or built. The newer image stays on the host.",
-    "Rollback_title=Roll back a deploy",
+    "Rollback_question=Roll {0} on {1} back from image {2} to image {3}?",
+    "Rollback_commands=These commands run on the host",
+    "Rollback_after=The running container is replaced by one from the earlier image. Nothing is uploaded or built, and the newer image stays on the host.",
+    "Rollback_title=Roll back to the earlier image?",
     // tokens
     "Tokens_title=DigitalOcean API token",
     "Tokens_field=API token (stored in the OS keychain; blank keeps the current one)",
@@ -234,8 +240,12 @@ public final class OpsDialogs {
                 message(Bundle.NewServer_noKeys());
                 continue;
             }
-            if (!confirm(Bundle.NewServer_confirm(n, provider.displayName(), s.describe(), r.name(),
-                    Numbers.display(s.priceMonthly(), 2)), Bundle.NewServer_confirmTitle())) {
+            // the simulation keeps the question (it is the loop's shape) and drops the word "billable", which would be untrue
+            boolean yes = provider.simulated()
+                    ? confirm(Bundle.NewServer_confirmSimulated(n, s.describe(), r.name()), Bundle.NewServer_confirmSimulatedTitle())
+                    : confirm(Bundle.NewServer_confirm(n, provider.displayName(), s.describe(), r.name(),
+                            Numbers.display(s.priceMonthly(), 2)), Bundle.NewServer_confirmTitle());
+            if (!yes) {
                 return null;
             }
             return new NewServer(new HostSpec(n, r.slug(), s.slug(), im.slug(), keyIds, CloudInit.USER_DATA), s, r, addKey);
@@ -328,10 +338,13 @@ public final class OpsDialogs {
         javax.swing.JScrollPane planScroll = new javax.swing.JScrollPane(plan);
         planScroll.setPreferredSize(new java.awt.Dimension(560, 150)); // walked 3.11.0: without a size the plan showed one line
         field(form, row, Bundle.DeployDialog_plan(), planScroll);
+        // one stamp for the dialog's whole life: the preview names the image tag that will be built,
+        // not a placeholder (walked: the preview said nmox/project:0 and the host built another tag)
+        String stamp = Long.toString(System.currentTimeMillis());
         Runnable preview = () -> {
             try {
                 DeployPlan p = new DeployPlan(app.getText().trim(), Integer.parseInt(hostPort.getText().trim()),
-                        Integer.parseInt(containerPort.getText().trim()), "0");
+                        Integer.parseInt(containerPort.getText().trim()), stamp);
                 plan.setText(String.join("\n", p.describe()));
             } catch (RuntimeException notYet) {
                 plan.setText("");
@@ -371,7 +384,7 @@ public final class OpsDialogs {
                 message(Bundle.DeployDialog_badApp());
                 continue;
             }
-            return new DeployPlan(slug, hp, cp, Long.toString(System.currentTimeMillis()));
+            return new DeployPlan(slug, hp, cp, stamp);
         }
     }
 
@@ -385,8 +398,32 @@ public final class OpsDialogs {
 
     /** Shows exactly what a rollback runs and asks, defaulting to No. */
     public static boolean confirmRollback(OpsNode host, DeployPlan plan, String fromStamp) {
-        return confirm(Bundle.Rollback_question(plan.app(), host.label, fromStamp, plan.stamp(),
-                plan.run() + "\n" + plan.verify()), Bundle.Rollback_title());
+        JPanel form = new JPanel(new java.awt.BorderLayout(0, 8));
+        form.add(PlainDialogs.plain(Bundle.Rollback_question(plan.app(), host.label, fromStamp, plan.stamp()),
+                Bundle.Rollback_title()), java.awt.BorderLayout.PAGE_START);
+        // the commands in their own left-to-right box, as the deploy dialog shows its plan: a shell line set
+        // inside a sentence is reordered by a right-to-left window, and then it is not the line that runs
+        JTextArea commands = TextDirection.keepLeftToRight(new JTextArea(plan.run() + "\n" + plan.verify()));
+        commands.setEditable(false);
+        commands.setLineWrap(true);
+        commands.setWrapStyleWord(true);
+        commands.setFont(HudStyle.mono(10.5f));
+        commands.getAccessibleContext().setAccessibleName(Bundle.Rollback_commands());
+        JLabel runs = new JLabel(PlainText.plain(Bundle.Rollback_commands()));
+        runs.setLabelFor(commands);
+        javax.swing.JScrollPane scroll = new javax.swing.JScrollPane(commands);
+        scroll.setPreferredSize(new java.awt.Dimension(560, 96));
+        JPanel middle = new JPanel(new java.awt.BorderLayout(0, 4));
+        middle.add(runs, java.awt.BorderLayout.PAGE_START);
+        middle.add(scroll, java.awt.BorderLayout.CENTER);
+        form.add(middle, java.awt.BorderLayout.CENTER);
+        form.add(PlainDialogs.plain(Bundle.Rollback_after(), Bundle.Rollback_title()), java.awt.BorderLayout.PAGE_END);
+        // the full constructor: a Confirmation's own default is Yes, and Enter must answer No (the v1.98.0 law)
+        NotifyDescriptor d = new NotifyDescriptor(form, Bundle.Rollback_title(),
+                NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE,
+                new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
+                NotifyDescriptor.NO_OPTION);
+        return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION;
     }
 
     // ---- Tokens ----

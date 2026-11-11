@@ -119,7 +119,7 @@ class InspectorPanelTest {
             panel.show(ours);
             named(panel, "Logs").doClick();
             named(panel, "Shell").doClick();
-            named(panel, "Roll Back…").doClick();
+            named(panel, "Roll back…").doClick();
             named(panel, "Open in Browser").doClick();
             assertThat(pressed.log).containsExactly("logs " + ours.id, "shell " + ours.id, "rollback " + ours.id,
                     "open " + ours.id + " 8080");
@@ -154,5 +154,108 @@ class InspectorPanelTest {
             }
             assertThat(seen).as("a selection really builds buttons").isGreaterThanOrEqualTo(8);
         });
+    }
+
+    /** Lays the panel out at a size with no window, as a dock would. */
+    private static void layOut(InspectorPanel panel, int width, int height) {
+        panel.setSize(width, height);
+        // by hand, top down: validate() lays nothing out in a hierarchy that has no window (measured on JDK 25)
+        layOutTree(panel);
+    }
+
+    private static void layOutTree(Container c) {
+        c.doLayout();
+        for (Component child : c.getComponents()) {
+            if (child instanceof Container cc) {
+                layOutTree(cc);
+            }
+        }
+    }
+
+    private static java.awt.Rectangle inPanel(InspectorPanel panel, Component c) {
+        return SwingUtilities.convertRectangle(c.getParent(), c.getBounds(), panel);
+    }
+
+    private static List<javax.swing.JTextArea> areas(Container c) {
+        List<javax.swing.JTextArea> out = new ArrayList<>();
+        for (Component child : c.getComponents()) {
+            if (child instanceof javax.swing.JTextArea a) {
+                out.add(a);
+            } else if (child instanceof Container cc) {
+                out.addAll(areas(cc));
+            }
+        }
+        return out;
+    }
+
+    @Test
+    @DisplayName("at the pane's own width every action is inside the pane: the row wraps, it does not run past the edge")
+    void everyActionIsReachableAtThePanesWidth() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            OpsHubFixture f = new OpsHubFixture();
+            f.mosh(true);
+            OpsNode host = f.host("box", 5);
+            f.answer(OpsHubFixture.container("nmox-shop", "nmox/shop:300", "0.0.0.0:8080->3000/tcp", "nmox.ops.app=shop"));
+            f.drain();
+            InspectorPanel panel = new InspectorPanel(f.hub, new Pressed());
+            for (OpsNode n : List.of(host, f.hub.topology().nodes(OpsKind.SERVICE).get(0))) {
+                panel.show(n);
+                layOut(panel, 300, 600);
+                List<JButton> row = buttons(panel);
+                assertThat(row).as(n.id).hasSizeGreaterThanOrEqualTo(4);
+                int rows = (int) row.stream().map(b -> inPanel(panel, b).y).distinct().count();
+                assertThat(rows).as("four or five buttons do not fit one row of 300 pixels: " + n.id).isGreaterThan(1);
+                for (JButton b : row) {
+                    java.awt.Rectangle r = inPanel(panel, b);
+                    assertThat(r.x).as(b.getAccessibleContext().getAccessibleName()).isGreaterThanOrEqualTo(0);
+                    assertThat(r.x + r.width).as(b.getAccessibleContext().getAccessibleName() + " ends inside the pane")
+                            .isLessThanOrEqualTo(300);
+                    assertThat(r.width).as("and is whole").isGreaterThanOrEqualTo(b.getPreferredSize().width);
+                }
+            }
+        });
+    }
+
+    @Test
+    @DisplayName("the last problem is shown whole and wrapped, and the evidence under Relationships with it")
+    void theProblemWraps() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            OpsHubFixture f = new OpsHubFixture();
+            f.mosh(false);
+            OpsNode host = f.host("box", 5);
+            f.answer(OpsHubFixture.container("nmox-shop", "nmox/shop:300", "0.0.0.0:8080->3000/tcp", "nmox.ops.app=shop"));
+            f.drain();
+            String said = "box stopped answering ssh: ssh: connect to host 203.0.113.5 port 22: Operation timed out after a long while";
+            host.lastProblem = said;
+            InspectorPanel panel = new InspectorPanel(f.hub, new Pressed());
+            panel.show(host);
+            layOut(panel, 300, 700);
+            javax.swing.JTextArea problem = areas(panel).stream().filter(a -> said.equals(a.getText())).findFirst()
+                    .orElseThrow(() -> new AssertionError("the problem is not on the panel whole"));
+            int line = problem.getFontMetrics(problem.getFont()).getHeight();
+            java.awt.Rectangle r = inPanel(panel, problem);
+            assertThat(r.x + r.width).as("inside the pane").isLessThanOrEqualTo(300);
+            assertThat(r.height).as("more than one line: it wrapped instead of running on").isGreaterThanOrEqualTo(2 * line);
+            javax.swing.JTextArea evidence = areas(panel).stream().filter(a -> a.getText().contains("docker ps")).findFirst()
+                    .orElseThrow(() -> new AssertionError("the evidence of the runs edge is not on the panel"));
+            java.awt.Rectangle e = inPanel(panel, evidence);
+            assertThat(e.x + e.width).isLessThanOrEqualTo(300);
+            panel.show(null);
+            layOut(panel, 300, 700);
+            assertThat(problem.isVisible()).as("nothing selected, no problem shown").isFalse();
+        });
+    }
+
+    @Test
+    @DisplayName("the engine's fact keys are data: ordinary words are said by the inspector, names are left as they are")
+    void factsAreWorded() {
+        assertThat(InspectorPanel.factLabel("made here")).isEqualTo(Bundle.Inspector_factMadeHere());
+        assertThat(InspectorPanel.factLabel("containers not drawn")).isEqualTo(Bundle.Inspector_factContainersNotDrawn());
+        assertThat(InspectorPanel.factLabel("mosh-server")).as("a name").isEqualTo("mosh-server");
+        assertThat(InspectorPanel.factLabel("vpc")).isEqualTo("vpc");
+        assertThat(InspectorPanel.factValue("docker", "yes")).isEqualTo(Bundle.Inspector_yes());
+        assertThat(InspectorPanel.factValue("mosh-server", "no")).isEqualTo(Bundle.Inspector_no());
+        assertThat(InspectorPanel.factValue("image", "yes")).as("an image named yes is an image").isEqualTo("yes");
+        assertThat(InspectorPanel.factValue("docker", "maybe")).isEqualTo("maybe");
     }
 }

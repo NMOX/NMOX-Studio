@@ -71,7 +71,7 @@ import org.openide.windows.TopComponent;
     "OpsHub_viewServices=Workloads",
     "OpsHub_viewTooltip=The physical picture, or the logical one",
     "OpsHub_fit=Fit",
-    "OpsHub_fitTooltip=Frame the whole view again (0). The wheel zooms, a drag on empty space pans, + and − zoom.",
+    "OpsHub_fitTooltip=Fit everything in view again (press 0). The wheel zooms in and out, and so do + and -; a drag on empty space pans.",
     "OpsHub_motion=Motion",
     "OpsHub_motionTooltip=Let the HUD glide; off snaps every change into place (the system's Reduce Motion is honoured when this is on)",
     "OpsHub_providerLive=DigitalOcean: live",
@@ -105,8 +105,8 @@ import org.openide.windows.TopComponent;
     "OpsHub_menuShell=Shell in container",
     "OpsHub_menuRollback=Roll back…",
     "# {0} - the container's name as the host printed it",
-    "OpsHub_badContainerName=The host reports a container named \u201c{0}\u201d, which is not a name docker accepts — the Hub will not put it in a command.",
-    "OpsHub_hostGone=That service's host is no longer on the Hub."
+    "OpsHub_badContainerName=The host reports a container named \u201c{0}\u201d, which is not a name docker accepts, so Logs and Shell are not offered for it.",
+    "OpsHub_hostGone=That service or its host is no longer on the Hub."
 })
 public final class OpsHubTopComponent extends TopComponent {
 

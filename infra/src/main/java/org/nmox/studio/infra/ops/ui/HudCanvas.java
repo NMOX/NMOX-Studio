@@ -68,7 +68,7 @@ import org.openide.util.NbBundle.Messages;
     "HudCanvas_accessibleName=Ops Hub topology",
     "# {0} - how many hosts",
     "# {1} - how many services",
-    "HudCanvas_accessibleDescription=Fleet: hosts {0}, services {1}. Arrows move, Enter opens a host, Escape returns. Plus and minus zoom, zero fits, Shift with an arrow pans.",
+    "HudCanvas_accessibleDescription=Fleet: hosts {0}, services {1}. Arrows move, Enter opens a host, Escape returns. Plus zooms in, minus zooms out, zero fits everything in view, Shift with an arrow pans the view.",
     "# {0} - the zoom as a whole percentage",
     "HudCanvas_zoomReadout={0}% · press 0 to fit",
     "# {0} - the node's label",
