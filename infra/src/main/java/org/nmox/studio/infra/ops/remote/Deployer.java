@@ -105,8 +105,16 @@ public final class Deployer {
         }
         listener.stepFinished(Step.UPLOAD, true);
 
-        if (!step(Step.SWAP, plan.swap(), target, listener, SHORT_TIMEOUT)) {
-            return new Outcome(Step.SWAP, null, null, null); // its output went to the listener; a silent failure is worded by whoever shows it
+        // like the build and the run: a failed swap's reason is the last thing it printed ("mv: … Permission
+        // denied"); only a swap that failed and printed nothing has none, and whoever shows it words that
+        String[] swapLast = {null};
+        if (!step(Step.SWAP, plan.swap(), target, l -> {
+            listener.line(Step.SWAP, l);
+            if (!l.isBlank()) {
+                swapLast[0] = l.strip();
+            }
+        }, listener, SHORT_TIMEOUT)) {
+            return new Outcome(Step.SWAP, null, null, swapLast[0]);
         }
         // a build prints for twenty minutes: the reason for a failure is its LAST words, so only those are kept
         String[] buildLast = {null};
@@ -166,10 +174,6 @@ public final class Deployer {
      */
     public Outcome rollback(DeployPlan plan, SshTarget target, Listener listener) {
         return runAndVerify(plan, target, listener);
-    }
-
-    private boolean step(Step step, String command, SshTarget target, Listener listener, Duration timeout) {
-        return step(step, command, target, l -> listener.line(step, l), listener, timeout);
     }
 
     private boolean step(Step step, String command, SshTarget target,

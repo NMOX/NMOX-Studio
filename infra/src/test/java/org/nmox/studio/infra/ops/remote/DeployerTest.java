@@ -131,6 +131,35 @@ class DeployerTest {
     }
 
     @Test
+    @DisplayName("a failed swap's reason is the last thing it printed, and none when it printed nothing")
+    void swapKeepsItsLastWords(@TempDir Path root) throws IOException {
+        for (String said : new String[]{"mv: cannot move 'src.next' to 'src': Permission denied", null}) {
+            RemoteRunner refusing = (target, command, stdin, onLine, timeout) -> {
+                if (stdin != null) {
+                    try {
+                        stdin.readAllBytes();
+                    } catch (IOException ex) {
+                        throw new AssertionError(ex);
+                    }
+                }
+                if (command.contains("mv src.next src")) {
+                    if (said != null) {
+                        onLine.accept("something earlier");
+                        onLine.accept(said);
+                        onLine.accept("   ");
+                    }
+                    return new RemoteRunner.Result(1, "", false);
+                }
+                return new RemoteRunner.Result(0, "", false);
+            };
+            Deployer.Outcome out = new Deployer(refusing).deploy(project(root), new DeployPlan("shop", 80, 3000, "7"),
+                    new SshTarget("root", "203.0.113.4", 22, null), new Steps());
+            assertThat(out.failedAt()).isEqualTo(Deployer.Step.SWAP);
+            assertThat(out.reason()).as("what the host printed last, or nothing").isEqualTo(said);
+        }
+    }
+
+    @Test
     @DisplayName("a container docker lists as restarting is not up: verify fails and quotes docker's own status")
     void crashLoopIsNotUp(@TempDir Path root) throws IOException {
         RemoteRunner crashing = (target, command, stdin, onLine, timeout) -> {
