@@ -15,7 +15,7 @@ import java.awt.LayoutManager;
  * the column is narrower, and a layout that asks a row for its height
  * before telling it its width gets the one-line answer: the inspector's
  * action row ran past the pane's right edge (walked in 3.11.0 and again
- * in the build after it: Probe and Destroy… on a host, and Roll Back… on
+ * in the build after it: Probe and Destroy… on a host, and Roll back… on
  * a service, were behind a horizontal scrollbar), and the evidence under
  * Relationships was cut mid-sentence. Here each row is given its width
  * first and asked second.

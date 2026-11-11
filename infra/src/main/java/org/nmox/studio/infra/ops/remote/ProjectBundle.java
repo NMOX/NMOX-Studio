@@ -147,11 +147,14 @@ public final class ProjectBundle {
                 }
                 // every path is proven inside the project again at the moment it is opened: the plan was
                 // made a moment ago, and a manifest is a list of strings
-                Path file = base.resolve(rel).normalize();
-                if (!file.startsWith(base)) {
+                // through the one guard, like every other containment decision in the product: a path it
+                // cannot prove inside (a name with .. in it, a link that leads out) is refused. The guard's
+                // answer is the link's TARGET, so the file is still opened by its own name: the tar does not
+                // follow a link, and a file swapped for a link to something inside is refused there
+                if (org.nmox.studio.core.util.Containment.resolvePath(base.toFile(), rel) == null) {
                     throw new IOException(rel + " is not inside the project");
                 }
-                tar.file(rel, file);
+                tar.file(rel, base.resolve(rel));
             }
         }
     }

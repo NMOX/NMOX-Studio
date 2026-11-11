@@ -137,6 +137,15 @@ class PluralCopyGateTest {
                 "VERB: {1} is ALREADY a pluralized phrase from core.util.Plural.of "
                 + "(\"3 checks\" / \"1 check\") — \"pass\" is what the checks do");
 
+        m.put("OpsHub_providerSaysNotRunning",
+                "VERB: {0} is the provider's name — that provider reports the server as off");
+        m.put("OpsHub_readyCloudInitTrouble",
+                "VERB: {0} is the host's label — that host answers ssh");
+        m.put("OpsHub_refuseForeignImage",
+                "VERB: {0} is the service's label — that service runs an image");
+        m.put("OpsHub_rolledBack",
+                "VERB: {0} and {1} are an app and a host — that app runs an image again");
+
         // NOT A COUNT — the argument is a name that happens to sit before
         // a plural word.
         m.put("ShareDialog_fits",
@@ -148,6 +157,9 @@ class PluralCopyGateTest {
         m.put("TasksTopComponent_columnCardsA11y",
                 "NOT A COUNT: {0} is the COLUMN's name — the list's accessible name reads "
                 + "\"To Do cards\" (the shape the concatenation law above also excludes)");
+
+        m.put("TerminalDoor_logsTitle",
+                "NOT A COUNT: {0} is the container's NAME — a Terminal tab titled \"shop-web logs\"");
 
         // CONSTANT / OVER A CAP — the number is a fixed ceiling or is past
         // one by construction, so it can never read "1".
@@ -182,6 +194,10 @@ class PluralCopyGateTest {
                 "CONSTANT: {0} is TextFilters.MAX_REGEX");
         m.put("ContractSizeCheck_verdict",
                 "CONSTANT: {2} is the EIP byte limit, already thousands-formatted for reading");
+
+        m.put("OpsHub_probeTooManyLines",
+                "OVER A CAP: {0} is HostProbe.MAX_LINES (2,000), said only once a probe printed more "
+                + "than that — \"more than 1 lines\" cannot be reached");
 
         // GUARDED — the call site picks a different key when the count is
         // one, which is the house's own plural idiom under other names.

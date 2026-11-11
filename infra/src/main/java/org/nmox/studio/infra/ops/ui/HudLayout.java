@@ -68,7 +68,7 @@ public final class HudLayout {
     /** From one column of services to the next: a glyph and room for its name beside it. */
     static final double SATELLITE_COLUMN = 104;
 
-    // ---- fleet: this machine on the left, hosts fanned out to the right, services as satellites ----
+    // ---- fleet: this machine on the left, hosts fanned out to the right, services beside their host ----
 
     static Map<String, Place> fleet(Topology t, int w, int h) {
         Map<String, Place> out = new LinkedHashMap<>();
@@ -81,7 +81,7 @@ public final class HudLayout {
             return out;
         }
         double reach = Math.min(w * 0.46, Math.max(160, h * 0.62));
-        // the fan's height leaves room above and below for a host's satellites and labels
+        // the fan's height leaves room above and below for a host's ring and what is written under it
         double reachY = Math.min(reach * 0.78, Math.max(60, h / 2.0 - 110));
         double hostR = n <= 4 ? 40 : n <= 8 ? 34 : 28;
         double apart = 2 * hostR + 70; // two hosts need their rings AND their labels clear of each other

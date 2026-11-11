@@ -128,7 +128,7 @@ class ProjectBundleTest {
 
     @Test
     @org.junit.jupiter.api.condition.DisabledOnOs(org.junit.jupiter.api.condition.OS.WINDOWS)
-    @DisplayName("a file swapped for a symlink after the plan is not followed")
+    @DisplayName("a file swapped for a symlink after the plan is not followed, whether the link leads out or stays inside")
     void swappedSymlinkIsNotFollowed(@TempDir Path outer) throws Exception {
         Path project = Files.createDirectories(outer.resolve("project"));
         Files.writeString(outer.resolve("secret.txt"), "OUTSIDE-SECRET");
@@ -138,7 +138,17 @@ class ProjectBundleTest {
         Files.delete(project.resolve("notes.txt"));
         Files.createSymbolicLink(project.resolve("notes.txt"), outer.resolve("secret.txt"));
         java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        // a link that leads out: the one containment guard refuses it
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> ProjectBundle.write(project, m, out))
+                .isInstanceOf(java.io.IOException.class).hasMessageContaining("notes.txt is not inside the project");
+        assertThat(out.toString(java.nio.charset.StandardCharsets.ISO_8859_1)).doesNotContain("OUTSIDE-SECRET");
+        // a link that stays inside passes the guard, and is still not followed: the plan left some files home
+        // on purpose (.env), and a link to one of them must not carry it out under another name
+        Files.writeString(project.resolve(".env"), "TOKEN=inside-secret");
+        Files.delete(project.resolve("notes.txt"));
+        Files.createSymbolicLink(project.resolve("notes.txt"), project.resolve(".env"));
+        java.io.ByteArrayOutputStream again = new java.io.ByteArrayOutputStream();
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> ProjectBundle.write(project, m, again))
                 .isInstanceOf(java.io.IOException.class).hasMessageContaining("notes.txt is no longer a regular file");
     }
 }
