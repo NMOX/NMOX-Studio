@@ -17,6 +17,14 @@ import java.util.List;
  */
 public final class Rollback {
 
+    /**
+     * How many lines of the host's answer a rollback will hold. One app's
+     * tags are a few dozen lines; a host that prints without end is a
+     * stranger's stream, and it is refused by name instead of collected
+     * (the probe's rule, {@link HostProbe#MAX_LINES}).
+     */
+    public static final int MAX_TAG_LINES = 2_000;
+
     private Rollback() {
     }
 

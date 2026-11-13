@@ -485,6 +485,39 @@ class OpsHubTest {
     }
 
     @Test
+    @DisplayName("a rollback's reading of the host's images is bounded: a host that prints without end is refused by name, not held")
+    void rollbackImageReadIsBounded() {
+        RollbackRunner rr = new RollbackRunner();
+        OpsHub hub = new OpsHub(clock::get, Runnable::run, rr, prefs, cloud, ssh).withProviders(List.of(provider));
+        hub.addManualHost(new SshTarget("root", "203.0.113.5", 22, null), "box");
+        ssh.drain(2);
+        OpsHub.RollbackOffer[] offer = {null};
+        // a long-lived app: many honest tags are read and answered
+        List<String> many = new ArrayList<>();
+        for (int i = 0; i < 1_500; i++) {
+            many.add(Integer.toString(1_000 + i));
+        }
+        many.add("300");
+        many.add("200");
+        rr.tags = many;
+        hub.rollbackOffer(onlyService(hub), o -> offer[0] = o);
+        ssh.drain(2);
+        assertThat(offer[0].ok()).as(String.valueOf(offer[0].refusal())).isTrue();
+        assertThat(offer[0].plan().stamp()).isEqualTo("200");
+        // a host that answers `docker images` with a stream: every line was collected for the whole leash
+        List<String> flood = new ArrayList<>();
+        for (int i = 0; i < 50_000; i++) {
+            flood.add(i % 2 == 0 ? "200" : "junk " + i);
+        }
+        rr.tags = flood;
+        offer[0] = null;
+        hub.rollbackOffer(onlyService(hub), o -> offer[0] = o);
+        ssh.drain(2);
+        assertThat(offer[0].ok()).as("50,000 lines where a few dozen were expected is not an answer to offer from").isFalse();
+        assertThat(offer[0].refusal()).contains("could not read the images of shop on box").contains("more than 2000 lines");
+    }
+
+    @Test
     @DisplayName("destroying a provider host removes it and says billing stops; a provider's refusal keeps it and says why")
     void destroy() {
         OpsHub hub = hub();

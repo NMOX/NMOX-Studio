@@ -1325,10 +1325,20 @@ public final class OpsHub {
         RemoteRunner runner = runnerFor(host);
         onSsh(() -> {
             List<String> lines = Collections.synchronizedList(new ArrayList<>());
+            // bounded like a probe: the host is a stranger, and twenty seconds of an endless stream is the heap
+            int cap = org.nmox.studio.infra.ops.remote.Rollback.MAX_TAG_LINES;
+            java.util.concurrent.atomic.AtomicInteger printed = new java.util.concurrent.atomic.AtomicInteger();
             RemoteRunner.Result r = runner.run(target, org.nmox.studio.infra.ops.remote.Rollback.imagesCommand(app),
-                    null, lines::add, java.time.Duration.ofSeconds(20));
+                    null, line -> {
+                        if (printed.getAndIncrement() < cap) {
+                            lines.add(line);
+                        }
+                    }, java.time.Duration.ofSeconds(20));
             RollbackOffer offer;
-            if (!r.ok()) {
+            if (printed.get() > cap) {
+                offer = RollbackOffer.refused(Bundle.OpsHub_refuseImagesUnread(app, host.label,
+                        Bundle.OpsHub_probeTooManyLines(Integer.toString(cap))));
+            } else if (!r.ok()) {
                 String said = lines.isEmpty() ? r.tail() : lines.get(lines.size() - 1);
                 offer = RollbackOffer.refused(Bundle.OpsHub_refuseImagesUnread(app, host.label, said == null ? "" : said));
             } else {
