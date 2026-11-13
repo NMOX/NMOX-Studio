@@ -111,7 +111,7 @@ itself across every release since v1.51.
 
 ![The Ops Hub — this machine on the left, a real host and two simulated servers fanned out to the right, a deploy just read back as a service, the inspector naming every link's evidence](docs/images/ops-hub.png)
 
-*The Ops Hub (Window ▸ Ops Hub) — create a server, watch it come up, connect over mosh or ssh in the IDE's Terminal, deploy, follow a container's logs, roll back, watch; every link marked observed, inferred or declared, and the simulation labeled as such.*
+*The Ops Hub (⌥⌘U, or Window ▸ Ops Hub) — create a server on DigitalOcean or Hetzner, watch it come up, connect over mosh or ssh in the IDE's Terminal, deploy, follow a container's logs, roll back, watch; every link marked observed, inferred or declared, and the simulation labeled as such.*
 
 | | |
 |---|---|

@@ -1688,8 +1688,9 @@ persists to `.nmoxinfra.json`.
 **⌥⌘U** or **Window ▸ Ops Hub** opens it. Where the Infra Designer is what you
 want to exist, the Ops Hub is a picture of what does: a DevOps HUD with
 this machine on the left and every server you can reach fanned out to
-the right. **New Server…** asks DigitalOcean for a droplet (the same
-token as the Infra Designer), prices it before you confirm, and the
+the right. **New Server…** asks DigitalOcean or Hetzner for a server
+(the token the Infra Designer uses; **Token…** sets one from here),
+prices it in the provider's own currency before you confirm, and the
 host appears beside you and glides into place while the feed narrates
 each step the Hub observes — accepted, provisioning, active, ssh
 answering, cloud-init done. Select a host and press **mosh** or **ssh**

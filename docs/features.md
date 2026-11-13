@@ -664,10 +664,11 @@ catalogs, a dependency-free `data-i18n` applier that keeps
 enforce. Both idempotent, never clobbering.
 
 ## 🛰️ Ops Hub — the DevOps HUD
-Window ▸ Ops Hub: a living topology with this machine on the left and
+⌥⌘U, or Window ▸ Ops Hub: a living topology with this machine on the left and
 every server you can reach fanned out to the right. **New Server…** asks
-DigitalOcean for a droplet (the Infra Designer's token), prices it per
-month and per hour before a safe-default confirm, and the host appears at
+DigitalOcean or Hetzner for a server (the Infra Designer's token, or the
+Hub's own **Token…**), prices it per month and per hour in the provider's
+currency before a safe-default confirm, and the host appears at
 your side and glides into place while the feed narrates each observed
 step — accepted, provisioning, active, ssh answering, cloud-init done
 (docker, mosh-server and curl installed). **mosh** and **ssh** each open
