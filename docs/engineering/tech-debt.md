@@ -526,7 +526,7 @@ unchanged: the launcher retries or refuses, or the product ships its own
 
 ## Open — added by 3.6.0 (the VS Code repository release)
 
-### 136. The debugger's windows have two names in a translated build
+### 136. The debugger's windows have two names in a translated build — narrowed after 3.12.0: the seven debugger windows done, the Output window measured and open
 
 Found by the 3.6.0 translators, three of them independently. Since
 v2.143.0 the Window ▸ Debugging rows are translated (`CTL_SessionsAction`
@@ -553,6 +553,70 @@ That is a unit of its own, not a rider on a feature release.
 language's own menu-row word (no mnemonic), move those windows out of the
 gate's untranslated list in the same commit, and let the gate name every
 sentence that still says the English word.
+
+**Taken for the seven debugger windows (after 3.12.0).** Recon first:
+`View.getName()` is `NbBundle.getMessage(View.class, displayNameResource)`
+and the seven factory methods (`getSessionsView`, `getBreakpointsView`, …)
+hand it exactly the seven `_view` keys, read from the RELEASE310 class. The
+overlay is fourteen files beside the menu rows' own
+(`branding/…/org-netbeans-spi-debugger-ui.jar/org/netbeans/modules/debugger/ui/views/Bundle_<lang>.properties`),
+and no value in them is a translation of its own: each is that language's
+`CTL_…Action` value with the mnemonic removed (`&Sitzungen` gives
+*Sitzungen*, `会话(&N)` gives *会话*), written by a script from the rows.
+
+Held three ways. The seven keys joined `main-window-chrome.txt`, so
+`MainWindowChromeSpeaksTest` fails when a platform upgrade renames or
+rewords one, or a language is missing. `WayfindingVocabularyTest` gained
+the law itself, *a debugger window's tab carries the name its Window-menu
+row carries, in every language*: it reads the platform's jar and each
+language's overlay jar out of the assembled cluster, and the English half
+(the row minus its mnemonic equals the tab) keeps the hand-kept pairing
+honest. And the English name may no longer stand for the window: no
+translated product string (same gate), and no translated document
+(`DocsMenuDoorsTest`), may say `Sessions` where the build's tab reads
+*Sitzungen*; a language whose word is the English one (French *Sessions*,
+Spanish *Variables*) has nothing to tell apart.
+
+**An eighth window, which this entry never listed.** Window ▸ Debugging
+▸ Debugging is a row of the same submenu and opens a tab titled from
+`CTL_Debugging_view`, one package down in `…/debugger/ui/views/debugging`
+(`DebuggingViewComponent.getName()`, read from the class). It took the same
+fix in a commit of its own, and the tab law holds it to its row. Its name
+is not held in prose: "Debugging" is also the submenu, half of *Start
+Debugging…* and a word VS Code's commands use.
+
+**This entry was wrong about its own subject in two places**, which is
+why the sweep was a fraction of what it feared. `WayfindingVocabularyTest`
+never held "Sessions" or "Breakpoints": its untranslated list is `Output`,
+`IDE Tools` and `Services`, so there was nothing to move out of it. And no
+hint in any bundle names a debugger window: measured on the assembled
+cluster, no English product string does, in any module. The sentences were
+thirteen, one in each `docs/coming-from-vscode.<lang>.md` but the French
+("listed in the Sessions window"), and the new document law named every
+one of them on its first run.
+
+Proven by the gates on the assembled cluster and one mutant by name each
+(a German `CTL_Sessions_view` put back to `Sessions`; a German document
+put back to `im Fenster Sessions`). NOT walked: a branding overlay applies
+only inside the assembled app, so the picture is owed. Window ▸ Debugging
+▸ Sessions in a German build (*Fenster ▸ Debugging ▸ Sitzungen*) must open
+a tab titled *Sitzungen*.
+
+**Left open, each measured.**
+
+- *The Output window.* Its row is overlaid (`IOWindow`, German *Ausgabe*)
+  and its tab, `LBL_IO_WINDOW` in `org/netbeans/core/io/ui`, is not (the
+  key was found by value and has not been confirmed from the class). The
+  sweep that must ride with it is 298 sentences in fourteen languages: 142
+  bundle values (twelve keys; ten per language, twelve in Filipino) and 156
+  lines of documents (ten to twelve per language). The three largest homes
+  are `docs/coming-from-vscode.<lang>.md` (70),
+  `docs/tutorials/show-it-to-a-room.<lang>.md` (56) and the bundles of
+  `tools/…/vscode` (42). `Output` leaves `ENGLISH_BY_CONSTRUCTION` in the
+  same commit as its overlay, and that gate then names the bundle half.
+- *The hover text of the seven tabs* (`CTL_Sessions_view_tooltip`, "Sessions
+  View", and six siblings; `View.getToolTipText()`). No row carries a word
+  for it, so overlaying it would be a new translation, not a copied one.
 
 ### 137. A narrow-pane hint is budgeted in characters, and a character is not a width
 
