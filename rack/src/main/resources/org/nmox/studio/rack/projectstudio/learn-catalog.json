@@ -3687,7 +3687,7 @@
       "files": [
         {
           "path": "package.json",
-          "content": "{\n  \"name\": \"astro-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"astro dev\",\n    \"build\": \"astro build\",\n    \"preview\": \"astro preview\"\n  },\n  \"dependencies\": {\n    \"astro\": \"^4.0.0\"\n  }\n}\n"
+          "content": "{\n  \"name\": \"astro-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"astro dev\",\n    \"build\": \"astro build\",\n    \"preview\": \"astro preview\"\n  },\n  \"dependencies\": {\n    \"astro\": \"^7.4.0\"\n  }\n}\n"
         },
         {
           "path": "src/pages/index.astro",
