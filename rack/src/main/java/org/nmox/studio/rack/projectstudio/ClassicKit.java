@@ -58,7 +58,8 @@ public final class ClassicKit {
 
     /**
      * One classic library the kit can deliver. {@code npmName == null}
-     * means vendored-only (Prototype has no canonical npm package).
+     * means vendored-only (Prototype and MooTools have no canonical npm
+     * package; {@link #npmNote} says so wherever npm is refused).
      * {@code scriptTag} is a compile-time literal, never assembled from
      * parts at runtime — markup construction from variables is exactly
      * what find-sec-bugs' XML-injection detector exists to catch, so
@@ -81,6 +82,16 @@ public final class ClassicKit {
     public static final String PROTOTYPE_NPM_NOTE
             = "Prototype ships vendored only — no canonical npm package";
 
+    /**
+     * The same reason for whichever library npm cannot deliver, in the
+     * one wording ({@link #PROTOTYPE_NPM_NOTE} is this for Prototype);
+     * null for a library npm can deliver.
+     */
+    public static String npmNote(Lib lib) {
+        return lib.npmCapable() ? null
+                : lib.display() + " ships vendored only — no canonical npm package";
+    }
+
     private static final Lib JQUERY = new Lib("jquery", "jQuery", "3.7.1",
             "jquery-3.7.1.min.js",
             "<script src=\"vendor/jquery-3.7.1.min.js\"></script>",
@@ -93,10 +104,19 @@ public final class ClassicKit {
             "htmx-2.0.11.min.js",
             "<script src=\"vendor/htmx-2.0.11.min.js\"></script>",
             "htmx.org", "^2.0.11");
+    /**
+     * Vendored only. Until 2026-11-13 npm mode wrote
+     * {@code "mootools": "^1.6.0"}, a range the registry cannot resolve
+     * ({@code npm install}: ETARGET, exit 1): the newest {@code mootools}
+     * on npm is 1.5.2, described as "MooTools 1.5.2 Server library"
+     * (mootools-node), not the browser file this kit vendors, and no
+     * {@code mootools-core} package exists. {@code ClassicKitTest} holds
+     * every range npm mode still writes to a dated registry check.
+     */
     private static final Lib MOOTOOLS = new Lib("mootools", "MooTools Core (compat)", "1.6.0",
             "mootools-core-1.6.0-compat.min.js",
             "<script src=\"vendor/mootools-core-1.6.0-compat.min.js\"></script>",
-            "mootools", "^1.6.0");
+            null, null);
     private static final Lib PROTOTYPE = new Lib("prototype", "Prototype", "1.7.3",
             "prototype-1.7.3.js",
             "<script src=\"vendor/prototype-1.7.3.js\"></script>",
@@ -172,8 +192,12 @@ public final class ClassicKit {
             warnings.add("No package.json here — npm delivery has nowhere to record "
                     + "dependencies; use Vendored.");
         }
-        if (opts.mode() == Mode.NPM && opts.libraries().contains("prototype")) {
-            warnings.add(PROTOTYPE_NPM_NOTE + " — it will be skipped.");
+        if (opts.mode() == Mode.NPM) {
+            for (Lib lib : libraries()) {
+                if (!lib.npmCapable() && opts.libraries().contains(lib.id())) {
+                    warnings.add(npmNote(lib) + " — it will be skipped.");
+                }
+            }
         }
         return warnings;
     }
@@ -345,7 +369,7 @@ public final class ClassicKit {
         for (Lib lib : delivery) {
             if (!lib.npmCapable()) {
                 outcomes.add(new Outcome("package.json",
-                        lib.display() + ": " + PROTOTYPE_NPM_NOTE, false));
+                        lib.display() + ": " + npmNote(lib), false));
                 continue;
             }
             if ((deps != null && deps.has(lib.npmName()))

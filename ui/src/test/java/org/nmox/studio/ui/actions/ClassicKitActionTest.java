@@ -38,8 +38,10 @@ class ClassicKitActionTest {
     }
 
     @Test
-    @DisplayName("npm mode disables exactly the npm-incapable library (Prototype)")
+    @DisplayName("npm mode disables exactly the npm-incapable libraries (MooTools, Prototype)")
     void npmModeDisablesPrototypeOnly() {
+        assertThat(ClassicKit.libraries()).filteredOn(lib -> !ClassicKitAction.enabledFor(lib, true))
+                .extracting(ClassicKit.Lib::id).containsExactly("mootools", "prototype");
         for (ClassicKit.Lib lib : ClassicKit.libraries()) {
             assertThat(ClassicKitAction.enabledFor(lib, false))
                     .as(lib.id() + " enabled under Vendored").isTrue();
