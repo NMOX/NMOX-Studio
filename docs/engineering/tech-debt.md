@@ -43,8 +43,28 @@ open, each with its door, none built:
   simulation, and — over real ssh and a real pty — a STUB docker on a
   throwaway sshd (3.12.0's walk; the stub prints docker's shapes and is
   not docker). A daemon was not running on the machine that walked.
-- **One provider.** Hetzner is a class (`OpsProvider` is found through
-  Lookup); the dialog, the watch and the HUD need nothing new.
+- **Two providers, one of them never run.** `HetznerOps` is the second
+  `OpsProvider` (found through Lookup, as predicted) and no Hetzner
+  server was created or listed live: a server bills, a listing needs the
+  owner's token. It is proven against a fake API in the shapes of
+  Hetzner's published OpenAPI document, which is not the running API.
+  The prediction "the dialog, the watch and the HUD need nothing new" was
+  wrong in three places, each fixed with it: the ENGINE compared a
+  status with DigitalOcean's word `new` (a provider now hands over a
+  `HostRecord.Phase`), the price strings printed `$` whatever the
+  currency (the sign is an argument, and Hetzner's price list says EUR),
+  and the toolbar chip named DigitalOcean alone. Still open: the Hub's
+  own **Token…** sets only DigitalOcean's token — Hetzner's is set in the
+  Infra Designer's **Tokens…**, which the button's tooltip already names
+  — and the "no provider is configured" sentence names only
+  DigitalOcean; the listing shows a project's servers, and a Hetzner
+  token belongs to ONE project, so an account's other projects are not
+  on the Hub; a size's price is the server type plus the public IPv4 and
+  leaves out traffic past the included amount and backups; Hetzner's
+  firewalls, networks and placement groups are not asked for; and an
+  arm server type is offered beside x86 ones with the image chosen by
+  name (the document says a name is resolved; that it resolves to the
+  type's architecture was not observed).
 - **Service telemetry is a probe, not a stream.** Load, memory and disk
   come from one ssh round trip every 15 s; containers from `docker ps`.
   No `docker stats`, no traffic delta — so a pulse on a link means the

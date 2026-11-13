@@ -2,7 +2,8 @@
 
 *Written with 3.11.0, the first vertical slice; brought current by 3.12.0,
 the second (the camera, the service doors, rollback, and the review of
-the first). Read this before touching
+the first), and by the second provider (Hetzner Cloud, below). Read this
+before touching
 `infra/src/main/java/org/nmox/studio/infra/ops`.*
 
 ## The dream, and the rule that keeps it honest
@@ -30,7 +31,7 @@ switch with a banner across the top and a badge on every node.
 | Capability | Where | How Ops Hub uses it |
 |---|---|---|
 | DigitalOcean / Hetzner / Cloudflare tokens in the OS keychain | `infra.api.CloudTokens`, `CloudProvider` | The same token; the Hub's **Token…** and the Infra Designer's **Tokens…** set one value |
-| The bearer-token round trip with its leash and bounded read | `infra.api.CloudHttp` (extracted in 3.11.0 from `DigitalOceanClient`) | `DigitalOceanOps` sends through it; a test transport answers from a map |
+| The bearer-token round trip with its leash and bounded read | `infra.api.CloudHttp` (extracted in 3.11.0 from `DigitalOceanClient`) | `DigitalOceanOps` and `HetznerOps` send through it; a test transport answers from a map |
 | The platform's pty Terminal | `dlight.terminal` / `nativeexecution` (friend-only) | `ui.TerminalDoor` walks the platform's own path by reflection — the git chip's idiom — and degrades to the clipboard plus the plain terminal |
 | The aimed project | `core.spi.ProjectAim` | What a deploy bundles |
 | Hardened process spawn, bounded reads, atomic writes, heavy-dir census | `core.process.ProcessSupport`, `core.util.*` | The ssh runner, the bundle, the known_hosts prune |
@@ -47,7 +48,7 @@ keeps them apart so neither lies about the other.
 ```
 infra.ops
 ├── model      Topology · OpsNode · OpsEdge(+Evidence) · HostStatus · Telemetry   pure
-├── provider   OpsProvider ─ DigitalOceanOps (Lookup)  ·  SimulatedOps + SimulatedWorld (behind the switch)
+├── provider   OpsProvider ─ DigitalOceanOps · HetznerOps (Lookup)  ·  SimulatedOps + SimulatedWorld (behind the switch)
 ├── remote     SshTarget · RemoteRunner ─ ProcessRemoteRunner · HostProbe · ProjectBundle/TarGz · DeployPlan · Deployer
 │              ContainerDoors (logs, shell) · Rollback
 ├── OpsHub     the engine: lanes, the provisioning watch, probing, deploy, rollback, the feed, manual hosts
@@ -58,7 +59,7 @@ infra.ops
 **Providers make hosts; ssh does everything else.** An `OpsProvider`
 lists, creates, reads and destroys hosts and uploads an ssh key. After a
 host has an address it is an `SshTarget` like any other — a droplet, a
-Hetzner server tomorrow, or a box you already own added by hand — and
+Hetzner server, or a box you already own added by hand — and
 `HostProbe`, `Deployer` and the terminal door know no provider. This is
 also why the ssh half can be proven against a real sshd on this machine
 without a bill.
@@ -70,7 +71,7 @@ line. Tests hand the engine an inline EDT, a queue for each lane and a
 clock they advance by hand.
 
 **The provisioning watch is observation, not a timer.** REQUESTED (the
-provider accepted) → PROVISIONING (it lists it, not active) → BOOTING
+provider accepted) → PROVISIONING (it lists it, still coming up) → BOOTING
 (active with an address, ssh silent) → CONFIGURING (ssh answers,
 cloud-init running) → READY (cloud-init done). Each step is a fact the
 Hub read; the HUD sweeps the ring while any of them is pending.
@@ -276,6 +277,56 @@ door were the real ones). Each row was fixed and walked again.
 | The deploy log showed the middle of every line (its caret sat at the end of docker's longest) | The caret goes to the last line's start |
 | The translators, reading the new English in five rounds: a refusal untrue in one of its two uses, a pronoun with no antecedent, one action under three verbs, yes/no answering "does it have docker?", the rollback question as one string with shell lines inside it, an ISO instant shown raw, and five kinds of English built in the engine | Reworded, split, typed, or moved to the bundle; each later round translated the result and found the next layer (an edge that read backwards from its far end, an arrow that pointed against a right-to-left line, the verify step's own two sentences) |
 
+## Hetzner Cloud, the second provider
+
+`HetznerOps` is found through Lookup beside `DigitalOceanOps`; a
+configured provider is offered by **New Server…** (with two configured,
+the existing "Create the server at" question picks one). The token is the
+keychain entry the Infra Designer's **Tokens…** keeps for Hetzner
+(`CloudProvider.HETZNER`, or `HCLOUD_TOKEN`); it is a PROJECT's token,
+so the Hub sees that project's servers.
+
+| The Hub's | Hetzner's (`https://api.hetzner.cloud/v1`) |
+|---|---|
+| region | a **location** (`GET /locations`): slug `fsn1`, shown as city and country |
+| size | a **server type at one location** (`GET /server_types`): one entry per `prices[]` row whose location the type's `locations[]` lists as available and not deprecated — the price differs by location |
+| price | `price_monthly.gross` / `price_hourly.gross`, decimal STRINGS, **plus the primary IPv4** at that location (`GET /pricing` → `primary_ips[type=ipv4]`), which Hetzner prices apart from the server; the currency is `pricing.currency` |
+| image | a **system image** (`GET /images?type=system&status=available`) of `os_flavor` ubuntu or debian, not deprecated, once per name (the API lists a name once per architecture) |
+| ssh key | `GET /ssh_keys`; an upload is `POST /ssh_keys`, labeled `nmox-ops` |
+| the `nmox-ops` tag | the **label** `nmox-ops=true` on the server (Hetzner has labels, not tags). As on DigitalOcean it is the fact "made here", never a filter: every server of the project is listed, and one made in Hetzner's console is as real as one made here |
+| create | `POST /servers` with `name`, `server_type`, `image`, `location`, `ssh_keys` (ids as integers), `labels`, `user_data` (the same cloud-init), `public_net.enable_ipv4` (ssh needs the address), `start_after_create` |
+| list | `GET /servers?page=N&per_page=50`, following `meta.pagination.next_page` until it is null; past 2,000 entries, on a page that points back, or on a full page with no pagination, the listing is refused whole |
+| read | `GET /servers/{id}`: the API's 404 is "gone"; anything else (500, 429, a 200 with no server in it, no token) is "unknown" and raised |
+| destroy | `DELETE /servers/{id}` |
+| REQUESTED → PROVISIONING | `status` `initializing`, `starting` (`HostRecord.Phase.COMING_UP`) |
+| → BOOTING and on | `status` `running` with `public_net.ipv4.ip`; from there it is ssh, as for any host |
+| UNREACHABLE, with Hetzner's word as the reason | `off`, `stopping`, `deleting`, `migrating`, `rebuilding`, `unknown`, and any word the product was not taught — never guessed to be "coming up", which would sweep forever |
+| a refusal | `{"error":{"code","message"}}` said as `HTTP 422: <message> (<code>)` in the feed or the dialog |
+
+What the second provider changed outside its own class — the roadmap had
+said nothing would be needed:
+
+- **The engine no longer knows a provider's words.** It compared a
+  status with DigitalOcean's `new`; a provider now hands over a
+  `HostRecord.Phase` beside its own word, and a not-running status
+  reaches the feed when the word changes, once.
+- **A price carries its currency.** `ProviderOptions.currency` is the
+  ISO 4217 code; the three price sentences take the sign as an argument
+  where they printed `$`. A Hetzner price is euros unless Hetzner's
+  price list says otherwise, and is never shown under a dollar sign.
+- **The chip names every real provider**, each with or without its token.
+- **Only a number is spliced into a path**, and an answer to a create is
+  never quoted in an error: a create without keys is answered with a
+  root password.
+
+**No live server was created, and no request was sent to Hetzner with a
+token**: a server bills the account's owner. Every shape above was read
+from Hetzner's published OpenAPI document
+(`https://docs.hetzner.cloud/cloud.spec.json`, 2026-11-13) and none was
+observed; `HetznerOpsTest` answers from a fake API in those shapes and
+its javadoc lists which. The first live create is a walk for whoever
+owns the token.
+
 ## What was verified, and how
 
 - **149 unit tests** in `infra` over the Hub (44 with 3.11.0): the pure
@@ -318,7 +369,8 @@ door were the real ones). Each row was fixed and walked again.
   background tools deliver neither; tests fire the canvas's named
   actions and the provider, and the layer entry was read out of the
   built jar).
-- **Not verified live**: a DigitalOcean droplet was not created, because
+- **Not verified live**: a Hetzner server was not created or listed (the
+  section above says what stands in); a DigitalOcean droplet was not created, because
   that bills David's account; the request body, the paged listing, the
   provisioning watch and the destroy are proven against a fake API whose
   answers are the API's documented shapes. The first live create is a
@@ -326,8 +378,9 @@ door were the real ones). Each row was fixed and walked again.
 
 ## Roadmap (not done, written down)
 
-1. **Hetzner as the second provider** — `HetznerOps` is a class; the
-   dialog, watch and HUD need nothing new.
+1. ~~**Hetzner as the second provider**~~ — done (the Hetzner section
+   above), and not run against Hetzner. It was a class, and three things
+   besides: the engine's status word, the currency sign, the chip.
 2. **Designed vs. observed** — the Infra Designer's wires as DECLARED edges
    on the Hub, drift between them highlighted.
 3. **Service telemetry** — `docker stats` per container, request pulses
