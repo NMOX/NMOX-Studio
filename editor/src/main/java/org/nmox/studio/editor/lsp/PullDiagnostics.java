@@ -131,6 +131,8 @@ final class PullDiagnostics {
     private long firstDirtyAt = -1;
     private long nextId;
     private boolean ended;
+    /** A refusal has been said in the log; the rest are at FINE. */
+    private boolean refusalSaid;
     /** The client's framing was lost: nothing is asked any more. */
     private volatile boolean deaf;
 
@@ -466,7 +468,16 @@ final class PullDiagnostics {
                         firstDirtyAt = millis.getAsLong();
                     }
                 } else {
-                    LOG.log(Level.FINE, "{0}: asked about {1}, answered {2}", new Object[] {name, asked.uri(), error});
+                    // "ask again" is the protocol working. Anything else is the server refusing the
+                    // question this class exists to ask, and the file then shows no problems and no
+                    // word why: said once, so a server that refuses every question does not fill the log
+                    boolean say = !again && !refusalSaid;
+                    refusalSaid |= say;
+                    LOG.log(say ? Level.INFO : Level.FINE,
+                            say ? "{0}: asked for the problems of {1} and the server refused: {2}."
+                                    + " Problems may be missing from the editor; further refusals are logged at FINE"
+                                    : "{0}: asked about {1}, answered {2}",
+                            new Object[] {name, asked.uri(), error});
                     return null;
                 }
             } else {

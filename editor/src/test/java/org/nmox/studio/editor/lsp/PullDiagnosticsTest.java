@@ -713,4 +713,59 @@ class PullDiagnosticsTest {
         assertThat(seen.get(1).getJSONObject("params").getJSONArray("diagnostics").length())
                 .as("B's own answer, to the older question, arrived last and is dropped").isZero();
     }
+
+    @Test
+    @DisplayName("a refusal that is not 'ask again' is said in the log, once: a file with no red in it and no word why is a silent failure")
+    void aRefusalIsSaidOnce() throws Exception {
+        List<java.util.logging.LogRecord> said = new ArrayList<>();
+        java.util.logging.Handler ear = new java.util.logging.Handler() {
+            @Override
+            public void publish(java.util.logging.LogRecord record) {
+                if (record.getLevel().intValue() >= java.util.logging.Level.INFO.intValue()) {
+                    said.add(record);
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        java.util.logging.Logger log = java.util.logging.Logger.getLogger(PullDiagnostics.class.getName());
+        log.addHandler(ear);
+        try {
+            opens(A);
+            opens(B);
+            bridge.work();
+            List<String[]> asked = questions(serverGot());
+            InputStream in = bridge.fromServer();
+            server.says("{\"jsonrpc\":\"2.0\",\"id\":\"" + asked.get(0)[1] + "\",\"error\":{\"code\":-32601,\"message\":\"method not found\"}}");
+            assertThat(readOneRound(in)).isEmpty();
+            assertThat(said).as("the server does not answer the question this class exists to ask: said").hasSize(1);
+            String line = java.text.MessageFormat.format(said.get(0).getMessage(), said.get(0).getParameters());
+            assertThat(line).contains("tsc").contains(asked.get(0)[0]).contains("method not found");
+
+            server.says("{\"jsonrpc\":\"2.0\",\"id\":\"" + asked.get(1)[1] + "\",\"error\":{\"code\":-32601,\"message\":\"method not found\"}}");
+            assertThat(readOneRound(in)).isEmpty();
+            assertThat(said).as("once: a server that refuses every question does not fill the log").hasSize(1);
+
+            // an overtaken question is not a refusal, however often it is overtaken
+            connect();
+            said.clear();
+            opens(A);
+            in = bridge.fromServer();
+            for (int round = 0; round <= PullDiagnostics.MAX_RETRIES; round++) {
+                bridge.work();
+                String id = questions(serverGot()).get(0)[1];
+                server.says("{\"jsonrpc\":\"2.0\",\"id\":\"" + id + "\",\"error\":{\"code\":-32801,\"message\":\"content modified\"}}");
+                assertThat(readOneRound(in)).isEmpty();
+            }
+            assertThat(said).as("'ask again' is the protocol working").isEmpty();
+        } finally {
+            log.removeHandler(ear);
+        }
+    }
 }
