@@ -27,7 +27,7 @@ class TokenButtonServesEveryProviderTest {
         try (java.util.stream.Stream<Path> files = Files.list(
                 Path.of("src/main/java/org/nmox/studio/infra/ops/provider"))) {
             for (Path f : files.filter(p -> p.toString().endsWith(".java")).sorted().toList()) {
-                String src = Files.readString(f);
+                String src = Files.readString(f).replace("\r\n", "\n");
                 if (!src.contains("implements OpsProvider")) {
                     continue;
                 }
@@ -71,7 +71,9 @@ class TokenButtonServesEveryProviderTest {
     @Test
     @DisplayName("the dialog stores through the provider it was opened for, and names it in its title")
     void theDialogNamesNoProvider() throws Exception {
-        String src = Files.readString(Path.of("src/main/java/org/nmox/studio/infra/ops/ui/OpsDialogs.java"));
+        // a Windows checkout has CRLF, and the slice below ends at a line feed
+        String src = Files.readString(Path.of("src/main/java/org/nmox/studio/infra/ops/ui/OpsDialogs.java"))
+                .replace("\r\n", "\n");
         int at = src.indexOf("public static boolean tokens(");
         String body = src.substring(at, src.indexOf("\n    }\n", at));
         assertThat(body).contains("provider.storeToken(token)").contains("Bundle.Tokens_title(provider.displayName())");

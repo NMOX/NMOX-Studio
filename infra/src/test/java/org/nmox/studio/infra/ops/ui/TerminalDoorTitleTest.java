@@ -45,7 +45,9 @@ class TerminalDoorTitleTest {
     @Test
     @DisplayName("the door makes the title before the platform sees it")
     void theDoorUsesIt() throws Exception {
-        String src = Files.readString(Path.of("src/main/java/org/nmox/studio/infra/ops/ui/TerminalDoor.java"));
+        // a Windows checkout has CRLF, and the slice below ends at a line feed
+        String src = Files.readString(Path.of("src/main/java/org/nmox/studio/infra/ops/ui/TerminalDoor.java"))
+                .replace("\r\n", "\n");
         int open = src.indexOf("public static void open(String rawTitle");
         assertThat(open).as("open takes the raw title under a name that says so").isPositive();
         String made = "String title = tabTitle(rawTitle);";
