@@ -58,6 +58,105 @@ class KitCatalogParityTest {
         }
     }
 
+    /** kit chain → catalog slug, for every chain the catalog also teaches. */
+    private static final Map<ContractKit.Chain, String> SAME_STARTER = Map.of(
+            ContractKit.Chain.SOROBAN, "stellar-soroban",
+            ContractKit.Chain.SOLANA, "solana-native",
+            ContractKit.Chain.COSMWASM, "cosmwasm",
+            ContractKit.Chain.INK, "ink-polkadot",
+            ContractKit.Chain.BITCOIN, "bitcoin-miniscript",
+            ContractKit.Chain.CLARITY, "clarity-stacks",
+            ContractKit.Chain.AIKEN, "cardano-aiken",
+            ContractKit.Chain.TACT, "ton-tact",
+            ContractKit.Chain.CAIRO, "cairo-starknet",
+            ContractKit.Chain.MOVE, "move-sui");
+
+    /** The files that carry pins. Clarinet.toml is here for its
+     *  {@code clarity_version} and {@code epoch}. */
+    private static final java.util.List<String> MANIFESTS = java.util.List.of(
+            "Cargo.toml", "package.json", "aiken.toml", "Scarb.toml",
+            "Move.toml", "Clarinet.toml");
+
+    /**
+     * The law above binds ONE pin per chain, and the two homes carry more
+     * than one: the 2026-11 refresh moved vitest, jest, @ton/sandbox, the
+     * Aiken compiler and five more, and none of those was bound - either
+     * home could have been moved alone with this class green. A manifest of
+     * the kit and of the catalog is the same file except for what the kit
+     * templates into it (the project's own name, and the description), so
+     * the whole manifest is compared and every pin, edition and feature
+     * list in it is bound at once, including one added tomorrow.
+     */
+    @Test
+    @DisplayName("Kit and catalog manifests are the same file except for the project's own name")
+    void everyManifestLineAgrees() throws Exception {
+        int compared = 0;
+        for (var entry : SAME_STARTER.entrySet()) {
+            ContractKit.Chain chain = entry.getKey();
+            String slug = entry.getValue();
+            File dir = Files.createDirectories(root.resolve("m-" + chain.name())).toFile();
+            ContractKit.scaffold(dir, chain, "Vault");
+            int found = 0;
+            for (String manifest : MANIFESTS) {
+                String catalog = catalogFile(slug, manifest);
+                File kit = new File(dir, manifest);
+                assertThat(kit.isFile())
+                        .as("%s: %s exists in the kit exactly when the catalog space has it",
+                                chain, manifest)
+                        .isEqualTo(catalog != null);
+                if (catalog == null) {
+                    continue;
+                }
+                found++;
+                assertThat(withoutOwnName(Files.readString(kit.toPath())))
+                        .as("%s %s: the kit's and the catalog's (%s) are one starter in two"
+                                + " homes - every pin moves in both", chain, manifest, slug)
+                        .isEqualTo(withoutOwnName(catalog));
+            }
+            assertThat(found).as("%s has a manifest to compare", chain).isPositive();
+            compared += found;
+        }
+        assertThat(compared).as("manifests compared across all chains").isGreaterThanOrEqualTo(11);
+    }
+
+    /** A manifest with the lines that name the project itself removed: the
+     *  first {@code name} line, a {@code description}, and (Clarinet.toml)
+     *  the contract's own table header and path. Nothing that carries a
+     *  version, an edition or a feature is dropped. */
+    private static String withoutOwnName(String manifest) {
+        StringBuilder out = new StringBuilder();
+        boolean nameDropped = false;
+        for (String line : manifest.replace("\r\n", "\n").split("\n")) {
+            String t = line.strip();
+            boolean isName = t.startsWith("name =") || t.startsWith("\"name\":");
+            if (isName && !nameDropped) {
+                nameDropped = true;
+                continue;
+            }
+            if (t.startsWith("description =") || t.startsWith("[contracts.")
+                    || t.startsWith("path = \"contracts/")) {
+                continue;
+            }
+            out.append(line.stripTrailing()).append('\n');
+        }
+        return out.toString().strip();
+    }
+
+    /** One sample file of a catalog space, or null when it has none by that path. */
+    private static String catalogFile(String slug, String path) {
+        for (LearningCatalog.Space s : LearningCatalog.all()) {
+            if (s.slug().equals(slug)) {
+                for (LearningCatalog.SampleFile f : s.files()) {
+                    if (f.path().equals(path)) {
+                        return f.content();
+                    }
+                }
+                return null;
+            }
+        }
+        throw new AssertionError("no catalog space: " + slug);
+    }
+
     /** The first version number pinned to {@code crate}, tolerating the
      *  cargo forms ({@code crate = "X"}, {@code crate = { version = "X" }}),
      *  the npm form ({@code "crate": "^X"}), and the TOML dependency-table
