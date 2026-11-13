@@ -416,8 +416,21 @@ public final class DbClient implements DbBackend {
         return props;
     }
 
-    private static String humanize(Throwable t) {
-        return JdbcCore.humanize(t);
+    private String humanize(Throwable t) {
+        return connectFailure(spec.engine(), t);
+    }
+
+    /**
+     * A connect failure in words. The TLS sentences are MySQL's and
+     * MariaDB's: they name the <i>Use TLS</i> box, which only those two
+     * JDBC engines have, and their looser test (any message holding "ssl"
+     * or "tls" beside "certificate" or "hostname") called a SQLite file
+     * under a folder named {@code tls-certificates} a server whose
+     * certificate could not be verified.
+     */
+    static String connectFailure(DbEngine engine, Throwable t) {
+        return engine == DbEngine.MYSQL || engine == DbEngine.MARIADB
+                ? JdbcCore.humanize(t) : JdbcCore.message(t);
     }
 
     private String scopeCatalog() {

@@ -2147,8 +2147,14 @@ public final class DbStudioTopComponent extends TopComponent {
     private static void balloon(String title, String detail, boolean ok) {
         javax.swing.Icon icon = javax.swing.UIManager.getIcon(
                 ok ? "OptionPane.informationIcon" : "OptionPane.errorIcon");
+        // the detail is often a driver's message, and with no action the platform
+        // hands it to a bare JLabel (NotificationImpl.createDetails, read from the
+        // bytecode): text beginning <html> would be painted as markup, and pgJDBC
+        // puts the SERVER's severity field at the head of its message. The title
+        // carries a connection's name from .nmoxdb.json, and the platform's markup
+        // builder throws for a control character in it.
         org.openide.awt.NotificationDisplayer.getDefault().notify(
-                title, icon, detail == null ? "" : detail, null,
+                PlainText.oneLine(title, 300), icon, detail == null ? "" : PlainText.plain(detail), null,
                 ok ? org.openide.awt.NotificationDisplayer.Priority.LOW
                    : org.openide.awt.NotificationDisplayer.Priority.NORMAL);
     }
