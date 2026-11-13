@@ -1299,6 +1299,13 @@ public final class OpsHub {
             then.accept(RollbackOffer.refused(Bundle.OpsHub_refuseNotOurs(service.label)));
             return;
         }
+        if (!DeployPlan.containerOf(app).equals(service.facts.get("container"))) {
+            // the label alone is not the deploy: the run line replaces the container NAMED nmox-<app>, so on a
+            // container that only carries the label (started by hand, renamed) a rollback would remove another
+            // container than the one it was asked on — and then fail on the port this one still holds
+            then.accept(RollbackOffer.refused(Bundle.OpsHub_refuseNotOurs(service.label)));
+            return;
+        }
         SshTarget target = targetOf(host);
         if (target == null || !host.status.reachable()) {
             then.accept(RollbackOffer.refused(Bundle.OpsHub_refuseNotReachable(host.label)));

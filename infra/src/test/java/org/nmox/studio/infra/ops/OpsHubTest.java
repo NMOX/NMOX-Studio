@@ -364,6 +364,7 @@ class OpsHubTest {
     /** A host running one deployed app, whose image history and answers the test sets. */
     static final class RollbackRunner implements RemoteRunner {
         final List<String> commands = new ArrayList<>();
+        String name = "nmox-shop";
         String label = "nmox.ops.app=shop";
         String image = "nmox/shop:300";
         String ports = "0.0.0.0:80->3000/tcp";
@@ -373,7 +374,7 @@ class OpsHubTest {
         @Override
         public Result run(SshTarget target, String remoteCommand, InputStream stdin, Consumer<String> onLine, Duration timeout) {
             commands.add(remoteCommand);
-            String row = "{\"Names\":\"nmox-shop\",\"Image\":\"" + image + "\",\"Status\":\"Up\",\"Ports\":\"" + ports
+            String row = "{\"Names\":\"" + name + "\",\"Image\":\"" + image + "\",\"Status\":\"Up\",\"Ports\":\"" + ports
                     + "\",\"Labels\":\"" + label + "\",\"Networks\":\"bridge\"}";
             if (remoteCommand.startsWith("echo nmox-probe 1")) {
                 probe("container " + row).forEach(onLine);
@@ -482,6 +483,31 @@ class OpsHubTest {
         assertThat(onlyService(hub).app).isNull();
         assertThat(ask.get()).contains("was not deployed from NMOX Studio");
         assertThat(hub.rollback(null, null, null)).isNull();
+    }
+
+    @Test
+    @DisplayName("a rollback is refused on a container the deploy did not name: its run line would replace nmox-<app>, another container")
+    void rollbackRefusesAContainerTheDeployDidNotName() {
+        RollbackRunner rr = new RollbackRunner();
+        // ours by label and by image, but started by hand beside the deployed one (a canary on another port)
+        rr.name = "shop-canary";
+        rr.ports = "0.0.0.0:9090->3000/tcp";
+        OpsHub hub = new OpsHub(clock::get, Runnable::run, rr, prefs, cloud, ssh).withProviders(List.of(provider));
+        hub.addManualHost(new SshTarget("root", "203.0.113.5", 22, null), "box");
+        ssh.drain(2);
+        OpsNode canary = onlyService(hub);
+        assertThat(canary.app).isEqualTo("shop");
+        assertThat(canary.facts.get("container")).isEqualTo("shop-canary");
+        rr.commands.clear();
+        OpsHub.RollbackOffer[] offer = {null};
+        hub.rollbackOffer(canary, o -> offer[0] = o);
+        ssh.drain(2);
+        assertThat(offer[0].ok())
+                .as("the offer's run line is 'docker rm -f nmox-shop; docker run --name nmox-shop … -p 9090:3000': it removes "
+                        + "the DEPLOYED container, not the one asked about, and then cannot bind the port the canary holds")
+                .isFalse();
+        assertThat(offer[0].refusal()).contains("shop-canary was not deployed from NMOX Studio");
+        assertThat(rr.commands).as("refused before the host is asked anything").isEmpty();
     }
 
     @Test

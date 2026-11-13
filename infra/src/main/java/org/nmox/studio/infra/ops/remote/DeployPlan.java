@@ -62,6 +62,11 @@ public record DeployPlan(String app, int hostPort, int containerPort, String sta
     }
 
     public String container() {
+        return containerOf(app);
+    }
+
+    /** The one container a deploy of {@code app} starts, and the one its run line replaces by name. */
+    public static String containerOf(String app) {
         return "nmox-" + app;
     }
 
