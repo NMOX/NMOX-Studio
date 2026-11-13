@@ -159,6 +159,21 @@ not do, each measured or read, none built:
   tsserver in it. The door no longer installs a TypeScript over the
   declared one, so there is nothing for it to do but say so. Same
   trigger, `@vue/language-server`.
+  Re-measured 2026-11-13 from the published tarballs. 3.3.14 (the
+  current `latest`) still sends `tsserver/request` and waits for
+  `tsserver/response` (`lib/server.js`), so the reason for the `@2` pin
+  holds and the pin stays. 4.0.0-alpha.3 has neither: its README states
+  a contract for editors other than VS Code, on TypeScript 7 only. The
+  client starts `tsc --lsp --stdio` with `initializationOptions:
+  { runExternalCode: true }` and answers one request,
+  `vue/typescriptApiConnection`, by forwarding
+  `custom/initializeAPISession` to that server and returning its pipe.
+  Read from the README, not run against the server: it looks buildable
+  beside `TsNative`, with one thing to settle first. `runExternalCode`
+  makes the compiler load the `contentMappers` a project's tsconfig
+  names, which is the project's code, so by the 3.5.6 law that server
+  would wait for Workspace Trust however the compiler was found.
+  Trigger, sharpened: `@vue/language-server` 4.0.0 under the `latest` tag.
 - **The bridge that asks for problems is on for `tsc` only.** Any other
   server that reports only when asked would show nothing here, exactly
   as TypeScript 7 did. Only `tsc` was measured for it; the other launched servers have
@@ -313,6 +328,12 @@ removed, Solid's environment line removed, and the learning space's
   (floors and vendored files, not registry pins). The other learning
   spaces still carry `vite ^5.4` and `svelte ^4.2` pins; no gate holds
   them and none was in this entry.
+
+**The generators, the same day.** Node 26 is the Active LTS (26.13.1);
+24.22.3 and 22.23.5 are in maintenance. Dockerize's base is
+`node:26-alpine` and Export CI installs 26 (tags and action inputs
+checked against the registries, nothing built). The templates above were
+proven on 22 and 24; see the changelog for what ran on 26.
 
 ## Open — added by 3.8.2
 
