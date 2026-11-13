@@ -1690,8 +1690,8 @@ to open a session in the IDE's own Terminal; press **Deploy…** to build
 the aimed project's Dockerfile on the host and run it (the dialog shows
 the exact remote commands first, with Cancel as the default). Every
 reachable host is probed every 15 s while the window shows — load,
-memory, disk, the running containers — and each becomes a node whose
-links say how the Hub knows: solid for observed, dashed for inferred,
+memory, disk, the running containers — and each container becomes a
+node whose links say how the Hub knows: solid for observed, dashed for inferred,
 dotted for declared. **Add Host…** reaches a server you already have
 over ssh; **Simulation** is a labeled pretend provider for seeing the
 loop without a bill. The Hub keeps its own `known_hosts` under
