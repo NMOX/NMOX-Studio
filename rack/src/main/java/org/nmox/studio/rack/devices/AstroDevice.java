@@ -75,11 +75,16 @@ public class AstroDevice extends CommandDevice {
      * an install made a moment ago.
      */
     void diag() {
-        if (ProjectInspector.dependencyVersion(projectDir(), CHECK_PACKAGE) == null) {
+        if (!checkDeclared(projectDir())) {
             refuseLaunch(CHECK_REFUSAL);
             return;
         }
         onEdt(() -> launch(List.of("npx", "astro", "check")));
+    }
+
+    /** Whether the project's manifest declares the package {@code astro check} needs. */
+    static boolean checkDeclared(java.io.File projectDir) {
+        return ProjectInspector.dependencyVersion(projectDir, CHECK_PACKAGE) != null;
     }
 
     @Override

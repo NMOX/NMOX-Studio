@@ -205,12 +205,19 @@ class FrameworkDeviceTest {
             // the sentence on the LCD is what tells the two apart
             assertThat(astro.statusLcd.getText()).isEqualTo(AstroDevice.CHECK_REFUSAL);
 
+            // the other answer is asked of the decision itself: pressing DIAG
+            // on a project that declares the package would start a real
+            // `npx astro check` from a test, and what the LCD says next is a
+            // race with that launch (it failed once on a Linux runner)
+            assertThat(AstroDevice.checkDeclared(projectDir.toFile())).isFalse();
             Files.writeString(projectDir.resolve("package.json"),
                     "{\"devDependencies\":{\"@astrojs/check\":\"^0.9.0\"}}");
-            astro.diag();
-            settle(rack);
-            assertThat(astro.statusLcd.getText()).as("declared: the check is not refused for its package")
-                    .isNotEqualTo(AstroDevice.CHECK_REFUSAL);
+            // the manifest reader caches by modification time, and two
+            // writes can share a millisecond on a fast runner
+            assertThat(projectDir.resolve("package.json").toFile()
+                    .setLastModified(System.currentTimeMillis() + 10_000)).isTrue();
+            assertThat(AstroDevice.checkDeclared(projectDir.toFile()))
+                    .as("declared, in devDependencies: the check may run").isTrue();
         } finally {
             rack.shutdown();
         }
