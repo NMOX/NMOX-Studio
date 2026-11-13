@@ -20,6 +20,55 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — added by the review of 3.9.0's DB Studio (2026-11-13)
+
+### 142. What the hostile read of DB Studio's connection URL found and left
+
+Fixed in the review (tests `LoopbackRuleTest`, `HostileSpecUrlTest`,
+`HumanizeScopeTest`, `NotificationDetailIsPlainTest`): a host NAMED
+`127.0.0.1.evil.example` counted as the loopback; a database or host
+holding `?` or `/` carried driver options past the stated modes; a SQLite
+path could switch extension loading on; the TLS sentences answered ordinary
+query errors; the failure balloon was a markup sink. Left, each for a
+reason:
+
+- **MongoDB and CouchDB build their addresses the same way and were not
+  probed.** `MongoBackend.connectionString` concatenates the host into
+  `mongodb://host:port/?…` and `CouchBackend.baseUrl` into
+  `http(s)://host:port`. A host holding `/?tls=false&x=` or `user@elsewhere`
+  is the same class as the JDBC one. Not measured against the MongoDB
+  driver's own parser, so not changed: a hypothesis, to be probed the way
+  `HostileSpecUrlTest` probes the JDBC drivers.
+- **A Services-window connection gets none of these protections, and its
+  refusals can name a box it does not have.** The URL is the user's own and
+  NetBeans opens the connection: no stated `sslMode`, no loopback rule, no
+  local-infile refusal, no option check. `ServicesBackend.open` still runs
+  the driver's failure through `JdbcCore.humanize`, so a MariaDB driver the
+  user registered there, refused for TLS, is told to untick *Use TLS* —
+  and a Services entry has no such box (Edit is disabled for it). Read from
+  the code, not reproduced: it needs a registered MySQL-family driver that
+  fails with those words. The user guide says the Services connections
+  "run in the same console" and says nothing of what they do not get.
+- **The third TLS rule is still loose where it applies.** For a MySQL or
+  MariaDB connect failure, any message holding "ssl" or "tls" beside
+  "certificate", "hostname", "pkix" or "handshake" becomes the certificate
+  sentence: *Access denied for user 'tls_certificate_bot'* would. The
+  driver's words are kept after the sentence, so the cause is not hidden.
+  Tightening it needs the real refusals of a live server with a bad
+  certificate, which this review had no way to produce.
+- **`"secure": 1` and `"secure": "yes"` read as off** (`SecureFlagReadTest`
+  records it). For MySQL/MariaDB off is a cleartext connection. The dialog
+  shows the box unticked, so it is visible; whether a present value this
+  version cannot read should lean to TLS (a wrong "on" only refuses, and
+  says so) is a decision, not a defect a test can name.
+- **PostgreSQL states no TLS mode at all**, by the 3.9.0 decision (pgJDBC's
+  `sslmode=prefer`, which an active attacker can downgrade). Unchanged and
+  out of this review's scope; with the option check a spec can no longer
+  set `sslmode` either, in either direction, short of the Services window.
+- **A comma in the host is left alone** (`h1,h2`): both drivers read it as
+  a list of hosts, the field shows it as typed, and it never counts as the
+  loopback. pgJDBC will try the second host when the first is down.
+
 ## Open — added by 3.11.0, narrowed by 3.12.0
 
 ### 141. The Ops Hub: what it does not do yet
