@@ -632,10 +632,11 @@ everything again. Where a real host says which of mosh and ssh it
 recommends, this one says `simulated host: there is nothing to connect
 to`. Aim a folder with no Dockerfile and the feed refuses by name:
 `Deploy refused: the project has no Dockerfile — Docker Panel ▸
-Dockerize writes one`.
+Dockerize writes one`, and a dialog says the same.
 
 Untick Simulation and the pretend hosts leave with it. With a
-DigitalOcean token set, the same New Server… makes a real one and shows
+DigitalOcean or Hetzner Cloud token set (**Token…** asks which), the
+same New Server… makes a real one and shows
 its price first; **Add Host…** reaches a server you already have.
 
 ---

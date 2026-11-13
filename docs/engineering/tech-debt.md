@@ -20,6 +20,89 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — added by 3.13.0 (the refresh, 2026-11-13)
+
+### 143. What the refresh measured and left
+
+The sprint's rule was *moved only where proven*. These are the things it
+measured, could not prove or chose not to move, each with the fact that
+would change the answer.
+
+**Pins with a trigger.**
+
+- **KVASIR on Gemini is not moved.** `gemini-2.5-flash` (FAST) is listed
+  by Google as deprecated; its requests are rerouted to
+  `gemini-3.5-flash-lite` on **2026-12-01**, so it keeps answering.
+  `gemini-3.1-pro-preview` (DEEP) is a preview with no date. Google's
+  page recommends `gemini-4-hydrogen` for new work and calls
+  `gemini-4-carbon` its strongest reasoner, with `gemini-4-argon` between
+  them; all three are in the account's model list. None could be asked a
+  question: every Gemini request, the two shipped ids included, answered
+  `RESOURCE_EXHAUSTED` (prepaid credits spent). The move is a two-line
+  change in `KvasirProvider` plus two entries in its retired lists, and
+  what it needs first is one answer from each new id through the
+  product's own body (`maxOutputTokens` 4096; Argon and Carbon cap output
+  at 32,768 and think before they answer). `kvasir.model.google.fast` and
+  `.deep` pin an id today.
+- **Qwik's learning space rides Vite 7.** `@builder.io/qwik` 1.20.4
+  declares `vite >=5 <8`; `@qwik.dev/core` accepts Vite 8 and has only
+  release candidates. `ViteSpacePinParityTest` carries the exemption and
+  fails once it exempts nothing.
+- **Prisma's space is held at ~7.9.1.** Studio in 7.10.0 and 7.10.1
+  refuses a `file:` SQLite URL (it splits the URL on `://`), and Studio
+  is the space's RUN. Prisma 8 is a release candidate.
+- **Python in the generators stays 3.14** (the reason is at the pin).
+
+**Node floors a learner can fall under.** Astro 7 requires Node 22.23.4
+or newer, SvelteKit 3.2 requires 22.17, Vite 8 requires 22.12; each
+tutorial names its floor. The Linux install hint for the Node spaces is
+still `apt-get install nodejs npm`, which on many distributions installs
+less. Ubuntu 22.04's `python3` (3.10) can no longer install the Django
+pin. The install hints were not rewritten in this release.
+
+**Seen while proving the spaces, not fixed.**
+
+- The Gleam space's tutorial calls the test lane "already wired" and the
+  space ships no test: `gleam test` exits 1.
+- `scarb cairo-test` is deprecated in favour of `snforge`, which was not
+  on the machine; the Cairo space passes with a warning.
+- The Preact blurb says "3 kB" in fifteen languages; Preact 11's size was
+  not measured.
+- `npx playwright install chromium` downloads 595 MB on a learner's
+  first run of the Playwright space. The tutorial does not say so.
+- NIMBUS DIAG on a Nuxt 4 project with no type checker exits 1 with
+  Nuxt's own instruction. It speaks; it could speak in our words.
+
+**Dockerize, after the nine.** `deno cache main.ts` and
+`CMD ["deno", "task", "start"]` still assume their entry. A Rust crate
+with only a `[lib]` gets a recipe that cannot start. Yarn Berry gets no
+production-only install. An existing `compose.yaml` that Dockerize did
+not write is protected only by the overwrite question (it cannot be told
+from our own). Bun's frozen-lockfile path and the dockerized LEMP stack
+under `compose.nmox.yaml` are unit-tested and not in the runner proof.
+The corepack lines for pnpm and yarn were proven on a runner, on
+`node:26-alpine`.
+
+**Two gates read Arabic overlays as Latin-1.** `CodeNamedMenuRowsTest`
+and `MainWindowChromeSpeaksTest` read platform overlays with
+`Properties.load(InputStream)`; about a hundred Arabic overlay files are
+raw UTF-8, so those gates judge Arabic as mojibake. Their laws happen to
+hold on it. The fix is the reader `BundleEncodingGateTest` already has.
+
+**TypeScript 7's folds.** With TypeScript 7's own server running, the
+platform's client folds a single-line destructuring (`const {...} =
+require(…)`) and a call's argument list, and draws both as `{...}`.
+Seen in the 3.13.0 walk; they are the server's ranges, not
+`JsFoldManager`'s.
+
+**Not walked.** The Classic Kit's MooTools box greyed under npm
+delivery, and the HUD's zoom, pan and Fit: a dialog opened from the menu
+bar of the background test copy took no accessibility presses, and no
+background tool delivers a wheel or a drag to the canvas. Both are held
+by unit tests. The Welcome's columns are each as wide as their own rows
+now; a window narrower than their sum still cuts the last column, since
+the launchpad does not scroll.
+
 ## Open — added by the review of 3.9.0's DB Studio (2026-11-13)
 
 ### 142. What the hostile read of DB Studio's connection URL found and left
@@ -446,8 +529,9 @@ removed, Solid's environment line removed, and the learning space's
   the template pins `^11` on PHP `>=8.2`; no composer on this machine to
   prove a move), Go, Rust, Python, Elixir and the two classic templates
   (floors and vendored files, not registry pins). The other learning
-  spaces still carry `vite ^5.4` and `svelte ^4.2` pins; no gate holds
-  them and none was in this entry.
+  spaces carried `vite ^5.4` and `svelte ^4.2` pins when this was
+  written; they moved the same day, and `ViteSpacePinParityTest` holds
+  them to the templates' majors (ledger 143 has what was left).
 
 **The generators, the same day.** Node 26 is the Active LTS (26.13.1);
 24.22.3 and 22.23.5 are in maintenance. Dockerize's base is

@@ -1968,7 +1968,14 @@ The Docker tab is a control panel: engine status, containers, images,
 volumes, networks — start, stop, logs, prune. The HARBOR rack device
 gives you the same at a glance from the rack. The **Dockerize** tab
 generates a production-grade `Dockerfile`, `.dockerignore`, and compose
-file tuned to your project's toolchain (Node, PHP-FPM+nginx, and more).
+file tuned to your project's toolchain (Node with your own package
+manager, Bun, Deno, Go, Rust, Python, PHP-FPM+nginx). It reads what the
+project holds: the Rust binary's name from `Cargo.toml`, the start
+command from what a Python project depends on, the folder a static build
+writes to. Where it cannot tell, the Dockerfile says so in a comment.
+A project that already has its own compose file keeps it; Dockerize
+writes `compose.nmox.yaml` beside it. Every recipe is built and run on a
+CI runner each week.
 And as noted above: run a Postgres/MySQL/Mongo container, and DB Studio
 offers you a ready-made connection.
 
