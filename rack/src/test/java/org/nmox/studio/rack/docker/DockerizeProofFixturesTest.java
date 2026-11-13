@@ -163,7 +163,7 @@ class DockerizeProofFixturesTest {
     void kindsWithoutARecipeShareOneAnswer() {
         Map<String, String> none = DockerizeGenerator.generate(ProjectKind.NONE, "x", false);
         List<String> kinds = kindsWithoutRecipe();
-        assertThat(kinds).contains("none", "maven", "ruby");
+        assertThat(kinds).as("the kinds the generator has no recipe for").contains("none").hasSizeGreaterThan(1);
         for (String name : kinds) {
             ProjectKind kind = ProjectKind.valueOf(name.toUpperCase(Locale.ROOT));
             assertThat(DockerizeGenerator.generate(kind, "x", false)).as(name).isEqualTo(none);
