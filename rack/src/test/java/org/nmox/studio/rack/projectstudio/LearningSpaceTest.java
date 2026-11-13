@@ -5,6 +5,8 @@ import java.util.Map;
 import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.nmox.studio.rack.devices.CommandLineDevice;
+import org.nmox.studio.rack.devices.ReplDevice;
 import org.nmox.studio.rack.model.Rack;
 import org.nmox.studio.rack.model.RackDevice;
 
@@ -264,5 +266,50 @@ class LearningSpaceTest {
         } finally {
             System.setProperty("user.home", realHome);
         }
+    }
+
+    /**
+     * A driver is an argv; a device's command field is one line that the
+     * device splits again, without a shell. The join between them has to
+     * survive that split. It did not: the C and C++ spaces run
+     * {@code sh -c "<compile> && <run>"}, the plain join dropped the
+     * quotes, and RUN handed {@code sh -c cc} to the system (measured:
+     * {@code clang: error: no input files}, exit 1).
+     */
+    @Test
+    @DisplayName("every built-in driver reaches its device as the argv the catalog wrote")
+    void everyDriverSplitsBackToItsArgv() {
+        List<LearningCatalog.Space> spaces = LearningCatalog.builtIns();
+        assertThat(spaces).hasSizeGreaterThan(80);
+        int quoted = 0;
+        for (LearningCatalog.Space space : spaces) {
+            List<String> argv = space.driver().command();
+            String line = LearningSpace.commandLine(argv);
+            List<String> back = space.driver().kind() == LearningCatalog.DriverKind.REPL
+                    ? ReplDevice.splitArgs(line)
+                    : CommandLineDevice.splitArgs(line);
+            assertThat(back).as("space '%s' command line: %s", space.slug(), line)
+                    .isEqualTo(argv);
+            if (!line.equals(String.join(" ", argv))) {
+                quoted++;
+            }
+        }
+        // the law is only a law while something needs it: the C and C++
+        // drivers carry a whole shell line as one argument
+        assertThat(quoted).as("drivers whose argv needs quoting").isGreaterThanOrEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("an argument with a space is quoted; one with a double quote takes single quotes")
+    void commandLineQuotesWhatWouldSplit() {
+        assertThat(LearningSpace.commandLine(List.of("npm", "run", "dev")))
+                .isEqualTo("npm run dev");
+        assertThat(LearningSpace.commandLine(List.of("sh", "-c", "cc a.c && ./a.out")))
+                .isEqualTo("sh -c \"cc a.c && ./a.out\"");
+        String both = LearningSpace.commandLine(List.of("echo", "say \"hi\""));
+        assertThat(both).isEqualTo("echo 'say \"hi\"'");
+        assertThat(CommandLineDevice.splitArgs(both)).containsExactly("echo", "say \"hi\"");
+        assertThat(CommandLineDevice.splitArgs(LearningSpace.commandLine(List.of("x", ""))))
+                .containsExactly("x", "");
     }
 }
