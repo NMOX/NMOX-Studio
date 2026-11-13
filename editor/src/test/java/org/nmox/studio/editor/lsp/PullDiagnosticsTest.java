@@ -632,4 +632,31 @@ class PullDiagnosticsTest {
         serverAsksToBeAskedAgain(in, 4);
         assertThat(armed).as("replied, so the wait starts over").containsExactly(PullDiagnostics.OPEN_MILLIS);
     }
+
+    @Test
+    @DisplayName("a held key with more documents open than one pass asks about does not ask on every key: the wait starts over after each pass")
+    void aPassThatLeavesDocumentsWaitingStartsTheWaitOver() throws Exception {
+        int docs = PullDiagnostics.MAX_BATCH + 8;
+        for (int i = 0; i < docs; i++) {
+            opens("file:///p/f" + i + ".ts");
+        }
+        bridge.work();
+        bridge.work();
+        serverGot();
+        armed.clear();
+
+        changes("file:///p/f0.ts");
+        now.addAndGet(PullDiagnostics.MAX_WAIT_MILLIS);
+        changes("file:///p/f0.ts");
+        assertThat(armed).as("the longest wait is over: asked now").containsExactly(PullDiagnostics.CHANGE_MILLIS, 0);
+        bridge.work();
+        assertThat(questions(serverGot())).as("one pass, and documents left for the next").hasSize(PullDiagnostics.MAX_BATCH);
+        armed.clear();
+
+        // the key is still held: the next change is thirty milliseconds on, before the pass for the rest
+        now.addAndGet(30);
+        changes("file:///p/f0.ts");
+        assertThat(armed).as("asked a moment ago, so this key waits like any other: a pass per key is "
+                + PullDiagnostics.MAX_BATCH + " questions per key").containsExactly(PullDiagnostics.CHANGE_MILLIS);
+    }
 }

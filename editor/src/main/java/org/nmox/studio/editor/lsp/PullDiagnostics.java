@@ -322,9 +322,10 @@ final class PullDiagnostics {
                 frames.add(question(entry.getKey(), false, entry.getValue()));
             }
             more = !dirty.isEmpty();
-            if (!more) {
-                firstDirtyAt = -1;
-            }
+            // asked: the wait starts over, for the documents left as for the rest. Left
+            // counting from before this pass, the longest wait stays spent, every change
+            // that follows arms the timer at zero, and a held key is a pass per key
+            firstDirtyAt = more ? millis.getAsLong() : -1;
         }
         try {
             synchronized (writeLock) {
