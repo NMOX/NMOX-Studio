@@ -114,11 +114,11 @@ jobs:
           jq '.components += [{
                 "type": "library",
                 "name": "vscode-js-debug",
-                "version": "1.117.0",
-                "purl": "pkg:github/microsoft/vscode-js-debug@v1.117.0",
+                "version": "1.140.1",
+                "purl": "pkg:github/microsoft/vscode-js-debug@v1.140.1",
                 "licenses": [{"license": {"id": "Apache-2.0"}}],
                 "hashes": [{"alg": "SHA-256",
-                  "content": "ad8d04ede9d4b75cc290fd5438a65047a06f786d04f604b6112485b36f090772"}],
+                  "content": "c72fab31bcbfdce6ad1f42adfd28eff8d4681dd3b03b5e2e6f9e72e6f9927faf"}],
                 "description": "Vendored DAP server (editor/src/main/release/jsdebug); not resolved by Maven, bumped manually per NOTICE"
               }]' target/bom.json > target/bom-full.json
           mv target/bom-full.json target/bom.json
