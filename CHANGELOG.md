@@ -236,6 +236,11 @@ Classic Kit writes into users' projects, has a CVE.
   exit 0. It is refused by name, with the command that adds the package.
 - **Twelve translated guides counted 60 manifests** where the factory
   opens 63, and the count gate could not read them; it can now.
+- **Every platform overlay is escaped ASCII.** 124 of the 2,159 overlay
+  files were raw UTF-8 (102 of them Arabic), and a dozen gates read
+  overlays as ISO-8859-1, so they judged Arabic as mojibake and their
+  laws held on it by accident. Nothing was wrong on screen (the platform
+  reads both, walked in Spanish). A law now counts it, in bytes.
 - Two Tagalog sentences named a button by its English label, and one
   French value doubled an ASCII apostrophe. Found by the translator of
   the Hub's new strings.
