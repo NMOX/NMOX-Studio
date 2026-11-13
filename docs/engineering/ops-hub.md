@@ -425,9 +425,8 @@ owns the token.
    running image disagree until the next deploy; and old images are never
    pruned.
 5. ~~**Logs**~~ — done in 3.12.0, with a shell beside it.
-6. **A chord** — every `⌥⌘` digit is taken; the Hub opens from the Window
-   menu, the Welcome and (since 3.12.0) Quick Search until a free family
-   is chosen.
+6. ~~**A chord**~~ — done in 3.13.0: `⌥⌘U`, a letter because every
+   `⌥⌘` digit is a window already, measured free in every keymap profile.
 7. **Firewall and DNS** — a droplet's cloud firewall and a Cloudflare
    record as nodes with OBSERVED edges to the host.
 8. **The bigger dream** — other studios as views over the same ecosystem:

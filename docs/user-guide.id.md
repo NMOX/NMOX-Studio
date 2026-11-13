@@ -91,6 +91,7 @@ Pintasan yang layak dipelajari di hari pertama (semuanya juga tercantum di tab s
 | **⌥⌘7** | Studio Basis Data |
 | **⌥⌘8** | Studio API |
 | **⌥⌘9** | Perancang Infrastruktur |
+| **⌥⌘U** | Pusat Ops |
 | **⌘8** | Panel Docker |
 | **⌘7** | Struktur berkas saat ini |
 | **⇧⌘N / ⌥⌘O** | Proyek Baru… / Buka Folder… |
@@ -299,7 +300,7 @@ Pohon artefak Foundry dan Hardhat, **Berinteraksi** yang dituntun ABI dengan kem
 
 Sebuah kanvas untuk DigitalOcean, Hetzner, dan Cloudflare: selaraskan dengan apa yang benar-benar ada, segarkan untuk melihat selisihnya, dan hancurkan setumpuk sumber daya dengan biayanya terpampang. Sambungan yang tak sah menolak dengan lantang dan menyebut sebabnya, dan selama sebuah operasi awan berjalan, kanvasnya terkunci dengan pita yang mengatakannya.
 
-### Pusat Ops
+### Pusat Ops (⌥⌘U)
 
 ![Pusat Ops — mesin ini, satu host nyata, dan dua server simulasi dalam kipas, sebuah peluncuran yang terbaca kembali sebagai simpul layanan, serta inspektur dengan fakta, pengukur, hubungan, dan pelacak peluncuran](images/ops-hub.png)
 

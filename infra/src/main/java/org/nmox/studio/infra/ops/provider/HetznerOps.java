@@ -92,6 +92,16 @@ public final class HetznerOps implements OpsProvider {
         return CloudProvider.HETZNER.hasToken();
     }
 
+    @Override
+    public boolean takesToken() {
+        return true;
+    }
+
+    @Override
+    public void storeToken(String token) {
+        CloudProvider.HETZNER.storeToken(token);
+    }
+
     // ---- the catalogue ----
 
     @Override

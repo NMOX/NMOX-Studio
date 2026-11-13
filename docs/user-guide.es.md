@@ -91,6 +91,7 @@ Atajos que conviene aprender el primer día (también aparecen todos en la pesta
 | **⌥⌘7** | Estudio de bases de datos |
 | **⌥⌘8** | Estudio de API |
 | **⌥⌘9** | Diseñador de infraestructura |
+| **⌥⌘U** | Centro de operaciones |
 | **⌘8** | Panel de Docker |
 | **⌘7** | Esquema del archivo actual |
 | **⇧⌘N / ⌥⌘O** | Nuevo proyecto… / Abrir carpeta… |
@@ -299,7 +300,7 @@ El árbol de artefactos de Foundry y Hardhat, **Interactuar** guiado por la ABI 
 
 Un lienzo para DigitalOcean, Hetzner y Cloudflare: sincroniza lo que existe de verdad, refresca para ver las diferencias y destruye una pila con su coste delante. Los cables ilegales se niegan en voz alta explicando por qué, y mientras una operación en la nube está en marcha el lienzo se bloquea con un aviso que lo dice.
 
-### Centro de operaciones
+### Centro de operaciones (⌥⌘U)
 
 ![El Centro de operaciones — esta máquina, un host real y dos servidores simulados en abanico, un despliegue leído de vuelta como nodo de servicio, y el inspector con sus datos, medidores, relaciones y seguimiento del despliegue](images/ops-hub.png)
 

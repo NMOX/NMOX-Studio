@@ -91,6 +91,7 @@ Atalhos que valem o primeiro dia (todos também aparecem na aba de boas-vindas):
 | **⌥⌘7** | Estúdio de banco de dados |
 | **⌥⌘8** | Estúdio de API |
 | **⌥⌘9** | Designer de infraestrutura |
+| **⌥⌘U** | Hub de operações |
 | **⌘8** | Painel do Docker |
 | **⌘7** | Estrutura do arquivo atual no Navegador |
 | **⇧⌘N / ⌥⌘O** | Novo projeto… / Abrir pasta… |
@@ -299,7 +300,7 @@ A árvore de artefatos do Foundry e do Hardhat, um **Interagir** guiado pela ABI
 
 Uma tela para DigitalOcean, Hetzner e Cloudflare: sincronize o que existe de verdade, atualize para ver as diferenças e destrua uma pilha com o custo dela à vista. Ligações ilegais recusam em voz alta e dizem por quê, e enquanto uma operação na nuvem está em curso a tela se tranca com uma faixa que avisa.
 
-### Hub de operações
+### Hub de operações (⌥⌘U)
 
 ![O Hub de operações — esta máquina, um host real e dois servidores simulados em leque, uma implantação lida de volta como nó de serviço, e o inspetor com fatos, medidores, relações e acompanhamento da implantação](images/ops-hub.png)
 

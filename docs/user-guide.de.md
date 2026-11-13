@@ -91,6 +91,7 @@ Tastenkürzel, die sich am ersten Tag lohnen (sie stehen auch alle auf dem Willk
 | **⌥⌘7** | Datenbank-Studio |
 | **⌥⌘8** | API-Studio |
 | **⌥⌘9** | Infrastruktur-Designer |
+| **⌥⌘U** | Ops-Hub |
 | **⌘8** | Docker-Panel |
 | **⌘7** | Gliederung der aktuellen Datei |
 | **⇧⌘N / ⌥⌘O** | Neues Projekt… / Ordner öffnen… |
@@ -299,7 +300,7 @@ Der Artefaktbaum von Foundry und Hardhat, ein von der ABI geführtes **Interagie
 
 Eine Fläche für DigitalOcean, Hetzner und Cloudflare: gleichen Sie ab, was wirklich existiert, frischen Sie auf, um Abweichungen zu sehen, und zerstören Sie einen Stapel mit seinen Kosten vor Augen. Unerlaubte Verbindungen lehnen laut ab und sagen warum, und solange eine Wolkenoperation läuft, sperrt sich die Fläche mit einem Band, das genau das sagt.
 
-### Ops-Hub
+### Ops-Hub (⌥⌘U)
 
 ![Der Ops-Hub — dieser Rechner, ein echter Host und zwei simulierte Server im Fächer, ein Deploy als Dienstknoten zurückgelesen, daneben der Inspektor mit Fakten, Anzeigen, Beziehungen und Deploy-Verlauf](images/ops-hub.png)
 

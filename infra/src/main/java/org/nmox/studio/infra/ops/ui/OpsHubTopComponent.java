@@ -50,7 +50,14 @@ import org.openide.windows.TopComponent;
 @TopComponent.Registration(mode = "editor", openAtStartup = false, position = 305)
 @ActionID(category = "Window", id = "org.nmox.studio.infra.ops.ui.OpsHubTopComponent")
 @org.openide.awt.ActionReferences({
-    @ActionReference(path = "Menu/Window", position = 262)
+    @ActionReference(path = "Menu/Window", position = 262),
+    // ⌥⌘U (3.13.0, ledger 141's "no chord"): every ⌥⌘ digit is a window
+    // already, so the Hub takes a letter. Measured free in the assembled
+    // cluster's layers under every modifier spelling (DA/AD/CA/AC/MA/AM)
+    // and in all six keymap profiles; S was not (VS Code's Save All), H
+    // and D are the operating system's on a Mac. The Keymaps shadows in
+    // this module's layer make the Window menu show it.
+    @ActionReference(path = "Shortcuts", name = "DA-U")
 })
 @TopComponent.OpenActionRegistration(displayName = "#CTL_OpsHubAction", preferredID = "OpsHubTopComponent")
 @Messages({
@@ -66,7 +73,7 @@ import org.openide.windows.TopComponent;
     "OpsHub_simulation=Simulation",
     "OpsHub_simulationTooltip=A pretend provider with pretend servers, clearly marked — no bill, no network",
     "OpsHub_token=Token…",
-    "OpsHub_tokenTooltip=Set the DigitalOcean API token (the Infra Designer's Tokens… sets the same one)",
+    "OpsHub_tokenTooltip=Set a provider's API token: DigitalOcean or Hetzner (the Infra Designer's Tokens… sets the same ones)",
     "OpsHub_viewFleet=Fleet",
     "OpsHub_viewServices=Workloads",
     "OpsHub_viewTooltip=The physical picture, or the logical one",
@@ -82,7 +89,7 @@ import org.openide.windows.TopComponent;
     "OpsHub_readingOptions=Reading {0}''s regions, sizes and keys…",
     "# {0} - the error",
     "OpsHub_optionsFailed=Could not read the provider''s options: {0}",
-    "OpsHub_noProvider=No provider is configured: set a DigitalOcean token, or switch the simulation on.",
+    "OpsHub_noProvider=No provider is configured: set a DigitalOcean or Hetzner token with Token…, or switch the simulation on.",
     "OpsHub_pickProvider=Create the server at",
     "OpsHub_noProject=No project is aimed — open one first; the deploy sends its Dockerfile",
     "# {0} - the terminal title",
@@ -193,10 +200,9 @@ public final class OpsHubTopComponent extends TopComponent {
             hub.refresh();
             hub.probeAll();
         }));
-        bar.add(button(Bundle.OpsHub_token(), Bundle.OpsHub_tokenTooltip(), () -> OpsDialogs.tokens(() -> {
-            syncChrome();
-            hub.refresh();
-        })));
+        JButton token = button(Bundle.OpsHub_token(), Bundle.OpsHub_tokenTooltip(), () -> { });
+        token.addActionListener(e -> askToken(token));
+        bar.add(token);
         simulation.setToolTipText(PlainText.plain(Bundle.OpsHub_simulationTooltip()));
         simulation.getAccessibleContext().setAccessibleName(Bundle.OpsHub_simulation());
         simulation.addActionListener(e -> hub.setSimulation(simulation.isSelected()));
@@ -225,6 +231,39 @@ public final class OpsHubTopComponent extends TopComponent {
         bar.add(providerChip);
         syncChrome();
         return bar;
+    }
+
+    /**
+     * The Token… button: one provider that takes a token is asked for
+     * directly; with several, a menu of their names says which (a
+     * provider's name is a name, the same in every language).
+     */
+    private void askToken(JButton anchor) {
+        List<OpsProvider> takers = tokenTakers(hub.providers());
+        Runnable after = () -> {
+            syncChrome();
+            hub.refresh();
+        };
+        if (takers.size() == 1) {
+            OpsDialogs.tokens(takers.get(0), after);
+        } else if (!takers.isEmpty()) {
+            JPopupMenu menu = new JPopupMenu();
+            for (OpsProvider p : takers) {
+                item(menu, p.displayName(), () -> OpsDialogs.tokens(p, after));
+            }
+            menu.show(anchor, 0, anchor.getHeight());
+        }
+    }
+
+    /** The providers the Token… button can serve, in the Hub's own order. */
+    static List<OpsProvider> tokenTakers(List<OpsProvider> all) {
+        List<OpsProvider> out = new ArrayList<>();
+        for (OpsProvider p : all) {
+            if (!p.simulated() && p.takesToken()) {
+                out.add(p);
+            }
+        }
+        return out;
     }
 
     private static JButton button(String text, String tooltip, Runnable action) {

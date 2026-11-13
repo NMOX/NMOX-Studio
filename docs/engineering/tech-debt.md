@@ -81,8 +81,12 @@ open, each with its door, none built:
   `/srv/nmox/<app>/src` stays the newer source until the next deploy,
   and nothing prunes old images. Both are said in the design document;
   neither is a button.
-- **No chord.** Every `⌥⌘` digit is taken; the Hub opens from Window,
-  the Welcome's TOOLING column and Quick Search.
+- ~~**No chord.**~~ Closed in 3.13.0: `⌥⌘U`. Every `⌥⌘` digit was a
+  window already, so the Hub took a letter, measured free in the
+  assembled cluster's layers under every modifier spelling and in all six
+  keymap profiles (S is VS Code's Save All; H and D belong to macOS).
+  Not pressed in a walk: the background tools deliver no ⌥⌘ chord (the
+  3.6.0 law); the Window menu's row and its accelerator were read.
 - **Quick Search finds nothing until the Hub has been opened once in the
   session.** By design (a keystroke never makes the engine), and the
   Infra Designer's provider behaves the same; a saved host is therefore

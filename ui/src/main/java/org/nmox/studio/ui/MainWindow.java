@@ -71,7 +71,7 @@ import org.openide.windows.WindowManager;
     "MainWindow_contractStudio=Contract Studio  ⌥⌘6",
     "MainWindow_apiStudio=API Studio  ⌥⌘8",
     "MainWindow_infraDesigner=Infra Designer  ⌥⌘9",
-    "MainWindow_opsHub=Ops Hub",
+    "MainWindow_opsHub=Ops Hub  ⌥⌘U",
     "MainWindow_dockerPanel=Docker Panel  ⌘8",
     "MainWindow_whatsNew=What's new",
     "MainWindow_whatsNewTip=The release notes for this version, in the product (v2.64.0)",

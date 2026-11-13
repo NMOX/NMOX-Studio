@@ -61,6 +61,16 @@ public final class DigitalOceanOps implements OpsProvider {
     }
 
     @Override
+    public boolean takesToken() {
+        return true;
+    }
+
+    @Override
+    public void storeToken(String token) {
+        CloudProvider.DIGITALOCEAN.storeToken(token);
+    }
+
+    @Override
     public ProviderOptions options() throws IOException, InterruptedException {
         JSONObject regions = api.send("GET", "/v2/regions?per_page=200", null);
         JSONObject sizes = api.send("GET", "/v2/sizes?per_page=200", null);

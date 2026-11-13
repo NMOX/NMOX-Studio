@@ -91,6 +91,7 @@ Raccourcis à apprendre dès le premier jour (ils sont aussi tous listés sur l�
 | **⌥⌘7** | Studio de bases de données |
 | **⌥⌘8** | Studio d’API |
 | **⌥⌘9** | Concepteur d’infrastructure |
+| **⌥⌘U** | Hub Ops |
 | **⌘8** | Panneau Docker |
 | **⌘7** | Plan du fichier courant |
 | **⇧⌘N / ⌥⌘O** | Nouveau projet… / Ouvrir un dossier… |
@@ -299,7 +300,7 @@ L’arbre des artefacts Foundry et Hardhat, un **Interagir** guidé par l’ABI 
 
 Une toile pour DigitalOcean, Hetzner et Cloudflare : synchronisez ce qui existe réellement, rafraîchissez pour voir les écarts, détruisez une pile avec son coût sous les yeux. Les câbles illégaux refusent à voix haute en expliquant pourquoi, et pendant qu’une opération dans le nuage tourne, la toile se verrouille avec un bandeau qui le dit.
 
-### Hub Ops
+### Hub Ops (⌥⌘U)
 
 ![Le Hub Ops — cette machine, un hôte réel et deux serveurs simulés en éventail, un déploiement relu comme nœud de service, et l’inspecteur avec ses faits, jauges, relations et suivi de déploiement](images/ops-hub.png)
 

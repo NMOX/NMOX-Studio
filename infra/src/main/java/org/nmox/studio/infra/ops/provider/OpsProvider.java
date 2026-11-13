@@ -27,6 +27,22 @@ public interface OpsProvider {
     /** False until a token (or whatever the provider needs) is in place; the Hub then offers the door, not the action. */
     boolean configured();
 
+    /**
+     * Whether this provider is configured with an API token the Hub's own
+     * Token… button can set. The Simulation takes none.
+     */
+    default boolean takesToken() {
+        return false;
+    }
+
+    /**
+     * Keeps {@code token} where this provider reads its token from (the OS
+     * keychain). Blocking: never on the EDT. A provider that takes no token
+     * does nothing.
+     */
+    default void storeToken(String token) {
+    }
+
     /** What a new host can be: regions, sizes with prices, images, ssh keys. Network. */
     ProviderOptions options() throws IOException, InterruptedException;
 

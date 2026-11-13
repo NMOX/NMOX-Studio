@@ -91,6 +91,7 @@ Những phím tắt đáng học trong ngày đầu (tất cả cũng có trên 
 | **⌥⌘7** | Studio cơ sở dữ liệu |
 | **⌥⌘8** | Studio API |
 | **⌥⌘9** | Trình thiết kế hạ tầng |
+| **⌥⌘U** | Trung tâm vận hành |
 | **⌘8** | Bảng Docker |
 | **⌘7** | Cấu trúc tệp hiện tại |
 | **⇧⌘N / ⌥⌘O** | Dự án mới… / Mở thư mục… |
@@ -299,7 +300,7 @@ Cây tạo phẩm của Foundry và Hardhat, phần **Tương tác** do ABI dẫ
 
 Một khung vẽ cho DigitalOcean, Hetzner và Cloudflare: đồng bộ với thứ thật sự đang tồn tại, làm mới để thấy chỗ lệch, và phá bỏ cả một chồng tài nguyên với chi phí bày ngay trước mắt. Những đường nối không hợp lệ từ chối ra tiếng và nói rõ vì sao, còn trong lúc một thao tác trên đám mây đang chạy thì khung vẽ khóa lại kèm một dải chữ nói đúng điều đó.
 
-### Trung tâm vận hành
+### Trung tâm vận hành (⌥⌘U)
 
 ![Trung tâm vận hành — máy này, một máy chủ thật và hai máy chủ mô phỏng xòe hình quạt, một lần triển khai được đọc lại thành nút dịch vụ, cùng bảng kiểm tra với dữ kiện, đồng hồ đo, quan hệ và tiến trình triển khai](images/ops-hub.png)
 

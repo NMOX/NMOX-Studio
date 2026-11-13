@@ -30,25 +30,40 @@
             <file name="DA-9.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-infra-InfraDesignerTopComponent.instance"/>
             </file>
+            <file name="DA-U.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-infra-ops-ui-OpsHubTopComponent.instance"/>
+            </file>
         </folder>
         <folder name="Eclipse">
             <file name="DA-9.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-infra-InfraDesignerTopComponent.instance"/>
+            </file>
+            <file name="DA-U.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-infra-ops-ui-OpsHubTopComponent.instance"/>
             </file>
         </folder>
         <folder name="Emacs">
             <file name="DA-9.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-infra-InfraDesignerTopComponent.instance"/>
             </file>
+            <file name="DA-U.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-infra-ops-ui-OpsHubTopComponent.instance"/>
+            </file>
         </folder>
         <folder name="Idea">
             <file name="DA-9.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-infra-InfraDesignerTopComponent.instance"/>
             </file>
+            <file name="DA-U.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-infra-ops-ui-OpsHubTopComponent.instance"/>
+            </file>
         </folder>
         <folder name="NetBeans55">
             <file name="DA-9.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-infra-InfraDesignerTopComponent.instance"/>
+            </file>
+            <file name="DA-U.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-infra-ops-ui-OpsHubTopComponent.instance"/>
             </file>
         </folder>
     </folder>

@@ -110,7 +110,8 @@ import org.openide.util.NbBundle.Messages;
     "Rollback_commands=These commands will run on the host",
     "Rollback_title=Roll back to an earlier image",
     // tokens
-    "Tokens_title=DigitalOcean API token",
+    "# {0} - the provider's name, for example DigitalOcean",
+    "Tokens_title={0} API token",
     "Tokens_field=API token (stored in the OS keychain; blank keeps the current one)",
     "Tokens_save=Save",
     "OpsDialogs_messageName=Ops Hub"
@@ -430,15 +431,15 @@ public final class OpsDialogs {
 
     // ---- Tokens ----
 
-    /** Asks for a DigitalOcean token; stores it off the EDT; returns true when one was entered. */
-    public static boolean tokens(Runnable then) {
+    /** Asks for {@code provider}'s token; stores it off the EDT; returns true when one was entered. */
+    public static boolean tokens(org.nmox.studio.infra.ops.provider.OpsProvider provider, Runnable then) {
         JPanel form = new JPanel(new GridBagLayout());
         JPasswordField field = TextDirection.keepLeftToRight(new JPasswordField(36));
         field.getAccessibleContext().setAccessibleName(Bundle.Tokens_field());
         field(form, 0, Bundle.Tokens_field(), field);
         Object save = Bundle.Tokens_save();
         Object cancel = Bundle.NewServer_cancel();
-        DialogDescriptor d = new DialogDescriptor(form, Bundle.Tokens_title(), true,
+        DialogDescriptor d = new DialogDescriptor(form, Bundle.Tokens_title(provider.displayName()), true,
                 new Object[]{save, cancel}, save, DialogDescriptor.DEFAULT_ALIGN, null, null);
         if (!save.equals(DialogDisplayer.getDefault().notify(d))) {
             return false;
@@ -450,7 +451,7 @@ public final class OpsDialogs {
             return false;
         }
         org.openide.util.RequestProcessor.getDefault().post(() -> {
-            CloudProvider.DIGITALOCEAN.storeToken(token);
+            provider.storeToken(token);
             javax.swing.SwingUtilities.invokeLater(then);
         });
         return true;

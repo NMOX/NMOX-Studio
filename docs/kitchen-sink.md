@@ -39,7 +39,7 @@ points at it proudly.
 - [23. Ship it](#23-ship-it)
 - [24. Point an agent at it](#24-point-an-agent-at-it)
 - [25. Show it to a room](#25-show-it-to-a-room)
-- [26. The Ops Hub, on the Simulation](#26-the-ops-hub-on-the-simulation)
+- [26. The Ops Hub (⌥⌘U), on the Simulation](#26-the-ops-hub-u-on-the-simulation)
 - [The refusals are features](#the-refusals-are-features)
 - [Where everything lives](#where-everything-lives)
 <!-- /contents -->
@@ -62,6 +62,7 @@ A useful map before you start — the window chords:
 | ⌥⌘7 | DB Studio |
 | ⌥⌘8 | API Studio |
 | ⌥⌘9 | Infra Designer |
+| ⌥⌘U | Ops Hub |
 | ⌥⌘0 | Workbench |
 | ⌘I | Quick Search — reaches everything |
 
@@ -603,10 +604,10 @@ editor tab alone — toolbar, gutter, code, minimap, no IDE chrome — and
 the tree paste is the box-drawing README tree with `node_modules/ …`
 named but never entered and the IDE's own `.nmox*.json` left out.
 
-## 26. The Ops Hub, on the Simulation
+## 26. The Ops Hub (⌥⌘U), on the Simulation
 
 **Do:** With the project from station 23 still aimed (it has the
-Dockerfile that Dockerize wrote), Window ▸ **Ops Hub**. Tick
+Dockerfile that Dockerize wrote), press ⌥⌘U (Window ▸ **Ops Hub**). Tick
 **Simulation**. **New Server…**, keep the defaults, confirm. When the
 feed says cloud-init is done, select the new host and press
 **Deploy…**; read the remote commands, confirm. Deploy once more, then

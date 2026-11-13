@@ -91,6 +91,7 @@ Mga shortcut na sulit matutunan sa unang araw (nakalista rin silang lahat sa wel
 | **⌥⌘7** | Studio ng Database |
 | **⌥⌘8** | Studio ng API |
 | **⌥⌘9** | Taga-disenyo ng Infrastructure |
+| **⌥⌘U** | Hub ng Ops |
 | **⌘8** | Docker Panel |
 | **⌘7** | Balangkas ng kasalukuyang file |
 | **⇧⌘N / ⌥⌘O** | Bagong Proyekto… / Buksan ang Folder… |
@@ -299,7 +300,7 @@ Ang puno ng mga artefact ng Foundry at Hardhat, isang **Makipag-ugnayan** na gin
 
 Isang lienzo para sa DigitalOcean, Hetzner at Cloudflare: itugma sa kung ano ang tunay na umiiral, i-refresh upang makita ang pagkakaiba, at gibain ang isang salansan habang nakalantad ang halaga nito. Ang mga bawal na kabit ay tumatanggi nang malakas at sinasabi kung bakit, at habang tumatakbo ang isang gawain sa ulap, nakakandado ang lienzo na may guhit na nagsasabi nito.
 
-### Hub ng Ops
+### Hub ng Ops (⌥⌘U)
 
 ![Ang Hub ng Ops — ang makinang ito, isang tunay na host at dalawang kunwaring server na nakapamaypay, isang deploy na nabasa pabalik bilang node ng serbisyo, at ang inspector na may mga datos, panukat, ugnayan at tracker ng deploy](images/ops-hub.png)
 

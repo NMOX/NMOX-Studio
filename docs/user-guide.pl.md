@@ -91,6 +91,7 @@ Skróty warte nauczenia się pierwszego dnia (wszystkie są też wypisane na kar
 | **⌥⌘7** | Studio baz danych |
 | **⌥⌘8** | Studio API |
 | **⌥⌘9** | Projektant infrastruktury |
+| **⌥⌘U** | Centrum Ops |
 | **⌘8** | Panel Dockera |
 | **⌘7** | Struktura bieżącego pliku |
 | **⇧⌘N / ⌥⌘O** | Nowy projekt… / Otwórz katalog… |
@@ -299,7 +300,7 @@ Drzewo artefaktów Foundry i Hardhata, **Interakcja** prowadzona przez ABI z roz
 
 Płótno dla DigitalOcean, Hetznera i Cloudflare: zsynchronizuj to, co istnieje naprawdę, odśwież, by zobaczyć rozbieżności, i zniszcz stos, mając jego koszt przed oczami. Niedozwolone połączenia odmawiają na głos i mówią dlaczego, a póki trwa operacja w chmurze, płótno blokuje się z paskiem, który to oznajmia.
 
-### Centrum Ops
+### Centrum Ops (⌥⌘U)
 
 ![Centrum Ops — ta maszyna, prawdziwy host i dwa symulowane serwery w wachlarzu, wdrożenie odczytane z powrotem jako węzeł usługi oraz inspektor z faktami, wskaźnikami, powiązaniami i przebiegiem wdrożenia](images/ops-hub.png)
 
