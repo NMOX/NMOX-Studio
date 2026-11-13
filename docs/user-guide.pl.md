@@ -107,7 +107,7 @@ Przychodzisz z VS Code? [Przesiadka z VS Code](coming-from-vscode.pl.md) mapuje 
 <a id="3-projects"></a>
 ## 3. Projekty
 
-**Otwieranie:** każdy katalog z jednym z 60 rozpoznawanych manifestów otwiera się jako prawdziwy projekt — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js` i pokrewne — łącznie z manifestami łańcuchów kontraktowych: repozytorium Aiken (`aiken.toml`) albo Clarinet (`Clarinet.toml`) otwiera się z podpiętymi prawdziwymi torami. Zwykły katalog z HTML-em i znacznikami `<script>`, **bez** manifestu, też się otwiera — jako projekt STATIC: klasyczny web jest tu pełnoprawny, a nie błędem.
+**Otwieranie:** każdy katalog z jednym z 63 rozpoznawanych manifestów otwiera się jako prawdziwy projekt — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js` i pokrewne — łącznie z manifestami łańcuchów kontraktowych: repozytorium Aiken (`aiken.toml`) albo Clarinet (`Clarinet.toml`) otwiera się z podpiętymi prawdziwymi torami. Zwykły katalog z HTML-em i znacznikami `<script>`, **bez** manifestu, też się otwiera — jako projekt STATIC: klasyczny web jest tu pełnoprawny, a nie błędem.
 
 **Tworzenie:** *Nowy projekt…* oferuje prawdziwe rusztowania — Angular, Vue, Svelte, czysty JavaScript, Elixir/Phoenix, PHP Web (LEMP) i Klasyczny web (jQuery). Każde przychodzi z podpiętymi konfiguracjami lintera, formatowania i testów oraz z zainicjowanym repozytorium git: jeden commit rusztowania, który — gdy kreator wykona instalację za ciebie — zawiera też plik blokady, więc twój pierwszy `git status` jest czysty.
 

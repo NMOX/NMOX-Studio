@@ -107,7 +107,7 @@ Vindo do VS Code? [Vindo do VS Code](coming-from-vscode.pt.md) mapeia os atalhos
 <a id="3-projects"></a>
 ## 3. Projetos
 
-**Abrir:** qualquer pasta com um dos 60 manifestos reconhecidos abre como um projeto de verdade — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js` e afins — incluindo os manifestos das redes de contratos: um repositório Aiken (`aiken.toml`) ou Clarinet (`Clarinet.toml`) abre com suas trilhas reais já ligadas. Uma pasta simples de HTML com tags `<script>` e **sem** manifesto também abre, como projeto STATIC: a web clássica é de primeira classe, não um erro.
+**Abrir:** qualquer pasta com um dos 63 manifestos reconhecidos abre como um projeto de verdade — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js` e afins — incluindo os manifestos das redes de contratos: um repositório Aiken (`aiken.toml`) ou Clarinet (`Clarinet.toml`) abre com suas trilhas reais já ligadas. Uma pasta simples de HTML com tags `<script>` e **sem** manifesto também abre, como projeto STATIC: a web clássica é de primeira classe, não um erro.
 
 **Criar:** *Novo projeto…* oferece andaimes de verdade — Angular, Vue, Svelte, JavaScript puro, Elixir/Phoenix, PHP Web (LEMP) e Web clássica (jQuery). Cada um chega com as configurações de lint, formatação e testes já ligadas e um repositório git iniciado: um único commit de andaime que, quando o assistente roda a instalação para você, também carrega o arquivo de bloqueio — de modo que seu primeiro `git status` vem limpo.
 

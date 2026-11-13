@@ -107,7 +107,7 @@ spctl --assess --type execute -vv "/Applications/NMOX Studio.app"
 <a id="3-projects"></a>
 ## 3. المشاريع
 
-**الفتح:** أي مجلد فيه واحد من 60 ملف manifest معروفين بيتفتح كمشروع حقيقي — `package.json`، `Cargo.toml`، `go.mod`، `pom.xml`، `composer.json`، `foundry.toml`، `bower.json`، `Gruntfile.js` وأصحابهم — ومعاهم الـ manifests بتاعة سلاسل العقود: مستودع Aiken (`aiken.toml`) أو مستودع Clarinet (`Clarinet.toml`) بيتفتح والمسارات الحقيقية بتاعته متوصّلة. حتى مجلد عادي فيه HTML ووسوم `<script>` **ومن غير** manifest بيتفتح برضه، كمشروع STATIC: الويب الكلاسيكي مواطن من الدرجة الأولى، مش غلطة.
+**الفتح:** أي مجلد فيه واحد من 63 ملف manifest معروفين بيتفتح كمشروع حقيقي — `package.json`، `Cargo.toml`، `go.mod`، `pom.xml`، `composer.json`، `foundry.toml`، `bower.json`، `Gruntfile.js` وأصحابهم — ومعاهم الـ manifests بتاعة سلاسل العقود: مستودع Aiken (`aiken.toml`) أو مستودع Clarinet (`Clarinet.toml`) بيتفتح والمسارات الحقيقية بتاعته متوصّلة. حتى مجلد عادي فيه HTML ووسوم `<script>` **ومن غير** manifest بيتفتح برضه، كمشروع STATIC: الويب الكلاسيكي مواطن من الدرجة الأولى، مش غلطة.
 
 **الإنشاء:** *مشروع جديد…* بيعرض هياكل حقيقية — Angular، ‏Vue، ‏Svelte، ‏JavaScript صافي، Elixir/Phoenix، ‏PHP Web (LEMP) و Classic Web (jQuery). كل واحد جاي ومعاه إعدادات lint وتنسيق الكود والاختبارات متوصّلة من الأول، ومستودع Git متعمل له init: commit هيكل واحد، وبيضم كمان ملف الـ lock لما المعالج يعمل التثبيت بدالكم — عشان كده أول `git status` عندكم بيطلع نضيف.
 

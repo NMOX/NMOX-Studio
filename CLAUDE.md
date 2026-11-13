@@ -95,7 +95,7 @@ export JAVA_HOME=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
 # the installed app ships one too: "/Applications/NMOX Studio.app/Contents/Resources/nmoxstudio/jre"
 
 # Alternative: use --jdkhome when launching IDE
-./application/target/nmoxstudio/bin/nmoxstudio --jdkhome /Library/Java/JavaVirtualMachines/jdk-23.jdk/Contents/Home
+./application/target/nmoxstudio/bin/nmoxstudio --jdkhome "$JAVA_HOME"
 ```
 
 **Java Module Access**: The IDE is configured to open necessary Java modules for NetBeans Platform compatibility with Java 9+. These flags are automatically included in the default configuration.
@@ -125,9 +125,6 @@ mvn clean package -pl editor -am
 # Or manually after build
 cd application/target/nmoxstudio/bin
 ./nmoxstudio
-
-# Run directly with Maven (development mode)
-mvn nbm:run-platform
 ```
 
 ### Testing
@@ -172,13 +169,13 @@ The project is organized as a multi-module Maven build using NetBeans Platform:
 
 ```
 NMOX-Studio/
-├── core/                    # Cross-cutting platform touches (Terminal phosphor theme)
+├── core/                    # Shared plumbing: process/tool/file/HTTP helpers, the SPI seams, the Device SPI
 ├── editor/                  # File type support, JavaScript lexer, syntax highlighting, completion
 ├── tools/                   # NPM integration, build tools
 ├── rack/                    # Reason-style task rack: drag-drop device wiring, control surfaces
 ├── infra/                   # Node-RED-style multi-cloud infra designer (DO/Hetzner/Cloudflare)
 ├── apiclient/               # API Studio — Postman-style request/collection/test suite
-├── dbstudio/                # DB Studio — SQL + document database suite (5 engines, bundled drivers)
+├── dbstudio/                # DB Studio — SQL + document database suite (6 engines, bundled drivers)
 ├── web3/                    # Contract Studio — Web3/EVM smart contracts (Keccak/ABI/JSON-RPC cores)
 ├── project/                 # Project templates, scaffolding, project explorer UI
 ├── ui/                      # Main windows, actions, welcome screen, startup logic
@@ -251,10 +248,10 @@ public class JavaScriptDataObject extends MultiDataObject {
 
 ### Module Dependencies
 
-- **core** has minimal dependencies (base NetBeans APIs only)
-- **editor** depends on core + editor/lexer APIs
-- **tools** depends on core + project APIs + external libs (JSON)
-- **ui** depends on core + windowing APIs
+- **core** depends only on base NetBeans APIs (plus its own org.json copy) and exports the `core.spi` seams
+- **rack** depends on core; its exports are friend-locked to editor, tools, project, ui and dbstudio
+- **editor**, **tools**, **project**, **ui** and **dbstudio** depend on core + rack (ui also on JavaFX, provided scope)
+- **apiclient**, **web3** and **infra** depend on core only and reach the rack through `core.spi` lookups (null when absent)
 - **application** depends on all active modules
 
 ## Development Workflow
@@ -267,7 +264,7 @@ public class JavaScriptDataObject extends MultiDataObject {
 4. Register services/components via annotations
 5. Add unit tests
 6. Update layer.xml if adding UI components or actions
-7. Test in IDE with `mvn nbm:run-platform`
+7. Walk it in the assembled app (`./run.sh`, or the command in Working Method with a throwaway `--userdir`)
 
 ### Common Tasks
 
@@ -293,20 +290,15 @@ public class JavaScriptDataObject extends MultiDataObject {
 
 ### Testing
 
-The project uses JUnit 5 with AssertJ assertions and Mockito for mocking:
+The project uses JUnit Jupiter (the 6.x line; the version is `junit.version` in the root pom) with AssertJ assertions, and Mockito where a seam cannot be driven directly. A real one, from `core`'s `VersionsTest`:
 
 ```java
 @Test
-@DisplayName("Should parse npm error when command not found")
-void shouldParseNpmErrorWhenCommandNotFound() {
-    // Given
-    String errorOutput = "npm: command not found";
-
-    // When
-    NPMError result = parser.parseError(errorOutput);
-
-    // Then
-    assertThat(result.getUserMessage()).contains("NPM not found");
+@DisplayName("extract finds the version inside branded and tagged strings")
+void extraction() {
+    assertThat(Versions.extract("NMOX Studio 1.24.0")).isEqualTo("1.24.0");
+    assertThat(Versions.extract("v1.25.0")).isEqualTo("1.25.0");
+    assertThat(Versions.extract("no version here")).isNull();
 }
 ```
 
@@ -322,7 +314,7 @@ The JavaScript lexer (`JavaScriptLexer.java`) provides token-based syntax highli
 
 **Token categories**: keywords, identifiers, operators, literals, comments, whitespace
 
-**Integration**: Registered via `@LanguageRegistration` and `layer.xml`
+**Integration**: the editor kit is registered with `@MimeRegistration` (`JavaScriptEditorKit`); `@LanguageRegistration` is the CSL path the TextMate languages take
 
 ### NPM Integration
 
@@ -333,7 +325,7 @@ Location: `tools/src/main/java/org/nmox/studio/tools/npm/`
 - **WebProjectFactory**: `@ServiceProvider(ProjectFactory.class)` — recognizes 63 manifest names (package.json, Cargo.toml, go.mod, pom.xml, …) as projects
 - **NpmExplorerTopComponent**: UI for browsing and running NPM scripts
 
-Projects are recognized by any supported manifest (package.json and 59 others); the IDE-native Run/Build/Test/Clean and the rack are one mechanism.
+Projects are recognized by any supported manifest (package.json and 62 others); the IDE-native Run/Build/Test/Clean and the rack are one mechanism.
 
 ### Project Templates
 

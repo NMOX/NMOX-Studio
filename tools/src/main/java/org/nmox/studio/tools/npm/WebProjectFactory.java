@@ -17,7 +17,8 @@ import org.openide.util.lookup.ServiceProvider;
  * Teaches the platform what counts as a project: a {@code
  * @ServiceProvider}-registered {@link ProjectFactory} the global
  * ProjectManager consults for every directory it is asked about. Any of
- * the ~58 recognized manifests (package.json through Clarinet.toml) —
+ * the recognized manifests (package.json through Clarinet.toml; the
+ * list is derived from {@code ProjectKind}, so it has no number here) —
  * or, as the deliberate last resort, a bare index.html — makes the
  * directory a {@link WebProject}. Recognition here is only the boolean;
  * kind precedence (which toolchain wins when several manifests coexist)

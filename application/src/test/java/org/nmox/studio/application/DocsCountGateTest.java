@@ -187,6 +187,60 @@ class DocsCountGateTest {
         assertThat(found)
                 .as("stale manifest counts (truth is %d): %s", manifests, where)
                 .allMatch(n -> n == manifests);
+        // and the fourth phrasing, which counts the OTHERS: "package.json
+        // and 59 others" sat two lines under a correct "63 manifest names"
+        List<Integer> others = new ArrayList<>();
+        List<String> whereOthers = claims(Pattern.compile("package\\.json and (\\d+) others"), others);
+        assertThat(others)
+                .as("stale 'package.json and N others' (truth is %d others): %s", manifests - 1, whereOthers)
+                .allMatch(n -> n == manifests - 1);
+    }
+
+    @Test
+    @DisplayName("every translated guide counts the manifests the factory opens")
+    void translatedGuidesCountManifests() throws Exception {
+        // The law above matches English phrases, so a translated guide was
+        // outside it by construction: twelve of fourteen said 60 after the
+        // factory's answer became 63 (found 2026-11-13 by reading them). A
+        // phrase cannot be the anchor in fourteen languages; the manifest
+        // NAMES can. The sentence that counts manifests lists them, and a
+        // file name is spelled the same everywhere.
+        long manifests = countManifests();
+        Pattern guide = Pattern.compile("user-guide\\.[a-z]{2}\\.md");
+        Pattern number = Pattern.compile("(\\d+)");
+        List<String> stale = new ArrayList<>();
+        List<String> silent = new ArrayList<>();
+        List<Path> guides;
+        try (Stream<Path> files = Files.list(Path.of("..", "docs"))) {
+            guides = files.filter(f -> guide.matcher(f.getFileName().toString()).matches()).sorted().toList();
+        }
+        assertThat(guides).as("the translated user guides").hasSizeGreaterThan(10);
+        for (Path doc : guides) {
+            int counted = 0;
+            List<String> lines = Files.readAllLines(doc);
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i);
+                int names = line.indexOf("`package.json`");
+                if (names < 0 || !line.contains("`Cargo.toml`")) {
+                    continue;
+                }
+                Matcher m = number.matcher(line.substring(0, names));
+                if (m.find()) {
+                    counted++;
+                    if (Long.parseLong(m.group(1)) != manifests) {
+                        stale.add(doc.getFileName() + ":" + (i + 1) + " says " + m.group(1));
+                    }
+                }
+            }
+            if (counted == 0) {
+                silent.add(doc.getFileName().toString());
+            }
+        }
+        assertThat(stale).as("translated guides with a stale manifest count (truth is %d)", manifests).isEmpty();
+        assertThat(silent)
+                .as("translated guides where the sentence listing `package.json`, `Cargo.toml` carries no count:"
+                        + " the anchor this law reads has moved")
+                .isEmpty();
     }
 
     @Test

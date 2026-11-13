@@ -107,7 +107,7 @@ IDE 启动时会在编辑区旁打开三个标签页：**欢迎 → 任务机架
 <a id="3-projects"></a>
 ## 3. 项目
 
-**打开：**任何带有 60 种可识别清单之一的文件夹都会作为真正的项目打开 — `package.json`、`Cargo.toml`、`go.mod`、`pom.xml`、`composer.json`、`foundry.toml`、`bower.json`、`Gruntfile.js` 等等 — 也包括各合约链自己的清单：一个 Aiken（`aiken.toml`）或 Clarinet（`Clarinet.toml`）仓库打开时，它真正的流程通道已经接好。一个只有 HTML 和 `<script>` 标签、**没有**任何清单的普通文件夹同样能打开，作为 STATIC 项目：经典网页在这里是一等公民，而不是一个错误。
+**打开：**任何带有 63 种可识别清单之一的文件夹都会作为真正的项目打开 — `package.json`、`Cargo.toml`、`go.mod`、`pom.xml`、`composer.json`、`foundry.toml`、`bower.json`、`Gruntfile.js` 等等 — 也包括各合约链自己的清单：一个 Aiken（`aiken.toml`）或 Clarinet（`Clarinet.toml`）仓库打开时，它真正的流程通道已经接好。一个只有 HTML 和 `<script>` 标签、**没有**任何清单的普通文件夹同样能打开，作为 STATIC 项目：经典网页在这里是一等公民，而不是一个错误。
 
 **创建：***新建项目…* 提供真正可用的脚手架 — Angular、Vue、Svelte、原生 JavaScript、Elixir/Phoenix、PHP Web（LEMP）以及经典网页（jQuery）。每一个都自带接好的检查、格式化与测试配置，并已初始化 git 仓库：一次脚手架提交；当向导替你执行安装时，这次提交也包含锁文件，因此你的第一次 `git status` 是干净的。
 

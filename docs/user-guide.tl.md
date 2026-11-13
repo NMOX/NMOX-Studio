@@ -107,7 +107,7 @@ Galing sa VS Code? Itinutugma ng [Galing sa VS Code](coming-from-vscode.tl.md) a
 <a id="3-projects"></a>
 ## 3. Mga Proyekto
 
-**Pagbubukas:** anumang folder na may isa sa 60 kinikilalang manifest ay bumubukas bilang tunay na proyekto — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js`, at mga kauri — kasama na ang mga manifest ng mga contract chain: ang isang Aiken (`aiken.toml`) o Clarinet (`Clarinet.toml`) na repositoryo ay bumubukas na nakakabit na ang tunay nitong mga linya. Bumubukas din ang payak na folder ng HTML na may `<script>` at **walang** manifest, bilang proyektong STATIC: ang klasikong web ay first-class dito, hindi isang mali.
+**Pagbubukas:** anumang folder na may isa sa 63 kinikilalang manifest ay bumubukas bilang tunay na proyekto — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js`, at mga kauri — kasama na ang mga manifest ng mga contract chain: ang isang Aiken (`aiken.toml`) o Clarinet (`Clarinet.toml`) na repositoryo ay bumubukas na nakakabit na ang tunay nitong mga linya. Bumubukas din ang payak na folder ng HTML na may `<script>` at **walang** manifest, bilang proyektong STATIC: ang klasikong web ay first-class dito, hindi isang mali.
 
 **Paglikha:** nag-aalok ang *Bagong Proyekto…* ng tunay na mga balangkas — Angular, Vue, Svelte, payak na JavaScript, Elixir/Phoenix, PHP Web (LEMP), at Klasikong web (jQuery). Bawat isa ay dumarating na nakakabit na ang mga setting para sa lint, format at pagsusulit, at may nakahandang git na repositoryo: iisang commit ng balangkas na, kapag pinatakbo ng wizard ang pag-install para sa iyo, dala rin ang lockfile — kaya malinis ang iyong unang `git status`.
 

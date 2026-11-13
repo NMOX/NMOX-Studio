@@ -107,7 +107,7 @@ spctl --assess --type execute -vv "/Applications/NMOX Studio.app"
 <a id="3-projects"></a>
 ## 3. פרויקטים
 
-**פתיחה:** כל תיקייה עם אחד מ‑60 המניפסטים המזוהים נפתחת כפרויקט אמיתי — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js` וקרוביהם — כולל המניפסטים של שרשראות החוזים: מאגר Aiken (`aiken.toml`) או מאגר Clarinet (`Clarinet.toml`) נפתח עם המסלולים האמיתיים והמחוברים שלו. גם תיקייה פשוטה עם HTML ותגיות `<script>` **ובלי** מניפסט נפתחת, כפרויקט STATIC: הווב הקלאסי הוא אזרח מן המניין, לא שגיאה.
+**פתיחה:** כל תיקייה עם אחד מ‑63 המניפסטים המזוהים נפתחת כפרויקט אמיתי — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js` וקרוביהם — כולל המניפסטים של שרשראות החוזים: מאגר Aiken (`aiken.toml`) או מאגר Clarinet (`Clarinet.toml`) נפתח עם המסלולים האמיתיים והמחוברים שלו. גם תיקייה פשוטה עם HTML ותגיות `<script>` **ובלי** מניפסט נפתחת, כפרויקט STATIC: הווב הקלאסי הוא אזרח מן המניין, לא שגיאה.
 
 **יצירה:** *פרויקט חדש…* מציע שלדים אמיתיים — Angular, ‏Vue, ‏Svelte, ‏JavaScript נקי, Elixir/Phoenix, ‏PHP Web (LEMP) ו‑Classic Web (jQuery). כל אחד מגיע עם תצורות lint, עיצוב קוד ובדיקות מחוברות מראש ועם מאגר Git מאותחל: קומיט שלד יחיד, שכולל גם את קובץ הנעילה כשהאשף מריץ עבורכם את ההתקנה — כך ה‑`git status` הראשון שלכם נקי.
 
