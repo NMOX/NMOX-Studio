@@ -57,6 +57,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  *       overlay ever reaches those modules.</li>
  * </ol>
  *
+ * <p>An overlay did reach one of those modules (ledger 136). The Window ▸
+ * Debugging rows have been translated since v2.143.0 and the seven windows
+ * they open kept the platform's English tab titles: a German reader pressed
+ * <i>Sitzungen</i> and got a tab titled <i>Sessions</i>. The titles are
+ * overlaid now, and {@link #PLATFORM_WINDOWS} holds each tab to its row in
+ * every language, so the window has one name, and no product string and no
+ * translated document ({@code DocsMenuDoorsTest} reads those) may go on
+ * calling it by the English one.
+ *
  * <p>And a fourth rule for the same class one layer up: a label that names
  * one of the product's own windows must use that window's own name. The
  * Workbench's tooling shelf called the Docker Panel "Docker Manager" in all
@@ -100,6 +109,37 @@ class WayfindingVocabularyTest {
      */
     private static final List<String> ENGLISH_BY_CONSTRUCTION =
             List.of("Output", "IDE Tools", "Services");
+
+    /**
+     * Platform windows whose Window-menu row AND tab title the product
+     * overlays, so the window has a name in the reader's language: the tab's
+     * key, and the row's key that opens it. The row lives in the action code
+     * ({@code code-named-menu-rows.txt}), the title in
+     * {@code View.getName()}, which reads {@code NbBundle.getMessage(View.class,
+     * displayNameResource)}; the seven factory methods hand it these keys
+     * (read from the class, RELEASE310).
+     *
+     * <p>Hand-kept, and checked where a hand-kept pairing can be: in the
+     * platform's own English the row minus its mnemonic must equal the tab,
+     * so a pair that joins the wrong two keys fails on the English alone.
+     */
+    private static final Map<String, String> PLATFORM_WINDOWS = platformWindowPairs();
+    /** The module that ships both bundles, and the two packages inside it. */
+    private static final String PLATFORM_WINDOW_JAR = "org-netbeans-spi-debugger-ui";
+    private static final String PLATFORM_WINDOW_TABS = "org/netbeans/modules/debugger/ui/views";
+    private static final String PLATFORM_WINDOW_ROWS = "org/netbeans/modules/debugger/ui/actions";
+
+    private static Map<String, String> platformWindowPairs() {
+        Map<String, String> tabToRow = new LinkedHashMap<>();
+        tabToRow.put("CTL_Sessions_view", "CTL_SessionsAction");
+        tabToRow.put("CTL_Breakpoints_view", "CTL_BreakpointsAction");
+        tabToRow.put("CTL_Threads_view", "CTL_ThreadsAction");
+        tabToRow.put("CTL_Call_stack_view", "CTL_CallStackAction");
+        tabToRow.put("CTL_Watches_view", "CTL_WatchesAction");
+        tabToRow.put("CTL_Variables_view", "CTL_LocalVariablesAction");
+        tabToRow.put("CTL_Sources_view", "CTL_SourcesAction");
+        return tabToRow;
+    }
 
     /** The menu-bar folders the overlays localize, by their English name. */
     private static final Map<String, String> MENUS = Map.of(
@@ -279,9 +319,123 @@ class WayfindingVocabularyTest {
                 }
             }
         }
+        // 3b. and its mirror: a platform window the product DOES name in this
+        // language is not called by its English name. Read over every
+        // translated product string, like rule 3 and for its reason. Where a
+        // language's word is the English one (French "Sessions", Spanish
+        // "Variables") there is nothing to tell apart and nothing is checked.
+        Map<String, Map<String, String>> windows = platformWindowNames();
+        for (String loc : LOCALES) {
+            for (Map.Entry<String, String> e : strings.get(loc).entrySet()) {
+                for (Map.Entry<String, String> w : windows.get(loc).entrySet()) {
+                    if (!w.getKey().equals(w.getValue()) && namesTheWindow(e.getValue(), w.getKey())) {
+                        problems.add(loc + " " + e.getKey() + ": says \"" + w.getKey()
+                                + "\" where this build's window reads \"" + w.getValue() + "\"");
+                    }
+                }
+            }
+        }
         assertThat(problems)
                 .as("directions that point at a door with the wrong name")
                 .isEmpty();
+    }
+
+    // ---- ledger 136: a platform window we name has one name --------------
+
+    /**
+     * The window's tab and the menu row that opens it say the same word, in
+     * English and in every shipped language. The English half holds the
+     * pairing itself honest; the translated half is the law.
+     */
+    @Test
+    @DisplayName("a debugger window's tab carries the name its Window-menu row carries, in every language")
+    void platformWindowTabsCarryTheirMenuRowsName() throws IOException {
+        List<String> problems = new ArrayList<>();
+        Properties englishTabs = platformBundle(PLATFORM_WINDOW_TABS + "/Bundle.properties", null);
+        Properties englishRows = platformBundle(PLATFORM_WINDOW_ROWS + "/Bundle.properties", null);
+        assertThat(englishTabs).as("the platform's views bundle in the assembled cluster").isNotNull();
+        assertThat(englishRows).as("the platform's actions bundle in the assembled cluster").isNotNull();
+        for (Map.Entry<String, String> pair : PLATFORM_WINDOWS.entrySet()) {
+            String tab = englishTabs.getProperty(pair.getKey());
+            String row = englishRows.getProperty(pair.getValue());
+            if (tab == null || row == null) {
+                problems.add("en " + pair.getKey() + " / " + pair.getValue()
+                        + ": the platform no longer ships one of the two keys");
+            } else if (!plainMenu(row).equals(tab.trim())) {
+                problems.add("en " + pair.getKey() + ": the platform titles the tab \"" + tab.trim()
+                        + "\" and the row \"" + plainMenu(row) + "\"; this pair is not one window");
+            }
+        }
+        for (String loc : LOCALES) {
+            Properties tabs = platformBundle(PLATFORM_WINDOW_TABS + "/Bundle_nmoxstudio_" + loc + ".properties", loc);
+            Properties rows = platformBundle(PLATFORM_WINDOW_ROWS + "/Bundle_nmoxstudio_" + loc + ".properties", loc);
+            for (Map.Entry<String, String> pair : PLATFORM_WINDOWS.entrySet()) {
+                String row = rows == null ? null : rows.getProperty(pair.getValue());
+                String tab = tabs == null ? null : tabs.getProperty(pair.getKey());
+                if (row == null) {
+                    problems.add(loc + " " + pair.getValue() + ": the menu row has no overlay");
+                } else if (tab == null) {
+                    problems.add(loc + " " + pair.getKey() + ": the row reads \"" + plainMenu(row)
+                            + "\" and the tab it opens has no overlay, so it reads \""
+                            + englishTabs.getProperty(pair.getKey()) + "\"");
+                } else if (!tab.trim().equals(plainMenu(row))) {
+                    problems.add(loc + " " + pair.getKey() + ": the tab reads \"" + tab.trim()
+                            + "\" and the row that opens it \"" + plainMenu(row) + "\"");
+                }
+            }
+        }
+        assertThat(problems).as("one window, two names").isEmpty();
+    }
+
+    /**
+     * locale → the window's English name → its name in that locale, for the
+     * platform windows the product names. {@code DocsMenuDoorsTest} reads the
+     * translated documents with it; the names come from the assembled
+     * cluster's overlays, not from a second list.
+     */
+    static Map<String, Map<String, String>> platformWindowNames() throws IOException {
+        Properties english = platformBundle(PLATFORM_WINDOW_TABS + "/Bundle.properties", null);
+        Map<String, Map<String, String>> out = new TreeMap<>();
+        for (String loc : LOCALES) {
+            Properties tabs = platformBundle(PLATFORM_WINDOW_TABS + "/Bundle_nmoxstudio_" + loc + ".properties", loc);
+            Map<String, String> names = new LinkedHashMap<>();
+            for (String key : PLATFORM_WINDOWS.keySet()) {
+                String en = english == null ? null : english.getProperty(key);
+                String here = tabs == null ? null : tabs.getProperty(key);
+                if (en != null && here != null) {
+                    names.put(en.trim(), here.trim());
+                }
+            }
+            out.put(loc, names);
+        }
+        return out;
+    }
+
+    /**
+     * One bundle of the debugger UI module: the platform's own jar when
+     * {@code loc} is null, else that locale's branding overlay jar, where the
+     * build files a source {@code Bundle_de.properties} under the branding
+     * token ({@code Bundle_nmoxstudio_de.properties}); that is the name the
+     * running product looks up first.
+     */
+    private static Properties platformBundle(String entry, String loc) throws IOException {
+        String jarName = loc == null ? PLATFORM_WINDOW_JAR + ".jar"
+                : PLATFORM_WINDOW_JAR + "_nmoxstudio_" + loc + ".jar";
+        Path root = Path.of("target/nmoxstudio");
+        if (!Files.isDirectory(root)) {
+            return null;
+        }
+        Path jar;
+        try (Stream<Path> s = Files.walk(root)) {
+            jar = s.filter(p -> p.getFileName().toString().equals(jarName)).findFirst().orElse(null);
+        }
+        if (jar == null) {
+            return null;
+        }
+        try (ZipFile zip = new ZipFile(jar.toFile())) {
+            ZipEntry e = zip.getEntry(entry);
+            return e == null ? null : utf8(zip, e);
+        }
     }
 
 
