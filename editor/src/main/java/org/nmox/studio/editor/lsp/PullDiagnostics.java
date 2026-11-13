@@ -501,7 +501,16 @@ final class PullDiagnostics {
                 if (other == null || !"full".equals(other.optString("kind")) || n++ >= MAX_RELATED) {
                     continue;
                 }
-                byte[] also = publish(clientSpelling(uri), other.optJSONArray("items"));
+                String spelled = clientSpelling(uri);
+                synchronized (state) {
+                    // the same guard as for the document asked about: this answer is as old as its question
+                    Long newest = published.get(spelled);
+                    if (newest != null && newest > asked.seq()) {
+                        continue;
+                    }
+                    published.put(spelled, asked.seq());
+                }
+                byte[] also = publish(spelled, other.optJSONArray("items"));
                 frames.write(also, 0, also.length);
             }
         }
@@ -516,6 +525,9 @@ final class PullDiagnostics {
      */
     private String clientSpelling(String uri) {
         synchronized (state) {
+            if (open.contains(uri)) {
+                return uri; // where case tells files apart, a neighbour that differs by case is another file
+            }
             for (String mine : open) {
                 if (mine.equalsIgnoreCase(uri)) {
                     return mine;

@@ -659,4 +659,58 @@ class PullDiagnosticsTest {
         assertThat(armed).as("asked a moment ago, so this key waits like any other: a pass per key is "
                 + PullDiagnostics.MAX_BATCH + " questions per key").containsExactly(PullDiagnostics.CHANGE_MILLIS);
     }
+
+    @Test
+    @DisplayName("a related document open under exactly the server's spelling is published under that spelling, not under a neighbour's that differs by case")
+    void aRelatedDocumentKeepsItsOwnSpelling() throws Exception {
+        // two files on a file system that tells case apart (Linux), both open
+        String upper = "file:///home/ada/shop/src/Model.ts";
+        String lower = "file:///home/ada/shop/src/model.ts";
+        opens(upper);
+        opens(lower);
+        bridge.work();
+        String forUpper = questions(serverGot()).stream().filter(q -> q[0].equals(upper)).findFirst().orElseThrow()[1];
+
+        server.says(answer(forUpper, "{\"kind\":\"full\",\"items\":[],\"relatedDocuments\":{\"" + lower + "\":" + REAL_ANSWER + "}}"));
+        List<JSONObject> seen = clientSees();
+        assertThat(seen).extracting(m -> m.getJSONObject("params").getString("uri"))
+                .as("model.ts's problems are model.ts's: filed under Model.ts they replace that file's own").containsExactly(upper, lower);
+        assertThat(seen.get(0).getJSONObject("params").getJSONArray("diagnostics").length()).isZero();
+        assertThat(seen.get(1).getJSONObject("params").getJSONArray("diagnostics").length()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("an older answer does not overwrite a newer one through a related document either")
+    void anOlderAnswerDoesNotOverwriteThroughARelatedDocument() throws Exception {
+        opens(A);
+        opens(B);
+        bridge.work();
+        String early = questions(serverGot()).stream().filter(q -> q[0].equals(A)).findFirst().orElseThrow()[1];
+        changes(B);
+        bridge.work();
+        String late = questions(serverGot()).stream().filter(q -> q[0].equals(B)).findFirst().orElseThrow()[1];
+
+        // B was fixed and asked about again; the answer to the earlier question about A still names B's old problems
+        server.says(answer(late, "{\"kind\":\"full\",\"items\":[]}"));
+        server.says(answer(early, "{\"kind\":\"full\",\"items\":[],\"relatedDocuments\":{\"" + B + "\":" + REAL_ANSWER + "}}"));
+        List<JSONObject> seen = clientSees();
+        assertThat(seen).extracting(m -> m.getJSONObject("params").getString("uri"))
+                .as("B's fresh answer stands; the stale one for A still publishes A").containsExactly(B, A);
+        assertThat(seen.get(0).getJSONObject("params").getJSONArray("diagnostics").length()).isZero();
+
+        // and the other way round: what a later question said of B is not replaced by B's own earlier answer
+        connect();
+        opens(B);
+        bridge.work();
+        String own = questions(serverGot()).get(0)[1];
+        opens(A);
+        bridge.work();
+        String forA = questions(serverGot()).get(0)[1];
+        server.says(answer(forA, "{\"kind\":\"full\",\"items\":[],\"relatedDocuments\":{\"" + B + "\":{\"kind\":\"full\",\"items\":[]}}}"));
+        server.says(answer(own, REAL_ANSWER));
+        seen = clientSees();
+        assertThat(seen).extracting(m -> m.getJSONObject("params").getString("uri")).containsExactly(A, B);
+        assertThat(seen.get(1).getJSONObject("params").getJSONArray("diagnostics").length())
+                .as("B's own answer, to the older question, arrived last and is dropped").isZero();
+    }
 }
