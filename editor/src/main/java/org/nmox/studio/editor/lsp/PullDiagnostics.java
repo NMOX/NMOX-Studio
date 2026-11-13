@@ -193,10 +193,17 @@ final class PullDiagnostics {
         if (init && "initialize".equals(method)) {
             return declare(message).toString().getBytes(StandardCharsets.UTF_8);
         }
-        if (done && ("shutdown".equals(method) || "exit".equals(method))
-                && message.has("params") && message.isNull("params")) {
-            message.remove("params");
-            return message.toString().getBytes(StandardCharsets.UTF_8);
+        if (done && ("shutdown".equals(method) || "exit".equals(method))) {
+            synchronized (state) {
+                // the protocol: a request after shutdown is one the server is to refuse.
+                // A timer armed by the last change must find nothing to ask
+                ended = true;
+            }
+            if (message.has("params") && message.isNull("params")) {
+                message.remove("params");
+                return message.toString().getBytes(StandardCharsets.UTF_8);
+            }
+            return body;
         }
         if (doc) {
             JSONObject params = message.optJSONObject("params");

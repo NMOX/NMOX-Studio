@@ -768,4 +768,36 @@ class PullDiagnosticsTest {
             log.removeHandler(ear);
         }
     }
+
+    @Test
+    @DisplayName("after the client's shutdown nothing more is asked: a request then is one the protocol tells the server to refuse")
+    void nothingIsAskedAfterShutdown() throws Exception {
+        opens(A);
+        assertThat(armed).containsExactly(PullDiagnostics.OPEN_MILLIS);
+        // the question is due in sixty milliseconds, and the client shuts the server down first
+        clientWrites("{\"jsonrpc\":\"2.0\",\"id\":\"7\",\"method\":\"shutdown\",\"params\":null}");
+        serverGot();
+        bridge.work();
+        assertThat(serverGot()).as("the timer that was armed finds nothing to do").isEmpty();
+        changes(A);
+        bridge.work();
+        assertThat(questions(serverGot())).as("and a change that still comes is not asked about").isEmpty();
+
+        // one written without params ends the asking just the same
+        connect();
+        opens(A);
+        clientWrites("{\"jsonrpc\":\"2.0\",\"id\":\"7\",\"method\":\"shutdown\"}");
+        serverGot();
+        bridge.work();
+        assertThat(serverGot()).isEmpty();
+
+        // a document that only mentions the word is not a shutdown
+        connect();
+        opens(A);
+        clientWrites(note("textDocument/didChange", new JSONObject().put("textDocument", new JSONObject().put("uri", A).put("version", 2))
+                .put("contentChanges", new JSONArray().put(new JSONObject().put("text", "const method = \"shutdown\"; // \"exit\"")))));
+        serverGot();
+        bridge.work();
+        assertThat(questions(serverGot())).extracting(q -> q[0]).containsExactly(A);
+    }
 }
