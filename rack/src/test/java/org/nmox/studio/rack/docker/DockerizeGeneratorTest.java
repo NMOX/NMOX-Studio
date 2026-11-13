@@ -70,16 +70,22 @@ class DockerizeGeneratorTest {
     @Test
     @DisplayName("Base images are current majors (each tag existence-checked on Docker Hub)")
     void baseImageCurrency() {
+        // measured 2026-11-13; existence-checked on the registries, not built
+        assertThat(DockerizeGenerator.generate(ProjectKind.NODE, "x", false).get("Dockerfile"))
+                .contains("FROM node:26-alpine");
+        assertThat(DockerizeGenerator.generate(ProjectKind.NODE, "x", true).get("Dockerfile"))
+                .contains("FROM node:26-alpine AS build");
         assertThat(DockerizeGenerator.generate(ProjectKind.GO, "x", false).get("Dockerfile"))
-                .contains("FROM golang:1.26");
+                .contains("FROM golang:1.27")
+                .contains("FROM gcr.io/distroless/static-debian13");
         assertThat(DockerizeGenerator.generate(ProjectKind.RUST, "x", false).get("Dockerfile"))
-                .contains("FROM rust:1.95");
+                .contains("FROM rust:1.100");
         assertThat(DockerizeGenerator.generate(ProjectKind.PYTHON, "x", false).get("Dockerfile"))
                 .contains("FROM python:3.14-slim");
         assertThat(DockerizeGenerator.generate(ProjectKind.PHP, "x", false).get("Dockerfile"))
                 .contains("FROM php:8.5-fpm-alpine");
         assertThat(DockerizeGenerator.generate(ProjectKind.PHP, "x", false).get("compose.yaml"))
-                .contains("image: nginx:1.29-alpine");
+                .contains("image: nginx:1.30-alpine");
     }
 
     @Test

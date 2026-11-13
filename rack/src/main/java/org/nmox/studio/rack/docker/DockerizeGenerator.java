@@ -18,7 +18,16 @@ public final class DockerizeGenerator {
     private DockerizeGenerator() {
     }
 
-    /** What we will write: filename -> content. Deterministic, no I/O. */
+    /**
+     * What we will write: filename -> content. Deterministic, no I/O.
+     *
+     * <p>The base images are version literals no bot reads, so they are
+     * moved by hand and pinned by {@code DockerizeGeneratorTest}. Node is
+     * the ACTIVE LTS line; go and rust are the current stable minor;
+     * nginx is the current STABLE branch (a retired mainline branch such
+     * as 1.29 stops receiving image rebuilds the day the next stable is
+     * cut); debian and distroless are the current stable release.
+     */
     public static Map<String, String> generate(ProjectInspector.ProjectKind kind,
             String projectName, boolean nodeBuildsStatic) {
         Map<String, String> files = new LinkedHashMap<>();
@@ -97,7 +106,7 @@ public final class DockerizeGenerator {
     private static String nodeStatic() {
         return """
                 # Build the static bundle, serve it with nginx - tiny final image
-                FROM node:24-alpine AS build
+                FROM node:26-alpine AS build
                 WORKDIR /app
                 COPY package*.json ./
                 RUN npm ci
@@ -138,7 +147,7 @@ public final class DockerizeGenerator {
     private static String nodeServer() {
         return """
                 # Install with the lockfile, run as the non-root node user
-                FROM node:24-alpine
+                FROM node:26-alpine
                 WORKDIR /app
                 ENV NODE_ENV=production
                 COPY package*.json ./
@@ -156,7 +165,7 @@ public final class DockerizeGenerator {
         // non-directory") - proven by building the generated file for real
         return """
                 # Static binary in a distroless image - ~10MB, no shell to exploit
-                FROM golang:1.26 AS build
+                FROM golang:1.27 AS build
                 WORKDIR /src
                 COPY go.* ./
                 RUN go mod download
@@ -164,7 +173,7 @@ public final class DockerizeGenerator {
                 # builds the root main package; point at ./cmd/%s if yours lives there
                 RUN CGO_ENABLED=0 go build -o /%s .
 
-                FROM gcr.io/distroless/static-debian12
+                FROM gcr.io/distroless/static-debian13
                 COPY --from=build /%s /%s
                 EXPOSE 8080
                 ENTRYPOINT ["/%s"]
@@ -176,7 +185,7 @@ public final class DockerizeGenerator {
         // inside the same RUN - COPY --from can't see cache mounts
         return """
                 # Release build, then a minimal runtime layer
-                FROM rust:1.95 AS build
+                FROM rust:1.100 AS build
                 WORKDIR /src
                 COPY . .
                 # BuildKit cache mounts keep the registry and target dir across
@@ -192,6 +201,10 @@ public final class DockerizeGenerator {
                 """.formatted(name, name, name, name, name);
     }
 
+    // python stays at 3.14 on purpose (measured 2026-11-13): 3.15.0 is
+    // five weeks old, a -slim image has no compiler, and a requirements.txt
+    // whose packages have not published 3.15 wheels yet fails at pip install.
+    // The CI exporter's python-version follows this line (CiExportPinCurrencyTest).
     private static String python() {
         return """
                 FROM python:3.14-slim
@@ -267,7 +280,7 @@ public final class DockerizeGenerator {
                     restart: unless-stopped
 
                   nginx:
-                    image: nginx:1.29-alpine
+                    image: nginx:1.30-alpine
                     ports:
                       - "80:80"
                     volumes:

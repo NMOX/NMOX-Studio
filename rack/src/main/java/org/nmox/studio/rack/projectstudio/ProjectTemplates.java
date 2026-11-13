@@ -1401,7 +1401,7 @@ public enum ProjectTemplates {
                 # `docker compose up` working without one.
                 services:
                   nginx:
-                    image: nginx:1.27-alpine
+                    image: nginx:1.30-alpine
                     ports:
                       - "8080:80"
                     volumes:
@@ -1411,13 +1411,13 @@ public enum ProjectTemplates {
                       - php
 
                   php:
-                    image: php:8.4-fpm
+                    image: php:8.5-fpm
                     working_dir: /var/www/html
                     volumes:
                       - .:/var/www/html
 
                   db:
-                    image: mariadb:11
+                    image: mariadb:12
                     environment:
                       MARIADB_DATABASE: ${DB_DATABASE:-app}
                       MARIADB_USER: ${DB_USERNAME:-app}
