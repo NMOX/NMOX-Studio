@@ -2338,7 +2338,7 @@
       "files": [
         {
           "path": "package.json",
-          "content": "{\n  \"name\": \"svelte-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {},\n  \"devDependencies\": {\n    \"@sveltejs/vite-plugin-svelte\": \"^3.1.0\",\n    \"svelte\": \"^4.2.0\",\n    \"vite\": \"^5.4.0\"\n  }\n}\n"
+          "content": "{\n  \"name\": \"svelte-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {},\n  \"devDependencies\": {\n    \"@sveltejs/vite-plugin-svelte\": \"^7.0.0\",\n    \"svelte\": \"^5.46.4\",\n    \"vite\": \"^8.0.0\"\n  }\n}\n"
         },
         {
           "path": "vite.config.js",
@@ -2350,14 +2350,14 @@
         },
         {
           "path": "src/App.svelte",
-          "content": "<script>\n  let count = 0;\n</script>\n\n<main style=\"font-family: system-ui; padding: 40px\">\n  <h1>Hello, Svelte</h1>\n  <p>You clicked {count} times.</p>\n  <button on:click={() => count++}>Click me</button>\n</main>\n"
+          "content": "<script>\n  let count = $state(0);\n</script>\n\n<main style=\"font-family: system-ui; padding: 40px\">\n  <h1>Hello, Svelte</h1>\n  <p>You clicked {count} times.</p>\n  <button onclick={() => count++}>Click me</button>\n</main>\n"
         },
         {
           "path": "src/main.js",
-          "content": "import App from \"./App.svelte\";\n\nconst app = new App({ target: document.getElementById(\"app\") });\n\nexport default app;\n"
+          "content": "import { mount } from \"svelte\";\nimport App from \"./App.svelte\";\n\nconst app = mount(App, { target: document.getElementById(\"app\") });\n\nexport default app;\n"
         }
       ],
-      "tutorial": "# Svelte\n\nSvelte is a **compiler**, not a runtime library. You write components that look like plain HTML + JS, and Svelte compiles them at build time into small, surgical DOM updates — there's no virtual DOM diffing at runtime.\n\n## Get it running\n\n1. Install Node.\n2. Run `npm install` once to pull `svelte` and `vite`.\n3. Click **RUN** (`npm run dev`). Open the printed `http://localhost:5173` URL.\n\nA counter appears; saves hot-reload.\n\n## The shape\n\n- `index.html` — an empty `<div id=\"app\">` plus a script loading `src/main.js`.\n- `src/main.js` — `new App({ target: ... })` instantiates the root component into that div.\n- `src/App.svelte` — the component. Reactivity is *assignment-based*: because `count` is a top-level `let`, writing `count++` tells Svelte to update the DOM. No hooks, no `ref`, no `this.setState`.\n- `vite.config.js` — registers the Svelte plugin so Vite compiles `.svelte` files.\n\n## Try this\n\n1. Add a reset button: `<button on:click={() => (count = 0)}>Reset</button>`.\n2. Add a *reactive statement*: `$: doubled = count * 2;` then show `{doubled}` in the markup — it recomputes whenever `count` changes.\n3. Add an `{#if count > 4}Lots of clicks!{/if}` block to show conditional markup.\n\n## Going further\n\nOfficial interactive tutorial (highly recommended): https://svelte.dev/tutorial\n",
+      "tutorial": "# Svelte\n\nSvelte is a **compiler**, not a runtime library. You write components that look like plain HTML + JS, and Svelte compiles them at build time into small, surgical DOM updates — there's no virtual DOM diffing at runtime.\n\n## Get it running\n\n1. Install Node 22.12 or newer — the floor Vite 8 declares.\n2. Run `npm install` once to pull `svelte` and `vite`.\n3. Click **RUN** (`npm run dev`). Open the printed `http://localhost:5173` URL.\n\nA counter appears; saves hot-reload.\n\n## The shape\n\n- `index.html` — an empty `<div id=\"app\">` plus a script loading `src/main.js`.\n- `src/main.js` — `mount(App, { target: ... })` mounts the root component into that div.\n- `src/App.svelte` — the component. Reactivity is declared with a *rune*: `let count = $state(0)` makes `count` reactive state, so writing `count++` tells Svelte to update the DOM. No hooks, no `ref`, no `this.setState`.\n- `vite.config.js` — registers the Svelte plugin so Vite compiles `.svelte` files.\n\n## Try this\n\n1. Add a reset button: `<button onclick={() => (count = 0)}>Reset</button>`.\n2. Add a *derived value*: `let doubled = $derived(count * 2);` in the script, then show `{doubled}` in the markup — it recomputes whenever `count` changes.\n3. Add an `{#if count > 4}Lots of clicks!{/if}` block to show conditional markup.\n\n## Going further\n\nOfficial interactive tutorial (highly recommended): https://svelte.dev/tutorial\n",
       "blurb.es": "Escribes componentes de aspecto corriente; Svelte los compila a código diminuto y rápido, sin DOM virtual.",
       "blurb.fr": "Vous écrivez des composants d’apparence ordinaire ; Svelte les compile en code minuscule et rapide, sans DOM virtuel.",
       "blurb.de": "Sie schreiben ganz gewöhnlich wirkende Komponenten; Svelte kompiliert sie zu winzigem, schnellem Code ohne virtuelles DOM.",
@@ -3734,26 +3734,26 @@
       "files": [
         {
           "path": "package.json",
-          "content": "{\n  \"name\": \"sveltekit-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite dev\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"devDependencies\": {\n    \"@sveltejs/adapter-auto\": \"^3.0.0\",\n    \"@sveltejs/kit\": \"^2.0.0\",\n    \"@sveltejs/vite-plugin-svelte\": \"^3.0.0\",\n    \"svelte\": \"^4.2.0\",\n    \"vite\": \"^5.0.0\"\n  }\n}\n"
-        },
-        {
-          "path": "svelte.config.js",
-          "content": "import adapter from \"@sveltejs/adapter-auto\";\n\nexport default {\n  kit: { adapter: adapter() }\n};\n"
+          "content": "{\n  \"name\": \"sveltekit-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite dev\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"devDependencies\": {\n    \"@sveltejs/adapter-auto\": \"^8.0.0\",\n    \"@sveltejs/kit\": \"^3.0.0\",\n    \"@sveltejs/vite-plugin-svelte\": \"^7.0.0\",\n    \"svelte\": \"^5.57.1\",\n    \"vite\": \"^8.0.12\"\n  }\n}\n"
         },
         {
           "path": "vite.config.js",
-          "content": "import { sveltekit } from \"@sveltejs/kit/vite\";\n\nexport default {\n  plugins: [sveltekit()]\n};\n"
+          "content": "import adapter from \"@sveltejs/adapter-auto\";\nimport { sveltekit } from \"@sveltejs/kit/vite\";\nimport { defineConfig } from \"vite\";\n\nexport default defineConfig({\n  plugins: [sveltekit({ adapter: adapter() })]\n});\n"
+        },
+        {
+          "path": "src/app.html",
+          "content": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    %sveltekit.head%\n  </head>\n  <body>\n    <div style=\"display: contents\">%sveltekit.body%</div>\n  </body>\n</html>\n"
         },
         {
           "path": "src/routes/+page.svelte",
-          "content": "<script>\n  let count = 0;\n</script>\n\n<h1>Hello, SvelteKit</h1>\n<p>This route lives at src/routes/+page.svelte.</p>\n<button on:click={() => count++}>Clicked {count} times</button>\n<p><a href=\"/about\">Go to /about</a></p>\n\n<style>\n  h1 { font-family: system-ui; }\n</style>\n"
+          "content": "<script>\n  let count = $state(0);\n</script>\n\n<h1>Hello, SvelteKit</h1>\n<p>This route lives at src/routes/+page.svelte.</p>\n<button onclick={() => count++}>Clicked {count} times</button>\n<p><a href=\"/about\">Go to /about</a></p>\n\n<style>\n  h1 { font-family: system-ui; }\n</style>\n"
         },
         {
           "path": "src/routes/about/+page.svelte",
           "content": "<h1>About</h1>\n<p>src/routes/about/+page.svelte → the URL /about.</p>\n<p><a href=\"/\">Back home</a></p>\n"
         }
       ],
-      "tutorial": "# SvelteKit\n\nSvelteKit is Svelte plus the app plumbing: a **filesystem router** (`src/routes/**/+page.svelte`), server rendering, and a build — all riding **Vite**, which is why `npm run dev` is `vite dev`.\n\n## Your dev server\n\nPress **START** for `vite dev` — or rack **KINETIC**, the SvelteKit console: DEV/BUILD/PREVIEW speak vite while DIAG runs svelte-check, and the version cluster tracks @sveltejs/kit.\n\n## The sample\n\n`+page.svelte` is a Svelte component: reactive `count` updates the DOM with no virtual DOM and no hooks — assignment IS reactivity.\n\n## Try\n\n1. Add `src/routes/blog/+page.svelte` — instantly `/blog`.\n2. Add a `+page.js` beside a page exporting `load()` — its return value arrives as `data` in the page. That's the whole data story.\n3. Break the types on purpose and run **DIAG** (svelte-check) on KINETIC.\n\n---\n\n## Install\n\n```sh\nbrew install node\n```\n",
+      "tutorial": "# SvelteKit\n\nSvelteKit is Svelte plus the app plumbing: a **filesystem router** (`src/routes/**/+page.svelte`), server rendering, and a build — all riding **Vite**, which is why `npm run dev` is `vite dev`. SvelteKit 3 declares Node 22.17 or newer.\n\n## Your dev server\n\nPress **START** for `vite dev` — or rack **KINETIC**, the SvelteKit console: DEV/BUILD/PREVIEW speak vite while DIAG runs svelte-check, and the version cluster tracks @sveltejs/kit.\n\n## The sample\n\n`+page.svelte` is a Svelte component: `let count = $state(0)` declares reactive state, and assigning to it updates the DOM with no virtual DOM and no hooks. `src/app.html` is the shell every page renders into, and `vite.config.js` carries the SvelteKit config — `sveltekit({ adapter })` — because SvelteKit 3 no longer reads a `svelte.config.js`.\n\n## Try\n\n1. Add `src/routes/blog/+page.svelte` — instantly `/blog`.\n2. Add a `+page.js` beside a page exporting `load()` — its return value arrives as the page's `data` prop: `let { data } = $props();`. That's the whole data story.\n3. Break the types on purpose and run **DIAG** (svelte-check) on KINETIC.\n\n---\n\n## Install\n\n```sh\nbrew install node\n```\n",
       "blurb.es": "Svelte con enrutado por sistema de archivos y renderizado en servidor, sobre Vite: los archivos +page.svelte se vuelven rutas.",
       "blurb.fr": "Svelte avec routeur par système de fichiers et rendu serveur, sur Vite : les fichiers +page.svelte deviennent des routes.",
       "blurb.de": "Svelte mit Dateisystem-Router und serverseitigem Rendern auf Vite — aus +page.svelte werden Routen.",
