@@ -53,4 +53,18 @@ final class GateSources {
         }
         return sb.toString();
     }
+
+    /**
+     * The same for a shell script or a workflow file: every line whose first
+     * character is {@code #} is emptied, and every line is kept. A script's
+     * header says what the script never does ("it never prunes"), and a gate
+     * that read the header would be satisfied, or tripped, by that sentence.
+     */
+    static String stripHashComments(String src) {
+        StringBuilder sb = new StringBuilder();
+        for (String lineText : src.replace("\r\n", "\n").split("\n", -1)) {
+            sb.append(lineText.strip().startsWith("#") ? "" : lineText).append('\n');
+        }
+        return sb.toString();
+    }
 }
