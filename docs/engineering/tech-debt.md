@@ -595,9 +595,16 @@ thirteen, one in each `docs/coming-from-vscode.<lang>.md` but the French
 ("listed in the Sessions window"), and the new document law named every
 one of them on its first run.
 
-Proven by the gates on the assembled cluster and one mutant by name each
-(a German `CTL_Sessions_view` put back to `Sessions`; a German document
-put back to `im Fenster Sessions`). NOT walked: a branding overlay applies
+Proven on a clean build: every gate of the application module, read
+against the freshly assembled cluster (`Tests run: 535, Failures: 0,
+Errors: 0`). Four mutants, each killed by name in one run: the German
+`CTL_Sessions_view` put back to `Sessions` (the tab law: *the tab reads
+"Sessions" and the row that opens it "Sitzungen"*); the Ukrainian overlay
+of the eighth window deleted (the tab law, and
+`MainWindowChromeSpeaksTest`: *paints "Debugging" in English*); the Russian
+guide put back to `в окне Sessions` (the document law); and `Breakpoints`
+written into a Russian product string (*says "Breakpoints" where this
+build's window reads "Точки останова"*). NOT walked: a branding overlay applies
 only inside the assembled app, so the picture is owed. Window ▸ Debugging
 ▸ Sessions in a German build (*Fenster ▸ Debugging ▸ Sitzungen*) must open
 a tab titled *Sitzungen*.
