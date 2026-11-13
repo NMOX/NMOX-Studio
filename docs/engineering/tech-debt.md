@@ -4972,6 +4972,65 @@ MIT, the NOTICE's sha256) to the aggregate BOM. Still invisible to
 Dependabot — bumps stay manual per NOTICE — but the SBOM no longer has
 a blind spot. Bump the workflow constant and the NOTICE together.
 
+**2026-11-13: the adapter moved from v1.117.0 to v1.140.1** (upstream's
+security release for CVE-2026-70094). What was done, what proved it and
+what did not:
+
+- *The tree.* `js-debug-dap-v1.140.1.tar.gz` (1,249,566 bytes, sha256
+  `c72fab31…927faf`, checked against the digest GitHub publishes for the
+  asset before unpacking), extracted verbatim as v1.117.0 was. The old
+  tree was byte-identical to its own tarball; the two tarballs hold the
+  same 60 files and nine differ.
+- *The protocol.* Nothing this product leans on moved. Upstream's source
+  between the tags does not touch the DAP server's entry point, the
+  session binder, `startDebugging`, output capture or termination; the
+  command line and the READY line read the same in both bundles. Every
+  real-adapter test gave the same verdict on both adapters with nothing
+  skipped (Node 22.9.0, Google Chrome): `RealJsDebugIntegrationTest` 7,
+  `RealChromeIntegrationTest` 2, and the 84 tests of the debug package.
+- *The Node floor rose, and that is the user-visible change.* The new
+  bundle does not load under Node 18.20.8 (`SyntaxError: Invalid flags
+  supplied to RegExp constructor 'v'`, from the `@sindresorhus/is` that
+  got 16 brings; got moved 11 → 16 upstream); v1.117.0 started there.
+  `JsDebugServer.MIN_NODE_MAJOR` (20, the release that brought the `v`
+  flag) refuses an older Node by name before the adapter is spawned, in
+  fifteen languages, where the user used to read "js-debug exited
+  immediately (exit 1) — is the debug adapter installed?". got 16
+  declares Node 22 and the user guide says 22. **Node 20 and 21 were not
+  measured** (neither is on the machine that did the bump): they pass
+  the refusal, and whether attach's `/json/version` fetch works there is
+  unknown. Raising the constant to 22 is a one-line decision.
+- *The CVE.* The advisory's defect is VS Code's startup auto-attach
+  reading `debug.javascript.terminalOptions` from an untrusted
+  workspace; the fix marks that setting restricted in the extension's
+  generated `package.json`. The DAP-server tarball has no `package.json`
+  and `terminalOptions` is in no script of either tarball (only as a
+  label key in `package.nls.json`), so that half was never in what we
+  ship. The release's second fix IS in the bundle:
+  the diagnostics report (`createDiagnostics`, a js-debug custom
+  request) wrote unescaped launch-configuration JSON into a `<script>`
+  in an HTML file under the temp dir. Nothing in this product sends that
+  request (no occurrence in our source; the platform's DAP client was
+  not decompiled to prove it never does), so it is believed unreachable
+  here, and v1.140.1 closes it either way.
+- *The SBOM row said the wrong license.* The v1.207.0 relicense swept
+  the hand-written js-debug row from MIT to Apache-2.0, and
+  `LicenseConsistencyGateTest` then pinned that literal as "the SBOM
+  says Apache-2.0" — the only license id in `release.yml`. The row says
+  MIT again and the gate holds it to the adapter's own LICENSE, and the
+  row's version and sha256 to the NOTICE. Nothing asserts the PRODUCT's
+  license in the published SBOM, and nothing did: the root pom has no
+  `<licenses>` element for CycloneDX to read. Open, small.
+- *Not proven.* No breakpoint was walked in the assembled app, and the
+  refusal was never seen on a status line. The two walks that matter
+  most: **Debug File on a Node script that forks a child** (a breakpoint
+  in each; two sessions in the Sessions window, the Output tab showing
+  the program's lines, zero `node` left after Stop), and **Debug in
+  Chrome on a served page** (breakpoint hits, Stop closes the browser
+  and leaves no Chrome). Also unrun: the Windows and Linux lanes, the
+  cluster's language gates over the fourteen new translations of the
+  refusal, and `mvn verify` (SpotBugs, JaCoCo floors).
+
 ### 28. Window-menu items showed no accelerator — CLOSED
 Every advertised chord now has a Keymaps/NetBeans shadow invoking the
 same action as its Shortcuts registration, so Window-menu (and Open

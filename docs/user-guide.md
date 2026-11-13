@@ -1154,7 +1154,13 @@ which opens with the session.
   [js-debug](https://github.com/microsoft/vscode-js-debug) — the same
   engine VS Code uses — **bundled in the box**. Nothing to install: if
   `node` runs your file, you can debug it. (TypeScript works where node
-  runs it directly, or via source maps on compiled output.)
+  runs it directly, or via source maps on compiled output.) The debugger
+  itself also runs under your `node`, and it needs **Node.js 22 or
+  newer**. It cannot start under Node 18 or older: the IDE refuses that
+  launch on the status line, naming the Node it found, before anything
+  is started. Node 20 and 21 are let through but are older than the
+  debugger's own libraries support. The same floor holds for *Debug in
+  Chrome*, whose debugger is the same one.
 - **Python** uses debugpy, **Go** uses delve. Install those yourself;
   the IDE tells you the command if they're missing.
 - The program runs with your project root as its working directory, so
