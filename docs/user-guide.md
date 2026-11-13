@@ -1674,9 +1674,11 @@ with the monthly cost of what you're destroying framed in the confirm
 dialog. Right-click a deployed node to copy its ssh command. The design
 persists to `.nmoxinfra.json`.
 
+### Ops Hub
+
 ![The Ops Hub — this machine, a real host (phoenix) and two simulated servers in the fan, a deploy read back as a service node, the inspector's facts, gauges, relationships and deploy tracker](images/ops-hub.png)
 
-**Ops Hub (Window ▸ Ops Hub).** Where the Infra Designer is what you
+**Window ▸ Ops Hub** opens it. Where the Infra Designer is what you
 want to exist, the Ops Hub is a picture of what does: a DevOps HUD with
 this machine on the left and every server you can reach fanned out to
 the right. **New Server…** asks DigitalOcean for a droplet (the same
