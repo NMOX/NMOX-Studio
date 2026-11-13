@@ -378,8 +378,14 @@ public final class DockerizeGenerator {
         return false;
     }
 
+    /**
+     * A character of a package name. ASCII on purpose: these are names in a
+     * dependency list (PEP 508 allows letters, digits, "." "_" and "-" and
+     * nothing else), not words a person wrote.
+     */
     private static boolean nameChar(char c) {
-        return c == '_' || c == '-' || c == '.' || Character.isLetterOrDigit(c);
+        return c == '_' || c == '-' || c == '.' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+                || (c >= '0' && c <= '9');
     }
 
     /** A name this file may repeat inside a Dockerfile: no space, quote, newline or shell character. */
