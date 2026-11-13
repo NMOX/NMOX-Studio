@@ -2220,7 +2220,11 @@
       "files": [
         {
           "path": "package.json",
-          "content": "{\n  \"name\": \"react-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"react\": \"^18.3.1\",\n    \"react-dom\": \"^18.3.1\"\n  },\n  \"devDependencies\": {\n    \"@vitejs/plugin-react\": \"^4.3.1\",\n    \"vite\": \"^5.4.0\"\n  }\n}\n"
+          "content": "{\n  \"name\": \"react-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"react\": \"^19.0.0\",\n    \"react-dom\": \"^19.0.0\"\n  },\n  \"devDependencies\": {\n    \"@vitejs/plugin-react\": \"^6.0.0\",\n    \"vite\": \"^8.0.0\"\n  }\n}\n"
+        },
+        {
+          "path": "vite.config.js",
+          "content": "import { defineConfig } from \"vite\";\nimport react from \"@vitejs/plugin-react\";\n\nexport default defineConfig({\n  plugins: [react()]\n});\n"
         },
         {
           "path": "index.html",
@@ -2235,7 +2239,7 @@
           "content": "import { useState } from \"react\";\n\nexport default function App() {\n  const [count, setCount] = useState(0);\n  return (\n    <main style={{ fontFamily: \"system-ui\", padding: 40 }}>\n      <h1>Hello, React</h1>\n      <p>You clicked {count} times.</p>\n      <button onClick={() => setCount(count + 1)}>Click me</button>\n    </main>\n  );\n}\n"
         }
       ],
-      "tutorial": "# React\n\nReact lets you describe a UI as a tree of components. Each component returns markup (JSX) built from its **props** (inputs) and **state** (memory). When state changes, React re-renders just what changed.\n\n## Get it running\n\n1. Install Node (see the install hints for your OS).\n2. In the terminal, run `npm install` once to pull `react`, `react-dom`, and `vite`.\n3. Click **RUN** (this runs `npm run dev`). Vite prints a `http://localhost:5173` URL. Open it.\n\nYou'll see a heading and a counter button. Vite hot-reloads the page every time you save a file.\n\n## The shape\n\n- `index.html` — the single page. It has one empty `<div id=\"root\">` and loads `src/main.jsx`.\n- `src/main.jsx` — the bootstrap. `createRoot(...).render(<App />)` mounts your component tree into that div.\n- `src/App.jsx` — your first component. `useState(0)` gives you a `count` value and a `setCount` updater. Clicking the button calls `setCount`, which triggers a re-render with the new number.\n\nThat's the whole mental model: **state in, markup out, re-render on change.**\n\n## Try this\n\n1. Add a second button that resets the count: `<button onClick={() => setCount(0)}>Reset</button>`.\n2. Change the heading based on state: `{count > 4 ? \"That's a lot of clicks\" : \"Hello, React\"}`.\n3. Extract the button into its own component `Counter` that takes `count` and `onClick` as props, and render it from `App`.\n\n## Going further\n\nOfficial interactive tutorial and docs: https://react.dev/learn\n",
+      "tutorial": "# React\n\nReact lets you describe a UI as a tree of components. Each component returns markup (JSX) built from its **props** (inputs) and **state** (memory). When state changes, React re-renders just what changed.\n\n## Get it running\n\n1. Install Node 22.12 or newer (see the install hints for your OS) — that is the floor Vite 8 declares.\n2. In the terminal, run `npm install` once to pull `react`, `react-dom`, and `vite`.\n3. Click **RUN** (this runs `npm run dev`). Vite prints a `http://localhost:5173` URL. Open it.\n\nYou'll see a heading and a counter button. Vite hot-reloads the page every time you save a file.\n\n## The shape\n\n- `index.html` — the single page. It has one empty `<div id=\"root\">` and loads `src/main.jsx`.\n- `src/main.jsx` — the bootstrap. `createRoot(...).render(<App />)` mounts your component tree into that div.\n- `src/App.jsx` — your first component. `useState(0)` gives you a `count` value and a `setCount` updater. Clicking the button calls `setCount`, which triggers a re-render with the new number.\n\n- `vite.config.js` — registers the React plugin, which compiles JSX and keeps your state across hot reloads.\n\nThat's the whole mental model: **state in, markup out, re-render on change.**\n\n## Try this\n\n1. Add a second button that resets the count: `<button onClick={() => setCount(0)}>Reset</button>`.\n2. Change the heading based on state: `{count > 4 ? \"That's a lot of clicks\" : \"Hello, React\"}`.\n3. Extract the button into its own component `Counter` that takes `count` and `onClick` as props, and render it from `App`.\n\n## Going further\n\nOfficial interactive tutorial and docs: https://react.dev/learn\n",
       "blurb.es": "Construyes la interfaz con componentes y estado; React vuelve a dibujar la pantalla cuando el estado cambia.",
       "blurb.fr": "Vous bâtissez une interface avec des composants et un état ; React redessine l’écran quand l’état change.",
       "blurb.de": "Sie bauen eine Oberfläche aus Komponenten und Zustand; React zeichnet neu, sobald sich der Zustand ändert.",
@@ -2275,7 +2279,7 @@
       "files": [
         {
           "path": "package.json",
-          "content": "{\n  \"name\": \"vue-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"vue\": \"^3.4.0\"\n  },\n  \"devDependencies\": {\n    \"@vitejs/plugin-vue\": \"^5.1.0\",\n    \"vite\": \"^5.4.0\"\n  }\n}\n"
+          "content": "{\n  \"name\": \"vue-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"vue\": \"^3.5.0\"\n  },\n  \"devDependencies\": {\n    \"@vitejs/plugin-vue\": \"^6.0.0\",\n    \"vite\": \"^8.0.0\"\n  }\n}\n"
         },
         {
           "path": "vite.config.js",
@@ -2294,7 +2298,7 @@
           "content": "import { createApp } from \"vue\";\nimport App from \"./App.vue\";\n\ncreateApp(App).mount(\"#app\");\n"
         }
       ],
-      "tutorial": "# Vue\n\nVue centers on the **single-file component** (`.vue`): script, template, and (optionally) style live in one file. State declared with `ref()` is *reactive* — when its value changes, Vue updates the DOM for you.\n\n## Get it running\n\n1. Install Node.\n2. Run `npm install` once to pull `vue` and `vite`.\n3. Click **RUN** (`npm run dev`). Open the printed `http://localhost:5173` URL.\n\nA counter appears. Saving any file hot-reloads the page.\n\n## The shape\n\n- `index.html` — one empty `<div id=\"app\">` and a script that loads `src/main.js`.\n- `src/main.js` — `createApp(App).mount(\"#app\")` mounts your root component.\n- `src/App.vue` — the component. `<script setup>` holds logic; `count = ref(0)` is reactive state. `<template>` is the markup — `{{ count }}` interpolates the value and `@click=\"count++\"` wires the event. No `setState` call needed; mutating `count.value` (or `count` in the template) is enough.\n- `vite.config.js` — registers the Vue plugin so Vite can compile `.vue` files.\n\n## Try this\n\n1. Add a reset button: `<button @click=\"count = 0\">Reset</button>`.\n2. Add a computed message. In `<script setup>`: `import { computed } from \"vue\"` then `const msg = computed(() => count.value > 4 ? \"Lots!\" : \"Hello\")`, and show `{{ msg }}`.\n3. Add an input bound with `v-model` to a new `ref` and echo it below.\n\n## Going further\n\nOfficial guide and interactive tutorial: https://vuejs.org/guide/introduction.html\n",
+      "tutorial": "# Vue\n\nVue centers on the **single-file component** (`.vue`): script, template, and (optionally) style live in one file. State declared with `ref()` is *reactive* — when its value changes, Vue updates the DOM for you.\n\n## Get it running\n\n1. Install Node 22.12 or newer — the floor Vite 8 declares.\n2. Run `npm install` once to pull `vue` and `vite`.\n3. Click **RUN** (`npm run dev`). Open the printed `http://localhost:5173` URL.\n\nA counter appears. Saving any file hot-reloads the page.\n\n## The shape\n\n- `index.html` — one empty `<div id=\"app\">` and a script that loads `src/main.js`.\n- `src/main.js` — `createApp(App).mount(\"#app\")` mounts your root component.\n- `src/App.vue` — the component. `<script setup>` holds logic; `count = ref(0)` is reactive state. `<template>` is the markup — `{{ count }}` interpolates the value and `@click=\"count++\"` wires the event. No `setState` call needed; mutating `count.value` (or `count` in the template) is enough.\n- `vite.config.js` — registers the Vue plugin so Vite can compile `.vue` files.\n\n## Try this\n\n1. Add a reset button: `<button @click=\"count = 0\">Reset</button>`.\n2. Add a computed message. In `<script setup>`: `import { computed } from \"vue\"` then `const msg = computed(() => count.value > 4 ? \"Lots!\" : \"Hello\")`, and show `{{ msg }}`.\n3. Add an input bound with `v-model` to a new `ref` and echo it below.\n\n## Going further\n\nOfficial guide and interactive tutorial: https://vuejs.org/guide/introduction.html\n",
       "blurb.es": "Escribes componentes de archivo único con estado reactivo y Vue mantiene el DOM sincronizado por su cuenta.",
       "blurb.fr": "Vous écrivez des composants monofichier à état réactif, et Vue garde le DOM synchronisé tout seul.",
       "blurb.de": "Sie schreiben Single-File-Komponenten mit reaktivem Zustand, und Vue hält das DOM von selbst im Gleichklang.",
@@ -3934,7 +3938,7 @@
       "files": [
         {
           "path": "package.json",
-          "content": "{\n  \"name\": \"solid-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"solid-js\": \"^1.9.0\"\n  },\n  \"devDependencies\": {\n    \"vite\": \"^5.4.0\",\n    \"vite-plugin-solid\": \"^2.10.0\"\n  }\n}\n"
+          "content": "{\n  \"name\": \"solid-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"solid-js\": \"^1.9.0\"\n  },\n  \"devDependencies\": {\n    \"vite\": \"^8.0.0\",\n    \"vite-plugin-solid\": \"^2.11.0\"\n  }\n}\n"
         },
         {
           "path": "vite.config.js",
@@ -3949,7 +3953,7 @@
           "content": "import { render } from \"solid-js/web\";\nimport { createSignal } from \"solid-js\";\n\nfunction Counter() {\n  const [count, setCount] = createSignal(0);\n  return (\n    <button onClick={() => setCount(count() + 1)}>\n      clicks: {count()}\n    </button>\n  );\n}\n\nrender(() => <Counter />, document.getElementById(\"app\"));\n"
         }
       ],
-      "tutorial": "# Solid\n\nSolid looks like React but works differently: components run ONCE, and\nonly the reactive expressions re-run when signals change - no virtual\nDOM diffing.\n\n1. Run the dev driver (or rack VELOCITY: this is a Vite app - DEV\n   serves it, the URL feeds SCOPE).\n2. Open src/index.jsx. createSignal(0) returns a getter and a setter;\n   note you CALL count() - that call is what subscribes the text node.\n3. Change the button label; Vite hot-reloads instantly.\n4. Try createEffect(() => console.log(count())) - it re-runs per click\n   while the component function itself never re-runs.\n\nThe rack angle: VELOCITY for DEV/BUILD/PREVIEW with version currency,\nand SPECTER runs a Playwright suite against the live URL.\n",
+      "tutorial": "# Solid\n\nSolid looks like React but works differently: components run ONCE, and\nonly the reactive expressions re-run when signals change - no virtual\nDOM diffing.\n\n1. Run the dev driver (or rack VELOCITY: this is a Vite app - DEV\n   serves it, the URL feeds SCOPE). Vite 8 needs Node 22.12 or newer.\n2. Open src/index.jsx. createSignal(0) returns a getter and a setter;\n   note you CALL count() - that call is what subscribes the text node.\n3. Change the button label; Vite hot-reloads instantly.\n4. Try createEffect(() => console.log(count())) - it re-runs per click\n   while the component function itself never re-runs.\n\nThe rack angle: VELOCITY for DEV/BUILD/PREVIEW with version currency,\nand SPECTER runs a Playwright suite against the live URL.\n",
       "blurb.es": "Escribes JSX que compila a actualizaciones reactivas de grano fino: sin DOM virtual, los componentes corren una sola vez.",
       "blurb.fr": "Vous écrivez du JSX qui compile en mises à jour réactives à grain fin : pas de DOM virtuel, les composants ne tournent qu’une fois.",
       "blurb.de": "Sie schreiben JSX, das zu feinkörnigen reaktiven Updates kompiliert — kein virtuelles DOM, Komponenten laufen einmal.",
@@ -3989,7 +3993,7 @@
       "files": [
         {
           "path": "package.json",
-          "content": "{\n  \"name\": \"preact-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"preact\": \"^10.24.0\"\n  },\n  \"devDependencies\": {\n    \"vite\": \"^5.4.0\",\n    \"@preact/preset-vite\": \"^2.9.0\"\n  }\n}\n"
+          "content": "{\n  \"name\": \"preact-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"preact\": \"^11.0.0\"\n  },\n  \"devDependencies\": {\n    \"vite\": \"^8.0.0\",\n    \"@preact/preset-vite\": \"^2.10.0\"\n  }\n}\n"
         },
         {
           "path": "vite.config.js",
@@ -4004,7 +4008,7 @@
           "content": "import { render } from \"preact\";\nimport { useState } from \"preact/hooks\";\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(count + 1)}>clicks: {count}</button>;\n}\n\nrender(<Counter />, document.getElementById(\"app\"));\n"
         }
       ],
-      "tutorial": "# Preact\n\nThe same mental model as React in 3 kB: hooks, JSX, components - and\nthe preact/compat alias runs most React libraries unchanged.\n\n1. Run the dev driver (this is a Vite app - VELOCITY drives it too).\n2. src/index.jsx uses useState from preact/hooks - identical to\n   React's. The difference is under the hood: real DOM diffing, no\n   synthetic event system.\n3. Add a second component and compose it; the bundle stays tiny -\n   rack PRISM and weigh a production build against a budget.\n",
+      "tutorial": "# Preact\n\nThe same mental model as React in 3 kB: hooks, JSX, components - and\nthe preact/compat alias runs most React libraries unchanged.\n\n1. Run the dev driver (this is a Vite app - VELOCITY drives it too).\n   Vite 8 needs Node 22.12 or newer.\n2. src/index.jsx uses useState from preact/hooks - identical to\n   React's. The difference is under the hood: real DOM diffing, no\n   synthetic event system.\n3. Add a second component and compose it; the bundle stays tiny -\n   rack PRISM and weigh a production build against a budget.\n",
       "blurb.es": "Una alternativa a React de 3 kB con la misma API: hooks y JSX incluidos, alias de compat opcional.",
       "blurb.fr": "Une alternative à React de 3 ko avec la même API : hooks et JSX compris, alias compat facultatif.",
       "blurb.de": "Eine 3-kB-Alternative zu React mit derselben API — Hooks und JSX inklusive, compat-Alias optional.",
@@ -4099,7 +4103,7 @@
       "files": [
         {
           "path": "package.json",
-          "content": "{\n  \"name\": \"lit-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"lit\": \"^3.2.0\"\n  },\n  \"devDependencies\": {\n    \"vite\": \"^5.4.0\"\n  }\n}\n"
+          "content": "{\n  \"name\": \"lit-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"lit\": \"^3.3.0\"\n  },\n  \"devDependencies\": {\n    \"vite\": \"^8.0.0\"\n  }\n}\n"
         },
         {
           "path": "index.html",
@@ -4110,7 +4114,7 @@
           "content": "import { LitElement, html, css } from \"lit\";\n\nclass CountButton extends LitElement {\n  static properties = { count: { type: Number } };\n  static styles = css`button { font-size: 1.2rem; padding: .5rem 1rem; }`;\n\n  constructor() {\n    super();\n    this.count = 0;\n  }\n\n  render() {\n    return html`<button @click=${() => this.count++}>clicks: ${this.count}</button>`;\n  }\n}\n\ncustomElements.define(\"count-button\", CountButton);\n"
         }
       ],
-      "tutorial": "# Lit\n\nLit is web components with the rough edges filed off: reactive\nproperties re-render automatically, and html tagged templates update\nonly the parts that changed.\n\n1. Run the dev driver (plain Vite, no plugin needed - VELOCITY too).\n2. src/count-button.js: static properties declares reactivity;\n   assigning this.count schedules a re-render. Shadow DOM scopes the\n   css styles.\n3. Compare with Block Studio (Alt+Cmd+5): the components it composes\n   are the same standard - customElements.define, shadow root, render\n   on state change. Open one of its generated files here and read it\n   with new eyes.\n",
+      "tutorial": "# Lit\n\nLit is web components with the rough edges filed off: reactive\nproperties re-render automatically, and html tagged templates update\nonly the parts that changed.\n\n1. Run the dev driver (plain Vite, no plugin needed - VELOCITY too).\n   Vite 8 needs Node 22.12 or newer.\n2. src/count-button.js: static properties declares reactivity;\n   assigning this.count schedules a re-render. Shadow DOM scopes the\n   css styles.\n3. Compare with Block Studio (Alt+Cmd+5): the components it composes\n   are the same standard - customElements.define, shadow root, render\n   on state change. Open one of its generated files here and read it\n   with new eyes.\n",
       "blurb.es": "Componentes web con propiedades reactivas y renderizado por plantillas etiquetadas: la vía estándar para publicar interfaz.",
       "blurb.fr": "Des composants web à propriétés réactives et rendu par gabarits balisés : la voie standard pour livrer une interface.",
       "blurb.de": "Web Components mit reaktiven Eigenschaften und Tagged-Template-Rendering — der standardkonforme Weg zur Oberfläche.",
