@@ -89,7 +89,7 @@ import org.openide.windows.TopComponent;
     "OpsHub_readingOptions=Reading {0}''s regions, sizes and keys…",
     "# {0} - the error",
     "OpsHub_optionsFailed=Could not read the provider''s options: {0}",
-    "OpsHub_noProvider=No provider is configured: set a DigitalOcean or Hetzner token with Token…, or switch the simulation on.",
+    "OpsHub_noProvider=No provider is configured: set a DigitalOcean or Hetzner token with the Token… button, or switch the simulation on.",
     "OpsHub_pickProvider=Create the server at",
     "OpsHub_noProject=No project is aimed — open one first; the deploy sends its Dockerfile",
     "# {0} - the terminal title",
