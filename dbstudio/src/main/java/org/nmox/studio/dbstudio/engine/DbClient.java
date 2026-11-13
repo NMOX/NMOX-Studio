@@ -312,8 +312,16 @@ public final class DbClient implements DbBackend {
         if (h.startsWith("[") && h.endsWith("]")) {
             h = h.substring(1, h.length() - 1);
         }
-        return h.equals("localhost") || h.equals("::1") || h.startsWith("127.");
+        // 127.x is an ADDRESS, four numbers and nothing after them: a prefix test
+        // called 127.0.0.1.evil.example this machine, a name whose owner decides
+        // where it resolves, and handed that server the key exchange the password
+        // can be recovered from (review of 3.9.0). A wrong "no" here only refuses.
+        return h.equals("localhost") || h.equals("::1") || LOOPBACK_V4.matcher(h).matches();
     }
+
+    /** 127.0.0.0/8 written as a dotted quad, each part 0 to 255, nothing before or after. */
+    private static final java.util.regex.Pattern LOOPBACK_V4 = java.util.regex.Pattern.compile(
+            "127(\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3}");
 
     /** Package-private for the security-hardening test (ledger 54 L3). */
     Properties credentials() {
