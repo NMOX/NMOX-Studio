@@ -53,9 +53,11 @@ import org.openide.util.NbBundle.Messages;
     "NewServer_cloudInit=First boot installs docker, mosh-server and curl (cloud-init)",
     "# {0} - monthly price",
     "# {1} - hourly price",
-    "NewServer_cost=≈ ${0}/month (${1}/hour), billed by the provider from the moment it exists",
+    "# {2} - the sign or code of the currency the provider states its prices in (a dollar sign, a euro sign, CHF)",
+    "NewServer_cost=≈ {2}{0}/month ({2}{1}/hour), billed by the provider from the moment it exists",
     "# {0} - monthly price",
-    "NewServer_costSimulated=≈ ${0}/month if it were real — simulated, nothing is billed",
+    "# {1} - the sign or code of the currency (a dollar sign, a euro sign, CHF)",
+    "NewServer_costSimulated=≈ {1}{0}/month if it were real — simulated, nothing is billed",
     "NewServer_create=Create",
     "NewServer_cancel=Cancel",
     "NewServer_badName=The name must be a hostname: lowercase letters, digits and dashes.",
@@ -66,7 +68,8 @@ import org.openide.util.NbBundle.Messages;
     "# {2} - size",
     "# {3} - region",
     "# {4} - monthly price",
-    "NewServer_confirm=Create {0} at {1}?\n\n{2} in {3}, ≈ ${4}/month until you destroy it.",
+    "# {5} - the sign or code of the currency (a dollar sign, a euro sign, CHF)",
+    "NewServer_confirm=Create {0} at {1}?\n\n{2} in {3}, ≈ {5}{4}/month until you destroy it.",
     "NewServer_confirmTitle=Billable: create a server?",
     "# {0} - the name",
     "# {1} - the size",
@@ -149,7 +152,7 @@ public final class OpsDialogs {
         JComboBox<ProviderOptions.Size> size = new JComboBox<>(options.sizes().toArray(ProviderOptions.Size[]::new));
         size.getAccessibleContext().setAccessibleName(Bundle.NewServer_size());
         size.setRenderer(new Labeled<ProviderOptions.Size>(s ->
-                s.describe() + "  ·  $" + Numbers.display(s.priceMonthly(), 2) + "/mo"));
+                s.describe() + "  ·  " + options.currencySign() + Numbers.display(s.priceMonthly(), 2) + "/mo"));
         JComboBox<ProviderOptions.Image> image = new JComboBox<>(options.images().toArray(ProviderOptions.Image[]::new));
         image.getAccessibleContext().setAccessibleName(Bundle.NewServer_image());
         image.setRenderer(new Labeled<ProviderOptions.Image>(i -> i.distribution() + " " + i.name()));
@@ -183,8 +186,9 @@ public final class OpsDialogs {
         Runnable recost = () -> {
             ProviderOptions.Size s = (ProviderOptions.Size) size.getSelectedItem();
             cost.setText(PlainText.plain(s == null ? "" : provider.simulated()
-                    ? Bundle.NewServer_costSimulated(Numbers.display(s.priceMonthly(), 2))
-                    : Bundle.NewServer_cost(Numbers.display(s.priceMonthly(), 2), Numbers.display(s.priceHourly(), 5))));
+                    ? Bundle.NewServer_costSimulated(Numbers.display(s.priceMonthly(), 2), options.currencySign())
+                    : Bundle.NewServer_cost(Numbers.display(s.priceMonthly(), 2), Numbers.display(s.priceHourly(), 5),
+                            options.currencySign())));
         };
         size.addActionListener(e -> recost.run());
         recost.run();
@@ -243,7 +247,7 @@ public final class OpsDialogs {
             boolean yes = provider.simulated()
                     ? confirm(Bundle.NewServer_confirmSimulated(n, s.describe(), r.name()), Bundle.NewServer_confirmSimulatedTitle())
                     : confirm(Bundle.NewServer_confirm(n, provider.displayName(), s.describe(), r.name(),
-                            Numbers.display(s.priceMonthly(), 2)), Bundle.NewServer_confirmTitle());
+                            Numbers.display(s.priceMonthly(), 2), options.currencySign()), Bundle.NewServer_confirmTitle());
             if (!yes) {
                 return null;
             }

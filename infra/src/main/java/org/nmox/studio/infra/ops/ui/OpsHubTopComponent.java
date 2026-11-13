@@ -74,8 +74,10 @@ import org.openide.windows.TopComponent;
     "OpsHub_fitTooltip=Fit everything in view again (press 0). The wheel zooms in and out, and so do + and -; a drag on empty space pans.",
     "OpsHub_motion=Motion",
     "OpsHub_motionTooltip=Let the HUD glide; off snaps every change into place (the system's Reduce Motion is honoured when this is on)",
-    "OpsHub_providerLive=DigitalOcean: live",
-    "OpsHub_providerNoToken=DigitalOcean: no token",
+    "# {0} - the provider's name (DigitalOcean, Hetzner Cloud)",
+    "OpsHub_providerLive={0}: live",
+    "# {0} - the provider's name (DigitalOcean, Hetzner Cloud)",
+    "OpsHub_providerNoToken={0}: no token",
     "# {0} - the provider",
     "OpsHub_readingOptions=Reading {0}''s regions, sizes and keys…",
     "# {0} - the error",
@@ -245,10 +247,21 @@ public final class OpsHubTopComponent extends TopComponent {
             providerChip.setText("");
             return;
         }
-        OpsProvider digitalOcean = hub.provider(org.nmox.studio.infra.ops.provider.DigitalOceanOps.ID);
-        boolean live = digitalOcean != null && digitalOcean.configured();
-        providerChip.setText(PlainText.plain(live ? Bundle.OpsHub_providerLive() : Bundle.OpsHub_providerNoToken()));
-        providerChip.setForeground(live ? HudStyle.READY.darker() : javax.swing.UIManager.getColor("Label.disabledForeground"));
+        // every real provider says whether it has its token: with two of them, "DigitalOcean: no token"
+        // alone would be true and still leave a Hetzner user wondering whether theirs was seen
+        boolean anyLive = false;
+        StringBuilder chip = new StringBuilder();
+        for (OpsProvider p : hub.providers()) {
+            if (p.simulated()) {
+                continue;
+            }
+            boolean live = p.configured();
+            anyLive |= live;
+            chip.append(chip.length() == 0 ? "" : "  \u00b7  ")
+                    .append(live ? Bundle.OpsHub_providerLive(p.displayName()) : Bundle.OpsHub_providerNoToken(p.displayName()));
+        }
+        providerChip.setText(PlainText.plain(chip.toString()));
+        providerChip.setForeground(anyLive ? HudStyle.READY.darker() : javax.swing.UIManager.getColor("Label.disabledForeground"));
     }
 
     private volatile boolean primed;
