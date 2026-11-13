@@ -360,7 +360,7 @@ dice una vez por proyecto.
     tiene que existir; una ruta relativa se rechaza, porque VS Code la
     buscaría como un nombre. Cuando el entorno de ejecución es la orden
     entera (`npm run dev` sin `program`), el script que arranca se depura
-    como una sesión propia, que aparece en la ventana Sessions.
+    como una sesión propia, que aparece en la ventana **Sesiones**.
   - **Una conexión (attach) es a esta máquina.** `port` (9229 si no se
     escribe) y un `address` que sea `localhost`, `127.0.0.1` o `::1`;
     cualquier otra dirección se rechaza, porque esto no es desarrollo

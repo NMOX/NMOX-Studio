@@ -355,7 +355,7 @@ isso uma vez por projeto.
     precisa existir; um caminho relativo é recusado, porque o VS Code o
     procuraria como um nome. Quando o runtime é o comando inteiro
     (`npm run dev` sem `program`), o script que ele inicia é depurado
-    como uma sessão própria, listada na janela Sessions.
+    como uma sessão própria, listada na janela **Sessões**.
   - **A anexação é a esta máquina.** `port` (9229 se não estiver escrito)
     e um `address` igual a `localhost`, `127.0.0.1` ou `::1`; qualquer
     outro endereço é recusado, porque isto não é desenvolvimento remoto.

@@ -166,6 +166,46 @@ class DocsMenuDoorsTest {
     }
 
     /**
+     * Ledger 136: the debugger's windows have a name in every language now
+     * (their tab titles are overlaid with the Window ▸ Debugging rows' own
+     * words; {@code WayfindingVocabularyTest} holds tab and row together), so a
+     * translated document that still says "the Sessions window" names a tab
+     * the reader's build titles <i>Sitzungen</i>. The names come from the
+     * assembled cluster's overlays. Where a language's word IS the English one
+     * (French "Sessions") there is nothing to tell apart, and code, which may
+     * say {@code Variables} for its own reasons, is not prose.
+     */
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("translated")
+    @DisplayName("a translated document names the debugger's windows by that language's own names")
+    void translatedDocumentsNameTheDebuggerWindowsInTheirLanguage(String lang) throws IOException {
+        Map<String, String> names = WayfindingVocabularyTest.platformWindowNames().get(lang);
+        assertThat(names).as("the " + lang + " names of the debugger's windows, from the overlays").hasSize(7);
+        assertThat(englishWindowNames(names, documents(lang)))
+                .as("a " + lang + " document that names a debugger window in English").isEmpty();
+    }
+
+    /** Every place a document says a window's English name where this language has its own. */
+    static List<String> englishWindowNames(Map<String, String> names, List<Path> docs) throws IOException {
+        List<String> wrong = new ArrayList<>();
+        for (Path doc : docs) {
+            String prose = Files.readString(doc, StandardCharsets.UTF_8).replace("\r\n", "\n")
+                    .replaceAll("(?s)```.*?```", " ").replaceAll("`[^`\n]*`", " ");
+            for (Map.Entry<String, String> w : names.entrySet()) {
+                if (w.getKey().equals(w.getValue())) {
+                    continue;
+                }
+                Matcher m = Pattern.compile("(?<![\\w-])" + Pattern.quote(w.getKey()) + "(?![\\w-])").matcher(prose);
+                while (m.find()) {
+                    wrong.add(doc.getFileName() + ": " + snippet(prose, Math.max(0, m.start() - 30))
+                            + "   (says \"" + w.getKey() + "\"; the window reads \"" + w.getValue() + "\" here)");
+                }
+            }
+        }
+        return wrong;
+    }
+
+    /**
      * Every path in the documents that starts at a top menu. A path is found from
      * its arrow backwards, not from a capital letter forwards: most of the scripts
      * the product speaks have no capitals, and a capital-led phrase ("Open the

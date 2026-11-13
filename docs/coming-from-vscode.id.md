@@ -358,7 +358,7 @@ menggantikan masing-masing). Pemberitahuan itu muncul sekali per proyek.
     harus ada di sana; jalur relatif ditolak, karena VS Code akan
     mencarinya sebagai sebuah nama. Bila runtime itu adalah seluruh
     perintahnya (`npm run dev` tanpa `program`), skrip yang dimulainya
-    diawakutu sebagai sesi tersendiri, yang terdaftar di jendela Sessions.
+    diawakutu sebagai sesi tersendiri, yang terdaftar di jendela **Sesi**.
   - **Penyambungan (attach) hanya ke mesin ini.** `port` (9229 bila tidak
     ditulis) dan `address` berupa `localhost`, `127.0.0.1`, atau `::1`;
     alamat lain apa pun ditolak, karena ini bukan pengembangan jarak jauh.
