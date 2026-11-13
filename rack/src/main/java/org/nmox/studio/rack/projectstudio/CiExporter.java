@@ -168,12 +168,20 @@ public final class CiExporter {
      * {@code DockerizeGenerator} writes by the same test, so the CI the
      * product exports and the image it generates build on one runtime.
      * Measured 2026-11-13: node 26 is the Active LTS (24 and 22 are in
-     * maintenance), .NET 8 left support on 2026-11-10 (10 is the LTS),
-     * and {@code gleam_stdlib} 1.x refuses a compiler older than 1.14,
-     * so the 1.5 this used to install could not build a project created
-     * today. Deliberately left: java 17, ruby 3.3 and elixir 1.17 / OTP
-     * 27 are all still supported upstream, and moving a project's
-     * language level is its owner's decision.
+     * maintenance), and the current {@code gleam_stdlib} (1.0.5)
+     * declares {@code gleam >= 1.14.0}, so the 1.5 this used to install
+     * could not build a Gleam project created today.
+     *
+     * <p>Left as they were, each for its own reason. java 17, ruby 3.3
+     * and elixir 1.17 / OTP 27 are still supported upstream and no other
+     * generator names them, so there was nothing to measure a newer one
+     * against. {@code dotnet-version} stays 8.x although .NET 8 left
+     * support on 2026-11-10: the C# and ASP.NET learning spaces this
+     * product creates target {@code net8.0}, an SDK of a later major
+     * brings no 8.0 runtime to run them (measured with 11.0.100:
+     * {@code dotnet run} exits 150), and the three literals (this one,
+     * the two project files, the spaces' Linux install hint) are one
+     * fact that moves together or not at all.
      */
     static List<String> setupSteps(File projectDir) {
         List<String> steps = new ArrayList<>();
@@ -229,7 +237,7 @@ public final class CiExporter {
                 case DART -> steps.add("      - uses: dart-lang/setup-dart@v1\n");
                 case DOTNET -> steps.add("""
                           - uses: actions/setup-dotnet@v6
-                            with: { dotnet-version: 10.x }
+                            with: { dotnet-version: 8.x }
                     """.stripTrailing() + "\n");
                 case HASKELL -> steps.add("      - uses: haskell-actions/setup@v2\n");
                 case ZIG -> steps.add("      - uses: mlugg/setup-zig@v2\n");
