@@ -80,9 +80,9 @@ public final class OutlineModel {
         };
     }
 
-    /** The extractor family for a mime, for consumers outside this package (sticky scroll's range rules). */
     /**
-     * The outline family for a mime — NEVER null.
+     * The outline family for a mime — NEVER null. Public for consumers
+     * outside this package (sticky scroll's range rules).
      *
      * <p>{@link #family} ends in {@code default -> "generic"}, so every mime
      * has a family and an unfamiliar text file gets a brace-and-indent read
@@ -797,7 +797,6 @@ public final class OutlineModel {
     private static final Pattern NIM_TYPE = Pattern.compile(
             "^\\s{2,}([A-Z][A-Za-z0-9_]*)\\s*\\*?\\s*=\\s*(?:ref\\s+)?(object|enum|tuple|distinct)");
 
-    /** Nim: routines by keyword, types inside top-level {@code type} blocks. */
     /** WIT declaration shapes: kind + kebab-name + opening brace, plus
      *  the one-line {@code type x = y;} alias. Funcs inside interfaces
      *  are deliberately out — the contract's units are the blocks. */
@@ -824,6 +823,7 @@ public final class OutlineModel {
         return out;
     }
 
+    /** Nim: routines by keyword, types inside top-level {@code type} blocks. */
     private static List<Item> nim(String[] lines) {
         List<Item> out = new ArrayList<>();
         for (int i = 0; i < lines.length && i < MAX_LINES; i++) {

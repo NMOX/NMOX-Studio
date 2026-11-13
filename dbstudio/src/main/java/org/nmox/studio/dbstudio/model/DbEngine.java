@@ -114,16 +114,6 @@ public enum DbEngine {
     }
 
     /**
-     * Builds the JDBC URL for a connection spec. Server engines use
-     * {@code host:port/database} (a spec port of {@code <= 0} falls back
-     * to {@link #defaultPort()}); SQLite uses the spec's
-     * {@link ConnectionSpec#filePath() filePath} verbatim.
-     *
-     * @throws IllegalStateException for {@link Kind#DOCUMENT} engines —
-     *         they have no JDBC URL; use
-     *         {@code DbBackend.create(spec, password)} instead
-     */
-    /**
      * Whether the connection dialog offers <i>Use TLS</i> for this engine:
      * CouchDB's HTTP transport (https, v1.122.0) and the MySQL/MariaDB
      * driver's {@code sslMode} (3.9.0). PostgreSQL negotiates its own
@@ -134,10 +124,20 @@ public enum DbEngine {
         return this == COUCHDB || this == MYSQL || this == MARIADB;
     }
 
+    /**
+     * Builds the JDBC URL for a connection spec. Server engines use
+     * {@code host:port/database} (a spec port of {@code <= 0} falls back
+     * to {@link #defaultPort()}); SQLite uses the spec's
+     * {@link ConnectionSpec#filePath() filePath} verbatim.
+     *
+     * @throws IllegalStateException for {@link Kind#DOCUMENT} engines —
+     *         they have no JDBC URL; use
+     *         {@code DbBackend.create(spec, password)} instead
+     */
     public String jdbcUrl(ConnectionSpec spec) {
         return switch (this) {
-            case MYSQL, MARIADB -> "jdbc:mariadb://" + hostPort(spec) + "/" + nz(spec.database());
-            case POSTGRES -> "jdbc:postgresql://" + hostPort(spec) + "/" + nz(spec.database());
+            case MYSQL, MARIADB -> "jdbc:mariadb://" + hostPort(spec, true) + "/" + nz(spec.database());
+            case POSTGRES -> "jdbc:postgresql://" + hostPort(spec, false) + "/" + nz(spec.database());
             case SQLITE -> "jdbc:sqlite:" + nz(spec.filePath());
             case MONGODB, COUCHDB -> throw new IllegalStateException(
                     displayName + " is a document engine — it has no JDBC URL; "
@@ -145,9 +145,20 @@ public enum DbEngine {
         };
     }
 
-    private String hostPort(ConnectionSpec spec) {
+    /**
+     * {@code host:port}. An IPv6 literal typed bare ({@code ::1}) is put in
+     * brackets for the MariaDB driver, which otherwise reads its colons as
+     * the port separator and refuses the URL (<i>Incorrect port value</i>,
+     * measured against Connector/J 4.0); pgJDBC parses the bare form itself
+     * and keeps the URL it always had.
+     */
+    private String hostPort(ConnectionSpec spec, boolean bracketBareIpv6) {
         int port = spec.port() > 0 ? spec.port() : defaultPort;
-        return nz(spec.host()) + ":" + port;
+        String host = nz(spec.host());
+        if (bracketBareIpv6 && !host.startsWith("[") && host.indexOf(':') != host.lastIndexOf(':')) {
+            host = "[" + host + "]";
+        }
+        return host + ":" + port;
     }
 
     private static String nz(String s) {

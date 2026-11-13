@@ -305,16 +305,6 @@ public class RackService {
     }
 
     /**
-     * One snapshot write, or its removal when {@code json} is null (3.4).
-     * It used to be a plain {@code Files.writeString} with the error
-     * swallowed: on a full 4 MB volume the snapshot went from 37 bytes to 0
-     * (the truncating open succeeded, the write did not), and the next
-     * launch's resume offer then failed to parse it — silently — so a crash
-     * lost the one thing this file exists to keep. The write is atomic now
-     * (a failed write leaves the last good snapshot), and a failure is
-     * logged at WARNING. It still never disturbs the rack.
-     */
-    /**
      * The snapshot a resume offer is built from, or null. A snapshot that
      * cannot be read or parsed used to vanish silently with the offer it
      * carried; it is logged at WARNING now (3.4).
@@ -343,6 +333,12 @@ public class RackService {
 
     /**
      * Writes (or, given null, removes) the session snapshot, atomically. It
+     * used to be a plain {@code Files.writeString} with the error swallowed:
+     * on a full 4 MB volume the snapshot went from 37 bytes to 0 (the
+     * truncating open succeeded, the write did not), and the next launch's
+     * resume offer then failed to parse it, silently, so a crash lost the
+     * one thing this file exists to keep (3.4). A failed write now leaves
+     * the last good snapshot and never disturbs the rack. The file
      * is rewritten every few seconds while anything runs, so a failure is
      * logged at WARNING once per failing streak and at FINE after that — a
      * full disk used to add a stack trace to the log every five seconds (the
@@ -1100,13 +1096,6 @@ public class RackService {
     private static final int PATCH_REFUSAL_LINGER_MS = 15_000;
 
     /**
-     * A status message that outlives the project opening which would otherwise
-     * bury it — see {@link #PATCH_REFUSAL_IMPORTANCE} for why the plain
-     * {@link #status} cannot do this. A second refusal replaces the first
-     * rather than stacking: {@code NbStatusDisplayer.add} REPLACES an existing
-     * message of equal importance, so successive failed aims never queue up.
-     */
-    /**
      * The message currently shown, held so it cannot be collected before its
      * time. **This field is the fix, and v2.182.0 shipped without it.**
      *
@@ -1121,6 +1110,13 @@ public class RackService {
      */
     private static volatile org.openide.awt.StatusDisplayer.Message patchRefusalShown;
 
+    /**
+     * A status message that outlives the project opening which would otherwise
+     * bury it — see {@link #PATCH_REFUSAL_IMPORTANCE} for why the plain
+     * {@link #status} cannot do this. A second refusal replaces the first
+     * rather than stacking: {@code NbStatusDisplayer.add} REPLACES an existing
+     * message of equal importance, so successive failed aims never queue up.
+     */
     private static void statusThatLingers(String text) {
         try {
             // held in a field, not a local: see patchRefusalShown for why the

@@ -1,0 +1,79 @@
+name: Dockerize proof
+
+# Builds and runs every container recipe the product generates (Docker Panel >
+# Dockerize, and the PHP Web (LEMP) template's stack) against a real daemon:
+# scripts/dockerize-proof.sh over the projects DockerizeProofFixturesTest
+# writes with the product's own generator.
+#
+# "A Dockerfile that was never built is a claim, not a product" (v1.353.0).
+# That release built each generated Dockerfile by hand, once. The base images
+# move, a tag that exists is not an image that builds, and the machines this
+# product is written on do not always run a daemon. A runner always does.
+#
+# Informational: it runs on demand, weekly, and on a push to a proof/** branch
+# (a workflow_dispatch can only be started for a workflow file the default
+# branch already has, and a proof is most useful before its branch merges).
+# It has no pull_request trigger, so it cannot be made a required check, and
+# the release workflow does not wait for it: a red run names a recipe that no
+# longer builds, within a week of the image that broke it.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['proof/**']
+  schedule:
+    - cron: "41 5 * * 3"
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    name: build and run every generated recipe
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: 25
+          cache: maven
+
+      # The least that can write the projects: the rack module and what it
+      # needs, one test class, no static analysis. The test is the generation
+      # step; it fails when a recipe has no fixture.
+      - name: Write every recipe as a project
+        run: mvn -B -pl rack -am test -Dtest=DockerizeProofFixturesTest -Dnmox.dockerize.out="$RUNNER_TEMP/dockerize-proof" -Dsurefire.failIfNoSpecifiedTests=false -Dspotbugs.skip=true -Djacoco.skip=true
+
+      - name: The daemon this proof is of
+        run: |
+          docker version
+          docker compose version
+
+      - name: Build and run every recipe
+        run: scripts/dockerize-proof.sh "$RUNNER_TEMP/dockerize-proof"
+
+      - name: The verdicts
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/dockerize-proof/verdicts.txt" ]; then
+            {
+              echo '```'
+              cat "$RUNNER_TEMP/dockerize-proof/verdicts.txt"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "no verdicts were written: the proof did not get as far as its first recipe" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # the projects as built (Dockerfiles and .dockerignore included, hence
+      # the hidden files), the verdict lines and each recipe's log
+      - name: Keep the projects, the verdicts and the logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: dockerize-proof
+          path: ${{ runner.temp }}/dockerize-proof/
+          include-hidden-files: true
+          if-no-files-found: warn

@@ -633,17 +633,23 @@ public final class OpsHub {
         node.label = r.name();
         node.address = r.address();
         node.facts.putAll(r.facts());
-        node.facts.put("provider status", r.providerStatus());
+        String statusBefore = node.facts.put("provider status", r.providerStatus());
         node.lastSeenMillis = clock.getAsLong();
+        String notRunning = null;
         if (!r.active()) {
             if (node.status == HostStatus.DESTROYING) {
                 // the destroy owns its story
-            } else if ("new".equals(r.providerStatus()) || node.status == HostStatus.REQUESTED) {
+            } else if (r.comingUp() || node.status == HostStatus.REQUESTED) {
                 node.status = HostStatus.PROVISIONING;
             } else {
-                // off, archived: it exists and is not coming up — say what the provider says, sweep nothing
+                // off, archived, or a word this product does not know: it exists and is not coming up —
+                // say what the provider says, sweep nothing. The feed hears it when the provider's word
+                // CHANGES, not at every listing (a server that stays off would say so once a minute).
                 node.status = HostStatus.UNREACHABLE;
                 node.lastProblem = Bundle.OpsHub_providerSaysNotRunning(p.displayName(), String.valueOf(r.providerStatus()));
+                if (!String.valueOf(r.providerStatus()).equals(statusBefore)) {
+                    notRunning = node.lastProblem;
+                }
             }
         } else if (!node.status.reachable() && node.status != HostStatus.UNREACHABLE
                 && node.status != HostStatus.DESTROYING) {
@@ -661,6 +667,9 @@ public final class OpsHub {
             }
         } else {
             topology.touched(node);
+        }
+        if (notRunning != null) {
+            event(OpsEvent.Kind.INFO, id, notRunning);
         }
         return node;
     }
@@ -1290,6 +1299,13 @@ public final class OpsHub {
             then.accept(RollbackOffer.refused(Bundle.OpsHub_refuseNotOurs(service.label)));
             return;
         }
+        if (!DeployPlan.containerOf(app).equals(service.facts.get("container"))) {
+            // the label alone is not the deploy: the run line replaces the container NAMED nmox-<app>, so on a
+            // container that only carries the label (started by hand, renamed) a rollback would remove another
+            // container than the one it was asked on — and then fail on the port this one still holds
+            then.accept(RollbackOffer.refused(Bundle.OpsHub_refuseNotOurs(service.label)));
+            return;
+        }
         SshTarget target = targetOf(host);
         if (target == null || !host.status.reachable()) {
             then.accept(RollbackOffer.refused(Bundle.OpsHub_refuseNotReachable(host.label)));
@@ -1316,10 +1332,20 @@ public final class OpsHub {
         RemoteRunner runner = runnerFor(host);
         onSsh(() -> {
             List<String> lines = Collections.synchronizedList(new ArrayList<>());
+            // bounded like a probe: the host is a stranger, and twenty seconds of an endless stream is the heap
+            int cap = org.nmox.studio.infra.ops.remote.Rollback.MAX_TAG_LINES;
+            java.util.concurrent.atomic.AtomicInteger printed = new java.util.concurrent.atomic.AtomicInteger();
             RemoteRunner.Result r = runner.run(target, org.nmox.studio.infra.ops.remote.Rollback.imagesCommand(app),
-                    null, lines::add, java.time.Duration.ofSeconds(20));
+                    null, line -> {
+                        if (printed.getAndIncrement() < cap) {
+                            lines.add(line);
+                        }
+                    }, java.time.Duration.ofSeconds(20));
             RollbackOffer offer;
-            if (!r.ok()) {
+            if (printed.get() > cap) {
+                offer = RollbackOffer.refused(Bundle.OpsHub_refuseImagesUnread(app, host.label,
+                        Bundle.OpsHub_probeTooManyLines(Integer.toString(cap))));
+            } else if (!r.ok()) {
                 String said = lines.isEmpty() ? r.tail() : lines.get(lines.size() - 1);
                 offer = RollbackOffer.refused(Bundle.OpsHub_refuseImagesUnread(app, host.label, said == null ? "" : said));
             } else {

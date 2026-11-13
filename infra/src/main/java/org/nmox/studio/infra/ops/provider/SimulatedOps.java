@@ -67,7 +67,8 @@ public final class SimulatedOps implements OpsProvider {
                 List.of(new ProviderOptions.Size("s-1vcpu-1gb", 6.0, 0.00893, 1, 1024, 25, List.of("sim1", "sim2")),
                         new ProviderOptions.Size("s-2vcpu-2gb", 18.0, 0.02679, 2, 2048, 60, List.of("sim1", "sim2"))),
                 List.of(new ProviderOptions.Image("ubuntu-24-04-x64", "24.04 (LTS) x64", "Ubuntu")),
-                List.of(new ProviderOptions.SshKey("sim-key", "this machine (simulated)", "SHA256:simulated")));
+                List.of(new ProviderOptions.SshKey("sim-key", "this machine (simulated)", "SHA256:simulated")),
+                "USD");
     }
 
     @Override

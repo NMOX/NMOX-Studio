@@ -58,7 +58,8 @@ public final class ClassicKit {
 
     /**
      * One classic library the kit can deliver. {@code npmName == null}
-     * means vendored-only (Prototype has no canonical npm package).
+     * means vendored-only (Prototype and MooTools have no canonical npm
+     * package; {@link #npmNote} says so wherever npm is refused).
      * {@code scriptTag} is a compile-time literal, never assembled from
      * parts at runtime — markup construction from variables is exactly
      * what find-sec-bugs' XML-injection detector exists to catch, so
@@ -81,40 +82,59 @@ public final class ClassicKit {
     public static final String PROTOTYPE_NPM_NOTE
             = "Prototype ships vendored only — no canonical npm package";
 
+    /**
+     * The same reason for whichever library npm cannot deliver, in the
+     * one wording ({@link #PROTOTYPE_NPM_NOTE} is this for Prototype);
+     * null for a library npm can deliver.
+     */
+    public static String npmNote(Lib lib) {
+        return lib.npmCapable() ? null
+                : lib.display() + " ships vendored only — no canonical npm package";
+    }
+
     private static final Lib JQUERY = new Lib("jquery", "jQuery", "3.7.1",
             "jquery-3.7.1.min.js",
             "<script src=\"vendor/jquery-3.7.1.min.js\"></script>",
             "jquery", "^3.7.1");
-    private static final Lib ALPINE = new Lib("alpine", "Alpine.js", "3.14.9",
-            "alpinejs-3.14.9.min.js",
-            "<script defer src=\"vendor/alpinejs-3.14.9.min.js\"></script>",
-            "alpinejs", "^3.14.9");
-    private static final Lib HTMX = new Lib("htmx", "htmx", "2.0.4",
-            "htmx-2.0.4.min.js",
-            "<script src=\"vendor/htmx-2.0.4.min.js\"></script>",
-            "htmx.org", "^2.0.4");
+    private static final Lib ALPINE = new Lib("alpine", "Alpine.js", "3.17.5",
+            "alpinejs-3.17.5.min.js",
+            "<script defer src=\"vendor/alpinejs-3.17.5.min.js\"></script>",
+            "alpinejs", "^3.17.5");
+    private static final Lib HTMX = new Lib("htmx", "htmx", "2.0.11",
+            "htmx-2.0.11.min.js",
+            "<script src=\"vendor/htmx-2.0.11.min.js\"></script>",
+            "htmx.org", "^2.0.11");
+    /**
+     * Vendored only. Until 2026-11-13 npm mode wrote
+     * {@code "mootools": "^1.6.0"}, a range the registry cannot resolve
+     * ({@code npm install}: ETARGET, exit 1): the newest {@code mootools}
+     * on npm is 1.5.2, described as "MooTools 1.5.2 Server library"
+     * (mootools-node), not the browser file this kit vendors, and no
+     * {@code mootools-core} package exists. {@code ClassicKitTest} holds
+     * every range npm mode still writes to a dated registry check.
+     */
     private static final Lib MOOTOOLS = new Lib("mootools", "MooTools Core (compat)", "1.6.0",
             "mootools-core-1.6.0-compat.min.js",
             "<script src=\"vendor/mootools-core-1.6.0-compat.min.js\"></script>",
-            "mootools", "^1.6.0");
+            null, null);
     private static final Lib PROTOTYPE = new Lib("prototype", "Prototype", "1.7.3",
             "prototype-1.7.3.js",
             "<script src=\"vendor/prototype-1.7.3.js\"></script>",
             null, null);
-    private static final Lib BACKBONE = new Lib("backbone", "Backbone", "1.6.0",
-            "backbone-1.6.0.min.js",
-            "<script src=\"vendor/backbone-1.6.0.min.js\"></script>",
-            "backbone", "^1.6.0");
-    private static final Lib KNOCKOUT = new Lib("knockout", "Knockout", "3.5.1",
-            "knockout-3.5.1.js",
-            "<script src=\"vendor/knockout-3.5.1.js\"></script>",
-            "knockout", "^3.5.1");
+    private static final Lib BACKBONE = new Lib("backbone", "Backbone", "1.6.1",
+            "backbone-1.6.1.min.js",
+            "<script src=\"vendor/backbone-1.6.1.min.js\"></script>",
+            "backbone", "^1.6.1");
+    private static final Lib KNOCKOUT = new Lib("knockout", "Knockout", "3.5.3",
+            "knockout-3.5.3.js",
+            "<script src=\"vendor/knockout-3.5.3.js\"></script>",
+            "knockout", "^3.5.3");
 
     /** Not selectable on its own: Backbone's hard dependency, wired first. */
-    private static final Lib UNDERSCORE = new Lib("underscore", "Underscore", "1.13.7",
-            "underscore-1.13.7.min.js",
-            "<script src=\"vendor/underscore-1.13.7.min.js\"></script>",
-            "underscore", "^1.13.7");
+    private static final Lib UNDERSCORE = new Lib("underscore", "Underscore", "1.13.8",
+            "underscore-1.13.8.min.js",
+            "<script src=\"vendor/underscore-1.13.8.min.js\"></script>",
+            "underscore", "^1.13.8");
 
     /** The selectable catalog, dialog order. */
     public static List<Lib> libraries() {
@@ -172,8 +192,12 @@ public final class ClassicKit {
             warnings.add("No package.json here — npm delivery has nowhere to record "
                     + "dependencies; use Vendored.");
         }
-        if (opts.mode() == Mode.NPM && opts.libraries().contains("prototype")) {
-            warnings.add(PROTOTYPE_NPM_NOTE + " — it will be skipped.");
+        if (opts.mode() == Mode.NPM) {
+            for (Lib lib : libraries()) {
+                if (!lib.npmCapable() && opts.libraries().contains(lib.id())) {
+                    warnings.add(npmNote(lib) + " — it will be skipped.");
+                }
+            }
         }
         return warnings;
     }
@@ -345,7 +369,7 @@ public final class ClassicKit {
         for (Lib lib : delivery) {
             if (!lib.npmCapable()) {
                 outcomes.add(new Outcome("package.json",
-                        lib.display() + ": " + PROTOTYPE_NPM_NOTE, false));
+                        lib.display() + ": " + npmNote(lib), false));
                 continue;
             }
             if ((deps != null && deps.has(lib.npmName()))

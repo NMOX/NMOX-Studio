@@ -80,16 +80,16 @@ public final class KeystrokeHud {
         overlay.show(text);
     }
 
-    /**
-     * The showing rule: a chord carrying ⌘ (META), ⌃ (CTRL) or ⌥ (ALT), or a
-     * function key / Escape on its own. A bare modifier press shows nothing;
-     * plain and ⇧-only keys are typing and never show.
-     */
     /** The modifiers a chord can carry on this keyboard, as the status line names them when the display turns on. */
     static String modifierNames(boolean mac) {
         return mac ? "\u2318, \u2303, \u2325" : "Ctrl, Alt";
     }
 
+    /**
+     * The showing rule: a chord carrying ⌘ (META), ⌃ (CTRL) or ⌥ (ALT), or a
+     * function key / Escape on its own. A bare modifier press shows nothing;
+     * plain and ⇧-only keys are typing and never show.
+     */
     public static boolean shows(int modifiersEx, int keyCode) {
         // AltGr is how half of Europe types { [ ] } @ and \ on Windows and
         // Linux, and it arrives as Ctrl+Alt with this bit beside them: that

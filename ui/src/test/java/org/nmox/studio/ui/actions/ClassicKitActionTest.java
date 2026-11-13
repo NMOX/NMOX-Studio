@@ -22,8 +22,8 @@ class ClassicKitActionTest {
                 .filter(lib -> "backbone".equals(lib.id())).findFirst().orElseThrow();
 
         assertThat(ClassicKitAction.libraryLabel(backbone))
-                .contains("Backbone 1.6.0")
-                .contains("Underscore 1.13.7")
+                .contains("Backbone 1.6.1")
+                .contains("Underscore 1.13.8")
                 .contains("wired first");
     }
 
@@ -38,8 +38,10 @@ class ClassicKitActionTest {
     }
 
     @Test
-    @DisplayName("npm mode disables exactly the npm-incapable library (Prototype)")
+    @DisplayName("npm mode disables exactly the npm-incapable libraries (MooTools, Prototype)")
     void npmModeDisablesPrototypeOnly() {
+        assertThat(ClassicKit.libraries()).filteredOn(lib -> !ClassicKitAction.enabledFor(lib, true))
+                .extracting(ClassicKit.Lib::id).containsExactly("mootools", "prototype");
         for (ClassicKit.Lib lib : ClassicKit.libraries()) {
             assertThat(ClassicKitAction.enabledFor(lib, false))
                     .as(lib.id() + " enabled under Vendored").isTrue();

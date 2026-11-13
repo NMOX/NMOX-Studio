@@ -517,11 +517,6 @@ public final class DevScripts {
     }
 
     /**
-     * Live preview for style write-back: sets the inline style on the
-     * element at {@code path} so the page shows the tweak instantly,
-     * before (and independent of) the source write.
-     */
-    /**
      * Installs (or replaces) the Motion pane's preview stylesheet — a
      * single {@code <style id="__nmox_motion">} holding the timeline's
      * current {@code @keyframes} block (v2.12.0). Idempotent per call;
@@ -542,6 +537,11 @@ public final class DevScripts {
                 + "if(s&&s.parentNode){s.parentNode.removeChild(s);}return 'ok';})()";
     }
 
+    /**
+     * Live preview for style write-back: sets the inline style on the
+     * element at {@code path} so the page shows the tweak instantly,
+     * before (and independent of) the source write.
+     */
     public static String applyInlineStyle(List<Integer> path, String property, String value) {
         return "(function(){\n"
                 + "var path=" + pathJson(path) + ";\n"

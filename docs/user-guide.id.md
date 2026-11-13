@@ -91,6 +91,7 @@ Pintasan yang layak dipelajari di hari pertama (semuanya juga tercantum di tab s
 | **⌥⌘7** | Studio Basis Data |
 | **⌥⌘8** | Studio API |
 | **⌥⌘9** | Perancang Infrastruktur |
+| **⌥⌘U** | Pusat Ops |
 | **⌘8** | Panel Docker |
 | **⌘7** | Struktur berkas saat ini |
 | **⇧⌘N / ⌥⌘O** | Proyek Baru… / Buka Folder… |
@@ -107,7 +108,7 @@ Datang dari VS Code? [Beralih dari VS Code](coming-from-vscode.id.md) memetakan 
 <a id="3-projects"></a>
 ## 3. Proyek
 
-**Membuka:** folder mana pun yang memuat satu dari 60 manifes yang dikenali akan terbuka sebagai proyek sungguhan — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js`, dan kerabatnya — termasuk manifes rantai kontrak: repositori Aiken (`aiken.toml`) atau Clarinet (`Clarinet.toml`) terbuka dengan jalur aslinya sudah terpasang. Folder biasa berisi HTML dengan tag `<script>` dan **tanpa** manifes juga terbuka, sebagai proyek STATIC: web klasik adalah warga kelas satu di sini, bukan sebuah kesalahan.
+**Membuka:** folder mana pun yang memuat satu dari 63 manifes yang dikenali akan terbuka sebagai proyek sungguhan — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js`, dan kerabatnya — termasuk manifes rantai kontrak: repositori Aiken (`aiken.toml`) atau Clarinet (`Clarinet.toml`) terbuka dengan jalur aslinya sudah terpasang. Folder biasa berisi HTML dengan tag `<script>` dan **tanpa** manifes juga terbuka, sebagai proyek STATIC: web klasik adalah warga kelas satu di sini, bukan sebuah kesalahan.
 
 **Membuat:** *Proyek baru…* menawarkan kerangka sungguhan — Angular, Vue, Svelte, JavaScript polos, Elixir/Phoenix, PHP Web (LEMP), dan Web klasik (jQuery). Masing-masing datang dengan konfigurasi lint, format, dan uji yang sudah terpasang serta repositori git yang telah disiapkan: satu komit kerangka yang, ketika wisaya menjalankan pemasangan untuk Anda, turut memuat berkas kunci — sehingga `git status` pertama Anda bersih.
 
@@ -298,6 +299,14 @@ Pohon artefak Foundry dan Hardhat, **Berinteraksi** yang dituntun ABI dengan kem
 ### Perancang Infrastruktur (⌥⌘9)
 
 Sebuah kanvas untuk DigitalOcean, Hetzner, dan Cloudflare: selaraskan dengan apa yang benar-benar ada, segarkan untuk melihat selisihnya, dan hancurkan setumpuk sumber daya dengan biayanya terpampang. Sambungan yang tak sah menolak dengan lantang dan menyebut sebabnya, dan selama sebuah operasi awan berjalan, kanvasnya terkunci dengan pita yang mengatakannya.
+
+### Pusat Ops (⌥⌘U)
+
+![Pusat Ops — mesin ini, satu host nyata, dan dua server simulasi dalam kipas, sebuah peluncuran yang terbaca kembali sebagai simpul layanan, serta inspektur dengan fakta, pengukur, hubungan, dan pelacak peluncuran](images/ops-hub.png)
+
+Perancang Infrastruktur adalah apa yang Anda inginkan ada; Pusat Ops (**Jendela ▸ Pusat Ops**) adalah gambaran langsung dari apa yang ada: server yang bisa Anda jangkau, dengan mesin ini di sebelah kiri. **Server Baru…** memintanya dari DigitalOcean atau Hetzner dengan token Perancang Infrastruktur, menampilkan harganya sebelum Anda mengonfirmasi, dan daftar peristiwa menceritakan setiap langkah yang teramati oleh Pusat Ops. **mosh** dan **ssh** membuka sesi di Terminal milik IDE sendiri. **Luncurkan…** membangun Dockerfile proyek yang dibidik di host lalu menjalankannya; dialognya lebih dulu menampilkan perintah persisnya, dan **Batal** adalah pilihan bawaan. Setiap host yang terjangkau diperiksa tiap 15 detik (beban, memori, disk, kontainer), dan tautannya digambar dengan garis utuh untuk yang teramati, putus-putus untuk yang tersimpulkan, dan titik-titik untuk yang dinyatakan. **Tambah Host…** untuk server yang sudah Anda miliki; **Simulasi** adalah penyedia pura-pura yang ditandai jelas, tanpa tagihan.
+
+Roda memperbesar dan memperkecil, menyeret di ruang kosong menggeser tampilan, dan **Paskan** membingkai semuanya lagi. Sebuah layanan punya **Log**, **Shell**, dan **Kembalikan…**, yang menjalankan image yang berjalan sebelumnya: tidak ada yang diunggah atau dibangun, dan Enter menjawab **Tidak**. Pusat Ops menyimpan `known_hosts` sendiri di `~/.nmox/ops/` dan tidak pernah menulis ke milik Anda.
 
 ### IRC (⌥⌘3)
 

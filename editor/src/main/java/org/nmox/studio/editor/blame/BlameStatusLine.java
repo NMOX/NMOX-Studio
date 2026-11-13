@@ -116,7 +116,6 @@ public final class BlameStatusLine implements StatusLineElementProvider {
         return t.substring(0, t.offsetByCodePoints(0, max - 1)) + "…";
     }
 
-    /** The label on the status line. Listens only while it is in the status bar. */
     /**
      * Whether the user has pressed a key or a mouse button in this session.
      * Zero processes at boot is a house law (v1.38.0), and the window system
@@ -154,6 +153,7 @@ public final class BlameStatusLine implements StatusLineElementProvider {
     static java.util.function.Consumer<String> status = text -> org.openide.awt.StatusDisplayer
             .getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(text));
 
+    /** The label on the status line. Listens only while it is in the status bar. */
     static final class Strip extends JLabel {
 
         private final LineBlame blame;

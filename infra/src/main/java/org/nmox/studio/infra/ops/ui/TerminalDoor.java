@@ -56,6 +56,34 @@ public final class TerminalDoor {
     private static final org.openide.util.RequestProcessor RP = new org.openide.util.RequestProcessor("Ops Hub terminal", 1, true);
 
     /**
+     * A tab's title, made unable to be markup. A title is partly a
+     * stranger's text: a service's label is whatever the HOST reports (a
+     * compose label, a provider's server name), and in English it comes
+     * first ("{0} logs"). The Terminal's tabs are a {@code JTabbedPane},
+     * which renders a title that begins with {@code <html>} — so a label
+     * beginning {@code <html><img src=…>} would have the IDE fetch that
+     * address when the tab paints (the markup-render class, v2.86.0). No
+     * tag can be written without an angle bracket, so the brackets become
+     * the single guillemets that look like them; control characters go.
+     */
+    static String tabTitle(String raw) {
+        if (raw == null) {
+            return "";
+        }
+        StringBuilder out = new StringBuilder(raw.length());
+        raw.codePoints().forEach(c -> {
+            if (c == '<') {
+                out.append('\u2039');
+            } else if (c == '>') {
+                out.append('\u203A');
+            } else if (!Character.isISOControl(c)) {
+                out.appendCodePoint(c);
+            }
+        });
+        return out.toString();
+    }
+
+    /**
      * Runs {@code argv} in a new Terminal tab. The first element is the
      * tool's name, resolved on this machine's PATH (the launcher's
      * augmented one); the rest are its arguments. The tab is made on the
@@ -64,7 +92,8 @@ public final class TerminalDoor {
      * {@code IllegalThreadStateException: Should never be called from AWT
      * thread}) — so the outcome arrives through the callback, on the EDT.
      */
-    public static void open(String title, List<String> argv, String workingDir, java.util.function.Consumer<Outcome> then) {
+    public static void open(String rawTitle, List<String> argv, String workingDir, java.util.function.Consumer<Outcome> then) {
+        String title = tabTitle(rawTitle);
         String exe = ToolLocator.resolve(argv.get(0));
         if (exe == null) {
             then.accept(Outcome.NO_TOOL);

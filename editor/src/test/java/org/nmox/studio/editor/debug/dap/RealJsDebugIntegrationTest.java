@@ -434,10 +434,10 @@ class RealJsDebugIntegrationTest {
         }
     }
 
-    /** The port node's inspector chose ({@code --inspect-brk=0}), read from the line it prints on stderr. */
     /** What the attached program printed on stderr, kept so a failure can say why the program went away. */
     private static final List<String> NODE_STDERR = new java.util.concurrent.CopyOnWriteArrayList<>();
 
+    /** The port node's inspector chose ({@code --inspect-brk=0}), read from the line it prints on stderr. */
     private static int inspectorPort(Process node) throws Exception {
         NODE_STDERR.clear();
         BlockingQueue<Integer> found = new LinkedBlockingQueue<>();

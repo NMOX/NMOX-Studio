@@ -53,6 +53,8 @@ class WindowShortcutsTest {
                 new String[] {"DA-8", "API Studio  ⌥⌘8"});
         WINDOWS.put("../infra/src/main/java/org/nmox/studio/infra/InfraDesignerTopComponent.java",
                 new String[] {"DA-9", "Infra Designer  ⌥⌘9"});
+        WINDOWS.put("../infra/src/main/java/org/nmox/studio/infra/ops/ui/OpsHubTopComponent.java",
+                new String[] {"DA-U", "Ops Hub  ⌥⌘U"});
         WINDOWS.put("../project/src/main/java/org/nmox/studio/project/ProjectExplorerTopComponent.java",
                 new String[] {"DA-0", "Workbench  ⌥⌘0"});
         WINDOWS.put("../rack/src/main/java/org/nmox/studio/rack/RackTopComponent.java",
@@ -88,6 +90,8 @@ class WindowShortcutsTest {
         KEYMAP_LAYERS.put("../apiclient/src/main/java/org/nmox/studio/apiclient/ui/ApiClientTopComponent.java",
                 "../apiclient/src/main/resources/org/nmox/studio/apiclient/layer.xml");
         KEYMAP_LAYERS.put("../infra/src/main/java/org/nmox/studio/infra/InfraDesignerTopComponent.java",
+                "../infra/src/main/resources/org/nmox/studio/infra/layer.xml");
+        KEYMAP_LAYERS.put("../infra/src/main/java/org/nmox/studio/infra/ops/ui/OpsHubTopComponent.java",
                 "../infra/src/main/resources/org/nmox/studio/infra/layer.xml");
         KEYMAP_LAYERS.put("../project/src/main/java/org/nmox/studio/project/ProjectExplorerTopComponent.java",
                 "../project/src/main/resources/org/nmox/studio/project/layer.xml");

@@ -91,6 +91,7 @@ Mga shortcut na sulit matutunan sa unang araw (nakalista rin silang lahat sa wel
 | **⌥⌘7** | Studio ng Database |
 | **⌥⌘8** | Studio ng API |
 | **⌥⌘9** | Taga-disenyo ng Infrastructure |
+| **⌥⌘U** | Hub ng Ops |
 | **⌘8** | Docker Panel |
 | **⌘7** | Balangkas ng kasalukuyang file |
 | **⇧⌘N / ⌥⌘O** | Bagong Proyekto… / Buksan ang Folder… |
@@ -107,7 +108,7 @@ Galing sa VS Code? Itinutugma ng [Galing sa VS Code](coming-from-vscode.tl.md) a
 <a id="3-projects"></a>
 ## 3. Mga Proyekto
 
-**Pagbubukas:** anumang folder na may isa sa 60 kinikilalang manifest ay bumubukas bilang tunay na proyekto — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js`, at mga kauri — kasama na ang mga manifest ng mga contract chain: ang isang Aiken (`aiken.toml`) o Clarinet (`Clarinet.toml`) na repositoryo ay bumubukas na nakakabit na ang tunay nitong mga linya. Bumubukas din ang payak na folder ng HTML na may `<script>` at **walang** manifest, bilang proyektong STATIC: ang klasikong web ay first-class dito, hindi isang mali.
+**Pagbubukas:** anumang folder na may isa sa 63 kinikilalang manifest ay bumubukas bilang tunay na proyekto — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js`, at mga kauri — kasama na ang mga manifest ng mga contract chain: ang isang Aiken (`aiken.toml`) o Clarinet (`Clarinet.toml`) na repositoryo ay bumubukas na nakakabit na ang tunay nitong mga linya. Bumubukas din ang payak na folder ng HTML na may `<script>` at **walang** manifest, bilang proyektong STATIC: ang klasikong web ay first-class dito, hindi isang mali.
 
 **Paglikha:** nag-aalok ang *Bagong Proyekto…* ng tunay na mga balangkas — Angular, Vue, Svelte, payak na JavaScript, Elixir/Phoenix, PHP Web (LEMP), at Klasikong web (jQuery). Bawat isa ay dumarating na nakakabit na ang mga setting para sa lint, format at pagsusulit, at may nakahandang git na repositoryo: iisang commit ng balangkas na, kapag pinatakbo ng wizard ang pag-install para sa iyo, dala rin ang lockfile — kaya malinis ang iyong unang `git status`.
 
@@ -298,6 +299,14 @@ Ang puno ng mga artefact ng Foundry at Hardhat, isang **Makipag-ugnayan** na gin
 ### Taga-disenyo ng Infrastructure (⌥⌘9)
 
 Isang lienzo para sa DigitalOcean, Hetzner at Cloudflare: itugma sa kung ano ang tunay na umiiral, i-refresh upang makita ang pagkakaiba, at gibain ang isang salansan habang nakalantad ang halaga nito. Ang mga bawal na kabit ay tumatanggi nang malakas at sinasabi kung bakit, at habang tumatakbo ang isang gawain sa ulap, nakakandado ang lienzo na may guhit na nagsasabi nito.
+
+### Hub ng Ops (⌥⌘U)
+
+![Ang Hub ng Ops — ang makinang ito, isang tunay na host at dalawang kunwaring server na nakapamaypay, isang deploy na nabasa pabalik bilang node ng serbisyo, at ang inspector na may mga datos, panukat, ugnayan at tracker ng deploy](images/ops-hub.png)
+
+Ang Taga-disenyo ng Infrastructure ang gusto mong umiral; ang Hub ng Ops (**Bintana ▸ Hub ng Ops**) ang buhay na larawan ng umiiral: ang mga server na naaabot mo, at ang makinang ito sa kaliwa. Humihingi ang **Bagong Server…** ng isa sa DigitalOcean o Hetzner gamit ang token ng Taga-disenyo ng Infrastructure, ipinapakita ang presyo bago ka magkumpirma, at isinasalaysay ng mga event ang bawat naobserbahang hakbang. Nagbubukas ang **mosh** at **ssh** ng session sa terminal ng IDE. Bini-build ng **I-deploy…** sa host ang Dockerfile ng tinutukang proyekto at pinatatakbo ito; ipinapakita muna ang eksaktong mga command, at **Kanselahin** ang default. Sinusuri ang bawat naaabot na host tuwing 15 segundo (load, memory, disk, mga container), at buo ang guhit ng ugnay kung naobserbahan, putol-putol kung hinango, tuldok-tuldok kung idineklara. Para sa server na mayroon ka na ang **Magdagdag ng Host…**; kunwaring provider ang **Simulation**, may marka at walang singil.
+
+Nagzu-zoom ang wheel, nagpa-pan ang pag-drag, at ibinabalik ng **Ikasya** ang lahat sa view. May **Mga log**, **Shell** at **I-roll back…** ang serbisyo; pinatatakbo ng huli ang dating image: walang ia-upload o ibi-build, at **Hindi** ang sagot ng Enter. May sariling `known_hosts` ang Hub sa `~/.nmox/ops/` at hindi kailanman sumusulat sa iyo.
 
 ### IRC (⌥⌘3)
 

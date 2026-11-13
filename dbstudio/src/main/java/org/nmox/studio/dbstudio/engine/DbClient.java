@@ -46,7 +46,11 @@ import org.openide.util.NbBundle.Messages;
  */
 @Messages({
     // chrome (shift-2970): the one reason this client speaks to the user.
-    "DbClient_couldNotOpen=Could not open connection: {0}"
+    "DbClient_couldNotOpen=Could not open connection: {0}",
+    // the refusal for a host or database name that is really a piece of a
+    // driver URL (review of 3.9.0); no argument, the text it is about is a
+    // stranger’s and stays out of the sentence
+    "DbClient_carriesOptions=Not connected: the host or database name of this connection contains characters, such as a question mark or a slash, that would pass extra options to the database driver. Edit the connection and enter the name alone."
 })
 public final class DbClient implements DbBackend {
 
@@ -97,6 +101,9 @@ public final class DbClient implements DbBackend {
      */
     @Override
     public String test() {
+        if (carriesDriverOptions(spec)) {
+            return Bundle.DbClient_carriesOptions();
+        }
         try {
             Class.forName(spec.engine().driverClass());
             try (Connection probe = DriverManager.getConnection(urlWithConnectTimeout(), credentials());
@@ -120,6 +127,9 @@ public final class DbClient implements DbBackend {
     public synchronized String open() {
         if (isOpenLocked()) {
             return null;
+        }
+        if (carriesDriverOptions(spec)) {
+            return Bundle.DbClient_carriesOptions();
         }
         try {
             Class.forName(spec.engine().driverClass());
@@ -283,6 +293,11 @@ public final class DbClient implements DbBackend {
      * the cleartext connection those specs always had.
      */
     static String connectionUrl(ConnectionSpec spec) {
+        if (carriesDriverOptions(spec)) {
+            // test() and open() refuse in the user's words before they get here;
+            // this is the backstop that keeps such a URL from being built at all
+            throw new IllegalArgumentException("host or database name carries driver URL syntax");
+        }
         String url = spec.engine().jdbcUrl(spec);
         return switch (spec.engine()) {
             case MYSQL, MARIADB -> url + "?connectTimeout=" + (CONNECT_TIMEOUT_SECONDS * 1000)
@@ -303,6 +318,52 @@ public final class DbClient implements DbBackend {
         };
     }
 
+    /**
+     * Whether the spec's host or database name would be read by the driver as
+     * URL syntax rather than as a name (review of 3.9.0).
+     *
+     * <p>The URL is built by concatenation, and both fields are text a
+     * {@code git clone} can bring in {@code .nmoxdb.json} or a {@code .env}.
+     * Measured against the drivers this build ships: MariaDB Connector/J 4.0
+     * and pgJDBC 42.7 both start reading options at the FIRST {@code ?}, so a
+     * database named {@code shop?allowPublicKeyRetrieval=true&x=} turned the
+     * key fetch on for a remote server, {@code shop?allowLocalInfile=true&x=}
+     * undid the local-infile refusal (a URL option beats the Properties it
+     * was stated in), and on PostgreSQL {@code shop?PGHOST=elsewhere&x=} sent
+     * the connection, and the keychain password, to a host the dialog never
+     * showed. A host holding {@code /} or {@code ?} does the same one field
+     * earlier. Neither driver decodes an escape in the MariaDB database
+     * name, so there is no spelling of such a name to pass on: the
+     * connection is refused, in words ({@code DbClient_carriesOptions}).
+     *
+     * <p>The user name travels in Properties, never in the URL, and cannot
+     * do this (measured: {@code root?sslMode=disable} stays a user name).
+     * SQLite's path is handled where its Properties are built.
+     */
+    static boolean carriesDriverOptions(ConnectionSpec spec) {
+        if (spec.engine() == DbEngine.SQLITE) {
+            return false;
+        }
+        String database = spec.database();
+        if (database != null && database.indexOf('?') >= 0) {
+            return true;
+        }
+        String host = spec.host();
+        if (host == null) {
+            return false;
+        }
+        for (int i = 0; i < host.length(); i++) {
+            char c = host.charAt(i);
+            if (HOST_URL_SYNTAX.indexOf(c) >= 0 || Character.isWhitespace(c) || Character.isISOControl(c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** What ends the host, starts the options, or opens the MariaDB {@code address=(…)} form. */
+    private static final String HOST_URL_SYNTAX = "/?#&=()\\";
+
     /** The host spellings a connection to this machine takes; no lookup, a string rule. */
     static boolean isLoopbackHost(String host) {
         if (host == null) {
@@ -312,12 +373,29 @@ public final class DbClient implements DbBackend {
         if (h.startsWith("[") && h.endsWith("]")) {
             h = h.substring(1, h.length() - 1);
         }
-        return h.equals("localhost") || h.equals("::1") || h.startsWith("127.");
+        // 127.x is an ADDRESS, four numbers and nothing after them: a prefix test
+        // called 127.0.0.1.evil.example this machine, a name whose owner decides
+        // where it resolves, and handed that server the key exchange the password
+        // can be recovered from (review of 3.9.0). A wrong "no" here only refuses.
+        return h.equals("localhost") || h.equals("::1") || LOOPBACK_V4.matcher(h).matches();
     }
+
+    /** 127.0.0.0/8 written as a dotted quad, each part 0 to 255, nothing before or after. */
+    private static final java.util.regex.Pattern LOOPBACK_V4 = java.util.regex.Pattern.compile(
+            "127(\\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3}");
 
     /** Package-private for the security-hardening test (ledger 54 L3). */
     Properties credentials() {
         Properties props = new Properties();
+        if (spec.engine() == DbEngine.SQLITE) {
+            // a SQLite path may carry sqlite-jdbc options after a "?", and a
+            // path is text .nmoxdb.json brings: "dev.db?enable_load_extension=true"
+            // made load_extension() callable, so one saved query away from
+            // loading a native library out of the cloned project. Stated here
+            // because sqlite-jdbc lets Properties beat the URL (measured against
+            // 3.54: with this set, every URL spelling answers "not authorized").
+            props.setProperty("enable_load_extension", "false");
+        }
         if (spec.engine() != DbEngine.SQLITE) {
             if (spec.user() != null && !spec.user().isBlank()) {
                 props.setProperty("user", spec.user());
@@ -338,8 +416,21 @@ public final class DbClient implements DbBackend {
         return props;
     }
 
-    private static String humanize(Throwable t) {
-        return JdbcCore.humanize(t);
+    private String humanize(Throwable t) {
+        return connectFailure(spec.engine(), t);
+    }
+
+    /**
+     * A connect failure in words. The TLS sentences are MySQL's and
+     * MariaDB's: they name the <i>Use TLS</i> box, which only those two
+     * JDBC engines have, and their looser test (any message holding "ssl"
+     * or "tls" beside "certificate" or "hostname") called a SQLite file
+     * under a folder named {@code tls-certificates} a server whose
+     * certificate could not be verified.
+     */
+    static String connectFailure(DbEngine engine, Throwable t) {
+        return engine == DbEngine.MYSQL || engine == DbEngine.MARIADB
+                ? JdbcCore.humanize(t) : JdbcCore.message(t);
     }
 
     private String scopeCatalog() {

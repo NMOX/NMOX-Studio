@@ -646,12 +646,6 @@ public final class RackTopComponent extends TopComponent {
     // ---- share / import (v2.176.0) ----
 
     /**
-     * Writes this rack as a shared file: the patch with every path under this
-     * user's home rewritten to {@code ~} (a home path is a username) and a header
-     * naming the product version — see {@link org.nmox.studio.rack.model.RackShare}.
-     * The snapshot is taken on the EDT; only the write rides the lane.
-     */
-    /**
      * Share… (v2.179.0): one dialog the rack leaves through. The sender names
      * it, reads what travels inside it, and picks a file, the clipboard or My
      * Racks. The rack is snapshotted at the gesture — what the sender read is
@@ -711,6 +705,12 @@ public final class RackTopComponent extends TopComponent {
         }
     }
 
+    /**
+     * Writes this rack as a shared file: the patch with every path under this
+     * user's home rewritten to {@code ~} (a home path is a username) and a header
+     * naming the product version — see {@link org.nmox.studio.rack.model.RackShare}.
+     * The snapshot is taken on the EDT; only the write rides the lane.
+     */
     private void shareToFile(org.json.JSONObject shared, File dir, String rackName, String projectName) {
         File picked = new org.openide.filesystems.FileChooserBuilder(RackTopComponent.class)
                 .setTitle(Bundle.RackTopComponent_shareTitle())

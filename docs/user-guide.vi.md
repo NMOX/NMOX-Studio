@@ -91,6 +91,7 @@ Những phím tắt đáng học trong ngày đầu (tất cả cũng có trên 
 | **⌥⌘7** | Studio cơ sở dữ liệu |
 | **⌥⌘8** | Studio API |
 | **⌥⌘9** | Trình thiết kế hạ tầng |
+| **⌥⌘U** | Trung tâm vận hành |
 | **⌘8** | Bảng Docker |
 | **⌘7** | Cấu trúc tệp hiện tại |
 | **⇧⌘N / ⌥⌘O** | Dự án mới… / Mở thư mục… |
@@ -107,7 +108,7 @@ Bạn chuyển sang từ VS Code? [Chuyển từ VS Code sang](coming-from-vscod
 <a id="3-projects"></a>
 ## 3. Dự án
 
-**Mở:** bất kỳ thư mục nào mang một trong 60 tệp kê khai được nhận biết đều mở ra như một dự án thật — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js` và những họ hàng của chúng — kể cả các tệp kê khai của những chuỗi hợp đồng: một kho Aiken (`aiken.toml`) hay Clarinet (`Clarinet.toml`) mở ra với đúng các làn của nó đã được nối sẵn. Một thư mục HTML thuần với thẻ `<script>` và **không** có tệp kê khai cũng mở được, dưới dạng dự án STATIC: web cổ điển ở đây là công dân hạng nhất, không phải một lỗi.
+**Mở:** bất kỳ thư mục nào mang một trong 63 tệp kê khai được nhận biết đều mở ra như một dự án thật — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js` và những họ hàng của chúng — kể cả các tệp kê khai của những chuỗi hợp đồng: một kho Aiken (`aiken.toml`) hay Clarinet (`Clarinet.toml`) mở ra với đúng các làn của nó đã được nối sẵn. Một thư mục HTML thuần với thẻ `<script>` và **không** có tệp kê khai cũng mở được, dưới dạng dự án STATIC: web cổ điển ở đây là công dân hạng nhất, không phải một lỗi.
 
 **Tạo:** *Dự án mới…* đưa ra những bộ khung thật — Angular, Vue, Svelte, JavaScript thuần, Elixir/Phoenix, PHP Web (LEMP) và Web cổ điển (jQuery). Mỗi bộ đến với cấu hình lint, định dạng và kiểm thử đã nối sẵn cùng một kho git đã khởi tạo: một commit khung duy nhất mà, khi trình hướng dẫn chạy phần cài đặt giúp bạn, cũng mang theo tệp khóa — nên lần `git status` đầu tiên của bạn sạch sẽ.
 
@@ -298,6 +299,14 @@ Cây tạo phẩm của Foundry và Hardhat, phần **Tương tác** do ABI dẫ
 ### Trình thiết kế hạ tầng (⌥⌘9)
 
 Một khung vẽ cho DigitalOcean, Hetzner và Cloudflare: đồng bộ với thứ thật sự đang tồn tại, làm mới để thấy chỗ lệch, và phá bỏ cả một chồng tài nguyên với chi phí bày ngay trước mắt. Những đường nối không hợp lệ từ chối ra tiếng và nói rõ vì sao, còn trong lúc một thao tác trên đám mây đang chạy thì khung vẽ khóa lại kèm một dải chữ nói đúng điều đó.
+
+### Trung tâm vận hành (⌥⌘U)
+
+![Trung tâm vận hành — máy này, một máy chủ thật và hai máy chủ mô phỏng xòe hình quạt, một lần triển khai được đọc lại thành nút dịch vụ, cùng bảng kiểm tra với dữ kiện, đồng hồ đo, quan hệ và tiến trình triển khai](images/ops-hub.png)
+
+Trình thiết kế hạ tầng là thứ bạn muốn có; Trung tâm vận hành (**Cửa sổ ▸ Trung tâm vận hành**) là bức tranh sống về thứ đang có: các máy chủ bạn với tới, máy này ở bên trái. **Máy chủ mới…** xin máy từ DigitalOcean hoặc Hetzner bằng token của Trình thiết kế hạ tầng, báo giá trước khi bạn xác nhận, và danh sách sự kiện thuật lại từng bước quan sát được. **mosh** và **ssh** mở phiên trong Terminal của chính IDE. **Triển khai…** dựng Dockerfile của dự án đang nhắm trên máy chủ rồi chạy nó; trước đó hiện đúng các lệnh sẽ chạy, với **Hủy** là mặc định. Mỗi máy chủ với tới được thăm dò mỗi 15 giây (tải, bộ nhớ, đĩa, container); liên kết vẽ nét liền nếu quan sát, nét đứt nếu suy luận, nét chấm nếu khai báo. **Thêm máy chủ…** dành cho máy chủ bạn đã có; **Mô phỏng** là nhà cung cấp giả, đánh dấu rõ và không tốn phí.
+
+Con lăn phóng to thu nhỏ, kéo để dịch chuyển, còn **Vừa khung** đưa mọi thứ về khung nhìn. Một dịch vụ có **Nhật ký**, **Shell** và **Quay lui…**; lệnh sau chạy image trước đó: không tải lên hay dựng gì, và Enter trả lời **Không**. Trung tâm giữ `known_hosts` riêng trong `~/.nmox/ops/` và không bao giờ ghi vào tệp của bạn.
 
 ### IRC (⌥⌘3)
 

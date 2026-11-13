@@ -155,8 +155,8 @@ class OpsHubTest {
     @DisplayName("a listing adds hosts, updates them in place, and removes what the provider stopped listing")
     void listing() {
         OpsHub hub = hub();
-        provider.listed.add(new HostRecord("1", "alpha", "203.0.113.1", true, "active", Map.of("region", "nyc3")));
-        provider.listed.add(new HostRecord("2", "beta", null, false, "new", Map.of()));
+        provider.listed.add(new HostRecord("1", "alpha", "203.0.113.1", HostRecord.Phase.RUNNING, "active", Map.of("region", "nyc3")));
+        provider.listed.add(new HostRecord("2", "beta", null, HostRecord.Phase.COMING_UP, "new", Map.of()));
         hub.refresh();
         cloud.drain(3);
         Topology t = hub.topology();
@@ -165,7 +165,7 @@ class OpsHubTest {
         assertThat(t.node("scripted:2").status).isEqualTo(HostStatus.PROVISIONING);
         assertThat(t.edgesOf("scripted:1")).extracting(OpsEdge::kind).containsExactly("ssh");
         provider.listed.remove(1);
-        provider.listed.set(0, new HostRecord("1", "alpha-renamed", "203.0.113.1", true, "active", Map.of()));
+        provider.listed.set(0, new HostRecord("1", "alpha-renamed", "203.0.113.1", HostRecord.Phase.RUNNING, "active", Map.of()));
         hub.refresh();
         cloud.drain(3);
         assertThat(t.nodes(OpsKind.HOST)).hasSize(1);
@@ -364,6 +364,7 @@ class OpsHubTest {
     /** A host running one deployed app, whose image history and answers the test sets. */
     static final class RollbackRunner implements RemoteRunner {
         final List<String> commands = new ArrayList<>();
+        String name = "nmox-shop";
         String label = "nmox.ops.app=shop";
         String image = "nmox/shop:300";
         String ports = "0.0.0.0:80->3000/tcp";
@@ -373,7 +374,7 @@ class OpsHubTest {
         @Override
         public Result run(SshTarget target, String remoteCommand, InputStream stdin, Consumer<String> onLine, Duration timeout) {
             commands.add(remoteCommand);
-            String row = "{\"Names\":\"nmox-shop\",\"Image\":\"" + image + "\",\"Status\":\"Up\",\"Ports\":\"" + ports
+            String row = "{\"Names\":\"" + name + "\",\"Image\":\"" + image + "\",\"Status\":\"Up\",\"Ports\":\"" + ports
                     + "\",\"Labels\":\"" + label + "\",\"Networks\":\"bridge\"}";
             if (remoteCommand.startsWith("echo nmox-probe 1")) {
                 probe("container " + row).forEach(onLine);
@@ -485,10 +486,68 @@ class OpsHubTest {
     }
 
     @Test
+    @DisplayName("a rollback is refused on a container the deploy did not name: its run line would replace nmox-<app>, another container")
+    void rollbackRefusesAContainerTheDeployDidNotName() {
+        RollbackRunner rr = new RollbackRunner();
+        // ours by label and by image, but started by hand beside the deployed one (a canary on another port)
+        rr.name = "shop-canary";
+        rr.ports = "0.0.0.0:9090->3000/tcp";
+        OpsHub hub = new OpsHub(clock::get, Runnable::run, rr, prefs, cloud, ssh).withProviders(List.of(provider));
+        hub.addManualHost(new SshTarget("root", "203.0.113.5", 22, null), "box");
+        ssh.drain(2);
+        OpsNode canary = onlyService(hub);
+        assertThat(canary.app).isEqualTo("shop");
+        assertThat(canary.facts.get("container")).isEqualTo("shop-canary");
+        rr.commands.clear();
+        OpsHub.RollbackOffer[] offer = {null};
+        hub.rollbackOffer(canary, o -> offer[0] = o);
+        ssh.drain(2);
+        assertThat(offer[0].ok())
+                .as("the offer's run line is 'docker rm -f nmox-shop; docker run --name nmox-shop … -p 9090:3000': it removes "
+                        + "the DEPLOYED container, not the one asked about, and then cannot bind the port the canary holds")
+                .isFalse();
+        assertThat(offer[0].refusal()).contains("shop-canary was not deployed from NMOX Studio");
+        assertThat(rr.commands).as("refused before the host is asked anything").isEmpty();
+    }
+
+    @Test
+    @DisplayName("a rollback's reading of the host's images is bounded: a host that prints without end is refused by name, not held")
+    void rollbackImageReadIsBounded() {
+        RollbackRunner rr = new RollbackRunner();
+        OpsHub hub = new OpsHub(clock::get, Runnable::run, rr, prefs, cloud, ssh).withProviders(List.of(provider));
+        hub.addManualHost(new SshTarget("root", "203.0.113.5", 22, null), "box");
+        ssh.drain(2);
+        OpsHub.RollbackOffer[] offer = {null};
+        // a long-lived app: many honest tags are read and answered
+        List<String> many = new ArrayList<>();
+        for (int i = 0; i < 1_500; i++) {
+            many.add(Integer.toString(1_000 + i));
+        }
+        many.add("300");
+        many.add("200");
+        rr.tags = many;
+        hub.rollbackOffer(onlyService(hub), o -> offer[0] = o);
+        ssh.drain(2);
+        assertThat(offer[0].ok()).as(String.valueOf(offer[0].refusal())).isTrue();
+        assertThat(offer[0].plan().stamp()).isEqualTo("200");
+        // a host that answers `docker images` with a stream: every line was collected for the whole leash
+        List<String> flood = new ArrayList<>();
+        for (int i = 0; i < 50_000; i++) {
+            flood.add(i % 2 == 0 ? "200" : "junk " + i);
+        }
+        rr.tags = flood;
+        offer[0] = null;
+        hub.rollbackOffer(onlyService(hub), o -> offer[0] = o);
+        ssh.drain(2);
+        assertThat(offer[0].ok()).as("50,000 lines where a few dozen were expected is not an answer to offer from").isFalse();
+        assertThat(offer[0].refusal()).contains("could not read the images of shop on box").contains("more than 2000 lines");
+    }
+
+    @Test
     @DisplayName("destroying a provider host removes it and says billing stops; a provider's refusal keeps it and says why")
     void destroy() {
         OpsHub hub = hub();
-        provider.listed.add(new HostRecord("1", "alpha", "203.0.113.1", true, "active", Map.of()));
+        provider.listed.add(new HostRecord("1", "alpha", "203.0.113.1", HostRecord.Phase.RUNNING, "active", Map.of()));
         hub.refresh();
         cloud.drain(2);
         OpsNode node = hub.topology().node("scripted:1");
@@ -505,8 +564,8 @@ class OpsHubTest {
             }
         };
         OpsHub hub2 = new OpsHub(clock::get, Runnable::run, runner, prefs, cloud, ssh).withProviders(List.of(stubborn));
-        provider.listed.add(new HostRecord("2", "beta", "203.0.113.2", true, "active", Map.of()));
-        hub2.applyRecord(stubborn, new HostRecord("2", "beta", "203.0.113.2", true, "active", Map.of()));
+        provider.listed.add(new HostRecord("2", "beta", "203.0.113.2", HostRecord.Phase.RUNNING, "active", Map.of()));
+        hub2.applyRecord(stubborn, new HostRecord("2", "beta", "203.0.113.2", HostRecord.Phase.RUNNING, "active", Map.of()));
         OpsNode beta = hub2.topology().node("scripted:2");
         hub2.destroyHost(beta);
         cloud.drain(2);
@@ -605,7 +664,7 @@ class OpsHubTest {
 
         @Override
         public HostRecord createHost(HostSpec spec) {
-            HostRecord r = new HostRecord("7", spec.name(), "203.0.113.7", true, "active", Map.of());
+            HostRecord r = new HostRecord("7", spec.name(), "203.0.113.7", HostRecord.Phase.RUNNING, "active", Map.of());
             listed.add(r);
             return r;
         }
@@ -696,7 +755,7 @@ class OpsHubTest {
             }
         };
         OpsHub hub = new OpsHub(clock::get, Runnable::run, runner, prefs, cloud, ssh).withProviders(List.of(stubborn));
-        OpsNode node = hub.applyRecord(stubborn, new HostRecord("2", "beta", "203.0.113.2", true, "active", Map.of()));
+        OpsNode node = hub.applyRecord(stubborn, new HostRecord("2", "beta", "203.0.113.2", HostRecord.Phase.RUNNING, "active", Map.of()));
         ssh.drain(2); // nobody answers
         assertThat(node.status).isEqualTo(HostStatus.UNREACHABLE);
         hub.destroyHost(node);
@@ -709,12 +768,33 @@ class OpsHubTest {
     @DisplayName("a server the provider reports off is not 'provisioning': it is unreachable, and the provider's word is the reason")
     void poweredOffIsNotProvisioning() {
         OpsHub hub = hub();
-        OpsNode off = hub.applyRecord(provider, new HostRecord("3", "gamma", "203.0.113.3", false, "off", Map.of()));
+        OpsNode off = hub.applyRecord(provider, new HostRecord("3", "gamma", "203.0.113.3", HostRecord.Phase.NOT_RUNNING, "off", Map.of()));
         assertThat(off.status).isEqualTo(HostStatus.UNREACHABLE);
         assertThat(off.status.inProgress()).as("nothing to sweep for").isFalse();
         assertThat(off.lastProblem).isEqualTo("Scripted reports this server as: off");
-        OpsNode fresh = hub.applyRecord(provider, new HostRecord("4", "delta", null, false, "new", Map.of()));
+        OpsNode fresh = hub.applyRecord(provider, new HostRecord("4", "delta", null, HostRecord.Phase.COMING_UP, "new", Map.of()));
         assertThat(fresh.status).isEqualTo(HostStatus.PROVISIONING);
+    }
+
+    @Test
+    @DisplayName("a provider's word for 'not running' reaches the feed when it changes, once — and a word the product does not know is said, not guessed")
+    void notRunningIsSaidOnce() {
+        OpsHub hub = hub();
+        // Hetzner's words: initializing is on its way up, whatever the engine knows of the word itself
+        OpsNode node = hub.applyRecord(provider, new HostRecord("5", "eps", null, HostRecord.Phase.COMING_UP, "initializing", Map.of()));
+        assertThat(node.status).isEqualTo(HostStatus.PROVISIONING);
+        assertThat(hub.feed()).extracting(OpsEvent::text).noneMatch(t -> t.contains("reports this server as"));
+        hub.applyRecord(provider, new HostRecord("5", "eps", "203.0.113.5", HostRecord.Phase.NOT_RUNNING, "off", Map.of()));
+        assertThat(node.status).isEqualTo(HostStatus.UNREACHABLE);
+        hub.applyRecord(provider, new HostRecord("5", "eps", "203.0.113.5", HostRecord.Phase.NOT_RUNNING, "off", Map.of()));
+        hub.applyRecord(provider, new HostRecord("5", "eps", "203.0.113.5", HostRecord.Phase.NOT_RUNNING, "off", Map.of()));
+        assertThat(hub.feed()).extracting(OpsEvent::text).filteredOn(t -> t.equals("Scripted reports this server as: off"))
+                .as("said when it turned off, not at every listing after").hasSize(1);
+        hub.applyRecord(provider, new HostRecord("5", "eps", "203.0.113.5", HostRecord.Phase.NOT_RUNNING, "hibernating", Map.of()));
+        assertThat(node.status).as("an unknown word is not 'coming up': nothing sweeps").isEqualTo(HostStatus.UNREACHABLE);
+        assertThat(node.lastProblem).isEqualTo("Scripted reports this server as: hibernating");
+        assertThat(hub.feed()).extracting(OpsEvent::text).contains("Scripted reports this server as: hibernating");
+        assertThat(hub.feed()).filteredOn(e -> e.text().contains("reports this server as")).allMatch(e -> "scripted:5".equals(e.nodeId()));
     }
 
     @Test
@@ -743,7 +823,7 @@ class OpsHubTest {
     @DisplayName("only what the host itself answered marks its link: a listing and a silence cross nothing")
     void onlyAnswersCrossTheLink() {
         OpsHub hub = hub();
-        provider.listed.add(new HostRecord("1", "alpha", "203.0.113.1", true, "active", Map.of()));
+        provider.listed.add(new HostRecord("1", "alpha", "203.0.113.1", HostRecord.Phase.RUNNING, "active", Map.of()));
         hub.refresh();
         cloud.drain(2);
         runner.lines = probe(WEB);

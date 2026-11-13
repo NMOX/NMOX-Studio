@@ -113,7 +113,8 @@ public final class SimulatedWorld {
     HostRecord record(SimHost h) {
         long age = ageSeconds(h);
         boolean active = age >= ACTIVE_AFTER_S;
-        return new HostRecord(h.id, h.name, active ? h.address : null, active, active ? "active" : "new", h.facts);
+        return new HostRecord(h.id, h.name, active ? h.address : null,
+                active ? HostRecord.Phase.RUNNING : HostRecord.Phase.COMING_UP, active ? "active" : "new", h.facts);
     }
 
     /** The simulation's ssh: refuses before the host "boots", then answers the probe and the deploy from the script. */
@@ -203,7 +204,7 @@ public final class SimulatedWorld {
         if (command.startsWith("docker build")) {
             String image = command.split("\\s+")[3];
             for (String line : List.of("#1 [internal] load build definition from Dockerfile",
-                    "#2 [internal] load .dockerignore", "#3 [1/4] FROM docker.io/library/node:24-alpine",
+                    "#2 [internal] load .dockerignore", "#3 [1/4] FROM docker.io/library/node:26-alpine",
                     "#4 [2/4] WORKDIR /app", "#5 [3/4] COPY . .", "#6 [4/4] RUN npm ci --omit=dev (simulated)",
                     "#7 exporting to image", "#7 naming to " + image + " done")) {
                 onLine.accept(line);

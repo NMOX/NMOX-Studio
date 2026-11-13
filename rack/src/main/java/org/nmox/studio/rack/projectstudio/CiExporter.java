@@ -159,7 +159,37 @@ public final class CiExporter {
         return new Steps(ordered, failFed);
     }
 
-    /** Toolchain setup actions for every kind the project carries. */
+    /**
+     * Toolchain setup actions for every kind the project carries.
+     *
+     * <p>Every literal here is a version no bot reads. The action pins
+     * are held to our own workflows by {@code CiExportPinCurrencyTest};
+     * the RUNTIME versions (node, python, php) are held equal to what
+     * {@code DockerizeGenerator} writes by the same test, so the CI the
+     * product exports and the image it generates build on one runtime.
+     * Measured 2026-11-13: node 26 is the Active LTS (24 and 22 are in
+     * maintenance), and the current {@code gleam_stdlib} (1.0.5)
+     * declares {@code gleam >= 1.14.0}, so the 1.5 this used to install
+     * could not build a Gleam project created today.
+     *
+     * <p>Left as they were, each for its own reason. java 17, ruby 3.3
+     * and elixir 1.17 / OTP 27 are still supported upstream and no other
+     * generator names them, so there was nothing to measure a newer one
+     * against.
+     *
+     * <p>{@code dotnet-version} is 10.x, and it is one fact with the
+     * C# and ASP.NET learning spaces: their project files target
+     * {@code net10.0} and their Linux and Windows install hints name
+     * SDK 10. Measured 2026-11-13 from Microsoft's release metadata:
+     * .NET 8 and 9 left support on 2026-11-10; 10.0 is the LTS and
+     * 11.0 the STS, both supported until 2028-11-14. An SDK brings
+     * only its own major's runtime (a {@code net8.0} space on SDK
+     * 11.0.100 built and then exited 150), so the spaces also carry
+     * {@code <RollForward>Major</RollForward>}: the macOS hint installs
+     * 11 today, and with that line the {@code net10.0} space runs
+     * there (exit 0). {@code CiExportPinCurrencyTest} holds this
+     * literal, the project files and the hints to one major.
+     */
     static List<String> setupSteps(File projectDir) {
         List<String> steps = new ArrayList<>();
         var kinds = ProjectInspector.detectKinds(projectDir);
@@ -167,7 +197,7 @@ public final class CiExporter {
             switch (kind) {
                 case NODE -> steps.add("""
                           - uses: actions/setup-node@v7
-                            with: { node-version: 22 }
+                            with: { node-version: 26 }
                     """.stripTrailing() + "\n");
                 case BUN -> steps.add("      - uses: oven-sh/setup-bun@v2\n");
                 case DENO -> steps.add("""
@@ -181,7 +211,7 @@ public final class CiExporter {
                     """.stripTrailing() + "\n");
                 case PYTHON -> steps.add("""
                           - uses: actions/setup-python@v7
-                            with: { python-version: '3.12' }
+                            with: { python-version: '3.14' }
                     """.stripTrailing() + "\n");
                 case MAVEN, GRADLE -> steps.add("""
                           - uses: actions/setup-java@v6
@@ -197,7 +227,7 @@ public final class CiExporter {
                     """.stripTrailing() + "\n");
                 case PHP -> steps.add("""
                           - uses: shivammathur/setup-php@v2
-                            with: { php-version: '8.3' }
+                            with: { php-version: '8.5' }
                     """.stripTrailing() + "\n");
                 // ---- the post-v1.59 toolchains (ledger 46): every kind an
                 // exported lane can speak either gets its ecosystem's setup
@@ -205,7 +235,7 @@ public final class CiExporter {
                 // export must never fail silently with command-not-found ----
                 case GLEAM -> steps.add("""
                           - uses: erlef/setup-beam@v1
-                            with: { otp-version: '27', gleam-version: '1.5' }
+                            with: { otp-version: '27', gleam-version: '1.19' }
                     """.stripTrailing() + "\n");
                 case JULIA -> steps.add("""
                           - uses: julia-actions/setup-julia@v3
@@ -214,7 +244,7 @@ public final class CiExporter {
                 case DART -> steps.add("      - uses: dart-lang/setup-dart@v1\n");
                 case DOTNET -> steps.add("""
                           - uses: actions/setup-dotnet@v6
-                            with: { dotnet-version: 8.x }
+                            with: { dotnet-version: 10.x }
                     """.stripTrailing() + "\n");
                 case HASKELL -> steps.add("      - uses: haskell-actions/setup@v2\n");
                 case ZIG -> steps.add("      - uses: mlugg/setup-zig@v2\n");
@@ -234,12 +264,12 @@ public final class CiExporter {
                 case MOVE -> steps.add("      # NOTE: install the Sui CLI in CI (or the Aptos CLI for AptosFramework projects; no first-party setup action); see docs.sui.io / aptos.dev\n");
                 case AIKEN -> steps.add("      - uses: aiken-lang/setup-aiken@v1\n");
                 case CLARITY -> steps.add("      # NOTE: install clarinet in CI (no first-party setup action) — download a release binary from github.com/hirosystems/clarinet/releases; the vitest/simnet tests ride the npm harness below\n");
-                case FORTRAN -> steps.add("      - uses: fortran-lang/setup-fpm@v10\n");
+                case FORTRAN -> steps.add("      - uses: fortran-lang/setup-fpm@v11\n");
                 case ADA -> steps.add("      - uses: alire-project/setup-alire@v6\n");
                 // the functional web and Tact ride npm — their lanes run npx/spago
                 case ELM, RESCRIPT, PURESCRIPT, TACT -> steps.add("""
                           - uses: actions/setup-node@v7
-                            with: { node-version: 22 }
+                            with: { node-version: 26 }
                     """.stripTrailing() + "\n");
                 case SCALA -> steps.add(
                         "      # NOTE: sbt must be present on the runner (ubuntu-latest ships it)\n");

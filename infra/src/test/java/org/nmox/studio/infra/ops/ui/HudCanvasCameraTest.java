@@ -285,4 +285,33 @@ class HudCanvasCameraTest {
             }
         });
     }
+
+    @Test
+    @DisplayName("arrow keys in an untouched Hub leave the camera alone: no nudge, no 100% readout, no Fit to press")
+    void arrowsDoNotMoveAFittedCamera() throws Exception {
+        // a narrow dock, one host: the layout fits as it lies and the camera is the identity
+        build(1, 420, 300);
+        edt(() -> {
+            assertThat(canvas.camera().identity()).isTrue();
+            for (int i = 0; i < 4; i++) {
+                canvas.getActionMap().get("RIGHT").actionPerformed(null);
+                assertThat(canvas.camera().identity())
+                        .as("selecting %s by keyboard moved a camera nobody touched", canvas.selected()).isTrue();
+            }
+        });
+        // a crowded fleet, framed below natural size: the frame is the fit's, and the keyboard keeps it
+        build(12, 760, 480);
+        edt(() -> {
+            double zoom = canvas.camera().zoom();
+            double px = canvas.camera().panX();
+            double py = canvas.camera().panY();
+            assertThat(zoom).isLessThan(1.0);
+            for (int i = 0; i < 14; i++) {
+                canvas.getActionMap().get("RIGHT").actionPerformed(null);
+                assertThat(canvas.camera().panX()).as("after selecting %s", canvas.selected()).isEqualTo(px);
+                assertThat(canvas.camera().panY()).as("after selecting %s", canvas.selected()).isEqualTo(py);
+            }
+            assertThat(canvas.camera().manual()).isFalse();
+        });
+    }
 }

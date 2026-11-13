@@ -78,12 +78,6 @@ public final class AgentPortAction implements ActionListener {
     private static final java.util.concurrent.atomic.AtomicReference<AgentPort> RUNNING =
             new java.util.concurrent.atomic.AtomicReference<>();
 
-    /**
-     * The token as the dialog shows it: the real one, except under the docs
-     * forge ({@code nmox.shots.dir}, v2.84.0), where the placeholder stands
-     * in — a screenshot is a file that outlives the port, and a secret in a
-     * file is a secret leaked, dead or not.
-     */
     /** The disclosure label's wrap width — under the 0.8-screen clamp of every laptop the product supports. */
     static final int LABEL_WIDTH = 720;
 
@@ -124,6 +118,12 @@ public final class AgentPortAction implements ActionListener {
         return new JLabel(disclosureHtml(port, tools));
     }
 
+    /**
+     * The token as the dialog shows it: the real one, except under the docs
+     * forge ({@code nmox.shots.dir}, v2.84.0), where the placeholder stands
+     * in — a screenshot is a file that outlives the port, and a secret in a
+     * file is a secret leaked, dead or not.
+     */
     static String shownToken(AgentPort port) {
         return System.getProperty("nmox.shots.dir") != null ? "TOKEN" : port.token();
     }

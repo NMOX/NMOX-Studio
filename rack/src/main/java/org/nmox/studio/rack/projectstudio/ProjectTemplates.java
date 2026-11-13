@@ -25,35 +25,66 @@ import static org.nmox.studio.rack.projectstudio.RackPresets.buildPatchFrom;
  */
 /*
  * VERSION-PIN LAW (v1.237.0, the generator-currency pass): dependency
- * pins in these templates are version literals no bot can see — bump
+ * pins in these templates are version literals no bot can see. Bump
  * them against the live npm registry when touched, and LIVE-PROVE the
- * touched templates (npm install + build) before ship. ONE deliberate
- * exception: typescript stays on 5.x everywhere. npm's `typescript`
- * latest is 7.x — the Go-port compiler — which dropped
- * tsserverlibrary.js, and both the IDE's tsserver LSP lane and the
- * Angular Language Service (v1.214.0 find) require the 5.x library.
- * A template that installs TS 7 gets a project the IDE itself cannot
- * serve intelligence for. A SECOND deliberate ceiling: vite stays on
- * ^6 (with vitest ^3 and the matching plugin majors) even though 7/8
- * exist — vite 7+ requires node >=22.12, and a starter template must
- * run on whatever node a learner has (^18/^20/any 22). The whole
- * vite-6 peer set was live-proven: npm install + build green on all
- * four vite templates, 2026-08-03. A THIRD deliberate ceiling: Angular
- * stays on ~21.2 — Angular 22 (all of it, 22.0 included) requires
- * TypeScript >=6.0 <6.1, so the TS-5 ceiling above binds; the old
- * ^22.0.0 pin could never npm-install (ERESOLVE against its own
- * ~5.9 typescript) and was caught by the 2026-08-03 night proof.
- * Angular's own node floor is ^20.19 || ^22.12 || >=24 — the CLI
- * hard-refuses older nodes at runtime (exit 3), which the template
- * README says out loud. The ~21.2 + TS ~5.9 set was live-proven:
- * npm install clean (zero engine warnings on node 22.23) + ng build
- * green, zoneless config compiling, 2026-08-03. The angular.json also
- * pins `@schematics/angular:component {"type": "component"}`: Angular
- * 20+ scaffolds suffixless files (app.html) by default, but the IDE's
+ * touched templates (npm install + build + test) before ship. The pins
+ * below were re-measured and re-proven on 2026-11-13 (ledger 140) on
+ * Node 22.23.5, the current patch of the oldest Node line still in
+ * support; ProjectTemplatesTest holds each line, so a bump without a
+ * new proof fails the build.
+ *
+ * THE NODE FLOOR. A starter must run on what a newcomer has, and what
+ * an up-to-date newcomer has is the current patch of a supported LTS
+ * line: 22.23.5, 24.22.3 or 26.13.1 on the day of the measurement
+ * (Node 20 left support in April 2026). Every floor below is met by
+ * all three. A Node 22 that was installed and never updated can sit
+ * under a floor; the README of each affected template names the floor,
+ * and CommandExecutor translates the refusal line Vite and the Angular
+ * CLI print (looksLikeNodeTooOld, measured again on Node 22.9.0 with
+ * these versions: both lines still match).
+ *
+ * VITE: ^8 with vitest ^5 and the plugin majors that peer on it
+ * (@vitejs/plugin-react ^6, @vitejs/plugin-vue ^6,
+ * @sveltejs/vite-plugin-svelte ^7 which also wants svelte >=5.46.4,
+ * vite-plugin-solid ^2.11). vite 8.3.8 declares node
+ * ^20.19.0 || >=22.12.0 and vitest 5.1.0 declares
+ * ^22.12.0 || ^24.0.0 || >=26.0.0, so the floor of the four Vite
+ * templates is Node 22.12. The old ^6 ceiling stood because Vite 8
+ * failed outright on Node 22.9 in August; measured now, 8.3.8 prints
+ * its "requires Node.js version 20.19+ or 22.12+" line there and still
+ * builds, while @vitejs/plugin-react 6 and @sveltejs/vite-plugin-svelte
+ * 7 peer on Vite 8 alone.
+ * Vite + Solid sets `test.environment` to node: vite-plugin-solid
+ * points Vitest at jsdom, the starter installs none, and `npm test`
+ * failed on the old pins too.
+ *
+ * TYPESCRIPT, by template. npm's `typescript` latest is 7.x, the Go
+ * port, which has no tsserverlibrary.js. The IDE serves it through
+ * `tsc --lsp` since 3.10.0, so TS_LIBRARY (tsc + vitest, nothing else
+ * reads the compiler) pins ^7. TypeScript 6 and 7 refuse an outDir
+ * without an explicit rootDir (TS5011), hence `"rootDir": "src"`.
+ * ANGULAR pins ~6.0: @angular/build and @angular/compiler-cli 22 peer
+ * on typescript >=6.0 <6.1, and the Angular Language Service needs a
+ * TypeScript that still ships tsserverlibrary.js. Vue's language
+ * server needs the same library, so VITE_VUE must never gain a
+ * typescript 7 pin (it declares none today).
+ *
+ * ANGULAR: ~22.2 with TypeScript ~6.0, vitest ^5 and jsdom ^30 (the
+ * versions `ng new` 22.2 itself writes; `ng test` needs both, and a
+ * tsconfig.spec.json naming vitest/globals, and the template shipped
+ * none of the three before, so its test script never ran). Angular
+ * 22 declares node ^22.22.3 || ^24.15.0 || >=26.0.0 and the CLI
+ * hard-refuses anything older (exit 3), which the README says out
+ * loud. The old ~21.2 ceiling was the TypeScript-5 ceiling, and that
+ * is gone. The angular.json also pins
+ * `@schematics/angular:component {"type": "component"}`: Angular 20+
+ * scaffolds suffixless files (app.html) by default, but the IDE's
  * template intelligence (v1.217.0 mime resolver, ALS, ⌘B) keys on the
  * `.component.html` convention — the workspace teaches the naming
  * that lights the tools up, and HALO GEN / New Angular Schematic…
- * generate recognized files because ng reads this config.
+ * generate recognized files because ng reads this config (re-proven
+ * on 22.2: `ng generate component` wrote widget.component.*). The
+ * angular learning space pins the same line (AngularSpacePinParityTest).
  */
 public enum ProjectTemplates {
 
@@ -139,12 +170,12 @@ public enum ProjectTemplates {
                   },
                   "devDependencies": {
                     "@eslint/js": "^10.0.0",
-                    "@vitejs/plugin-react": "^5.0.0",
+                    "@vitejs/plugin-react": "^6.0.0",
                     "eslint": "^10.0.0",
                     "globals": "^17.0.0",
                     "prettier": "^3.3.3",
-                    "vite": "^6.0.0",
-                    "vitest": "^3.0.0"
+                    "vite": "^8.0.0",
+                    "vitest": "^5.0.0"
                   }
                 }
                 """.formatted(name));
@@ -211,6 +242,11 @@ public enum ProjectTemplates {
         JSONObject buildPatch() {
             return vitePatch();
         }
+
+        @Override
+        String readmeHints() {
+            return viteReadmeHints();
+        }
     },
 
     VITE_VUE("Vite + Vue", "Vue 3 with Vite dev server and Vitest") {
@@ -233,12 +269,12 @@ public enum ProjectTemplates {
                   },
                   "devDependencies": {
                     "@eslint/js": "^10.0.0",
-                    "@vitejs/plugin-vue": "^5.2.0",
+                    "@vitejs/plugin-vue": "^6.0.0",
                     "eslint": "^10.0.0",
                     "globals": "^17.0.0",
                     "prettier": "^3.3.3",
-                    "vite": "^6.0.0",
-                    "vitest": "^3.0.0"
+                    "vite": "^8.0.0",
+                    "vitest": "^5.0.0"
                   }
                 }
                 """.formatted(name));
@@ -299,6 +335,11 @@ public enum ProjectTemplates {
         @Override
         JSONObject buildPatch() {
             return vitePatch();
+        }
+
+        @Override
+        String readmeHints() {
+            return viteReadmeHints();
         }
     },
 
@@ -390,9 +431,9 @@ public enum ProjectTemplates {
                     "eslint": "^10.0.0",
                     "globals": "^17.0.0",
                     "prettier": "^3.3.3",
-                    "vite": "^6.0.0",
+                    "vite": "^8.0.0",
                     "vite-plugin-solid": "^2.11.0",
-                    "vitest": "^3.0.0"
+                    "vitest": "^5.0.0"
                   }
                 }
                 """.formatted(name));
@@ -403,6 +444,9 @@ public enum ProjectTemplates {
                 export default defineConfig({
                   plugins: [solid()],
                   server: { port: 5173 },
+                  // vite-plugin-solid points Vitest at jsdom, which this starter
+                  // does not install. Add jsdom and drop this line to test components.
+                  test: { environment: 'node' },
                 });
                 """);
             write(dir, "index.html", """
@@ -452,6 +496,11 @@ public enum ProjectTemplates {
         JSONObject buildPatch() {
             return vitePatch();
         }
+
+        @Override
+        String readmeHints() {
+            return viteReadmeHints();
+        }
     },
     VITE_SVELTE("Vite + Svelte", "Svelte 5 (runes) with Vite dev server and Vitest") {
         @Override
@@ -470,13 +519,13 @@ public enum ProjectTemplates {
                   },
                   "devDependencies": {
                     "@eslint/js": "^10.0.0",
-                    "@sveltejs/vite-plugin-svelte": "^5.0.0",
+                    "@sveltejs/vite-plugin-svelte": "^7.0.0",
                     "eslint": "^10.0.0",
                     "globals": "^17.0.0",
                     "prettier": "^3.3.3",
-                    "svelte": "^5.0.0",
-                    "vite": "^6.0.0",
-                    "vitest": "^3.0.0"
+                    "svelte": "^5.46.4",
+                    "vite": "^8.0.0",
+                    "vitest": "^5.0.0"
                   }
                 }
                 """.formatted(name));
@@ -537,6 +586,11 @@ public enum ProjectTemplates {
         JSONObject buildPatch() {
             return vitePatch();
         }
+
+        @Override
+        String readmeHints() {
+            return viteReadmeHints();
+        }
     },
 
     TS_LIBRARY("TypeScript Library", "tsc build, Vitest, ready to publish") {
@@ -557,8 +611,8 @@ public enum ProjectTemplates {
                   },
                   "devDependencies": {
                     "prettier": "^3.3.3",
-                    "typescript": "^5.5.4",
-                    "vitest": "^3.0.0"
+                    "typescript": "^7.0.0",
+                    "vitest": "^5.0.0"
                   }
                 }
                 """.formatted(name));
@@ -569,12 +623,22 @@ public enum ProjectTemplates {
                     "module": "NodeNext",
                     "moduleResolution": "NodeNext",
                     "declaration": true,
+                    "rootDir": "src",
                     "outDir": "dist",
                     "strict": true,
                     "skipLibCheck": true
                   },
                   "include": ["src"]
                 }
+                """);
+            write(dir, "vitest.config.ts", """
+                import { defineConfig } from 'vitest/config';
+
+                // Tests live beside the sources. Without this, Vitest would also
+                // run the compiled copies that `npm run build` leaves in dist/.
+                export default defineConfig({
+                  test: { include: ['src/**/*.test.ts'] },
+                });
                 """);
             write(dir, "src/index.ts", """
                 /** Generated by NMOX Studio. */
@@ -820,7 +884,7 @@ public enum ProjectTemplates {
         }
     },
 
-    ANGULAR("Angular (standalone)", "Angular 21, zoneless, signals + control flow, HALO-wired") {
+    ANGULAR("Angular (standalone)", "Angular 22, zoneless, signals + control flow, HALO-wired") {
         @Override
         void writeFiles(Path dir, String name) throws IOException {
             write(dir, "package.json", """
@@ -835,19 +899,21 @@ public enum ProjectTemplates {
                     "test": "ng test"
                   },
                   "dependencies": {
-                    "@angular/common": "~21.2.0",
-                    "@angular/compiler": "~21.2.0",
-                    "@angular/core": "~21.2.0",
-                    "@angular/platform-browser": "~21.2.0",
-                    "@angular/router": "~21.2.0",
+                    "@angular/common": "~22.2.0",
+                    "@angular/compiler": "~22.2.0",
+                    "@angular/core": "~22.2.0",
+                    "@angular/platform-browser": "~22.2.0",
+                    "@angular/router": "~22.2.0",
                     "rxjs": "~7.8.0",
                     "tslib": "^2.8.0"
                   },
                   "devDependencies": {
-                    "@angular/build": "~21.2.0",
-                    "@angular/cli": "~21.2.0",
-                    "@angular/compiler-cli": "~21.2.0",
-                    "typescript": "~5.9.0"
+                    "@angular/build": "~22.2.0",
+                    "@angular/cli": "~22.2.0",
+                    "@angular/compiler-cli": "~22.2.0",
+                    "jsdom": "^30.0.0",
+                    "typescript": "~6.0.0",
+                    "vitest": "^5.0.0"
                   }
                 }
                 """.formatted(name));
@@ -928,6 +994,13 @@ public enum ProjectTemplates {
                   "compilerOptions": {"outDir": "./out-tsc/app", "types": []},
                   "files": ["src/main.ts"],
                   "include": ["src/**/*.d.ts"]
+                }
+                """);
+            write(dir, "tsconfig.spec.json", """
+                {
+                  "extends": "./tsconfig.json",
+                  "compilerOptions": {"outDir": "./out-tsc/spec", "types": ["vitest/globals"]},
+                  "include": ["src/**/*.d.ts", "src/**/*.spec.ts"]
                 }
                 """);
             write(dir, "src/index.html", """
@@ -1054,7 +1127,7 @@ public enum ProjectTemplates {
                 - SERVE on HALO runs ng serve and opens the browser via SCOPE
                 - HALO's version cluster tracks the latest Angular; UPDATE runs `ng update`
                 - GEN scaffolds components/services with the SCHEMATIC knob
-                - needs Node 20.19+, 22.12+, or 24+ — Angular's CLI refuses older nodes
+                - needs Node 22.22.3+, 24.15+, or 26+ — Angular 22's CLI refuses older nodes
                 """;
         }
     },
@@ -1328,7 +1401,7 @@ public enum ProjectTemplates {
                 # `docker compose up` working without one.
                 services:
                   nginx:
-                    image: nginx:1.27-alpine
+                    image: nginx:1.30-alpine
                     ports:
                       - "8080:80"
                     volumes:
@@ -1338,13 +1411,13 @@ public enum ProjectTemplates {
                       - php
 
                   php:
-                    image: php:8.4-fpm
+                    image: php:8.5-fpm
                     working_dir: /var/www/html
                     volumes:
                       - .:/var/www/html
 
                   db:
-                    image: mariadb:11
+                    image: mariadb:12
                     environment:
                       MARIADB_DATABASE: ${DB_DATABASE:-app}
                       MARIADB_USER: ${DB_USERNAME:-app}
@@ -1909,7 +1982,22 @@ public enum ProjectTemplates {
         return buildPatchFrom(StarterRacks.POLYGLOT);
     }
 
-    /** Shared patch for the Vite-based templates (React/Vue). */
+    /**
+     * The default bullets plus the Node floor the Vite templates' own tools
+     * declare (measured 2026-11-13: vite 8.3.8 engines
+     * {@code ^20.19.0 || >=22.12.0}, vitest 5.1.0
+     * {@code ^22.12.0 || ^24.0.0 || >=26.0.0}).
+     */
+    private static String viteReadmeHints() {
+        return """
+            - press INSTALL on CRATE (or run `npm install`) once
+            - START on SURGE serves the project and opens the browser
+            - arm REFLEX's WATCH switch for a save-driven test loop
+            - needs Node 22.12 or newer (24 and 26 included) — the floor Vite 8 and Vitest 5 declare
+            """;
+    }
+
+    /** Shared patch for the Vite-based templates (React/Vue/Solid/Svelte). */
     private static JSONObject vitePatch() {
         return buildPatchFrom(StarterRacks.VITE);
     }

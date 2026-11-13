@@ -47,7 +47,7 @@ Optionen ▸ Rack & Cloud.
 4. **Lesen Sie das Urteil.** Eine kurze Diagnose erscheint auf dem
    mehrzeiligen LCD; drücken Sie **VIEW**, um die vollständige Erklärung
    in einem Gesprächsfenster zu öffnen. Der Regler **MODEL** wählt FAST (Vorgabe) oder DEEP — Haiku /
-   Sonnet, GPT-5 mini / GPT-5 oder Gemini Flash / Pro, je nachdem, welchen
+   Sonnet, GPT-6.1 Terra / GPT-6.1 Sol oder Gemini Flash / Pro, je nachdem, welchen
    Anbieter Sie gewählt haben.
 
 ## Was Sie gerade gelernt haben

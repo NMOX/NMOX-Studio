@@ -55,4 +55,24 @@ class AskKvasirModelTest {
         AskKvasirModel.remember(7);
         assertThat(AskKvasirModel.chosen()).isEqualTo(KvasirClient.MODEL_HAIKU);
     }
+
+    /**
+     * Before v2.96.0 the preference held the Anthropic model id itself, and
+     * the reader knew the Sonnet id by comparing it to the CURRENT constant.
+     * The day that constant moved (3.13.0, claude-sonnet-5 to
+     * claude-sonnet-5-5) an old Deep choice would have read as Fast.
+     */
+    @Test
+    @DisplayName("An id an older build stored reads as its depth, whether it is today's id or a retired one")
+    void aStoredIdReadsAsItsDepth() {
+        AskKvasirModel.storeForTest("claude-sonnet-5");
+        assertThat(AskKvasirModel.chosenIndex()).as("the Sonnet id shipped before 3.13.0").isEqualTo(1);
+        assertThat(AskKvasirModel.chosen()).isEqualTo(KvasirClient.MODEL_SONNET);
+        AskKvasirModel.storeForTest(KvasirClient.MODEL_SONNET);
+        assertThat(AskKvasirModel.chosenIndex()).isEqualTo(1);
+        AskKvasirModel.storeForTest("claude-haiku-4-5");
+        assertThat(AskKvasirModel.chosenIndex()).as("the Haiku id shipped before 3.13.0").isZero();
+        AskKvasirModel.storeForTest("no-such-model");
+        assertThat(AskKvasirModel.chosenIndex()).isZero();
+    }
 }

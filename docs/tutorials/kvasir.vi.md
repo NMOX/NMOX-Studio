@@ -39,7 +39,7 @@ cấp áp dụng cho mọi gương mặt của KVASIR và cũng nằm ở Tùy c
 
 4. **Đọc phán quyết.** Một chẩn đoán ngắn hiện trên màn hình LCD nhiều dòng;
    nhấn **VIEW** để mở phần giải thích đầy đủ trong một cửa sổ hội thoại. Núm **MODEL** chọn FAST
-   (mặc định) hoặc DEEP — Haiku / Sonnet, GPT-5 mini / GPT-5, hoặc Gemini
+   (mặc định) hoặc DEEP — Haiku / Sonnet, GPT-6.1 Terra / GPT-6.1 Sol, hoặc Gemini
    Flash / Pro, tùy nhà cung cấp bạn đã chọn.
 
 ## Bạn vừa học được gì

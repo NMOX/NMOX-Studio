@@ -368,8 +368,6 @@ class BoundedReadLedgerTest {
                 .contains("KiB, over the");
     }
 
-    /** Comment-stripped source: a gate that matches a literal must read the CODE. */
-
     /** 1-based line of an offset, so a finding names its place. */
     private static int line(String body, int offset) {
         int n = 1;

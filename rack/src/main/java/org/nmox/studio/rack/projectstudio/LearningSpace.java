@@ -328,10 +328,44 @@ public final class LearningSpace {
                 patch.toString(2), StandardCharsets.UTF_8);
     }
 
+    /**
+     * A driver's argv as the one line a device's command field holds.
+     *
+     * <p>Both devices split that line again without a shell (SOLDER's and
+     * the REPL's {@code splitArgs}), so an argument that carries a space has
+     * to arrive quoted or it comes back as several. A plain join turned
+     * {@code sh -c "cc hello.c -o x && x"} into {@code sh -c cc} followed by
+     * loose words: the C and C++ spaces' RUN answered
+     * {@code clang: error: no input files} (measured 3.13.0).
+     *
+     * <p>Double quotes are the form both splitters read. An argument that
+     * itself holds a double quote takes single quotes, which only SOLDER
+     * reads; the catalog law in {@code LearningSpaceTest} holds every
+     * built-in driver to a line its own device splits back exactly.
+     */
+    static String commandLine(List<String> argv) {
+        StringBuilder line = new StringBuilder();
+        for (String arg : argv) {
+            if (line.length() > 0) {
+                line.append(' ');
+            }
+            boolean plain = !arg.isEmpty()
+                    && arg.chars().noneMatch(c -> Character.isWhitespace(c) || c == '"' || c == '\'');
+            if (plain) {
+                line.append(arg);
+            } else if (arg.indexOf('"') < 0) {
+                line.append('"').append(arg).append('"');
+            } else {
+                line.append('\'').append(arg).append('\'');
+            }
+        }
+        return line.toString();
+    }
+
     /** REPL spaces get a seeded REPL; run spaces get SOLDER → MONITOR. */
     static void wire(Rack rack, LearningCatalog.Space space) {
         LearningCatalog.Driver driver = space.driver();
-        String command = String.join(" ", driver.command());
+        String command = commandLine(driver.command());
         if (driver.kind() == LearningCatalog.DriverKind.REPL) {
             RackPresets.add(rack, DeviceType.REPL, Map.of(
                     "command", command,

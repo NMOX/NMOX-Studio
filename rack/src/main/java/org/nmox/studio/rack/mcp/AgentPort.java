@@ -159,7 +159,6 @@ public final class AgentPort {
         server.stop(0);
     }
 
-    /** The port's subscriptions — tests read them. */
     /** GET streams attached right now — agents listening for pushes. */
     public int attachedStreams() {
         return subs.attachedCount();
@@ -176,6 +175,7 @@ public final class AgentPort {
         return at < 0 ? -1 : Math.max(0, System.currentTimeMillis() - at);
     }
 
+    /** The port's subscriptions — tests read them. */
     McpSubscriptions subscriptions() {
         return subs;
     }

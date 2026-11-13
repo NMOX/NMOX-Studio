@@ -96,6 +96,53 @@ public class RunFocusedTestAction extends BaseAction {
         }
     }
 
+    /** Suffix of the Angular CLI's Vitest-backed test builder, under either package that has shipped it. */
+    private static final String UNIT_TEST_BUILDER = ":unit-test";
+
+    /**
+     * Whether the Angular project that owns {@code file} tests through the
+     * CLI's unit-test builder, read from {@code angular.json}: the project
+     * whose {@code root} is the longest prefix of the file's path, and its
+     * {@code test} target under {@code architect} (or {@code targets}, the
+     * newer spelling). A workspace file that is missing, over the read cap,
+     * not JSON or not shaped like a workspace answers false, which leaves
+     * the choice of runner exactly as it was.
+     */
+    static boolean usesUnitTestBuilder(File ngRoot, File file) {
+        org.json.JSONObject projects;
+        try {
+            projects = new org.json.JSONObject(org.nmox.studio.core.util.BoundedReads.read(
+                    new File(ngRoot, "angular.json").toPath())).optJSONObject("projects");
+        } catch (java.io.IOException | RuntimeException unreadable) {
+            return false;
+        }
+        if (projects == null) {
+            return false;
+        }
+        String rel = ngRoot.toPath().relativize(file.toPath()).toString().replace('\\', '/');
+        String builder = null;
+        int best = -1;
+        for (String key : new java.util.TreeSet<>(projects.keySet())) {
+            org.json.JSONObject project = projects.optJSONObject(key);
+            if (project == null) {
+                continue;
+            }
+            String projectRoot = project.optString("root", "");
+            boolean owns = projectRoot.isEmpty() || rel.startsWith(projectRoot.endsWith("/") ? projectRoot : projectRoot + "/");
+            if (!owns || projectRoot.length() <= best) {
+                continue;
+            }
+            org.json.JSONObject targets = project.optJSONObject("architect");
+            if (targets == null) {
+                targets = project.optJSONObject("targets");
+            }
+            org.json.JSONObject test = targets == null ? null : targets.optJSONObject("test");
+            best = projectRoot.length();
+            builder = test == null ? null : test.optString("builder", null);
+        }
+        return builder != null && builder.endsWith(UNIT_TEST_BUILDER);
+    }
+
     /**
      * Runs one test through the ONE execution path both surfaces share
      * — the editor gesture and the Tests window: command assembly
@@ -189,6 +236,33 @@ public class RunFocusedTestAction extends BaseAction {
                 // prompt named ngdemo/src, and the branch fell to jest).
                 File ngRoot = org.nmox.studio.editor.lsp.LanguageServers
                         .rootAbove(file.getParentFile(), "angular.json");
+                // Angular 21 and later test through the CLI's own unit-test
+                // builder, which runs Vitest INSIDE the CLI's build. `ng new`
+                // therefore declares vitest, and the rule below (a declared
+                // vitest outranks ng) picked the one command that cannot
+                // work there. Measured 2026-11-13 on a generated Angular 22.2
+                // workspace: `npx vitest run -t … <spec>` exits 1, `ng test
+                // --browsers=ChromeHeadless` exits 1 (the builder wants a
+                // Vitest browser provider for that option), and `ng test
+                // --watch=false --include=<spec> --filter=<name>` exits 0.
+                // So the workspace file decides, per project: this builder
+                // goes through ng, with the name as its filter (a regular
+                // expression there, so the name is made a literal).
+                if (ngRoot != null && usesUnitTestBuilder(ngRoot, file)) {
+                    if (!file.getName().endsWith(".spec.ts")) {
+                        yield null; // only a spec file can be handed to ng test
+                    }
+                    File localNg = new File(ngRoot, "node_modules/.bin/ng");
+                    String rel = ngRoot.toPath().relativize(file.toPath())
+                            .toString().replace('\\', '/');
+                    List<String> cmd = new java.util.ArrayList<>(List.of(
+                            localNg.isFile() ? localNg.getAbsolutePath() : "ng",
+                            "test", "--watch=false", "--include=" + rel));
+                    if (name != null) {
+                        cmd.add("--filter=" + org.nmox.studio.rack.devices.TestDevice.regexLiteral(name));
+                    }
+                    yield new Focused(List.copyOf(cmd), ngRoot);
+                }
                 File depRoot = ngRoot != null ? ngRoot : root;
                 boolean vitest = ProjectInspector.firstDependency(depRoot, "vitest") != null;
                 boolean jest = ProjectInspector.firstDependency(depRoot, "jest") != null;

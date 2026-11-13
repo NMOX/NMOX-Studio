@@ -193,6 +193,8 @@ public final class HudCamera {
      * radius) wholly inside the canvas with a margin — the keyboard's
      * selection must never move somewhere the eye cannot follow. Does
      * not change the mode: revealing is the HUD's move, not the user's.
+     * A node already inside the padding a {@link #fit} leaves is in
+     * view and is left where it is.
      *
      * @return true when it had to move
      */
@@ -202,6 +204,15 @@ public final class HudCamera {
         double x = worldX * z + panX.target();
         double y = worldY * z + panY.target();
         double r = worldR * z;
+        // what a fit calls in view is in view: a fit frames the content inside its own padding, which is
+        // narrower than the margin a reveal moves to, so without this the node at a framed picture's edge
+        // was nudged by the difference — an untouched camera left the identity on an arrow key, the HUD
+        // printed a "100%" readout and Fit lit up, until the next relayout put it back
+        double slack = 0.5;
+        if (x - r >= PAD_X - slack && x + r <= width - PAD_X + slack
+                && y - r >= PAD_TOP - slack && y + r <= height - PAD_BOTTOM + slack) {
+            return false;
+        }
         double dx = 0;
         double dy = 0;
         if (x - r < margin) {

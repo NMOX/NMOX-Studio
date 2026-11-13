@@ -1,6 +1,7 @@
 package org.nmox.studio.rack.service;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +31,14 @@ class KvasirKindConsentTest {
      * on the happy path leaves its grant behind when it fails, and then
      * poisons its own next run. That is precisely how the blank-kind
      * case broke twice on 2026-07-26.
+     *
+     * <p>And BEFORE each test as well (3.13.0): on a Linux runner
+     * "a kind starts ungranted" found the grant the previous test had
+     * made and revoked, once in three runs. The store is the real one and
+     * its file is re-read behind the test's back, so a test states its
+     * own precondition instead of trusting the last test's cleanup.
      */
+    @BeforeEach
     @AfterEach
     void clean() {
         KvasirConsent.revokeKindForTest(KIND_A);

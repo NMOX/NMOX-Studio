@@ -61,11 +61,55 @@ class LicenseConsistencyGateTest {
                 .contains("<licenseName>Apache License, Version 2.0</licenseName>");
     }
 
+    /**
+     * The one license id {@code release.yml} writes by hand is the row it
+     * appends for the vendored js-debug adapter, and that row states
+     * js-debug's license, which is MIT ({@code js-debug/LICENSE}). The
+     * v1.207.0 relicense swept that row to Apache-2.0 and this test then
+     * pinned the literal as "the SBOM says Apache-2.0": the SBOM told
+     * consumers a Microsoft MIT component was Apache-licensed, and the
+     * gate held the mistake in place. The product's own license reaches
+     * the SBOM from Maven's metadata, never from this file.
+     */
     @Test
-    @DisplayName("the SBOM the release publishes says Apache-2.0")
-    void sbom() throws Exception {
-        assertThat(read("..", ".github", "workflows", "release.yml"))
-                .contains("\"id\": \"Apache-2.0\"");
+    @DisplayName("the SBOM row for the vendored js-debug adapter states js-debug's own license, MIT")
+    void sbomVendoredAdapterKeepsItsOwnLicense() throws Exception {
+        assertThat(read("..", "editor", "src", "main", "release", "jsdebug", "js-debug", "LICENSE"))
+                .as("what the adapter's own license file says")
+                .contains("MIT License");
+        String workflow = read("..", ".github", "workflows", "release.yml").replace("\r\n", "\n");
+        int row = workflow.indexOf("\"name\": \"vscode-js-debug\"");
+        assertThat(row).as("the vendored adapter's SBOM row").isPositive();
+        String component = workflow.substring(row, workflow.indexOf("}]'", row));
+        assertThat(component)
+                .as("a third-party component keeps its own license in the SBOM")
+                .contains("\"licenses\": [{\"license\": {\"id\": \"MIT\"}}]")
+                .doesNotContain("Apache-2.0");
+    }
+
+    /**
+     * The row is three facts with two homes (the NOTICE beside the adapter
+     * and the workflow): version, purl and sha256 agree, or a bump that
+     * touched one file ships an SBOM naming an adapter that is not in the
+     * box.
+     */
+    @Test
+    @DisplayName("the SBOM row names the adapter version and sha256 its NOTICE records")
+    void sbomRowAgreesWithTheVendoredNotice() throws Exception {
+        String notice = read("..", "editor", "src", "main", "release", "jsdebug", "NOTICE");
+        java.util.regex.Matcher version = java.util.regex.Pattern
+                .compile("(?m)^\\s*Version:\\s+v(\\d+\\.\\d+\\.\\d+)\\s*$").matcher(notice);
+        java.util.regex.Matcher sha = java.util.regex.Pattern
+                .compile("(?m)^\\s*SHA-256:\\s+([0-9a-f]{64})\\s*$").matcher(notice);
+        assertThat(version.find()).as("NOTICE states the version").isTrue();
+        assertThat(sha.find()).as("NOTICE states the sha256").isTrue();
+        String workflow = read("..", ".github", "workflows", "release.yml").replace("\r\n", "\n");
+        int row = workflow.indexOf("\"name\": \"vscode-js-debug\"");
+        String component = workflow.substring(row, workflow.indexOf("}]'", row));
+        assertThat(component)
+                .contains("\"version\": \"" + version.group(1) + "\"")
+                .contains("pkg:github/microsoft/vscode-js-debug@v" + version.group(1) + "\"")
+                .contains("\"content\": \"" + sha.group(1) + "\"");
     }
 
     @Test

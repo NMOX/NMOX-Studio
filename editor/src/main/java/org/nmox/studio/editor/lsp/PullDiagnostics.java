@@ -131,6 +131,8 @@ final class PullDiagnostics {
     private long firstDirtyAt = -1;
     private long nextId;
     private boolean ended;
+    /** A refusal has been said in the log; the rest are at FINE. */
+    private boolean refusalSaid;
     /** The client's framing was lost: nothing is asked any more. */
     private volatile boolean deaf;
 
@@ -191,10 +193,17 @@ final class PullDiagnostics {
         if (init && "initialize".equals(method)) {
             return declare(message).toString().getBytes(StandardCharsets.UTF_8);
         }
-        if (done && ("shutdown".equals(method) || "exit".equals(method))
-                && message.has("params") && message.isNull("params")) {
-            message.remove("params");
-            return message.toString().getBytes(StandardCharsets.UTF_8);
+        if (done && ("shutdown".equals(method) || "exit".equals(method))) {
+            synchronized (state) {
+                // the protocol: a request after shutdown is one the server is to refuse.
+                // A timer armed by the last change must find nothing to ask
+                ended = true;
+            }
+            if (message.has("params") && message.isNull("params")) {
+                message.remove("params");
+                return message.toString().getBytes(StandardCharsets.UTF_8);
+            }
+            return body;
         }
         if (doc) {
             JSONObject params = message.optJSONObject("params");
@@ -262,13 +271,23 @@ final class PullDiagnostics {
                     return;
                 }
             }
-            if (firstDirtyAt < 0) {
-                firstDirtyAt = millis.getAsLong();
-            }
-            long waited = millis.getAsLong() - firstDirtyAt;
-            delay = (int) Math.max(0, Math.min(delay, MAX_WAIT_MILLIS - waited));
+            delay = within(delay);
         }
         timer.in(delay);
+    }
+
+    /**
+     * Under {@link #state}: a delay cut to what is left of the longest
+     * wait. Arming the timer moves its time, so whatever arms it
+     * again and again (keys, or a server's requests) must count from
+     * the first thing left waiting, or the lane never runs.
+     */
+    private int within(int delay) {
+        if (firstDirtyAt < 0) {
+            firstDirtyAt = millis.getAsLong();
+        }
+        long waited = millis.getAsLong() - firstDirtyAt;
+        return (int) Math.max(0, Math.min(delay, MAX_WAIT_MILLIS - waited));
     }
 
     /** Under {@link #state}. */
@@ -312,9 +331,10 @@ final class PullDiagnostics {
                 frames.add(question(entry.getKey(), false, entry.getValue()));
             }
             more = !dirty.isEmpty();
-            if (!more) {
-                firstDirtyAt = -1;
-            }
+            // asked: the wait starts over, for the documents left as for the rest. Left
+            // counting from before this pass, the longest wait stays spent, every change
+            // that follows arms the timer at zero, and a held key is a pass per key
+            firstDirtyAt = more ? millis.getAsLong() : -1;
         }
         try {
             synchronized (writeLock) {
@@ -455,7 +475,16 @@ final class PullDiagnostics {
                         firstDirtyAt = millis.getAsLong();
                     }
                 } else {
-                    LOG.log(Level.FINE, "{0}: asked about {1}, answered {2}", new Object[] {name, asked.uri(), error});
+                    // "ask again" is the protocol working. Anything else is the server refusing the
+                    // question this class exists to ask, and the file then shows no problems and no
+                    // word why: said once, so a server that refuses every question does not fill the log
+                    boolean say = !again && !refusalSaid;
+                    refusalSaid |= say;
+                    LOG.log(say ? Level.INFO : Level.FINE,
+                            say ? "{0}: asked for the problems of {1} and the server refused: {2}."
+                                    + " Problems may be missing from the editor; further refusals are logged at FINE"
+                                    : "{0}: asked about {1}, answered {2}",
+                            new Object[] {name, asked.uri(), error});
                     return null;
                 }
             } else {
@@ -490,7 +519,16 @@ final class PullDiagnostics {
                 if (other == null || !"full".equals(other.optString("kind")) || n++ >= MAX_RELATED) {
                     continue;
                 }
-                byte[] also = publish(clientSpelling(uri), other.optJSONArray("items"));
+                String spelled = clientSpelling(uri);
+                synchronized (state) {
+                    // the same guard as for the document asked about: this answer is as old as its question
+                    Long newest = published.get(spelled);
+                    if (newest != null && newest > asked.seq()) {
+                        continue;
+                    }
+                    published.put(spelled, asked.seq());
+                }
+                byte[] also = publish(spelled, other.optJSONArray("items"));
                 frames.write(also, 0, also.length);
             }
         }
@@ -505,6 +543,9 @@ final class PullDiagnostics {
      */
     private String clientSpelling(String uri) {
         synchronized (state) {
+            if (open.contains(uri)) {
+                return uri; // where case tells files apart, a neighbour that differs by case is another file
+            }
             for (String mine : open) {
                 if (mine.equalsIgnoreCase(uri)) {
                     return mine;
@@ -586,6 +627,7 @@ final class PullDiagnostics {
     /** The server asked to be asked again: answer it, and ask about every open document. */
     private void refresh(JSONObject request) {
         JSONObject reply = new JSONObject().put("jsonrpc", "2.0").put("id", request.get("id")).put("result", JSONObject.NULL);
+        int delay;
         synchronized (state) {
             if (ended) {
                 return;
@@ -594,11 +636,11 @@ final class PullDiagnostics {
             for (String uri : open) {
                 dirty.putIfAbsent(uri, 0);
             }
-            if (firstDirtyAt < 0) {
-                firstDirtyAt = millis.getAsLong();
-            }
+            // a server that asks again every few milliseconds (a storm of file
+            // changes) would otherwise push its own replies away for as long as it asks
+            delay = within(OPEN_MILLIS);
         }
-        timer.in(OPEN_MILLIS);
+        timer.in(delay);
     }
 
     private final class FromServer extends InputStream {

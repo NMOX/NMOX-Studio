@@ -599,4 +599,205 @@ class PullDiagnosticsTest {
         }
         assertThat(count).as("launches that ask for problems").isEqualTo(2);
     }
+
+    /** Lets the bridge read one request of the server's without reaching the end of the fake server's queue. */
+    private void serverAsksToBeAskedAgain(InputStream in, int id) throws IOException {
+        server.says("{\"jsonrpc\":\"2.0\",\"id\":" + id + ",\"method\":\"workspace/diagnostic/refresh\"}");
+        assertThat(readOneRound(in)).as("the request is this class's to answer").isEmpty();
+    }
+
+    @Test
+    @DisplayName("a server that keeps asking to be asked again is answered within the longest wait: its requests do not push the answer away for ever")
+    void aRefreshStormDoesNotStarveTheAnswer() throws Exception {
+        opens(A);
+        bridge.work();
+        serverGot();
+        armed.clear();
+        InputStream in = bridge.fromServer();
+
+        // arming the timer again moves its time: sixty milliseconds after EVERY request is never, under a storm
+        serverAsksToBeAskedAgain(in, 1);
+        now.addAndGet(PullDiagnostics.MAX_WAIT_MILLIS - 20);
+        serverAsksToBeAskedAgain(in, 2);
+        now.addAndGet(500);
+        serverAsksToBeAskedAgain(in, 3);
+        assertThat(armed).as("the wait is counted from the first request that has had no reply")
+                .containsExactly(PullDiagnostics.OPEN_MILLIS, 20, 0);
+
+        bridge.work();
+        List<JSONObject> got = serverGot();
+        assertThat(got.stream().filter(m -> m.has("result")).count()).as("every request has its reply").isEqualTo(3);
+        assertThat(questions(got)).extracting(q -> q[0]).containsExactly(A);
+        armed.clear();
+        serverAsksToBeAskedAgain(in, 4);
+        assertThat(armed).as("replied, so the wait starts over").containsExactly(PullDiagnostics.OPEN_MILLIS);
+    }
+
+    @Test
+    @DisplayName("a held key with more documents open than one pass asks about does not ask on every key: the wait starts over after each pass")
+    void aPassThatLeavesDocumentsWaitingStartsTheWaitOver() throws Exception {
+        int docs = PullDiagnostics.MAX_BATCH + 8;
+        for (int i = 0; i < docs; i++) {
+            opens("file:///p/f" + i + ".ts");
+        }
+        bridge.work();
+        bridge.work();
+        serverGot();
+        armed.clear();
+
+        changes("file:///p/f0.ts");
+        now.addAndGet(PullDiagnostics.MAX_WAIT_MILLIS);
+        changes("file:///p/f0.ts");
+        assertThat(armed).as("the longest wait is over: asked now").containsExactly(PullDiagnostics.CHANGE_MILLIS, 0);
+        bridge.work();
+        assertThat(questions(serverGot())).as("one pass, and documents left for the next").hasSize(PullDiagnostics.MAX_BATCH);
+        armed.clear();
+
+        // the key is still held: the next change is thirty milliseconds on, before the pass for the rest
+        now.addAndGet(30);
+        changes("file:///p/f0.ts");
+        assertThat(armed).as("asked a moment ago, so this key waits like any other: a pass per key is "
+                + PullDiagnostics.MAX_BATCH + " questions per key").containsExactly(PullDiagnostics.CHANGE_MILLIS);
+    }
+
+    @Test
+    @DisplayName("a related document open under exactly the server's spelling is published under that spelling, not under a neighbour's that differs by case")
+    void aRelatedDocumentKeepsItsOwnSpelling() throws Exception {
+        // two files on a file system that tells case apart (Linux), both open
+        String upper = "file:///home/ada/shop/src/Model.ts";
+        String lower = "file:///home/ada/shop/src/model.ts";
+        opens(upper);
+        opens(lower);
+        bridge.work();
+        String forUpper = questions(serverGot()).stream().filter(q -> q[0].equals(upper)).findFirst().orElseThrow()[1];
+
+        server.says(answer(forUpper, "{\"kind\":\"full\",\"items\":[],\"relatedDocuments\":{\"" + lower + "\":" + REAL_ANSWER + "}}"));
+        List<JSONObject> seen = clientSees();
+        assertThat(seen).extracting(m -> m.getJSONObject("params").getString("uri"))
+                .as("model.ts's problems are model.ts's: filed under Model.ts they replace that file's own").containsExactly(upper, lower);
+        assertThat(seen.get(0).getJSONObject("params").getJSONArray("diagnostics").length()).isZero();
+        assertThat(seen.get(1).getJSONObject("params").getJSONArray("diagnostics").length()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("an older answer does not overwrite a newer one through a related document either")
+    void anOlderAnswerDoesNotOverwriteThroughARelatedDocument() throws Exception {
+        opens(A);
+        opens(B);
+        bridge.work();
+        String early = questions(serverGot()).stream().filter(q -> q[0].equals(A)).findFirst().orElseThrow()[1];
+        changes(B);
+        bridge.work();
+        String late = questions(serverGot()).stream().filter(q -> q[0].equals(B)).findFirst().orElseThrow()[1];
+
+        // B was fixed and asked about again; the answer to the earlier question about A still names B's old problems
+        server.says(answer(late, "{\"kind\":\"full\",\"items\":[]}"));
+        server.says(answer(early, "{\"kind\":\"full\",\"items\":[],\"relatedDocuments\":{\"" + B + "\":" + REAL_ANSWER + "}}"));
+        List<JSONObject> seen = clientSees();
+        assertThat(seen).extracting(m -> m.getJSONObject("params").getString("uri"))
+                .as("B's fresh answer stands; the stale one for A still publishes A").containsExactly(B, A);
+        assertThat(seen.get(0).getJSONObject("params").getJSONArray("diagnostics").length()).isZero();
+
+        // and the other way round: what a later question said of B is not replaced by B's own earlier answer
+        connect();
+        opens(B);
+        bridge.work();
+        String own = questions(serverGot()).get(0)[1];
+        opens(A);
+        bridge.work();
+        String forA = questions(serverGot()).get(0)[1];
+        server.says(answer(forA, "{\"kind\":\"full\",\"items\":[],\"relatedDocuments\":{\"" + B + "\":{\"kind\":\"full\",\"items\":[]}}}"));
+        server.says(answer(own, REAL_ANSWER));
+        seen = clientSees();
+        assertThat(seen).extracting(m -> m.getJSONObject("params").getString("uri")).containsExactly(A, B);
+        assertThat(seen.get(1).getJSONObject("params").getJSONArray("diagnostics").length())
+                .as("B's own answer, to the older question, arrived last and is dropped").isZero();
+    }
+
+    @Test
+    @DisplayName("a refusal that is not 'ask again' is said in the log, once: a file with no red in it and no word why is a silent failure")
+    void aRefusalIsSaidOnce() throws Exception {
+        List<java.util.logging.LogRecord> said = new ArrayList<>();
+        java.util.logging.Handler ear = new java.util.logging.Handler() {
+            @Override
+            public void publish(java.util.logging.LogRecord record) {
+                if (record.getLevel().intValue() >= java.util.logging.Level.INFO.intValue()) {
+                    said.add(record);
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        java.util.logging.Logger log = java.util.logging.Logger.getLogger(PullDiagnostics.class.getName());
+        log.addHandler(ear);
+        try {
+            opens(A);
+            opens(B);
+            bridge.work();
+            List<String[]> asked = questions(serverGot());
+            InputStream in = bridge.fromServer();
+            server.says("{\"jsonrpc\":\"2.0\",\"id\":\"" + asked.get(0)[1] + "\",\"error\":{\"code\":-32601,\"message\":\"method not found\"}}");
+            assertThat(readOneRound(in)).isEmpty();
+            assertThat(said).as("the server does not answer the question this class exists to ask: said").hasSize(1);
+            String line = java.text.MessageFormat.format(said.get(0).getMessage(), said.get(0).getParameters());
+            assertThat(line).contains("tsc").contains(asked.get(0)[0]).contains("method not found");
+
+            server.says("{\"jsonrpc\":\"2.0\",\"id\":\"" + asked.get(1)[1] + "\",\"error\":{\"code\":-32601,\"message\":\"method not found\"}}");
+            assertThat(readOneRound(in)).isEmpty();
+            assertThat(said).as("once: a server that refuses every question does not fill the log").hasSize(1);
+
+            // an overtaken question is not a refusal, however often it is overtaken
+            connect();
+            said.clear();
+            opens(A);
+            in = bridge.fromServer();
+            for (int round = 0; round <= PullDiagnostics.MAX_RETRIES; round++) {
+                bridge.work();
+                String id = questions(serverGot()).get(0)[1];
+                server.says("{\"jsonrpc\":\"2.0\",\"id\":\"" + id + "\",\"error\":{\"code\":-32801,\"message\":\"content modified\"}}");
+                assertThat(readOneRound(in)).isEmpty();
+            }
+            assertThat(said).as("'ask again' is the protocol working").isEmpty();
+        } finally {
+            log.removeHandler(ear);
+        }
+    }
+
+    @Test
+    @DisplayName("after the client's shutdown nothing more is asked: a request then is one the protocol tells the server to refuse")
+    void nothingIsAskedAfterShutdown() throws Exception {
+        opens(A);
+        assertThat(armed).containsExactly(PullDiagnostics.OPEN_MILLIS);
+        // the question is due in sixty milliseconds, and the client shuts the server down first
+        clientWrites("{\"jsonrpc\":\"2.0\",\"id\":\"7\",\"method\":\"shutdown\",\"params\":null}");
+        serverGot();
+        bridge.work();
+        assertThat(serverGot()).as("the timer that was armed finds nothing to do").isEmpty();
+        changes(A);
+        bridge.work();
+        assertThat(questions(serverGot())).as("and a change that still comes is not asked about").isEmpty();
+
+        // one written without params ends the asking just the same
+        connect();
+        opens(A);
+        clientWrites("{\"jsonrpc\":\"2.0\",\"id\":\"7\",\"method\":\"shutdown\"}");
+        serverGot();
+        bridge.work();
+        assertThat(serverGot()).isEmpty();
+
+        // a document that only mentions the word is not a shutdown
+        connect();
+        opens(A);
+        clientWrites(note("textDocument/didChange", new JSONObject().put("textDocument", new JSONObject().put("uri", A).put("version", 2))
+                .put("contentChanges", new JSONArray().put(new JSONObject().put("text", "const method = \"shutdown\"; // \"exit\"")))));
+        serverGot();
+        bridge.work();
+        assertThat(questions(serverGot())).extracting(q -> q[0]).containsExactly(A);
+    }
 }

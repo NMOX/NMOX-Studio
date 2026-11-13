@@ -62,7 +62,7 @@ click from wherever you are.
 - **[🎬 The demo script](demo-script.md)** — the five-minute demo —
   beats, clicks, and what to say.
 - **[🧪 The Kitchen Sink](kitchen-sink.md)** — every surface of the
-  product exercised in one sitting: twenty-five do/see stations, each
+  product exercised in one sitting: twenty-six do/see stations, each
   claim matched to a proof.
 - **[🏙️ A Day at Meridian](a-day-at-meridian.md)** — one story, one real
   build through every area, screenshots from a live session.

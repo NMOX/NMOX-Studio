@@ -2,13 +2,30 @@ js-debug (vscode-js-debug) — the Debug Adapter Protocol server for
 Node.js and Chrome, vendored here so JavaScript/TypeScript breakpoint
 debugging works out of the box with zero setup.
 
-  Version:  v1.117.0
+  Version:  v1.140.1
   Source:   https://github.com/microsoft/vscode-js-debug
-  Artifact: js-debug-dap-v1.117.0.tar.gz (extracted verbatim)
-  SHA-256:  ad8d04ede9d4b75cc290fd5438a65047a06f786d04f604b6112485b36f090772
+            https://github.com/microsoft/vscode-js-debug/releases/download/v1.140.1/js-debug-dap-v1.140.1.tar.gz
+  Artifact: js-debug-dap-v1.140.1.tar.gz (extracted verbatim: all 60
+            files, none added, none left out)
+  Size:     1,249,566 bytes
+  SHA-256:  c72fab31bcbfdce6ad1f42adfd28eff8d4681dd3b03b5e2e6f9e72e6f9927faf
+            (equal to the digest GitHub publishes for the release asset)
   License:  MIT (Copyright (c) Microsoft Corporation) — see
             js-debug/LICENSE alongside this file.
+  Node:     the adapter runs under the user's own node. v1.140.1 does not
+            load under Node 18 (measured on 18.20.8; v1.117.0 did), and
+            the HTTP client it bundles (got 16) declares Node 22.
+            JsDebugServer.MIN_NODE_MAJOR refuses what cannot load.
 
-Not a Maven dependency, so it does not appear in the generated SBOM and
-is not tracked by Dependabot; version bumps are manual (re-download the
-release tarball, replace js-debug/, update this NOTICE).
+Not a Maven dependency, so Maven's SBOM cannot see it and Dependabot does
+not track it; version bumps are manual:
+
+  1. download the release's js-debug-dap-v<version>.tar.gz and check its
+     sha256 against the release's own asset digest before unpacking;
+  2. replace js-debug/ with the tarball's js-debug/ verbatim;
+  3. update this NOTICE and the vscode-js-debug component the SBOM step
+     of .github/workflows/release.yml appends (version, purl, sha256);
+  4. start the new adapter under the oldest Node you have and re-measure
+     JsDebugServer.MIN_NODE_MAJOR and the user guide's sentence;
+  5. run RealJsDebugIntegrationTest and RealChromeIntegrationTest and
+     read the Skipped count: a skipped proof is no proof.

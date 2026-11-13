@@ -215,6 +215,7 @@ your keyboard has it.
 | **⌥⌘7** | DB Studio |
 | **⌥⌘8** | API Studio |
 | **⌥⌘9** | Infra Designer |
+| **⌥⌘U** | Ops Hub |
 | **⌘8** | Docker Panel |
 | **⌘7** | Navigator outline for the current file |
 | **⇧⌘N / ⌥⌘O** | New Project… / Open Folder… |
@@ -538,7 +539,7 @@ KVASIR answers in the language NMOX Studio is set to.
 **KEY…** to choose the provider and paste its key; the choice is remembered
 for every KVASIR face (EXPLAIN, Ask, Edit, Complete, Draft Commit Message,
 the studio explainers) and also sits in Options ▸ Rack & Cloud. FAST and
-DEEP map onto each vendor's own pair: Haiku / Sonnet, GPT-5 mini / GPT-5,
+DEEP map onto each vendor's own pair: Haiku / Sonnet, GPT-6.1 Terra / GPT-6.1 Sol,
 Gemini Flash / Pro. The key is stored in your OS keychain (macOS Keychain,
 GNOME Keyring, Windows Credential Vault), one entry per provider, never on
 disk and never in any project file. Alternatively, KVASIR reads the
@@ -1153,7 +1154,13 @@ which opens with the session.
   [js-debug](https://github.com/microsoft/vscode-js-debug) — the same
   engine VS Code uses — **bundled in the box**. Nothing to install: if
   `node` runs your file, you can debug it. (TypeScript works where node
-  runs it directly, or via source maps on compiled output.)
+  runs it directly, or via source maps on compiled output.) The debugger
+  itself also runs under your `node`, and it needs **Node.js 22 or
+  newer**. It cannot start under Node 18 or older: the IDE refuses that
+  launch on the status line, naming the Node it found, before anything
+  is started. Node 20 and 21 are let through but are older than the
+  debugger's own libraries support. The same floor holds for *Debug in
+  Chrome*, whose debugger is the same one.
 - **Python** uses debugpy, **Go** uses delve. Install those yourself;
   the IDE tells you the command if they're missing.
 - The program runs with your project root as its working directory, so
@@ -1674,13 +1681,16 @@ with the monthly cost of what you're destroying framed in the confirm
 dialog. Right-click a deployed node to copy its ssh command. The design
 persists to `.nmoxinfra.json`.
 
+### Ops Hub (⌥⌘U)
+
 ![The Ops Hub — this machine, a real host (phoenix) and two simulated servers in the fan, a deploy read back as a service node, the inspector's facts, gauges, relationships and deploy tracker](images/ops-hub.png)
 
-**Ops Hub (Window ▸ Ops Hub).** Where the Infra Designer is what you
+**⌥⌘U** or **Window ▸ Ops Hub** opens it. Where the Infra Designer is what you
 want to exist, the Ops Hub is a picture of what does: a DevOps HUD with
 this machine on the left and every server you can reach fanned out to
-the right. **New Server…** asks DigitalOcean for a droplet (the same
-token as the Infra Designer), prices it before you confirm, and the
+the right. **New Server…** asks DigitalOcean or Hetzner for a server
+(the token the Infra Designer uses; **Token…** sets one from here),
+prices it in the provider's own currency before you confirm, and the
 host appears beside you and glides into place while the feed narrates
 each step the Hub observes — accepted, provisioning, active, ssh
 answering, cloud-init done. Select a host and press **mosh** or **ssh**
@@ -1688,8 +1698,8 @@ to open a session in the IDE's own Terminal; press **Deploy…** to build
 the aimed project's Dockerfile on the host and run it (the dialog shows
 the exact remote commands first, with Cancel as the default). Every
 reachable host is probed every 15 s while the window shows — load,
-memory, disk, the running containers — and each becomes a node whose
-links say how the Hub knows: solid for observed, dashed for inferred,
+memory, disk, the running containers — and each container becomes a
+node whose links say how the Hub knows: solid for observed, dashed for inferred,
 dotted for declared. **Add Host…** reaches a server you already have
 over ssh; **Simulation** is a labeled pretend provider for seeing the
 loop without a bill. The Hub keeps its own `known_hosts` under
@@ -1958,7 +1968,14 @@ The Docker tab is a control panel: engine status, containers, images,
 volumes, networks — start, stop, logs, prune. The HARBOR rack device
 gives you the same at a glance from the rack. The **Dockerize** tab
 generates a production-grade `Dockerfile`, `.dockerignore`, and compose
-file tuned to your project's toolchain (Node, PHP-FPM+nginx, and more).
+file tuned to your project's toolchain (Node with your own package
+manager, Bun, Deno, Go, Rust, Python, PHP-FPM+nginx). It reads what the
+project holds: the Rust binary's name from `Cargo.toml`, the start
+command from what a Python project depends on, the folder a static build
+writes to. Where it cannot tell, the Dockerfile says so in a comment.
+A project that already has its own compose file keeps it; Dockerize
+writes `compose.nmox.yaml` beside it. Every recipe is built and run on a
+CI runner each week.
 And as noted above: run a Postgres/MySQL/Mongo container, and DB Studio
 offers you a ready-made connection.
 

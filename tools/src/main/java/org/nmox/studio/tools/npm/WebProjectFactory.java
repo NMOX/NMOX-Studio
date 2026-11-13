@@ -17,7 +17,8 @@ import org.openide.util.lookup.ServiceProvider;
  * Teaches the platform what counts as a project: a {@code
  * @ServiceProvider}-registered {@link ProjectFactory} the global
  * ProjectManager consults for every directory it is asked about. Any of
- * the ~58 recognized manifests (package.json through Clarinet.toml) —
+ * the recognized manifests (package.json through Clarinet.toml; the
+ * list is derived from {@code ProjectKind}, so it has no number here) —
  * or, as the deliberate last resort, a bare index.html — makes the
  * directory a {@link WebProject}. Recognition here is only the boolean;
  * kind precedence (which toolchain wins when several manifests coexist)
@@ -130,18 +131,6 @@ public class WebProjectFactory implements ProjectFactory {
     }
 
     /**
-     * The last-resort doors, deliberate and root-only: a directory with an
-     * {@code index.html} is a project — a 2005 site deserves to open too —
-     * and so is a learning space, whose {@code .nmox-learn} marker IS its
-     * manifest and whose pre-wired rack driver IS its toolchain (v2.58.0).
-     *
-     * <p>These are checked here rather than walked up to like a manifest,
-     * because an ancestor walk would make a project of every directory that
-     * happens to hold an {@code index.html}. Kind precedence — any real
-     * manifest outranks both — lives in {@code ProjectInspector}; recognition
-     * here is just a boolean.
-     */
-    /**
      * Whether a directory holding a file of this name opens as a project —
      * the NAME-ONLY half of {@link #isProject}.
      *
@@ -176,6 +165,18 @@ public class WebProjectFactory implements ProjectFactory {
         return List.of(MANIFESTS);
     }
 
+    /**
+     * The last-resort doors, deliberate and root-only: a directory with an
+     * {@code index.html} is a project — a 2005 site deserves to open too —
+     * and so is a learning space, whose {@code .nmox-learn} marker IS its
+     * manifest and whose pre-wired rack driver IS its toolchain (v2.58.0).
+     *
+     * <p>These are checked here rather than walked up to like a manifest,
+     * because an ancestor walk would make a project of every directory that
+     * happens to hold an {@code index.html}. Kind precedence — any real
+     * manifest outranks both — lives in {@code ProjectInspector}; recognition
+     * here is just a boolean.
+     */
     private static boolean lastResortMarker(FileObject dir) {
         for (ProjectKind kind : LAST_RESORT) {
             for (String marker : kind.manifests()) {

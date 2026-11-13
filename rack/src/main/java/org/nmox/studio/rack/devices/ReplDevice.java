@@ -512,8 +512,11 @@ public class ReplDevice extends RackDevice {
         return screen.getText();
     }
 
-    /** argv tokenizer: whitespace split, honoring simple double-quotes. */
-    static List<String> splitArgs(String command) {
+    /**
+     * argv tokenizer: whitespace split, honoring simple double-quotes.
+     * Public for the same law as {@link CommandLineDevice#splitArgs}.
+     */
+    public static List<String> splitArgs(String command) {
         List<String> args = new ArrayList<>();
         if (command == null) {
             return args;

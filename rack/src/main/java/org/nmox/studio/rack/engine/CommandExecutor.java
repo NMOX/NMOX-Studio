@@ -119,6 +119,9 @@ public final class CommandExecutor {
         return java.util.Set.copyOf(LIVE);
     }
 
+    /** How long a stopped run's processes get to exit on SIGTERM before SIGKILL. */
+    static final long KILL_GRACE_NANOS = java.util.concurrent.TimeUnit.SECONDS.toNanos(3);
+
     /**
      * Launches a command asynchronously.
      *
@@ -129,9 +132,6 @@ public final class CommandExecutor {
      * @param onLine  called for every output line (worker thread!)
      * @param onExit  called once with the exit code, or -1 if launch failed
      */
-    /** How long a stopped run's processes get to exit on SIGTERM before SIGKILL. */
-    static final long KILL_GRACE_NANOS = java.util.concurrent.TimeUnit.SECONDS.toNanos(3);
-
     public static Handle run(String tabName, File dir, Map<String, String> env,
             List<String> command, Consumer<String> onLine, IntConsumer onExit) {
         return run(tabName, dir, env, command, null, onLine, onExit);
@@ -349,13 +349,6 @@ public final class CommandExecutor {
     }
 
     /**
-     * Drains one of the process's streams: ANSI-stripped lines go to the
-     * device callback (devices parse markers from either stream - vite
-     * logs to stderr), onto the rack bus tagged with their origin, and
-     * into the Output window, where stderr prints in the error color and
-     * file:line references become clickable links.
-     */
-    /**
      * Per-line ceiling for {@link #readLineBounded}. The pump has no output
      * accumulator (each line dispatches and drops — the streaming design),
      * but {@code readLine()} itself buffered one logical line unbounded: a
@@ -365,6 +358,13 @@ public final class CommandExecutor {
      */
     static final int MAX_LINE_CHARS = 200_000;
 
+    /**
+     * Drains one of the process's streams: ANSI-stripped lines go to the
+     * device callback (devices parse markers from either stream - vite
+     * logs to stderr), onto the rack bus tagged with their origin, and
+     * into the Output window, where stderr prints in the error color and
+     * file:line references become clickable links.
+     */
     private static void pumpStream(java.io.InputStream stream, OutputWriter writer,
             boolean isErr, String tabName, File dir, Consumer<String> onLine) {
         boolean portExplained = false;

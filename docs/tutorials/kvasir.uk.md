@@ -39,7 +39,7 @@ Anthropic (Claude), OpenAI (ChatGPT) або Google (Gemini). Натисніть 
 
 4. **Прочитайте вердикт.** Стислий діагноз з’являється на багаторядковому
    РК-екрані; натисніть **VIEW**, щоб відкрити повне пояснення у вікні бесіди. Ручка **MODEL**
-   обирає FAST (типово) або DEEP — Haiku / Sonnet, GPT-5 mini / GPT-5 чи
+   обирає FAST (типово) або DEEP — Haiku / Sonnet, GPT-6.1 Terra / GPT-6.1 Sol чи
    Gemini Flash / Pro, залежно від обраного постачальника.
 
 ## Що ви щойно дізналися

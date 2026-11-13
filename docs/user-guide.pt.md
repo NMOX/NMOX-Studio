@@ -91,6 +91,7 @@ Atalhos que valem o primeiro dia (todos também aparecem na aba de boas-vindas):
 | **⌥⌘7** | Estúdio de banco de dados |
 | **⌥⌘8** | Estúdio de API |
 | **⌥⌘9** | Designer de infraestrutura |
+| **⌥⌘U** | Hub de operações |
 | **⌘8** | Painel do Docker |
 | **⌘7** | Estrutura do arquivo atual no Navegador |
 | **⇧⌘N / ⌥⌘O** | Novo projeto… / Abrir pasta… |
@@ -107,7 +108,7 @@ Vindo do VS Code? [Vindo do VS Code](coming-from-vscode.pt.md) mapeia os atalhos
 <a id="3-projects"></a>
 ## 3. Projetos
 
-**Abrir:** qualquer pasta com um dos 60 manifestos reconhecidos abre como um projeto de verdade — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js` e afins — incluindo os manifestos das redes de contratos: um repositório Aiken (`aiken.toml`) ou Clarinet (`Clarinet.toml`) abre com suas trilhas reais já ligadas. Uma pasta simples de HTML com tags `<script>` e **sem** manifesto também abre, como projeto STATIC: a web clássica é de primeira classe, não um erro.
+**Abrir:** qualquer pasta com um dos 63 manifestos reconhecidos abre como um projeto de verdade — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js` e afins — incluindo os manifestos das redes de contratos: um repositório Aiken (`aiken.toml`) ou Clarinet (`Clarinet.toml`) abre com suas trilhas reais já ligadas. Uma pasta simples de HTML com tags `<script>` e **sem** manifesto também abre, como projeto STATIC: a web clássica é de primeira classe, não um erro.
 
 **Criar:** *Novo projeto…* oferece andaimes de verdade — Angular, Vue, Svelte, JavaScript puro, Elixir/Phoenix, PHP Web (LEMP) e Web clássica (jQuery). Cada um chega com as configurações de lint, formatação e testes já ligadas e um repositório git iniciado: um único commit de andaime que, quando o assistente roda a instalação para você, também carrega o arquivo de bloqueio — de modo que seu primeiro `git status` vem limpo.
 
@@ -298,6 +299,14 @@ A árvore de artefatos do Foundry e do Hardhat, um **Interagir** guiado pela ABI
 ### Designer de infraestrutura (⌥⌘9)
 
 Uma tela para DigitalOcean, Hetzner e Cloudflare: sincronize o que existe de verdade, atualize para ver as diferenças e destrua uma pilha com o custo dela à vista. Ligações ilegais recusam em voz alta e dizem por quê, e enquanto uma operação na nuvem está em curso a tela se tranca com uma faixa que avisa.
+
+### Hub de operações (⌥⌘U)
+
+![O Hub de operações — esta máquina, um host real e dois servidores simulados em leque, uma implantação lida de volta como nó de serviço, e o inspetor com fatos, medidores, relações e acompanhamento da implantação](images/ops-hub.png)
+
+O Designer de infraestrutura é o que você quer que exista; o Hub de operações (**Janela ▸ Hub de operações**) é o retrato ao vivo do que existe: os servidores que você alcança, com esta máquina à esquerda. **Novo servidor…** pede um ao DigitalOcean ou Hetzner com o token do Designer de infraestrutura, mostra o preço antes da confirmação, e a lista de eventos narra cada passo observado. **mosh** e **ssh** abrem uma sessão no terminal do IDE. **Implantar…** compila o Dockerfile do projeto apontado no host e o executa; antes mostra os comandos exatos, com **Cancelar** como padrão. Cada host alcançável é sondado a cada 15 s (carga, memória, disco, contêineres), e as ligações são cheias se observadas, tracejadas se inferidas e pontilhadas se declaradas. **Adicionar host…** é para um servidor já seu; **Simulação** é um provedor de mentira, marcado e sem conta.
+
+A roda aproxima e afasta, arrastar desloca a vista e **Ajustar** enquadra tudo. Um serviço tem **Logs**, **Shell** e **Reverter…**, que inicia a imagem anterior: nada é enviado nem compilado, e Enter responde **Não**. O Hub mantém seu próprio `known_hosts` em `~/.nmox/ops/` e nunca escreve no seu.
 
 ### IRC (⌥⌘3)
 

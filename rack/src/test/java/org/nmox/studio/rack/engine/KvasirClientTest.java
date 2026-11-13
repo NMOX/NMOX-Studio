@@ -131,8 +131,8 @@ class KvasirClientTest {
     @DisplayName("requestBody carries model, a token cap, and one user turn")
     void requestBodyShape() {
         JSONObject body = new JSONObject(
-                KvasirClient.requestBody("claude-haiku-4-5", "why did it fail?"));
-        assertThat(body.getString("model")).isEqualTo("claude-haiku-4-5");
+                KvasirClient.requestBody(KvasirClient.MODEL_HAIKU, "why did it fail?"));
+        assertThat(body.getString("model")).isEqualTo(KvasirClient.MODEL_HAIKU);
         assertThat(body.getInt("max_tokens")).isPositive();
         JSONObject msg = body.getJSONArray("messages").getJSONObject(0);
         assertThat(msg.getString("role")).isEqualTo("user");
@@ -195,13 +195,13 @@ class KvasirClientTest {
     @DisplayName("explain posts to the HTTPS endpoint, passes the key, returns the text")
     void explainOverSeam() throws IOException {
         SpyTransport spy = new SpyTransport(messageResponse("Bump the dependency."));
-        String out = new KvasirClient(spy).explain(ctx(), "claude-sonnet-5", "sk-secret".toCharArray());
+        String out = new KvasirClient(spy).explain(ctx(), KvasirClient.MODEL_SONNET, "sk-secret".toCharArray());
 
         assertThat(out).isEqualTo("Bump the dependency.");
         assertThat(spy.urls).containsExactly("https://api.anthropic.com/v1/messages");
         assertThat(spy.urls.get(0)).startsWith("https://"); // HTTPS only
         assertThat(spy.keys).containsExactly("sk-secret");   // key travels to the transport
-        assertThat(spy.bodies.get(0)).contains("claude-sonnet-5").contains("npm test");
+        assertThat(spy.bodies.get(0)).contains("\"" + KvasirClient.MODEL_SONNET + "\"").contains("npm test");
     }
 
     // ---- reconstructing the failed run from the recorder -------------------

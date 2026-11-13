@@ -9,7 +9,8 @@ on:
 jobs:
   build:
     # Prove the cross-platform claim: the full verify (tests + SpotBugs gate)
-    # runs on Linux and macOS, on the Java 21 LTS the app now targets.
+    # runs on Linux, macOS and Windows, on JDK 25 (the build's floor; the
+    # bytecode it emits still targets Java 21).
     strategy:
       fail-fast: false
       matrix:

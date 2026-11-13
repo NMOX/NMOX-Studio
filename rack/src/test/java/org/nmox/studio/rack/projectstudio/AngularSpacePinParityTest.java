@@ -15,11 +15,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * The Angular pins live in TWO generators — the ANGULAR project
  * template and the angular learning space — and both must ride the
  * same proven line (the KitCatalogParityTest lesson: same starters,
- * two homes, lockstep or drift). v1.241.0: the template's ^22 pin
- * could never npm-install (Angular 22 requires TypeScript 6, the
- * product's TS-5 ceiling binds), so both homes now pin the proven
- * ~21.2 + TS 5.9 set; this gate fails the build if either moves
- * alone.
+ * two homes, lockstep or drift). v1.241.0 found the template's ^22
+ * pin unable to npm-install against a TypeScript 5 and put both homes
+ * on ~21.2; ledger 140 (2026-11-13) moved both to the proven ~22.2 +
+ * TypeScript ~6.0 set, each home installed and built for real. This
+ * gate fails the build if either moves alone.
  */
 class AngularSpacePinParityTest {
 
@@ -60,8 +60,13 @@ class AngularSpacePinParityTest {
                 .as("space rides the template's proven @angular line")
                 .isEqualTo(tplCore);
         assertThat(pkg.getJSONObject("devDependencies").getString("typescript"))
-                .as("space respects the TS-5 ceiling with the template")
+                .as("space keeps the template's TypeScript (Angular 22 peers on >=6.0 <6.1)")
                 .isEqualTo(tplTs);
+        for (String tool : new String[]{"@angular/cli", "@angular/build", "@angular/compiler-cli"}) {
+            assertThat(pkg.getJSONObject("devDependencies").getString(tool))
+                    .as("space rides the template's " + tool)
+                    .isEqualTo(tpl.getJSONObject("devDependencies").getString(tool));
+        }
 
         // the space is a REAL workspace: ng serve has an angular.json to read
         boolean hasNgJson = false;

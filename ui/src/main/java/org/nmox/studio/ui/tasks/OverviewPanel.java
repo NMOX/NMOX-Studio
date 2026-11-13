@@ -471,8 +471,6 @@ final class OverviewPanel extends JPanel {
         return leftToRight ? 0 : width - fill;
     }
 
-    /** The N-day painted flow strip: one bar per day, oldest first.
-     *  JPanel for the same accessible-context reason as Bar. */
     /**
      * The burndown (v2.37.0): remaining-per-day as a phosphor line over
      * the ideal straight line to zero. A JPanel like every painted
@@ -541,6 +539,8 @@ final class OverviewPanel extends JPanel {
         }
     }
 
+    /** The N-day painted flow strip: one bar per day, oldest first.
+     *  JPanel for the same accessible-context reason as Bar. */
     private static final class FlowStrip extends JPanel {
         private final int[] bins;
         private final int max;

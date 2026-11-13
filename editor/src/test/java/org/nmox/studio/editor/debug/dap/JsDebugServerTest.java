@@ -125,4 +125,87 @@ class JsDebugServerTest {
         long elapsedMs = (System.nanoTime() - start) / 1_000_000;
         assertThat(elapsedMs).isLessThan(9_000);
     }
+
+    // ---- the Node floor (js-debug v1.140.1: the bundle does not load under Node 18) ----
+
+    @Test
+    @DisplayName("the major is read from what node --version prints, and only from a version")
+    void nodeMajorIsReadFromAVersion() {
+        assertThat(JsDebugServer.nodeMajor("v18.20.8\n")).isEqualTo(18);
+        assertThat(JsDebugServer.nodeMajor("v22.9.0")).isEqualTo(22);
+        assertThat(JsDebugServer.nodeMajor("  v20.0.0-nightly2023\n")).isEqualTo(20);
+        assertThat(JsDebugServer.nodeMajor("24.4.1")).isEqualTo(24);
+        assertThat(JsDebugServer.nodeMajor("")).isEqualTo(-1);
+        assertThat(JsDebugServer.nodeMajor(null)).isEqualTo(-1);
+        assertThat(JsDebugServer.nodeMajor("node: command not found")).isEqualTo(-1);
+        assertThat(JsDebugServer.nodeMajor("Welcome v18")).isEqualTo(-1);
+    }
+
+    /**
+     * A stand-in for the user's {@code node}: answers {@code --version}
+     * with {@code version}, and anything else — which is to say, being
+     * asked to run the adapter — by leaving {@code marker} and exiting 3.
+     */
+    private File standInNode(String version, Path marker) throws IOException {
+        Path node = dir.resolve("node-" + version.replaceAll("[^A-Za-z0-9.]", "_"));
+        Files.writeString(node, "#!/bin/sh\n"
+                + "if [ \"$1\" = \"--version\" ]; then echo '" + version + "'; exit 0; fi\n"
+                + "echo ran > '" + marker.toAbsolutePath() + "'\n"
+                + "exit 3\n", StandardCharsets.UTF_8);
+        assumeTrue(node.toFile().setExecutable(true), "cannot mark a stand-in executable here");
+        return node.toFile();
+    }
+
+    private static boolean posix() {
+        return !System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win");
+    }
+
+    @Test
+    @DisplayName("a Node older than the adapter loads under is refused by name, before the adapter is started")
+    void oldNodeIsRefusedByNameBeforeAnySpawn() throws Exception {
+        assumeTrue(posix(), "the stand-in node is a shell script");
+        Path marker = dir.resolve("adapter-was-started");
+        File node = standInNode("v18.20.8", marker);
+        Path adapter = dir.resolve("adapter.js");
+        Files.writeString(adapter, "// never run", StandardCharsets.UTF_8);
+
+        assertThatThrownBy(() -> JsDebugServer.start(adapter.toFile(), node.getAbsolutePath()))
+                .isInstanceOfSatisfying(JsDebugServer.NodeTooOld.class, old -> {
+                    assertThat(old.found()).isEqualTo("v18.20.8");
+                    assertThat(old.needed()).isEqualTo(JsDebugServer.MIN_NODE_MAJOR);
+                    assertThat(old.getMessage()).contains("v18.20.8").contains("Node.js 20");
+                });
+        assertThat(marker).as("the adapter must not be started under a Node it cannot load under")
+                .doesNotExist();
+    }
+
+    @Test
+    @DisplayName("a Node at the floor is not refused: the same command goes on to start the adapter")
+    void nodeAtTheFloorStartsTheAdapter() throws Exception {
+        assumeTrue(posix(), "the stand-in node is a shell script");
+        Path marker = dir.resolve("adapter-was-started");
+        File node = standInNode("v" + JsDebugServer.MIN_NODE_MAJOR + ".0.0", marker);
+        Path adapter = dir.resolve("adapter.js");
+        Files.writeString(adapter, "// the stand-in exits 3 instead of running this", StandardCharsets.UTF_8);
+
+        assertThatThrownBy(() -> JsDebugServer.start(adapter.toFile(), node.getAbsolutePath()))
+                .isInstanceOf(IOException.class)
+                .isNotInstanceOf(JsDebugServer.NodeTooOld.class)
+                .hasMessageContaining("exited immediately");
+        assertThat(marker).as("the launch went ahead").exists();
+    }
+
+    @Test
+    @DisplayName("a node that does not say a version is not refused on a guess")
+    void unreadableVersionIsNotARefusal() throws Exception {
+        assumeTrue(posix(), "the stand-in node is a shell script");
+        Path marker = dir.resolve("adapter-was-started");
+        File node = standInNode("custom build, no number", marker);
+        Path adapter = dir.resolve("adapter.js");
+        Files.writeString(adapter, "// the stand-in exits 3 instead of running this", StandardCharsets.UTF_8);
+
+        assertThatThrownBy(() -> JsDebugServer.start(adapter.toFile(), node.getAbsolutePath()))
+                .isNotInstanceOf(JsDebugServer.NodeTooOld.class);
+        assertThat(marker).as("left to the launch, which reports its own failures").exists();
+    }
 }

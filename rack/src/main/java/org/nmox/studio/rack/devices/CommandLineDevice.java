@@ -44,9 +44,10 @@ public class CommandLineDevice extends CommandDevice {
     /**
      * Whitespace-splits into argv with single/double quotes grouping -
      * the useful 90% of shell tokenizing with none of the shell:
-     * no expansion, no redirection, no chaining.
+     * no expansion, no redirection, no chaining. Public so the learning
+     * catalog's law can hold every driver to a line this splits back.
      */
-    static List<String> splitArgs(String line) {
+    public static List<String> splitArgs(String line) {
         List<String> args = new ArrayList<>();
         if (line == null) {
             return args;

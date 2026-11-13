@@ -14,7 +14,8 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
 /**
  * NEXUS Next.js Console: DEV serves with the URL out feeding SCOPE,
  * BUILD compiles production, START serves the production build, LINT
- * runs next lint - and the version cluster tracks the installed next
+ * runs next lint (the ESLint CLI from Next 16 on, which has no lint
+ * command) - and the version cluster tracks the installed next
  * against the registry so the rack nags when the framework moves.
  */
 public class NextDevice extends CommandDevice {
@@ -46,7 +47,7 @@ public class NextDevice extends CommandDevice {
         stop.addActionListener(e -> stopByUser());
         build.addActionListener(e -> primaryAction());
         start.addActionListener(e -> launch(List.of("npx", "next", "start")));
-        lint.addActionListener(e -> launch(List.of("npx", "next", "lint")));
+        lint.addActionListener(e -> launch(lintCommand(installedVersion)));
 
         addInPort("serve", "DEV", SignalType.TRIGGER);
         addInPort("stop", "STOP", SignalType.TRIGGER);
@@ -54,6 +55,33 @@ public class NextDevice extends CommandDevice {
         addOutPort("url", "URL", SignalType.DATA);
         addOutPort("ready", "READY", SignalType.TRIGGER);
         addOutPort("serving", "SERVING", SignalType.GATE);
+    }
+
+    /**
+     * What LINT runs for the Next this project declares.
+     *
+     * <p>Next 16 has no {@code lint} command. {@code next lint} there reads
+     * "lint" as a project directory and exits 1 with <em>Invalid project
+     * directory provided, no such directory: .../lint</em> (measured on
+     * 16.4.6, 2026-11-13). Next's own replacement is the ESLint CLI. Below
+     * 16, and where the version cannot be read, the command Next still has.
+     */
+    static List<String> lintCommand(String installedNext) {
+        return majorOf(installedNext) >= 16
+                ? List.of("npx", "eslint", ".")
+                : List.of("npx", "next", "lint");
+    }
+
+    /** The leading number of a cleaned version, or 0 when there is none. */
+    private static int majorOf(String version) {
+        if (version == null) {
+            return 0;
+        }
+        int end = 0;
+        while (end < version.length() && end < 6 && version.charAt(end) >= '0' && version.charAt(end) <= '9') {
+            end++;
+        }
+        return end == 0 ? 0 : Integer.parseInt(version.substring(0, end));
     }
 
     @Override

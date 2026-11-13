@@ -28,7 +28,6 @@ import java.util.Set;
 })
 public final class GettingStarted {
 
-    /** One step: a stable key, what the user does, where the gesture lives. */
     /**
      * Where a click on a step takes you (v2.69.9 — David's walk found every
      * step a dud: the rows were labels with a tooltip). A step is a door,
@@ -52,6 +51,7 @@ public final class GettingStarted {
         }
     }
 
+    /** One step: a stable key, what the user does, where the gesture lives. */
     public record Step(String key, String label, String gesture, Target target) {
     }
 

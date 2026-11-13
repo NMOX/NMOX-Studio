@@ -6,16 +6,27 @@
 #
 # Produces <cluster-dir>/jre and appends jdkhome="jre" to
 # etc/nmoxstudio.conf (the launcher resolves a relative jdkhome
-# against the cluster root). Requires a JDK with jmods (21+: the
-# NetBeans Platform 30 baseline won't run on anything older).
+# against the cluster root). Requires JDK 24 or newer to LINK with:
+# OpenJFX 26's jmods are class-file 68, which an older jlink refuses.
+# The release lanes use Zulu 25. (What the linked runtime then RUNS is
+# another number: the modules are Java 21 bytecode.)
 set -euo pipefail
 
 CLUSTER="${1:?usage: bundle-jre.sh <cluster-dir>}"
 [ -d "$CLUSTER" ] || { echo "ERROR: $CLUSTER missing"; exit 1; }
 
-JDK="${JAVA_HOME:-$(/usr/libexec/java_home -v 21+ 2>/dev/null || true)}"
+JDK="${JAVA_HOME:-$(/usr/libexec/java_home -v 25+ 2>/dev/null || true)}"
 [ -n "$JDK" ] && [ -x "$JDK/bin/jlink" ] || {
-    echo "ERROR: need a JDK 21+ with jlink (JAVA_HOME=$JDK)"; exit 1; }
+    echo "ERROR: need a JDK 24+ with jlink (JAVA_HOME=$JDK)"; exit 1; }
+# Say it here, by name: left to jlink, an older JDK fails deep in the
+# link with a class-file complaint about a javafx module.
+JLINK_VERSION="$("$JDK/bin/jlink" --version 2>/dev/null | head -1)"
+JLINK_MAJOR="${JLINK_VERSION%%[.+-]*}"
+case "$JLINK_MAJOR" in
+    ''|*[!0-9]*) echo "ERROR: could not read jlink's version at $JDK (got '$JLINK_VERSION')"; exit 1 ;;
+esac
+[ "$JLINK_MAJOR" -ge 24 ] || {
+    echo "ERROR: jlink $JLINK_VERSION at $JDK is too old: OpenJFX's jmods are class-file 68 and need JDK 24 or newer to link"; exit 1; }
 
 # A JDK's own jmods are OPTIONAL since JDK 24 (JEP 493, "linkable
 # run-time images"): a JDK built with --enable-linkable-runtime ships

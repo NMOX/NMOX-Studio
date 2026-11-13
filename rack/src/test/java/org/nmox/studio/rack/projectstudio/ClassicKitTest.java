@@ -86,11 +86,11 @@ class ClassicKitTest {
             ClassicKit.write(project(), options(Set.of("backbone"),
                     ClassicKit.Mode.VENDORED, Set.of()));
 
-            assertThat(dir.resolve("vendor/underscore-1.13.7.min.js")).exists();
-            assertThat(dir.resolve("vendor/backbone-1.6.0.min.js")).exists();
+            assertThat(dir.resolve("vendor/underscore-1.13.8.min.js")).exists();
+            assertThat(dir.resolve("vendor/backbone-1.6.1.min.js")).exists();
             String html = Files.readString(dir.resolve("index.html"));
-            assertThat(html.indexOf("underscore-1.13.7.min.js"))
-                    .isLessThan(html.indexOf("backbone-1.6.0.min.js"));
+            assertThat(html.indexOf("underscore-1.13.8.min.js"))
+                    .isLessThan(html.indexOf("backbone-1.6.1.min.js"));
         }
 
         @Test
@@ -175,16 +175,15 @@ class ClassicKitTest {
                 """);
 
             List<ClassicKit.Outcome> outcomes = ClassicKit.write(project(),
-                    options(Set.of("jquery", "backbone", "knockout", "mootools"),
+                    options(Set.of("jquery", "backbone", "knockout"),
                             ClassicKit.Mode.NPM, Set.of()));
 
             JSONObject json = new JSONObject(Files.readString(dir.resolve("package.json")));
             JSONObject deps = json.getJSONObject("dependencies");
             assertThat(deps.getString("jquery")).isEqualTo("^3.7.1");
-            assertThat(deps.getString("mootools")).isEqualTo("^1.6.0");
-            assertThat(deps.getString("backbone")).isEqualTo("^1.6.0");
-            assertThat(deps.getString("underscore")).isEqualTo("^1.13.7");
-            assertThat(deps.getString("knockout")).isEqualTo("^3.5.1");
+            assertThat(deps.getString("backbone")).isEqualTo("^1.6.1");
+            assertThat(deps.getString("underscore")).isEqualTo("^1.13.8");
+            assertThat(deps.getString("knockout")).isEqualTo("^3.5.3");
             assertThat(deps.getString("lodash")).isEqualTo("^4.17.21");
             assertThat(json.getJSONArray("workspaces").getString(0))
                     .as("unknown fields survive the round-trip").isEqualTo("packages/*");
@@ -220,6 +219,103 @@ class ClassicKitTest {
                 assertThat(o.changed()).isFalse();
                 assertThat(o.status()).contains(ClassicKit.PROTOTYPE_NPM_NOTE);
             });
+        }
+
+        @Test
+        @DisplayName("MooTools in npm mode is refused the same way, and writes no dependency")
+        void mootoolsRefusedHonestly() throws Exception {
+            Files.writeString(dir.resolve("package.json"), "{ \"name\": \"x\" }");
+
+            List<ClassicKit.Outcome> outcomes = ClassicKit.write(project(),
+                    options(Set.of("mootools"), ClassicKit.Mode.NPM, Set.of()));
+
+            assertThat(outcomes).singleElement().satisfies(o -> {
+                assertThat(o.changed()).isFalse();
+                assertThat(o.status())
+                        .contains("MooTools Core (compat) ships vendored only")
+                        .contains("no canonical npm package");
+            });
+            assertThat(Files.readString(dir.resolve("package.json")))
+                    .as("npm cannot resolve mootools@^1.6.0 (ETARGET): nothing is written")
+                    .isEqualTo("{ \"name\": \"x\" }");
+        }
+
+        /**
+         * Every range npm mode writes, checked against the registry by
+         * hand with {@code npm view <name>@<range> version}, and the date
+         * it was checked. The kit's literals are read by no bot, and one
+         * of them was never true: until 2026-11-13 npm mode wrote
+         * {@code "mootools": "^1.6.0"}, while the registry's newest
+         * {@code mootools} is 1.5.2 ("MooTools 1.5.2 Server library", not
+         * the browser file), so {@code npm install} failed with ETARGET.
+         * A range that is not in this table, or that differs from it, has
+         * not been checked: add or change the row only after running the
+         * command, with the date. A library with no row must be
+         * vendored-only and say why.
+         */
+        private static final java.util.Map<String, String[]> REGISTRY_VERIFIED = java.util.Map.of(
+                //  npm name        range the kit writes, what it resolved to, checked on
+                "jquery", new String[]{"^3.7.1", "3.7.1", "2026-11-13"},
+                "alpinejs", new String[]{"^3.17.5", "3.17.5", "2026-11-13"},
+                "htmx.org", new String[]{"^2.0.11", "2.0.11", "2026-11-13"},
+                "backbone", new String[]{"^1.6.1", "1.6.1", "2026-11-13"},
+                "knockout", new String[]{"^3.5.3", "3.5.3", "2026-11-13"},
+                "underscore", new String[]{"^1.13.8", "1.13.8", "2026-11-13"});
+
+        @Test
+        @DisplayName("every range npm mode writes is a range the registry was seen to resolve")
+        void npmRangesAreRegistryVerified() {
+            List<ClassicKit.Lib> all = new java.util.ArrayList<>(ClassicKit.libraries());
+            all.add(ClassicKit.underscore());
+            java.util.Set<String> written = new java.util.TreeSet<>();
+            for (ClassicKit.Lib lib : all) {
+                if (!lib.npmCapable()) {
+                    assertThat(ClassicKit.npmNote(lib))
+                            .as(lib.id() + " is vendored-only and must say so")
+                            .startsWith(lib.display()).contains("vendored only");
+                    assertThat(lib.npmRange()).as(lib.id() + ": no name, no range").isNull();
+                    continue;
+                }
+                assertThat(ClassicKit.npmNote(lib)).as(lib.id() + " has nothing to excuse").isNull();
+                written.add(lib.npmName());
+                String[] row = REGISTRY_VERIFIED.get(lib.npmName());
+                assertThat(row)
+                        .as("npm mode writes \"" + lib.npmName() + "\": \"" + lib.npmRange()
+                                + "\" but nobody recorded that the registry resolves it — run"
+                                + " `npm view " + lib.npmName() + "@" + lib.npmRange()
+                                + " version`, then add the row with today's date, or make the"
+                                + " library vendored-only")
+                        .isNotNull();
+                assertThat(lib.npmRange())
+                        .as(lib.npmName() + ": the range changed since it was checked on " + row[2]
+                                + " — check the new one and update the row")
+                        .isEqualTo(row[0]);
+                assertThat(lib.npmRange())
+                        .as(lib.npmName() + ": npm mode and vendored mode deliver the same release")
+                        .isEqualTo("^" + lib.version());
+                assertThat(caretAdmits(row[0], row[1]))
+                        .as(lib.npmName() + ": the recorded resolution " + row[1]
+                                + " must satisfy " + row[0])
+                        .isTrue();
+            }
+            assertThat(REGISTRY_VERIFIED.keySet())
+                    .as("a row for a package the kit no longer writes is a stale claim")
+                    .containsExactlyInAnyOrderElementsOf(written);
+        }
+
+        /** {@code ^a.b.c} admits {@code a.x.y >= a.b.c} (a > 0, which every row here is). */
+        private static boolean caretAdmits(String range, String version) {
+            int[] base = parts(range.substring(1));
+            int[] got = parts(version);
+            if (!range.startsWith("^") || base[0] == 0 || got[0] != base[0]) {
+                return false;
+            }
+            return got[1] != base[1] ? got[1] > base[1] : got[2] >= base[2];
+        }
+
+        private static int[] parts(String version) {
+            String[] p = version.split("\\.");
+            return new int[]{Integer.parseInt(p[0]), Integer.parseInt(p[1]), Integer.parseInt(p[2])};
         }
 
         @Test
@@ -356,8 +452,8 @@ class ClassicKitTest {
             assertThat(bower.getString("name")).isEqualTo(project().getName());
             JSONObject deps = bower.getJSONObject("dependencies");
             assertThat(deps.getString("jquery")).isEqualTo("^3.7.1");
-            assertThat(deps.getString("backbone")).isEqualTo("^1.6.0");
-            assertThat(deps.getString("underscore")).isEqualTo("^1.13.7");
+            assertThat(deps.getString("backbone")).isEqualTo("^1.6.1");
+            assertThat(deps.getString("underscore")).isEqualTo("^1.13.8");
         }
 
         @Test
@@ -420,6 +516,21 @@ class ClassicKitTest {
     }
 
     @Test
+    @DisplayName("validate: MooTools under npm gets the same note, one warning per library")
+    void validateMootoolsUnderNpm() throws Exception {
+        Files.writeString(dir.resolve("package.json"), "{}");
+
+        List<String> warnings = ClassicKit.validate(
+                options(Set.of("mootools", "prototype", "jquery"), ClassicKit.Mode.NPM, Set.of()),
+                project());
+
+        assertThat(warnings).containsExactly(
+                "MooTools Core (compat) ships vendored only — no canonical npm package"
+                        + " — it will be skipped.",
+                ClassicKit.PROTOTYPE_NPM_NOTE + " — it will be skipped.");
+    }
+
+    @Test
     @DisplayName("validate: a sound vendored plan raises no warnings")
     void validateSoundPlan() {
         assertThat(ClassicKit.validate(options(Set.of("jquery"),
@@ -448,11 +559,14 @@ class ClassicKitTest {
     }
 
     @Test
-    @DisplayName("Only Prototype is npm-incapable; the catalog carries five libraries")
+    @DisplayName("MooTools and Prototype are npm-incapable; the catalog carries seven libraries")
     void catalogShape() {
         assertThat(ClassicKit.libraries()).hasSize(7);
         assertThat(ClassicKit.libraries()).filteredOn(lib -> !lib.npmCapable())
-                .extracting(ClassicKit.Lib::id).containsExactly("prototype");
+                .extracting(ClassicKit.Lib::id).containsExactly("mootools", "prototype");
+        assertThat(ClassicKit.npmNote(ClassicKit.libraries().get(2)))
+                .as("one wording: the Prototype constant is the note for Prototype")
+                .isEqualTo(ClassicKit.PROTOTYPE_NPM_NOTE);
         assertThat(ClassicKit.underscore().npmCapable()).isTrue();
         assertThat(ClassicKit.generatorIds())
                 .containsExactly("webpack", "grunt", "gulp", "bower");

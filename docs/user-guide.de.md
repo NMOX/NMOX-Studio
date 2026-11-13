@@ -91,6 +91,7 @@ Tastenkürzel, die sich am ersten Tag lohnen (sie stehen auch alle auf dem Willk
 | **⌥⌘7** | Datenbank-Studio |
 | **⌥⌘8** | API-Studio |
 | **⌥⌘9** | Infrastruktur-Designer |
+| **⌥⌘U** | Ops-Hub |
 | **⌘8** | Docker-Panel |
 | **⌘7** | Gliederung der aktuellen Datei |
 | **⇧⌘N / ⌥⌘O** | Neues Projekt… / Ordner öffnen… |
@@ -298,6 +299,14 @@ Der Artefaktbaum von Foundry und Hardhat, ein von der ABI geführtes **Interagie
 ### Infrastruktur-Designer (⌥⌘9)
 
 Eine Fläche für DigitalOcean, Hetzner und Cloudflare: gleichen Sie ab, was wirklich existiert, frischen Sie auf, um Abweichungen zu sehen, und zerstören Sie einen Stapel mit seinen Kosten vor Augen. Unerlaubte Verbindungen lehnen laut ab und sagen warum, und solange eine Wolkenoperation läuft, sperrt sich die Fläche mit einem Band, das genau das sagt.
+
+### Ops-Hub (⌥⌘U)
+
+![Der Ops-Hub — dieser Rechner, ein echter Host und zwei simulierte Server im Fächer, ein Deploy als Dienstknoten zurückgelesen, daneben der Inspektor mit Fakten, Anzeigen, Beziehungen und Deploy-Verlauf](images/ops-hub.png)
+
+Der Infrastruktur-Designer zeigt, was es geben soll; der Ops-Hub (**Fenster ▸ Ops-Hub**) ist das Live-Bild dessen, was es gibt: die Server, die Sie erreichen, mit diesem Rechner links. **Neuer Server…** fordert bei DigitalOcean oder Hetzner einen an, mit dem Token des Infrastruktur-Designers, nennt den Preis, bevor Sie bestätigen, und die Ereignisliste erzählt jeden Schritt, den der Hub beobachtet. **mosh** und **ssh** öffnen eine Sitzung im Terminal der IDE. **Deploy…** baut das Dockerfile des angepeilten Projekts auf dem Host und startet es; der Dialog zeigt zuerst die genauen Befehle, und **Abbrechen** ist die Vorgabe. Jeder erreichbare Host wird alle 15 s abgefragt (Last, Speicher, Platte, Container), und die Verbindungen sind durchgezogen für beobachtet, gestrichelt für abgeleitet, gepunktet für deklariert. **Host hinzufügen…** nimmt einen Server auf, den Sie schon haben; **Simulation** ist ein vorgetäuschter Anbieter, klar markiert und ohne Rechnung.
+
+Das Mausrad zoomt, Ziehen auf leerer Fläche verschiebt die Ansicht, und **Einpassen** holt alles wieder ins Bild. Ein Dienst hat **Logs**, **Shell** und **Zurückrollen…**: Letzteres startet das Image, das zuvor lief, nichts wird hochgeladen oder gebaut, und Eingabe antwortet **Nein**. Der Hub führt seine eigene `known_hosts` unter `~/.nmox/ops/` und schreibt nie in Ihre.
 
 ### IRC (⌥⌘3)
 

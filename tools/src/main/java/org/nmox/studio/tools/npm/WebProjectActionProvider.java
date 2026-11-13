@@ -88,13 +88,6 @@ final class WebProjectActionProvider implements ActionProvider {
     private final WebProject project;
 
     /**
-     * Drops ANSI escapes before the URL scan. The old strip removed only
-     * {@code [36m}-style tails and left the ESC byte itself, which the
-     * URL pattern's permissive char class then swallowed INTO the
-     * captured URL (v1.216.0) — a colored banner produced a serving URL
-     * with a trailing escape byte. Full CSI sequences plus any stray ESC.
-     */
-    /**
      * The serving URL a dev-server output line announces, or null.
      * Extracted pure (v1.216.0) so every branch is plainly testable:
      * python -m http.server (the STATIC lane) prints "Serving HTTP on
@@ -116,6 +109,13 @@ final class WebProjectActionProvider implements ActionProvider {
                 : org.nmox.studio.rack.devices.ServeUrls.firstLocalUrl(plain);
     }
 
+    /**
+     * Drops ANSI escapes before the URL scan. The old strip removed only
+     * {@code [36m}-style tails and left the ESC byte itself, which the
+     * URL pattern's permissive char class then swallowed INTO the
+     * captured URL (v1.216.0) — a colored banner produced a serving URL
+     * with a trailing escape byte. Full CSI sequences plus any stray ESC.
+     */
     static String stripAnsi(String line) {
         return line.replaceAll("\\u001B\\[[;\\d]*[ -/]*[@-~]", "")
                 .replace("\u001B", "")
@@ -144,12 +144,6 @@ final class WebProjectActionProvider implements ActionProvider {
     }
 
     /**
-     * A Node project's Run with no dev, start or serve script (3.1.0). It
-     * was simply greyed - the one thing a newcomer presses first, disabled
-     * without a word. It stays pressable, and the press says why and shows
-     * the scripts the project does have (the NPM Explorer).
-     */
-    /**
      * Where the no-script refusal is said. A seam because the status strip
      * is one per JVM: a message set with an importance (a balloon, the
      * rack's patch refusal) outranks plain text until it clears, so a test
@@ -158,6 +152,12 @@ final class WebProjectActionProvider implements ActionProvider {
     static volatile java.util.function.Consumer<String> noRunScriptStatus = text ->
             org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(text));
 
+    /**
+     * A Node project's Run with no dev, start or serve script (3.1.0). It
+     * was simply greyed - the one thing a newcomer presses first, disabled
+     * without a word. It stays pressable, and the press says why and shows
+     * the scripts the project does have (the NPM Explorer).
+     */
     private boolean runsNothingYet(String command) {
         if (!COMMAND_RUN.equals(command)) {
             return false;

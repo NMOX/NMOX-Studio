@@ -13,7 +13,8 @@ cask "nmox-studio" do
   binary "#{appdir}/NMOX Studio.app/Contents/MacOS/nmox-studio", target: "nmox"
 
   zap trash: [
-    "~/Library/Application Support/NMOXStudio",
+    "~/Library/Application Support/nmoxstudio",
+    "~/Library/Caches/nmoxstudio",
     "~/Library/Caches/org.nmox.studio",
     "~/Library/Preferences/org.nmox.studio.plist",
   ]

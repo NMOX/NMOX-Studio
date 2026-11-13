@@ -163,4 +163,33 @@ class HudCameraTest {
         assertThat(c.panY()).as("the axis that was fine is untouched").isZero();
         assertThat(c.manual()).as("revealing is the HUD's move, not the user's").isFalse();
     }
+
+    @Test
+    @DisplayName("what a fit calls in view, a reveal calls in view: a framed node is never nudged")
+    void revealAgreesWithFit() {
+        // natural size: content the fit accepts as it lies (inside the fit's own padding) is the identity,
+        // and the node at its edge must not be asked for a wider margin than the fit gave it
+        HudCamera c = new HudCamera();
+        java.awt.geom.Rectangle2D inside = new java.awt.geom.Rectangle2D.Double(
+                HudCamera.PAD_X, HudCamera.PAD_TOP, 200, 120);
+        c.fit(inside, 420, 300, false);
+        assertThat(c.identity()).isTrue();
+        assertThat(c.reveal(HudCamera.PAD_X + 20, HudCamera.PAD_TOP + 20, 20, 420, 300, false))
+                .as("the node at the framed content's corner is in view").isFalse();
+        assertThat(c.identity()).as("an untouched camera is still the identity after the keyboard walked it").isTrue();
+        // zoomed to fit: the same, at the zoom the fit chose, for all four corners
+        HudCamera z = new HudCamera();
+        z.fit(CONTENT, 420, 300, false);
+        double px = z.panX();
+        double py = z.panY();
+        double r = 30;
+        double[][] corners = {
+            {CONTENT.getMinX() + r, CONTENT.getMinY() + r}, {CONTENT.getMaxX() - r, CONTENT.getMinY() + r},
+            {CONTENT.getMinX() + r, CONTENT.getMaxY() - r}, {CONTENT.getMaxX() - r, CONTENT.getMaxY() - r}};
+        for (double[] corner : corners) {
+            assertThat(z.reveal(corner[0], corner[1], r, 420, 300, false)).as("corner %s,%s", corner[0], corner[1]).isFalse();
+        }
+        assertThat(z.panX()).isEqualTo(px);
+        assertThat(z.panY()).isEqualTo(py);
+    }
 }

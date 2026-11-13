@@ -344,7 +344,7 @@ chỉ hiện một lần cho mỗi dự án.
     thì phải có ở đó; một đường dẫn tương đối bị từ chối, vì VS Code sẽ tìm
     nó như một cái tên. Khi runtime là toàn bộ câu lệnh (`npm run dev` mà
     không có `program`), script mà nó khởi động được gỡ lỗi như một phiên
-    riêng, được liệt kê trong cửa sổ Sessions.
+    riêng, được liệt kê trong cửa sổ **Phiên**.
   - **Gắn là gắn vào máy này.** `port` (9229 nếu không ghi) và một `address`
     là `localhost`, `127.0.0.1` hoặc `::1`; mọi địa chỉ khác bị từ chối, vì
     đây không phải là phát triển từ xa. Nếu không có gì đang lắng nghe, thanh

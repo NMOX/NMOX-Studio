@@ -44,11 +44,13 @@ class DockerizeGeneratorTest {
     void goDistroless() {
         String df = DockerizeGenerator.generate(ProjectKind.GO, "svc", false).get("Dockerfile");
         assertThat(df).contains("CGO_ENABLED=0").contains("distroless");
-        assertThat(df).contains("ENTRYPOINT [\"/svc\"]");
+        // under /app, never /<name>: the name is the folder's, and a folder called
+        // go, bin or etc names a directory the image already has
+        assertThat(df).contains("ENTRYPOINT [\"/app/svc\"]");
         // `go build -o /file ./...` refuses the moment the module grows a
         // second package ("cannot write multiple packages to non-directory") -
         // found by building the generated Dockerfile against a real daemon
-        assertThat(df).contains("go build -o /svc .\n");
+        assertThat(df).contains("go build -o /out/svc .\n");
         assertThat(df).doesNotContain("./...");
     }
 
@@ -61,8 +63,8 @@ class DockerizeGeneratorTest {
         assertThat(rs)
                 .contains("--mount=type=cache,target=/usr/local/cargo/registry")
                 .contains("--mount=type=cache,target=/src/target")
-                .contains("cargo build --release && cp target/release/rs /rs")
-                .contains("COPY --from=build /rs /usr/local/bin/rs");
+                .contains("cargo build --release && mkdir -p /out && cp target/release/rs /out/rs")
+                .contains("COPY --from=build /out/rs /usr/local/bin/rs");
         assertThat(DockerizeGenerator.generate(ProjectKind.PYTHON, "py", false).get("Dockerfile"))
                 .contains("pip install").contains("uvicorn");
     }
@@ -70,16 +72,66 @@ class DockerizeGeneratorTest {
     @Test
     @DisplayName("Base images are current majors (each tag existence-checked on Docker Hub)")
     void baseImageCurrency() {
+        // measured 2026-11-13; existence-checked on the registries, not built
+        assertThat(DockerizeGenerator.generate(ProjectKind.NODE, "x", false).get("Dockerfile"))
+                .contains("FROM node:26-alpine");
+        assertThat(DockerizeGenerator.generate(ProjectKind.NODE, "x", true).get("Dockerfile"))
+                .contains("FROM node:26-alpine AS build");
         assertThat(DockerizeGenerator.generate(ProjectKind.GO, "x", false).get("Dockerfile"))
-                .contains("FROM golang:1.26");
+                .contains("FROM golang:1.27")
+                .contains("FROM gcr.io/distroless/static-debian13");
         assertThat(DockerizeGenerator.generate(ProjectKind.RUST, "x", false).get("Dockerfile"))
-                .contains("FROM rust:1.95");
+                .contains("FROM rust:1.100");
         assertThat(DockerizeGenerator.generate(ProjectKind.PYTHON, "x", false).get("Dockerfile"))
                 .contains("FROM python:3.14-slim");
         assertThat(DockerizeGenerator.generate(ProjectKind.PHP, "x", false).get("Dockerfile"))
                 .contains("FROM php:8.5-fpm-alpine");
         assertThat(DockerizeGenerator.generate(ProjectKind.PHP, "x", false).get("compose.yaml"))
-                .contains("image: nginx:1.29-alpine");
+                .contains("image: nginx:1.30-alpine");
+        assertThat(DockerizeGenerator.generate(ProjectKind.NODE, "x", true).get("Dockerfile"))
+                .contains("FROM nginx:1.30-alpine\n");
+        assertThat(DockerizeGenerator.generate(ProjectKind.DENO, "x", false).get("Dockerfile"))
+                .contains("FROM denoland/deno:alpine-2.9.8\n");
+        assertThat(DockerizeGenerator.generate(ProjectKind.BUN, "x", false).get("Dockerfile"))
+                .contains("FROM oven/bun:1.4-alpine\n");
+    }
+
+    /** Every image the generator names, for every kind it can be asked about: "FROM x" and compose "image: x". */
+    static java.util.Set<String> generatedImages() {
+        java.util.Set<String> images = new java.util.TreeSet<>();
+        java.util.regex.Pattern named = java.util.regex.Pattern.compile("(?m)^(?:FROM|\\s+image:)\\s+(\\S+)");
+        for (ProjectKind kind : ProjectKind.values()) {
+            for (boolean statics : new boolean[] {false, true}) {
+                for (String content : DockerizeGenerator.generate(kind, "x", statics).values()) {
+                    java.util.regex.Matcher m = named.matcher(content);
+                    while (m.find()) {
+                        images.add(m.group(1));
+                    }
+                }
+            }
+        }
+        return images;
+    }
+
+    @Test
+    @DisplayName("No generated image floats: every FROM and every compose image carries a version, and nginx has one")
+    void noImageFloats() {
+        java.util.Set<String> images = generatedImages();
+        // derived from the generator's own output, so a new recipe is held the day it is added
+        assertThat(images).as("the derivation found the images").hasSizeGreaterThan(8)
+                .contains("node:26-alpine", "gcr.io/distroless/static-debian13");
+        for (String image : images) {
+            int colon = image.lastIndexOf(':');
+            // distroless names its debian release in the repository and has no tag;
+            // debian's version is its release name
+            String version = colon < 0 ? image.substring(image.lastIndexOf('/') + 1) : image.substring(colon + 1);
+            assertThat(version.matches(".*[0-9].*") || image.equals("debian:trixie-slim"))
+                    .as("%s: a tag such as :alpine or :latest moves under a Dockerfile already written", image)
+                    .isTrue();
+        }
+        assertThat(images.stream().filter(i -> i.startsWith("nginx")).toList())
+                .as("nginx is named in the static-site image and the PHP sidecar, from one constant")
+                .containsExactly("nginx:1.30-alpine");
     }
 
     @Test
@@ -90,7 +142,10 @@ class DockerizeGeneratorTest {
                 "Dockerfile", ".dockerignore", "compose.yaml", "docker/nginx.conf");
         assertThat(files.get("Dockerfile"))
                 .contains("FROM composer:2 AS deps")
-                .contains("--no-dev --optimize-autoloader")
+                // installed from the manifests alone, then the optimized
+                // autoloader is written once the source it maps is there
+                .contains("composer install --no-dev --no-interaction --no-scripts --no-autoloader")
+                .contains("composer dump-autoload --no-dev --optimize")
                 .contains("php:8.5-fpm-alpine")
                 .contains("COPY --from=deps /app/vendor ./vendor");
         assertThat(files.get(".dockerignore")).contains("vendor").contains(".env");
@@ -134,7 +189,8 @@ class DockerizeGeneratorTest {
     void deno() {
         Map<String, String> files = DockerizeGenerator.generate(ProjectKind.DENO, "api", false);
         assertThat(files.get("Dockerfile"))
-                .contains("FROM denoland/deno")
+                .contains("FROM denoland/deno:alpine-")
+                .contains("RUN deno install")
                 .contains("deno cache")
                 .contains("CMD [\"deno\", \"task\", \"start\"]")
                 .contains("EXPOSE 8000");

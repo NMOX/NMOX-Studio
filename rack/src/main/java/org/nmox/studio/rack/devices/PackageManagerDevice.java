@@ -55,10 +55,6 @@ public class PackageManagerDevice extends CommandDevice {
         return managerKnob.getSelectedIndex() == 0;
     }
 
-    /**
-     * In AUTO the verb maps onto whatever toolchain the project uses;
-     * an explicit npm/yarn/pnpm selection always talks Node.
-     */
     /** Package-private: the verb→argv seam device tests drive directly. */
     List<String> cmd(String verb) {
         ProjectInspector.ProjectKind kind = isAuto()
@@ -67,6 +63,10 @@ public class PackageManagerDevice extends CommandDevice {
         return cmdFor(kind, verb);
     }
 
+    /**
+     * In AUTO the verb maps onto whatever toolchain the project uses;
+     * an explicit npm/yarn/pnpm selection always talks Node.
+     */
     private List<String> cmdFor(ProjectInspector.ProjectKind kind, String verb) {
         return switch (kind) {
             case BUN -> switch (verb) {

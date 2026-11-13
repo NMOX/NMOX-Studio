@@ -312,7 +312,11 @@ final class JdbcCore {
                         truncated, elapsedMs(start), null, statementSql);
             }
         } catch (SQLException e) {
-            return errorResult(statementSql, elapsedMs(start), humanize(e));
+            // the driver's words as they are: the TLS sentences belong to the
+            // moment of connecting. Run through humanize, "no such table:
+            // ssl_certificates" came back as a certificate that could not be
+            // verified -- from a SQLite file (review of 3.9.0)
+            return errorResult(statementSql, elapsedMs(start), message(e));
         } finally {
             hook.inFlight = null;
         }
@@ -323,13 +327,42 @@ final class JdbcCore {
         return new QueryResult(List.of(), List.of(), 0, -1, false, elapsedMs, error, statementSql);
     }
 
-    /** The throwable's message, or its type name when it has none. */
-    static String humanize(Throwable t) {
+    /**
+     * The most of a driver's message the product repeats. The words are the
+     * server's (a MySQL ERR packet carries up to 16 MiB of them) and they go
+     * to a status label, a notification and a results tab.
+     */
+    static final int MAX_MESSAGE_CHARS = 4096;
+
+    /**
+     * The throwable's message as the driver said it, or its type name when
+     * it has none: trimmed, and cut at {@link #MAX_MESSAGE_CHARS} with an
+     * ellipsis (never inside a surrogate pair).
+     */
+    static String message(Throwable t) {
         String message = t.getMessage();
         if (message == null || message.isBlank()) {
             message = t.getClass().getSimpleName();
         }
         message = message.trim();
+        if (message.length() > MAX_MESSAGE_CHARS) {
+            int end = MAX_MESSAGE_CHARS;
+            if (Character.isHighSurrogate(message.charAt(end - 1))) {
+                end--;
+            }
+            message = message.substring(0, end) + "\u2026";
+        }
+        return message;
+    }
+
+    /**
+     * {@link #message} for a failure to CONNECT to MySQL or MariaDB, with
+     * the three TLS refusals said in the user's words. Not for a statement's
+     * error and not for an engine without the <i>Use TLS</i> box: the
+     * sentences name that box.
+     */
+    static String humanize(Throwable t) {
+        String message = message(t);
         String lower = message.toLowerCase(Locale.ROOT);
         // MariaDB Connector/J: "Trying to connect with ssl, but ssl not enabled in
         // the server. TLS is enabled by default, set sslMode=disable ..." — measured

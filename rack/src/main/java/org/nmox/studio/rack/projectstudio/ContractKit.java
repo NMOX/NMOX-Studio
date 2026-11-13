@@ -192,10 +192,10 @@ public final class ContractKit {
                 crate-type = ["cdylib", "rlib"]
 
                 [dependencies]
-                soroban-sdk = "27"
+                soroban-sdk = "29"
 
                 [dev-dependencies]
-                soroban-sdk = { version = "27", features = ["testutils"] }
+                soroban-sdk = { version = "29", features = ["testutils"] }
 
                 [profile.release]
                 opt-level = "z"
@@ -261,7 +261,7 @@ public final class ContractKit {
                 crate-type = ["cdylib", "lib"]
 
                 [dependencies]
-                solana-program = "4"
+                solana-program = "5"
                 """.replace("%S%", s), out);
         write(dir, "src/lib.rs", """
                 use solana_program::{
@@ -724,10 +724,10 @@ public final class ContractKit {
                     "test": "vitest run"
                   },
                   "dependencies": {
-                    "@stacks/clarinet-sdk": "^3.9.0",
-                    "@stacks/transactions": "^7.2.0",
-                    "vitest": "^4.1.8",
-                    "vitest-environment-clarinet": "^3.0.0"
+                    "@stacks/clarinet-sdk": "^4.0.0",
+                    "@stacks/transactions": "^7.7.0",
+                    "vitest": "^5.1.0",
+                    "vitest-environment-clarinet": "^4.0.0"
                   }
                 }
                 """.replace("%K%", k), out);
@@ -829,14 +829,14 @@ public final class ContractKit {
         write(dir, "aiken.toml", """
                 name = "nmox/%S%"
                 version = "0.1.0"
-                compiler = "v1.1.23"
+                compiler = "v1.1.24"
                 plutus = "v3"
                 license = "Apache-2.0"
                 description = "Aiken contract scaffolded by the NMOX Contract Kit"
 
                 [[dependencies]]
                 name = "aiken-lang/stdlib"
-                version = "v3.1.0"
+                version = "v4.0.0"
                 source = "github"
                 """.replace("%S%", s), out);
         // the live-proven vault: spend only with the magic word AND the
@@ -939,12 +939,12 @@ public final class ContractKit {
                   },
                   "devDependencies": {
                     "@tact-lang/compiler": "^1.6.13",
-                    "@ton/core": "^0.60.0",
-                    "@ton/sandbox": "^0.24.0",
-                    "@ton/test-utils": "^0.5.0",
-                    "@types/jest": "^29.5.0",
-                    "jest": "^29.7.0",
-                    "ts-jest": "^29.1.0",
+                    "@ton/core": "^0.63.1",
+                    "@ton/sandbox": "^0.45.0",
+                    "@ton/test-utils": "^0.12.0",
+                    "@types/jest": "^30.0.0",
+                    "jest": "^30.5.2",
+                    "ts-jest": "^29.4.15",
                     "typescript": "^5.4.0"
                   }
                 }

@@ -91,6 +91,7 @@ Skróty warte nauczenia się pierwszego dnia (wszystkie są też wypisane na kar
 | **⌥⌘7** | Studio baz danych |
 | **⌥⌘8** | Studio API |
 | **⌥⌘9** | Projektant infrastruktury |
+| **⌥⌘U** | Centrum Ops |
 | **⌘8** | Panel Dockera |
 | **⌘7** | Struktura bieżącego pliku |
 | **⇧⌘N / ⌥⌘O** | Nowy projekt… / Otwórz katalog… |
@@ -107,7 +108,7 @@ Przychodzisz z VS Code? [Przesiadka z VS Code](coming-from-vscode.pl.md) mapuje 
 <a id="3-projects"></a>
 ## 3. Projekty
 
-**Otwieranie:** każdy katalog z jednym z 60 rozpoznawanych manifestów otwiera się jako prawdziwy projekt — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js` i pokrewne — łącznie z manifestami łańcuchów kontraktowych: repozytorium Aiken (`aiken.toml`) albo Clarinet (`Clarinet.toml`) otwiera się z podpiętymi prawdziwymi torami. Zwykły katalog z HTML-em i znacznikami `<script>`, **bez** manifestu, też się otwiera — jako projekt STATIC: klasyczny web jest tu pełnoprawny, a nie błędem.
+**Otwieranie:** każdy katalog z jednym z 63 rozpoznawanych manifestów otwiera się jako prawdziwy projekt — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js` i pokrewne — łącznie z manifestami łańcuchów kontraktowych: repozytorium Aiken (`aiken.toml`) albo Clarinet (`Clarinet.toml`) otwiera się z podpiętymi prawdziwymi torami. Zwykły katalog z HTML-em i znacznikami `<script>`, **bez** manifestu, też się otwiera — jako projekt STATIC: klasyczny web jest tu pełnoprawny, a nie błędem.
 
 **Tworzenie:** *Nowy projekt…* oferuje prawdziwe rusztowania — Angular, Vue, Svelte, czysty JavaScript, Elixir/Phoenix, PHP Web (LEMP) i Klasyczny web (jQuery). Każde przychodzi z podpiętymi konfiguracjami lintera, formatowania i testów oraz z zainicjowanym repozytorium git: jeden commit rusztowania, który — gdy kreator wykona instalację za ciebie — zawiera też plik blokady, więc twój pierwszy `git status` jest czysty.
 
@@ -298,6 +299,14 @@ Drzewo artefaktów Foundry i Hardhata, **Interakcja** prowadzona przez ABI z roz
 ### Projektant infrastruktury (⌥⌘9)
 
 Płótno dla DigitalOcean, Hetznera i Cloudflare: zsynchronizuj to, co istnieje naprawdę, odśwież, by zobaczyć rozbieżności, i zniszcz stos, mając jego koszt przed oczami. Niedozwolone połączenia odmawiają na głos i mówią dlaczego, a póki trwa operacja w chmurze, płótno blokuje się z paskiem, który to oznajmia.
+
+### Centrum Ops (⌥⌘U)
+
+![Centrum Ops — ta maszyna, prawdziwy host i dwa symulowane serwery w wachlarzu, wdrożenie odczytane z powrotem jako węzeł usługi oraz inspektor z faktami, wskaźnikami, powiązaniami i przebiegiem wdrożenia](images/ops-hub.png)
+
+Projektant infrastruktury pokazuje to, co ma istnieć; Centrum Ops (**Okno ▸ Centrum Ops**) to żywy obraz tego, co istnieje: serwery, do których masz dostęp, z tą maszyną po lewej. **Nowy serwer…** prosi o niego DigitalOcean lub Hetzner tym samym tokenem, którego używa Projektant infrastruktury, pokazuje cenę przed potwierdzeniem, a lista zdarzeń opowiada każdy krok, który Centrum zaobserwuje. **mosh** i **ssh** otwierają sesję w Terminalu samego IDE. **Wdróż…** buduje na hoście Dockerfile wycelowanego projektu i uruchamia go; okno najpierw pokazuje dokładne polecenia, a domyślnym przyciskiem jest **Anuluj**. Każdy osiągalny host jest sondowany co 15 s (obciążenie, pamięć, dysk, kontenery), a połączenia rysowane są linią ciągłą, gdy są zaobserwowane, kreskowaną, gdy wywnioskowane, i kropkowaną, gdy zadeklarowane. **Dodaj hosta…** służy do serwera, który już masz; **Symulacja** to udawany dostawca, wyraźnie oznaczony i bez rachunku.
+
+Kółko myszy powiększa i pomniejsza, przeciąganie pustego miejsca przesuwa widok, a **Dopasuj** znów pokazuje wszystko. Usługa ma przyciski **Dziennik**, **Powłoka** i **Wycofaj…**; ten ostatni uruchamia obraz, który działał wcześniej: nic nie jest wysyłane ani budowane, a Enter odpowiada **Nie**. Centrum trzyma własny plik `known_hosts` w `~/.nmox/ops/` i nigdy nie pisze do twojego.
 
 ### IRC (⌥⌘3)
 

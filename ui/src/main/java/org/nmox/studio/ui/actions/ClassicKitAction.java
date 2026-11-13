@@ -70,7 +70,7 @@ public final class ClassicKitAction implements ActionListener {
         return lib.label();
     }
 
-    /** npm mode greys out what npm cannot deliver (Prototype). */
+    /** npm mode greys out what npm cannot deliver (Prototype, MooTools). */
     static boolean enabledFor(ClassicKit.Lib lib, boolean npmMode) {
         return !npmMode || lib.npmCapable();
     }
@@ -126,7 +126,7 @@ public final class ClassicKitAction implements ActionListener {
                 JCheckBox box = libraryBoxes.get(lib.id());
                 boolean enabled = enabledFor(lib, npmMode);
                 box.setEnabled(enabled);
-                box.setToolTipText(PlainText.plain(enabled ? null : ClassicKit.PROTOTYPE_NPM_NOTE));
+                box.setToolTipText(PlainText.plain(enabled ? null : ClassicKit.npmNote(lib)));
             }
         };
         vendored.addActionListener(ev -> syncMode.run());

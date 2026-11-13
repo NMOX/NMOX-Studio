@@ -48,9 +48,9 @@ public final class KvasirClient {
     /** The API version pin the Messages API requires. */
     static final String API_VERSION = "2023-06-01";
     /** The cheap default; the SONNET knob position swaps in {@link #MODEL_SONNET}. */
-    public static final String MODEL_HAIKU = "claude-haiku-4-5";
+    public static final String MODEL_HAIKU = "claude-haiku-5-5";
     /** The stronger alternate — a bare alias, no date suffix (dossier §3). */
-    public static final String MODEL_SONNET = "claude-sonnet-5";
+    public static final String MODEL_SONNET = "claude-sonnet-5-5";
     private static final int MAX_TOKENS = 1024;
     private static final int TIMEOUT_SECONDS = 30;
 

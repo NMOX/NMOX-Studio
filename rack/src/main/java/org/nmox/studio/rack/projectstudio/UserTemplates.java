@@ -26,7 +26,7 @@ import org.nmox.studio.core.util.Containment;
  * skipping malformed files with a note instead of blocking the picker —
  * so this class is that idiom applied to the wizard. The BUILT-INS
  * deliberately stay in {@link ProjectTemplates}: their dependency pins
- * carry live-proven version ceilings (TS 5, vite ^6, Angular ~21.2)
+ * carry live-proven version lines (vite ^8, Angular ~22.2 on TypeScript ~6.0)
  * enforced by build gates that read that source, and moving them into
  * data would move them out of the gates' sight.
  *

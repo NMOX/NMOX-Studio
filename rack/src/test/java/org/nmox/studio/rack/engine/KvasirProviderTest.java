@@ -41,8 +41,8 @@ class KvasirProviderTest {
     @Test
     @DisplayName("OpenAI: chat-completions envelope — model, messages, max_completion_tokens (never max_tokens)")
     void openAiBody() {
-        JSONObject body = new JSONObject(KvasirProvider.OPENAI.requestBody("gpt-5", convo()));
-        assertThat(body.getString("model")).isEqualTo("gpt-5");
+        JSONObject body = new JSONObject(KvasirProvider.OPENAI.requestBody("gpt-6.1-sol", convo()));
+        assertThat(body.getString("model")).isEqualTo("gpt-6.1-sol");
         assertThat(body.getInt("max_completion_tokens")).isEqualTo(KvasirProvider.OUTPUT_TOKENS);
         assertThat(body.has("max_tokens")).as("reasoning models refuse max_tokens").isFalse();
         JSONArray messages = body.getJSONArray("messages");
@@ -180,12 +180,57 @@ class KvasirProviderTest {
         assertThat(KvasirProvider.OPENAI.resolve(KvasirProvider.GOOGLE.model(Depth.DEEP)))
                 .isEqualTo(KvasirProvider.OPENAI.model(Depth.DEEP));
         assertThat(KvasirProvider.ANTHROPIC.resolve("gpt-5-mini")).isEqualTo(KvasirClient.MODEL_HAIKU);
-        assertThat(KvasirProvider.OPENAI.resolve("gpt-5")).as("our own id passes").isEqualTo("gpt-5");
+        assertThat(KvasirProvider.OPENAI.resolve(KvasirProvider.OPENAI.defaultModel(Depth.DEEP)))
+                .as("our own id passes").isEqualTo(KvasirProvider.OPENAI.defaultModel(Depth.DEEP));
         assertThat(KvasirProvider.OPENAI.resolve("")).isEqualTo(KvasirProvider.OPENAI.model(Depth.FAST));
         assertThat(KvasirProvider.GOOGLE.resolve("gemini-9-custom")).as("an explicit custom id passes")
                 .isEqualTo("gemini-9-custom");
         assertThat(KvasirProvider.GOOGLE.resolve("bad id/with spaces"))
                 .as("a malformed id can never build a URL").isEqualTo(KvasirProvider.GOOGLE.model(Depth.FAST));
+    }
+
+    /**
+     * A default is a vendor's id and vendors retire ids: OpenAI shuts gpt-5
+     * and gpt-5-mini down on 2026-12-11. An older build's saved state still
+     * holds them, and resolve() passed "one of ours" straight through.
+     */
+    @Test
+    @DisplayName("A default this product shipped and has since retired means its depth, on every provider")
+    void aRetiredDefaultResolvesToItsDepth() {
+        assertThat(KvasirProvider.OPENAI.resolve("gpt-5"))
+                .isEqualTo(KvasirProvider.OPENAI.defaultModel(Depth.DEEP)).isNotEqualTo("gpt-5");
+        assertThat(KvasirProvider.OPENAI.resolve("gpt-5-mini"))
+                .isEqualTo(KvasirProvider.OPENAI.defaultModel(Depth.FAST)).isNotEqualTo("gpt-5-mini");
+        assertThat(KvasirProvider.ANTHROPIC.resolve("claude-haiku-4-5")).isEqualTo(KvasirClient.MODEL_HAIKU);
+        assertThat(KvasirProvider.ANTHROPIC.resolve("claude-sonnet-5")).isEqualTo(KvasirClient.MODEL_SONNET);
+        assertThat(KvasirProvider.GOOGLE.resolve("gpt-5"))
+                .as("another provider's retired id is still a depth").isEqualTo(KvasirProvider.GOOGLE.model(Depth.DEEP));
+        assertThat(KvasirProvider.OPENAI.retiredDepthOf("gpt-5")).contains(Depth.DEEP);
+        assertThat(KvasirProvider.OPENAI.retiredDepthOf(KvasirProvider.OPENAI.defaultModel(Depth.DEEP))).isEmpty();
+    }
+
+    @Test
+    @DisplayName("A user who PINS a retired id keeps it: a pin is asked before retirement is")
+    void aPinnedRetiredIdIsHonoured() {
+        KvasirProvider.pinModelForTest(KvasirProvider.ANTHROPIC, Depth.FAST, "claude-haiku-4-5");
+        assertThat(KvasirProvider.ANTHROPIC.resolve("claude-haiku-4-5")).isEqualTo("claude-haiku-4-5");
+    }
+
+    @Test
+    @DisplayName("No id is both a shipped default and a retired one, and no retired id has two depths")
+    void retiredAndCurrentAreDisjoint() {
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        for (KvasirProvider p : KvasirProvider.values()) {
+            for (Depth d : Depth.values()) {
+                assertThat(seen.add(p.defaultModel(d))).as("default listed once: %s", p.defaultModel(d)).isTrue();
+                assertThat(p.retiredDepthOf(p.defaultModel(d))).as("%s is current, not retired", p.defaultModel(d))
+                        .isEmpty();
+            }
+        }
+        for (String retired : java.util.List.of("claude-haiku-4-5", "claude-sonnet-5", "gpt-5-mini", "gpt-5")) {
+            assertThat(seen).as("%s was moved off in 3.13.0", retired).doesNotContain(retired);
+            assertThat(KvasirProvider.depthOfAny(retired)).as("%s still means a depth", retired).isPresent();
+        }
     }
 
     @Test

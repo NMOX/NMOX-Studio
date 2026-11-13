@@ -154,11 +154,6 @@ public final class ApiClient {
     static final Duration BODY_DEADLINE = Duration.ofSeconds(60);
 
     /**
-     * Sends the request and captures timing, size, headers, and body. A
-     * request without the credential its auth type needs is refused here
-     * too, never sent (the UI refuses first, in words; this is the floor).
-     */
-    /**
      * {@link #credential(Request)} with the variables resolved, the way the
      * send will see them. A token of {@code {{token}}} with the variable unset
      * used to go out as {@code Bearer } and nothing, and a Basic credential
@@ -205,6 +200,11 @@ public final class ApiClient {
         return resolved.isEmpty() || !Variables.referenced(resolved).isEmpty();
     }
 
+    /**
+     * Sends the request and captures timing, size, headers, and body. A
+     * request without the credential its auth type needs is refused here
+     * too, never sent (the UI refuses first, in words; this is the floor).
+     */
     public ApiResponse send(Request request, Map<String, String> vars) {
         Credential credential = credential(request, vars);
         if (credential != Credential.PRESENT) {

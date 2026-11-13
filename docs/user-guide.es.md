@@ -91,6 +91,7 @@ Atajos que conviene aprender el primer día (también aparecen todos en la pesta
 | **⌥⌘7** | Estudio de bases de datos |
 | **⌥⌘8** | Estudio de API |
 | **⌥⌘9** | Diseñador de infraestructura |
+| **⌥⌘U** | Centro de operaciones |
 | **⌘8** | Panel de Docker |
 | **⌘7** | Esquema del archivo actual |
 | **⇧⌘N / ⌥⌘O** | Nuevo proyecto… / Abrir carpeta… |
@@ -107,7 +108,7 @@ Atajos que conviene aprender el primer día (también aparecen todos en la pesta
 <a id="3-projects"></a>
 ## 3. Proyectos
 
-**Abrir:** cualquier carpeta con uno de los 60 manifiestos reconocidos se abre como un proyecto real — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js` y compañía — incluidos los manifiestos de las cadenas de contratos: un repositorio Aiken (`aiken.toml`) o Clarinet (`Clarinet.toml`) se abre con sus carriles reales conectados. Una simple carpeta de HTML con etiquetas `<script>` y **sin** manifiesto también se abre, como proyecto STATIC: la web clásica es de primera clase, no un error.
+**Abrir:** cualquier carpeta con uno de los 63 manifiestos reconocidos se abre como un proyecto real — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js` y compañía — incluidos los manifiestos de las cadenas de contratos: un repositorio Aiken (`aiken.toml`) o Clarinet (`Clarinet.toml`) se abre con sus carriles reales conectados. Una simple carpeta de HTML con etiquetas `<script>` y **sin** manifiesto también se abre, como proyecto STATIC: la web clásica es de primera clase, no un error.
 
 **Crear:** *Nuevo proyecto…* ofrece plantillas reales — Angular, Vue, Svelte, JavaScript sin framework, Elixir/Phoenix, PHP Web (LEMP) y Web clásica (jQuery). Cada una llega con las configuraciones de lint, formato y pruebas ya conectadas y un repositorio git iniciado: un único commit de andamiaje que, cuando el asistente ejecuta la instalación por ti, incluye también el archivo de bloqueo, de modo que tu primer `git status` está limpio.
 
@@ -298,6 +299,14 @@ El árbol de artefactos de Foundry y Hardhat, **Interactuar** guiado por la ABI 
 ### Diseñador de infraestructura (⌥⌘9)
 
 Un lienzo para DigitalOcean, Hetzner y Cloudflare: sincroniza lo que existe de verdad, refresca para ver las diferencias y destruye una pila con su coste delante. Los cables ilegales se niegan en voz alta explicando por qué, y mientras una operación en la nube está en marcha el lienzo se bloquea con un aviso que lo dice.
+
+### Centro de operaciones (⌥⌘U)
+
+![El Centro de operaciones — esta máquina, un host real y dos servidores simulados en abanico, un despliegue leído de vuelta como nodo de servicio, y el inspector con sus datos, medidores, relaciones y seguimiento del despliegue](images/ops-hub.png)
+
+El Diseñador de infraestructura es lo que quieres que exista; el Centro de operaciones (**Ventana ▸ Centro de operaciones**) es la imagen en vivo de lo que hay: los servidores a los que llegas, con esta máquina a la izquierda. **Nuevo servidor…** pide uno a DigitalOcean o Hetzner con el token del Diseñador de infraestructura, muestra el precio antes de confirmar, y los eventos narran cada paso observado. **mosh** y **ssh** abren una sesión en la terminal del IDE. **Desplegar…** compila el Dockerfile del proyecto apuntado en el host y lo ejecuta; antes muestra los comandos exactos, con **Cancelar** por defecto. Cada host alcanzable se sondea cada 15 s (carga, memoria, disco, contenedores), y los enlaces son continuos si observados, discontinuos si inferidos y punteados si declarados. **Añadir host…** es para un servidor ya tuyo; **Simulación** es un proveedor ficticio, marcado y sin factura.
+
+La rueda acerca y aleja, arrastrar desplaza y **Ajustar** lo encuadra todo. Un servicio tiene **Registros**, **Shell** y **Revertir…**, que arranca la imagen anterior: nada se sube ni se compila, y Entrar responde **No**. El Centro guarda su propio `known_hosts` en `~/.nmox/ops/` y nunca escribe en el tuyo.
 
 ### IRC (⌥⌘3)
 

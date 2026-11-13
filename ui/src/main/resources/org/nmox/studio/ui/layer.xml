@@ -832,6 +832,9 @@
             <file name="DA-PERIOD.shadow">
                 <attr name="originalFile" stringvalue="Actions/Run/org-nmox-studio-tools-npm-StopRunAction.instance"/>
             </file>
+            <file name="DA-U.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-infra-ops-ui-OpsHubTopComponent.instance"/>
+            </file>
             <file name="DAS-K.shadow">
                 <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-ManageExperimentsAction.instance"/>
             </file>

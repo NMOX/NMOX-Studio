@@ -623,12 +623,6 @@ public final class DbStudioTopComponent extends TopComponent {
 
     // ---- running the console ----
 
-    /**
-     * Double-click peek: put an engine-appropriate preview query for the
-     * container into the console and run it. For a CouchDB database node
-     * that the spec isn't aimed at, fill the console but explain instead of
-     * silently querying the wrong database.
-     */
     /** A history entry back into the console — the double-click's and Enter's one body. */
     private void loadHistory(int index) {
         if (index < 0 || index >= historyModel.size()) {
@@ -653,6 +647,12 @@ public final class DbStudioTopComponent extends TopComponent {
         }
     }
 
+    /**
+     * Double-click peek: put an engine-appropriate preview query for the
+     * container into the console and run it. For a CouchDB database node
+     * that the spec isn't aimed at, fill the console but explain instead of
+     * silently querying the wrong database.
+     */
     private void peek(TableInfo info) {
         ConnectionSpec spec = selectedConnection();
         if (spec == null || running) {
@@ -2147,8 +2147,14 @@ public final class DbStudioTopComponent extends TopComponent {
     private static void balloon(String title, String detail, boolean ok) {
         javax.swing.Icon icon = javax.swing.UIManager.getIcon(
                 ok ? "OptionPane.informationIcon" : "OptionPane.errorIcon");
+        // the detail is often a driver's message, and with no action the platform
+        // hands it to a bare JLabel (NotificationImpl.createDetails, read from the
+        // bytecode): text beginning <html> would be painted as markup, and pgJDBC
+        // puts the SERVER's severity field at the head of its message. The title
+        // carries a connection's name from .nmoxdb.json, and the platform's markup
+        // builder throws for a control character in it.
         org.openide.awt.NotificationDisplayer.getDefault().notify(
-                title, icon, detail == null ? "" : detail, null,
+                PlainText.oneLine(title, 300), icon, detail == null ? "" : PlainText.plain(detail), null,
                 ok ? org.openide.awt.NotificationDisplayer.Priority.LOW
                    : org.openide.awt.NotificationDisplayer.Priority.NORMAL);
     }

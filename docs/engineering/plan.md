@@ -1,7 +1,45 @@
 # The Plan
 
+*Currency addendum 2026-11-13 (3.13.0, the refresh). The brief was four
+hours: review and reconsider every area, bump what can be bumped, build
+what had been waiting. What the afternoon taught:
+
+1. **Measure before you bump, and the measurement says where the age
+   is.** Every Maven dependency, plugin, the platform and every GitHub
+   Action were current: Dependabot does its job. The age was in what no
+   bot reads, which is a class with members: the templates, the exported
+   workflows, the generated Dockerfiles, the vendored libraries, the
+   learning catalogue, a client's model ids. Each now has a law that
+   derives its population (a Vite space against the Vite templates, the
+   exporter against the Dockerize generator, the kit against the
+   catalogue, every `FROM` against "has a version").
+2. **A pin against a vendor has a date, and the vendor publishes it.**
+   OpenAI's deprecations page had a shutdown date for both models KVASIR
+   asked for, four weeks out. Nothing in the repository could have known.
+   A refresh reads the vendor's deprecation pages, and a default that is
+   retired must keep meaning something in saved state.
+3. **Running a starter is the only review of a starter.** Of the spaces
+   run this afternoon, three could not be started as written, one never
+   served a page, and three had a RUN that did nothing. None of it was
+   visible in the catalogue's JSON, and all of it predates this sprint.
+4. **A proof that cannot run here can run somewhere.** No daemon on this
+   machine was a ceiling for five releases. A `proof/**` branch and a
+   runner made it a fifteen-minute question, and writing the proof's
+   fixtures found nine defects before a single image was built.
+5. **Do not move what you could not ask.** Gemini's new ids are listed,
+   recommended and unproven; they stayed where they were, with the
+   trigger written at the pin.
+6. **The walk still finds what nothing else does**: a Welcome cut
+   mid-word in German since the day FIRST STEPS joined it, because a
+   grid makes every column as wide as the widest and English columns are
+   alike.
+
+Standing next: ledger 143's Gemini move (needs credits), the install
+hints' Node floors, Windows signing (86b, David's purchase), a live
+server for either Ops Hub provider (bills).*
+
 *Currency addendum 2026-11-10 (3.12.0, the Ops Hub's second slice —
-prepared on a branch overnight; shipping it is David's call). The brief
+prepared on a branch overnight and shipped on 2026-11-11). The brief
 was an improvement sprint, "thoughtful improvements to existing
 workflows over disconnected features", so the sprint stayed inside the
 newest and least-walked surface: the camera David had asked about, the

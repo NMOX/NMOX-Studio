@@ -43,7 +43,7 @@ Opções ▸ Rack e nuvem.
 4. **Leia o veredito.** Um diagnóstico curto aparece no visor de várias
    linhas; aperte **VIEW** para abrir a explicação completa numa janela de
    conversa. O botão **MODEL**
-   escolhe FAST (o padrão) ou DEEP — Haiku / Sonnet, GPT-5 mini / GPT-5, ou
+   escolhe FAST (o padrão) ou DEEP — Haiku / Sonnet, GPT-6.1 Terra / GPT-6.1 Sol, ou
    Gemini Flash / Pro, conforme o provedor que você escolheu.
 
 ## O que você aprendeu

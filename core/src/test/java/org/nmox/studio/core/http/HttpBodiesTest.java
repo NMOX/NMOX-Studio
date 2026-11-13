@@ -216,7 +216,6 @@ class HttpBodiesTest {
         }
     }
 
-    /** Hands out its bytes, then blocks until closed — a server gone quiet. */
     /** Delivers {@code total} bytes, one every {@code gapMs}; an IOException once closed. */
     private static final class TrickleStream extends InputStream {
         private final int total;
@@ -378,6 +377,7 @@ class HttpBodiesTest {
         assertThrows(java.io.InterruptedIOException.class, () -> HttpBodies.readUtf8(cut, 1024, T));
     }
 
+    /** Hands out its bytes, then blocks until closed — a server gone quiet. */
     private static final class StallingStream extends InputStream {
         private final byte[] head;
         private int pos;

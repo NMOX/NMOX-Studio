@@ -174,6 +174,9 @@ final class PopupCensus {
         }
     }
 
+    /** Why the last build attempt produced nothing — reported, never guessed at. */
+    private static volatile String lastWhy = "";
+
     /**
      * Ask the action to BUILD the menu rather than to show it.
      * {@code actionPerformed} is written for a real popup trigger and does
@@ -183,9 +186,6 @@ final class PopupCensus {
      * display names included. Calling it is how a context menu becomes
      * readable without a right-click.
      */
-    /** Why the last build attempt produced nothing — reported, never guessed at. */
-    private static volatile String lastWhy = "";
-
     private static JPopupMenu createMenu(Action build, JEditorPane pane) {
         for (Class<?> c = build.getClass(); c != null; c = c.getSuperclass()) {
             try {

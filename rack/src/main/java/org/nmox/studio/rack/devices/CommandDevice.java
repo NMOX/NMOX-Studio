@@ -250,14 +250,6 @@ public abstract class CommandDevice extends RackDevice {
     }
 
     /**
-     * Whether this device only makes sense inside an npm project. When
-     * true (the default), launches are refused unless the project dir
-     * has a recognized project manifest (package.json, Cargo.toml,
-     * go.mod, pom.xml, pyproject.toml, Gemfile, composer.json,
-     * Makefile...) - running tools against the user's home directory
-     * is never what anyone wanted.
-     */
-    /**
      * What the LCD says when this device has no command for the project's
      * toolchain. Names the device and the toolchain so the reason is
      * self-evident ("NO CRATE VERB FOR GLEAM"), and says the honest thing
@@ -279,6 +271,14 @@ public abstract class CommandDevice extends RackDevice {
                 + " — THAT TOOLCHAIN HAS NO SUCH COMMAND";
     }
 
+    /**
+     * Whether this device only makes sense inside an npm project. When
+     * true (the default), launches are refused unless the project dir
+     * has a recognized project manifest (package.json, Cargo.toml,
+     * go.mod, pom.xml, pyproject.toml, Gemfile, composer.json,
+     * Makefile...) - running tools against the user's home directory
+     * is never what anyone wanted.
+     */
     protected boolean requiresProjectManifest() {
         return true;
     }

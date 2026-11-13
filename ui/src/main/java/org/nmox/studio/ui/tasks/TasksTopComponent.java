@@ -1008,12 +1008,6 @@ public final class TasksTopComponent extends TopComponent {
     }
 
     /**
-     * The standup (v2.8.0): gathers the git log OFF the EDT (a fixed-argv
-     * read-only spawn, the GitFacts family — no project code executes, so
-     * no trust gate), then assembles and shows the markdown on the EDT
-     * where the board may be touched safely.
-     */
-    /**
      * Raises the Standup report for the documentation forge (v2.163.0).
      *
      * <p>The report is one of three pictures this window gives the guides,
@@ -1068,6 +1062,12 @@ public final class TasksTopComponent extends TopComponent {
         return overviewPanel.getComponentCount();
     }
 
+    /**
+     * The standup (v2.8.0): gathers the git log OFF the EDT (a fixed-argv
+     * read-only spawn, the GitFacts family — no project code executes, so
+     * no trust gate), then assembles and shows the markdown on the EDT
+     * where the board may be touched safely.
+     */
     private void showStandup() {
         File dir = boundDir;
         if (dir == null) {

@@ -50,3 +50,22 @@ org-netbeans-modules-editor-lib.jar|org/netbeans/editor|status-bar-overwrite|OVR
 org-netbeans-modules-editor-lib.jar|org/netbeans/editor|status-bar-insert-mode|Insert Mode
 org-netbeans-modules-editor-lib.jar|org/netbeans/editor|status-bar-overwrite-mode|Overwrite Mode
 org-netbeans-modules-editor-lib.jar|org/netbeans/editor|status-bar-caret-position|Caret Position
+
+# Ledger 136: the debugger's windows. Window > Debugging has painted each
+# language's own word since v2.143.0 (CTL_SessionsAction and its siblings in
+# ui/actions), and the tab each row opens painted the platform's English:
+# View.getName() is NbBundle.getMessage(View.class, displayNameResource), and
+# the seven factory methods (getSessionsView, getBreakpointsView, …) hand it
+# these keys; read from the class's bytecode. Each overlay value is the
+# menu row's own word with the mnemonic removed, and WayfindingVocabularyTest
+# holds tab and row equal in every language.
+org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/views|CTL_Sessions_view|Sessions
+org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/views|CTL_Breakpoints_view|Breakpoints
+org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/views|CTL_Threads_view|Threads
+org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/views|CTL_Call_stack_view|Call Stack
+org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/views|CTL_Watches_view|Watches
+org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/views|CTL_Variables_view|Variables
+org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/views|CTL_Sources_view|Sources
+# and the eighth row of the submenu, Window > Debugging > Debugging: its tab
+# is DebuggingViewComponent.getName(), one package down.
+org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/views/debugging|CTL_Debugging_view|Debugging

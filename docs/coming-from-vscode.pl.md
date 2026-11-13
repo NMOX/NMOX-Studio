@@ -351,7 +351,7 @@ zastępuje każde z nich). Mówi to raz na projekt.
     musi tam być; ścieżka względna zostaje odrzucona, bo VS Code szukałby
     jej jako nazwy. Gdy środowisko uruchomieniowe jest całym poleceniem
     (`npm run dev` bez `program`), skrypt, który ono startuje, jest
-    debugowany jako osobna sesja, widoczna w oknie Sessions.
+    debugowany jako osobna sesja, widoczna w oknie **Sesje**.
   - **Dołączanie dotyczy tego komputera.** `port` (9229, jeśli nie podano)
     i `address` równy `localhost`, `127.0.0.1` albo `::1`; każdy inny adres
     zostaje odrzucony, bo to nie jest zdalne programowanie. Jeśli nic nie

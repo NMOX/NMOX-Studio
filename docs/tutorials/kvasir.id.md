@@ -39,7 +39,7 @@ berlaku untuk setiap wajah KVASIR dan juga ada di Opsi ▸ Rack & Awan.
 
 4. **Baca putusannya.** Diagnosis singkat muncul di LCD multibaris; tekan
    **VIEW** untuk membuka penjelasan lengkapnya di jendela percakapan. Kenop **MODEL** memilih FAST (bawaan) atau
-   DEEP — Haiku / Sonnet, GPT-5 mini / GPT-5, atau Gemini Flash / Pro, sesuai
+   DEEP — Haiku / Sonnet, GPT-6.1 Terra / GPT-6.1 Sol, atau Gemini Flash / Pro, sesuai
    penyedia yang Anda pilih.
 
 ## Yang baru saja Anda pelajari

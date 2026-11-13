@@ -6,6 +6,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.fold.Fold;
+import org.netbeans.api.editor.fold.FoldTemplate;
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
@@ -27,6 +28,9 @@ public class JsFoldManager implements FoldManager {
 
     private static final RequestProcessor RP = new RequestProcessor("nmox-js-folds", 1);
     private static final int DEBOUNCE_MS = 400;
+    /** One guarded character at each end, as the folds have always had: the brace or the comment's own slash. */
+    private static final FoldTemplate BLOCK_FOLD = new FoldTemplate(1, 1, "{...}");
+    private static final FoldTemplate COMMENT_FOLD = new FoldTemplate(1, 1, "/*...*/");
 
     private FoldOperation operation;
     private final List<Fold> managed = new ArrayList<>();
@@ -97,11 +101,10 @@ public class JsFoldManager implements FoldManager {
                     if (span.end() <= docLength && span.end() - span.start() > 2) {
                         managed.add(operation.addToHierarchy(
                                 span.comment() ? FoldType.COMMENT : FoldType.CODE_BLOCK,
-                                span.comment() ? "/*...*/" : "{...}",
-                                false,
                                 span.start(), span.end(),
-                                1, 1,
-                                null, transaction));
+                                Boolean.FALSE,
+                                span.comment() ? COMMENT_FOLD : BLOCK_FOLD,
+                                null, null, transaction));
                     }
                 }
             } catch (BadLocationException ex) {

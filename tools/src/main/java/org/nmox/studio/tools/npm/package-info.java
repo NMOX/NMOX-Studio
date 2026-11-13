@@ -1,7 +1,7 @@
 /**
  * Project recognition and the NPM surface. {@code WebProjectFactory}
  * (registered {@code @ServiceProvider(ProjectFactory.class)}) is the
- * front door of the whole product: it recognizes 58 manifest types —
+ * front door of the whole product: it recognizes every manifest {@code ProjectKind} names —
  * package.json, Cargo.toml, go.mod, foundry.toml … — and hands the
  * platform a {@code WebProject} whose <b>Lookup</b> carries everything
  * the IDE asks a project for: an {@code ActionProvider} (the real

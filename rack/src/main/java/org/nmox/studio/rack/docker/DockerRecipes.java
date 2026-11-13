@@ -25,7 +25,7 @@ import org.nmox.studio.rack.projectstudio.UserTemplates;
  * <pre>
  * { "name": "Corp Node baseline",
  *   "files": {
- *     "Dockerfile":     "FROM node:24-alpine\\n...",
+ *     "Dockerfile":     "FROM node:26-alpine\\n...",
  *     ".dockerignore":  "node_modules\\n.git\\n",
  *     "compose.yaml":   "services:\\n  {{name}}:\\n    build: .\\n" } }
  * </pre>

@@ -329,7 +329,7 @@ Done, one clocked in for a minute.
 ## Longer versions
 
 - **Twenty minutes, every surface:** the [Kitchen Sink](kitchen-sink.md)
-  is twenty-five do/see stations across the whole product — the
+  is twenty-six do/see stations across the whole product — the
   studios, the kits, the learning loop, the rack's presets and
   resurrection, and station 25, *Show it to a room*, which is this
   script's presenting family in one sitting.

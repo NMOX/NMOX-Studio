@@ -110,11 +110,6 @@ final class DiffWindow extends TopComponent {
     }
 
     /**
-     * Opens {@code left} and {@code right} side by side in the editor area;
-     * a null side (git's {@code /dev/null}) is an empty one, typed like the
-     * other so both panes colour alike. On the EDT.
-     */
-    /**
      * The two sides' sources, read OFF the EDT: the binary sniff reads up to
      * {@link #SNIFF} bytes of each file and the type lookup resolves a
      * FileObject (ledger 124, closed after 3.2.0: both ran on the EDT).
@@ -132,7 +127,12 @@ final class DiffWindow extends TopComponent {
         return open(prepare(left, right));
     }
 
-    /** Builds and shows the window from sources already read. On the EDT. */
+    /**
+     * Builds and shows the window from sources already read: the two sides
+     * side by side in the editor area. A null side (git's {@code /dev/null})
+     * is an empty one, typed like the other so both panes colour alike. On
+     * the EDT.
+     */
     static DiffWindow open(Prepared p) throws IOException {
         File left = p.left();
         File right = p.right();

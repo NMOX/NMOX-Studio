@@ -20,6 +20,143 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — added by 3.13.0 (the refresh, 2026-11-13)
+
+### 143. What the refresh measured and left
+
+The sprint's rule was *moved only where proven*. These are the things it
+measured, could not prove or chose not to move, each with the fact that
+would change the answer.
+
+**Pins with a trigger.**
+
+- **KVASIR on Gemini is not moved.** `gemini-2.5-flash` (FAST) is listed
+  by Google as deprecated; its requests are rerouted to
+  `gemini-3.5-flash-lite` on **2026-12-01**, so it keeps answering.
+  `gemini-3.1-pro-preview` (DEEP) is a preview with no date. Google's
+  page recommends `gemini-4-hydrogen` for new work and calls
+  `gemini-4-carbon` its strongest reasoner, with `gemini-4-argon` between
+  them; all three are in the account's model list. None could be asked a
+  question: every Gemini request, the two shipped ids included, answered
+  `RESOURCE_EXHAUSTED` (prepaid credits spent). The move is a two-line
+  change in `KvasirProvider` plus two entries in its retired lists, and
+  what it needs first is one answer from each new id through the
+  product's own body (`maxOutputTokens` 4096; Argon and Carbon cap output
+  at 32,768 and think before they answer). `kvasir.model.google.fast` and
+  `.deep` pin an id today.
+- **Qwik's learning space rides Vite 7.** `@builder.io/qwik` 1.20.4
+  declares `vite >=5 <8`; `@qwik.dev/core` accepts Vite 8 and has only
+  release candidates. `ViteSpacePinParityTest` carries the exemption and
+  fails once it exempts nothing.
+- **Prisma's space is held at ~7.9.1.** Studio in 7.10.0 and 7.10.1
+  refuses a `file:` SQLite URL (it splits the URL on `://`), and Studio
+  is the space's RUN. Prisma 8 is a release candidate.
+- **Python in the generators stays 3.14** (the reason is at the pin).
+
+**Node floors a learner can fall under.** Astro 7 requires Node 22.23.4
+or newer, SvelteKit 3.2 requires 22.17, Vite 8 requires 22.12; each
+tutorial names its floor. The Linux install hint for the Node spaces is
+still `apt-get install nodejs npm`, which on many distributions installs
+less. Ubuntu 22.04's `python3` (3.10) can no longer install the Django
+pin. The install hints were not rewritten in this release.
+
+**Seen while proving the spaces, not fixed.**
+
+- The Gleam space's tutorial calls the test lane "already wired" and the
+  space ships no test: `gleam test` exits 1.
+- `scarb cairo-test` is deprecated in favour of `snforge`, which was not
+  on the machine; the Cairo space passes with a warning.
+- The Preact blurb says "3 kB" in fifteen languages; Preact 11's size was
+  not measured.
+- `npx playwright install chromium` downloads 595 MB on a learner's
+  first run of the Playwright space. The tutorial does not say so.
+- NIMBUS DIAG on a Nuxt 4 project with no type checker exits 1 with
+  Nuxt's own instruction. It speaks; it could speak in our words.
+
+**Dockerize, after the nine.** `deno cache main.ts` and
+`CMD ["deno", "task", "start"]` still assume their entry. A Rust crate
+with only a `[lib]` gets a recipe that cannot start. Yarn Berry gets no
+production-only install. An existing `compose.yaml` that Dockerize did
+not write is protected only by the overwrite question (it cannot be told
+from our own). Bun's frozen-lockfile path and the dockerized LEMP stack
+under `compose.nmox.yaml` are unit-tested and not in the runner proof.
+The corepack lines for pnpm and yarn were proven on a runner, on
+`node:26-alpine`.
+
+**~~Two gates read Arabic overlays as Latin-1.~~ Closed the same day.**
+124 of the 2,159 overlay files under `nbm-branding` were raw UTF-8 (102
+of them Arabic), and a dozen gates read overlays with
+`Properties.load(InputStream)`, which is ISO-8859-1: they judged those
+files as mojibake and their laws held on them by accident. The platform
+reads raw UTF-8 correctly (walked in Spanish), so nothing was wrong on
+screen. Every overlay is escaped ASCII now, and
+`BundleEncodingGateTest.overlaysAreEscapedAscii` holds it, counted in
+bytes: a first count by a regex over code points found six files and
+missed every Arabic one.
+
+**TypeScript 7's folds.** With TypeScript 7's own server running, the
+platform's client folds a single-line destructuring (`const {...} =
+require(…)`) and a call's argument list, and draws both as `{...}`.
+Seen in the 3.13.0 walk; they are the server's ranges, not
+`JsFoldManager`'s.
+
+**Not walked.** The Classic Kit's MooTools box greyed under npm
+delivery, and the HUD's zoom, pan and Fit: a dialog opened from the menu
+bar of the background test copy took no accessibility presses, and no
+background tool delivers a wheel or a drag to the canvas. Both are held
+by unit tests. The Welcome's columns are each as wide as their own rows
+now; a window narrower than their sum still cuts the last column, since
+the launchpad does not scroll.
+
+## Open — added by the review of 3.9.0's DB Studio (2026-11-13)
+
+### 142. What the hostile read of DB Studio's connection URL found and left
+
+Fixed in the review (tests `LoopbackRuleTest`, `HostileSpecUrlTest`,
+`HumanizeScopeTest`, `NotificationDetailIsPlainTest`): a host NAMED
+`127.0.0.1.evil.example` counted as the loopback; a database or host
+holding `?` or `/` carried driver options past the stated modes; a SQLite
+path could switch extension loading on; the TLS sentences answered ordinary
+query errors; the failure balloon was a markup sink. Left, each for a
+reason:
+
+- **MongoDB and CouchDB build their addresses the same way and were not
+  probed.** `MongoBackend.connectionString` concatenates the host into
+  `mongodb://host:port/?…` and `CouchBackend.baseUrl` into
+  `http(s)://host:port`. A host holding `/?tls=false&x=` or `user@elsewhere`
+  is the same class as the JDBC one. Not measured against the MongoDB
+  driver's own parser, so not changed: a hypothesis, to be probed the way
+  `HostileSpecUrlTest` probes the JDBC drivers.
+- **A Services-window connection gets none of these protections, and its
+  refusals can name a box it does not have.** The URL is the user's own and
+  NetBeans opens the connection: no stated `sslMode`, no loopback rule, no
+  local-infile refusal, no option check. `ServicesBackend.open` still runs
+  the driver's failure through `JdbcCore.humanize`, so a MariaDB driver the
+  user registered there, refused for TLS, is told to untick *Use TLS* —
+  and a Services entry has no such box (Edit is disabled for it). Read from
+  the code, not reproduced: it needs a registered MySQL-family driver that
+  fails with those words. The user guide says the Services connections
+  "run in the same console" and says nothing of what they do not get.
+- **The third TLS rule is still loose where it applies.** For a MySQL or
+  MariaDB connect failure, any message holding "ssl" or "tls" beside
+  "certificate", "hostname", "pkix" or "handshake" becomes the certificate
+  sentence: *Access denied for user 'tls_certificate_bot'* would. The
+  driver's words are kept after the sentence, so the cause is not hidden.
+  Tightening it needs the real refusals of a live server with a bad
+  certificate, which this review had no way to produce.
+- **`"secure": 1` and `"secure": "yes"` read as off** (`SecureFlagReadTest`
+  records it). For MySQL/MariaDB off is a cleartext connection. The dialog
+  shows the box unticked, so it is visible; whether a present value this
+  version cannot read should lean to TLS (a wrong "on" only refuses, and
+  says so) is a decision, not a defect a test can name.
+- **PostgreSQL states no TLS mode at all**, by the 3.9.0 decision (pgJDBC's
+  `sslmode=prefer`, which an active attacker can downgrade). Unchanged and
+  out of this review's scope; with the option check a spec can no longer
+  set `sslmode` either, in either direction, short of the Services window.
+- **A comma in the host is left alone** (`h1,h2`): both drivers read it as
+  a list of hosts, the field shows it as typed, and it never counts as the
+  loopback. pgJDBC will try the second host when the first is down.
+
 ## Open — added by 3.11.0, narrowed by 3.12.0
 
 ### 141. The Ops Hub: what it does not do yet
@@ -32,6 +169,14 @@ three walks of the new build took out a dozen more
 (`docs/engineering/ops-hub.md` carries both tables). What is still
 open, each with its door, none built:
 
+- *Note, 2026-11-13:* a hostile review of 3.12.0's own additions (the
+  doors, rollback, the camera, the search, the inspector column) fixed
+  three defects — an unbounded read of the host's image list, a rollback
+  offered on a container the deploy did not name, an arrow key that
+  moved an untouched camera — and left three hypotheses unproven
+  (`ops-hub.md`, "What the review of the second slice found"): the
+  Terminal tab title's markup, a non-finite camera target, a host gone
+  during the rollback confirm.
 - **No live DigitalOcean create has been run.** `DigitalOceanOpsTest`
   proves the request body (tag, keys, cloud-init, monitoring), the
   paged listing, the 404-is-gone read and the destroy against
@@ -43,8 +188,28 @@ open, each with its door, none built:
   simulation, and — over real ssh and a real pty — a STUB docker on a
   throwaway sshd (3.12.0's walk; the stub prints docker's shapes and is
   not docker). A daemon was not running on the machine that walked.
-- **One provider.** Hetzner is a class (`OpsProvider` is found through
-  Lookup); the dialog, the watch and the HUD need nothing new.
+- **Two providers, one of them never run.** `HetznerOps` is the second
+  `OpsProvider` (found through Lookup, as predicted) and no Hetzner
+  server was created or listed live: a server bills, a listing needs the
+  owner's token. It is proven against a fake API in the shapes of
+  Hetzner's published OpenAPI document, which is not the running API.
+  The prediction "the dialog, the watch and the HUD need nothing new" was
+  wrong in three places, each fixed with it: the ENGINE compared a
+  status with DigitalOcean's word `new` (a provider now hands over a
+  `HostRecord.Phase`), the price strings printed `$` whatever the
+  currency (the sign is an argument, and Hetzner's price list says EUR),
+  and the toolbar chip named DigitalOcean alone. Still open: the Hub's
+  own **Token…** sets only DigitalOcean's token — Hetzner's is set in the
+  Infra Designer's **Tokens…**, which the button's tooltip already names
+  — and the "no provider is configured" sentence names only
+  DigitalOcean; the listing shows a project's servers, and a Hetzner
+  token belongs to ONE project, so an account's other projects are not
+  on the Hub; a size's price is the server type plus the public IPv4 and
+  leaves out traffic past the included amount and backups; Hetzner's
+  firewalls, networks and placement groups are not asked for; and an
+  arm server type is offered beside x86 ones with the image chosen by
+  name (the document says a name is resolved; that it resolves to the
+  type's architecture was not observed).
 - **Service telemetry is a probe, not a stream.** Load, memory and disk
   come from one ssh round trip every 15 s; containers from `docker ps`.
   No `docker stats`, no traffic delta — so a pulse on a link means the
@@ -53,8 +218,12 @@ open, each with its door, none built:
   `/srv/nmox/<app>/src` stays the newer source until the next deploy,
   and nothing prunes old images. Both are said in the design document;
   neither is a button.
-- **No chord.** Every `⌥⌘` digit is taken; the Hub opens from Window,
-  the Welcome's TOOLING column and Quick Search.
+- ~~**No chord.**~~ Closed in 3.13.0: `⌥⌘U`. Every `⌥⌘` digit was a
+  window already, so the Hub took a letter, measured free in the
+  assembled cluster's layers under every modifier spelling and in all six
+  keymap profiles (S is VS Code's Save All; H and D belong to macOS).
+  Not pressed in a walk: the background tools deliver no ⌥⌘ chord (the
+  3.6.0 law); the Window menu's row and its accelerator were read.
 - **Quick Search finds nothing until the Hub has been opened once in the
   session.** By design (a keystroke never makes the engine), and the
   Infra Designer's provider behaves the same; a saved host is therefore
@@ -159,6 +328,21 @@ not do, each measured or read, none built:
   tsserver in it. The door no longer installs a TypeScript over the
   declared one, so there is nothing for it to do but say so. Same
   trigger, `@vue/language-server`.
+  Re-measured 2026-11-13 from the published tarballs. 3.3.14 (the
+  current `latest`) still sends `tsserver/request` and waits for
+  `tsserver/response` (`lib/server.js`), so the reason for the `@2` pin
+  holds and the pin stays. 4.0.0-alpha.3 has neither: its README states
+  a contract for editors other than VS Code, on TypeScript 7 only. The
+  client starts `tsc --lsp --stdio` with `initializationOptions:
+  { runExternalCode: true }` and answers one request,
+  `vue/typescriptApiConnection`, by forwarding
+  `custom/initializeAPISession` to that server and returning its pipe.
+  Read from the README, not run against the server: it looks buildable
+  beside `TsNative`, with one thing to settle first. `runExternalCode`
+  makes the compiler load the `contentMappers` a project's tsconfig
+  names, which is the project's code, so by the 3.5.6 law that server
+  would wait for Workspace Trust however the compiler was found.
+  Trigger, sharpened: `@vue/language-server` 4.0.0 under the `latest` tag.
 - **The bridge that asks for problems is on for `tsc` only.** Any other
   server that reports only when asked would show nothing here, exactly
   as TypeScript 7 did. Only `tsc` was measured for it; the other launched servers have
@@ -180,27 +364,185 @@ not do, each measured or read, none built:
   the native server share a file. They share nothing by design: the
   debugger is js-debug.
 
-### 140. The project templates are a major behind on purpose, and the purpose has aged
+*Addendum, 2026-11-13: the hostile review of 3.10.0.* `PullDiagnostics`
+was fed hostile frames through its two streams and then driven, with its
+real timer, against TypeScript 7.0.2. Five defects were fixed with a
+failing test each (a storm of refresh requests, a pass per key with more
+documents open than one pass asks about, a related document's spelling
+and its ordering, a refusal logged where nobody reads, a question written
+after shutdown). Found and deliberately left, none of them reachable with
+7.0.2 as measured:
 
-Measured 2026-11-06 against the registry: the Angular template pins
-`~21.2` with TypeScript `~5.9` while Angular is 22.2 on TypeScript 6;
-the Vite templates pin `^6` while Vite is 8. Both ceilings were set for
-reasons written at the pins (v1.237.0, v1.241.0): the TypeScript-5
-ceiling existed because the editor's TypeScript lane needed tsserver,
-and the Vite ceiling because 7+ refuses a Node below 22.12. The first
-reason is gone as of 3.10.0 for TypeScript itself, and half gone for
-Angular (ngserver is happy on 6). The second depends on what Node a
-newcomer has, which was last measured in August.
+- **A related document that is NOT open, and differs only by case from
+  one that is, is still filed under the open one.** Right on a file
+  system that ignores case, which is why the fold exists, and wrong on
+  one that does not. Telling the two apart is a question for the disk,
+  on the client's reader thread. Measured: 7.0.2 sent no
+  `relatedDocuments` at all, on open, on an edit that changed another
+  file's errors, or under four hundred files written to the project.
+- **A closed document comes back through a related report.** Closing
+  publishes it empty; an open document's later answer that relates it
+  publishes it again. That is what a client that pulls does elsewhere,
+  and it is how a file nobody opened reaches Action Items, so it stays;
+  it is not what "gone when the file closes" says.
+- **An answer to one of the bridge's own questions over 16 MiB passes to
+  the client unread**, as a response to a request the client never made.
+- **`"error":null` beside a `result` drops the answer**, and a full
+  report whose `items` is not an array publishes the document empty.
+  Neither is what this server writes.
+- **The client's frames are held whole, whatever their size.** The
+  16 MiB bound is on what is parsed, not on what is held until the frame
+  is complete; the client is the platform's own.
+- **After the framing is lost on one stream, a frame the lane had
+  already taken can be written between two pieces of a client frame.**
+  One pass wide, and only on a stream that is already unreadable.
+- **The lane is two threads for every server.** A server that stops
+  reading its input holds one of them for as long as it does.
+- **Seen, not ours:** on `exit` after `shutdown`, 7.0.2 logs
+  `error handling method 'exit': EOF` as an error and ends with code 1.
+  The line is an error by its own type, so the log filter passes it.
+  What the platform's client does with it at shutdown was not walked.
 
-Not moved in 3.10.0 because a template is proven by installing and
-building it (v1.241.0: *a starter that was never installed is a claim*),
-fifteen of them on three systems, and that is a release of its own.
-What to do, in order: re-measure the Node floor a current LTS install
-gives; move Angular to 22 with TypeScript 6 and prove `ng build` and
-the template squiggle; move Vite as far as the measured Node allows;
-keep the ceiling tests (`ProjectTemplatesTest.viteTemplatesObeyTheCeilings`,
-`angularObeysItsCeilings`, `AngularSpacePinParityTest`) and rewrite the
-reason at each pin.
+### 140. The project templates: moved to the current lines on 2026-11-13, and what the move did not prove
+
+**What the entry said (2026-11-06).** The Angular template pinned `~21.2`
+with TypeScript `~5.9` while Angular was 22.2 on TypeScript 6, and the Vite
+templates pinned `^6` while Vite was 8. Both ceilings had reasons written
+at the pins: the editor needed tsserver, and Vite 7+ refused a Node below
+22.12. The first reason went away in 3.10.0. The second depended on what
+Node a newcomer has.
+
+**What was measured (2026-11-13).** The Node lines in support and their
+current patches: 22.23.5, 24.22.3, 26.13.1 (Node 20's newest release is
+from March 2026). The registry, with the Node each package declares:
+
+| Package | Latest | Declares |
+| --- | --- | --- |
+| vite | 8.3.8 | `^20.19.0 \|\| >=22.12.0` |
+| vitest | 5.1.0 | `^22.12.0 \|\| ^24.0.0 \|\| >=26.0.0`, peers on vite `^6.4 \|\| ^7 \|\| ^8` |
+| @vitejs/plugin-react | 6.3.0 | peers on vite `^8` |
+| @vitejs/plugin-vue | 6.0.11 | peers on vite `^5` to `^8` |
+| @sveltejs/vite-plugin-svelte | 7.3.1 | peers on vite `^8`, svelte `^5.46.4` |
+| vite-plugin-solid | 2.11.16 | peers on vite `^3` to `^9` |
+| @angular/core, cli, build | 22.2.6 / 22.2.7 | `^22.22.3 \|\| ^24.15.0 \|\| >=26.0.0`; build and compiler-cli peer on typescript `>=6.0 <6.1` |
+| typescript | 7.0.2 (6.0.3 is the last 6) | `>=16.20.0` |
+| eslint | 10.14.0 | `^20.19.0 \|\| ^22.13.0 \|\| >=24` (already the templates' pin) |
+| jsdom | 31.0.1 (`ng new` 22.2 writes `^30.0.0`) | 30 and 31: `^22.22.2 \|\| ^24.15.0 \|\| >=26.0.0` |
+
+Every floor in that table is met by the current patch of every supported
+Node line, which is the test a starter has to pass: it must run on an
+up-to-date Node, and a Node that was installed and never updated gets the
+tool's own refusal, translated at the `CommandExecutor` pump and named in
+the template's README.
+
+**What moved.** Each template below was generated by the real generator
+(`ProjectTemplates.generate`, the catalog's own files for the learning
+space) into an empty directory and run with nothing else in it.
+
+| Template | Was | Is | `npm install` / build / test on Node 22.23.5 (npm 10.9.9) | Same on Node 24.20.0 (npm 11.19.0) |
+| --- | --- | --- | --- | --- |
+| Vite + React | vite `^6`, vitest `^3`, plugin-react `^5` | vite `^8`, vitest `^5`, plugin-react `^6` | 0 / 0 / 0, `eslint .` 0 | 0 / 0 / 0 |
+| Vite + Vue | vite `^6`, vitest `^3`, plugin-vue `^5.2` | vite `^8`, vitest `^5`, plugin-vue `^6` | 0 / 0 / 0, `eslint .` 0 | 0 / 0 / 0 |
+| Vite + Solid | vite `^6`, vitest `^3` | vite `^8`, vitest `^5`, `test.environment: 'node'` | 0 / 0 / 0, `eslint .` 0 | 0 / 0 / 0 |
+| Vite + Svelte | vite `^6`, vitest `^3`, vite-plugin-svelte `^5`, svelte `^5.0` | vite `^8`, vitest `^5`, vite-plugin-svelte `^7`, svelte `^5.46.4` | 0 / 0 / 0, `eslint .` 0 | 0 / 0 / 0 |
+| TypeScript Library | typescript `^5.5.4`, vitest `^3` | typescript `^7`, vitest `^5`, `rootDir`, `vitest.config.ts` | 0 / 0 (`dist/index.js` and `.d.ts` present) / 0, `tsc --noEmit` 0, `prepublishOnly` 0 | 0 / 0 / 0 |
+| Angular (standalone) | `~21.2`, typescript `~5.9` | `~22.2`, typescript `~6.0`, vitest `^5`, jsdom `^30`, `tsconfig.spec.json` | 0 / 0 / 0, `ng generate component widget` 0 and it wrote `widget.component.*` | 0 / 0 / 0 |
+| Angular learning space | `~21.2`, typescript `~5.9` | `~22.2`, typescript `~6.0` | 0 / 0 (it has no test script) | 0 / 0 |
+
+Installs on 22.23.5 printed no engine warning. What resolved: vite 8.3.8,
+vitest 5.1.0, typescript 7.0.2 (library) and 6.0.3 (Angular), Angular
+22.2.6 with CLI and build 22.2.7, svelte 5.57.3, vue 3.5.45, react 19.3.1,
+solid-js 1.9.19. Express API and Vanilla Web needed no pin moved (their
+majors are current); both were installed on the same Node as a control
+(Express: install 0, `npm test` 0, `eslint .` 0; Vanilla: install 0,
+`eslint .` 0).
+
+**Three things the proof found that were not version numbers.**
+
+- *Vite + Solid's `npm test` never ran.* `vite-plugin-solid` points Vitest
+  at jsdom unless the config names an environment, the starter installs no
+  jsdom, and the script exited 1 with `Cannot find package 'jsdom'` on the
+  old pins as well as the new. The August proof was install and build. The
+  config names `node` now, as the other three Vite templates run.
+- *The Angular template's `npm test` never ran either.* `ng test` is the
+  unit-test builder, which needs vitest, a DOM package and a spec tsconfig
+  naming `vitest/globals`. The template shipped none of the three and the
+  script exited 1 on `~21.2` too. It ships what `ng new` 22.2 writes.
+- *TypeScript 6 and 7 refuse the library's old tsconfig.* An `outDir`
+  without a `rootDir` is error TS5011 (`tsc` exit 2), and what it emitted
+  went to `dist/src/`, not where `"main"` points. Vitest 4 and later also
+  stopped skipping `dist/`, so a build followed by a test ran every test
+  twice. Both are fixed in the template and held by a test.
+
+**The Node floor, measured on a stale Node (22.9.0, this machine's default).**
+Vite 8.3.8 prints *"You are using Node.js 22.9.0. Vite requires Node.js
+version 20.19+ or 22.12+."* and then builds and tests with exit 0; the
+August record says it failed outright there. Angular 22's CLI prints *"The Angular CLI
+requires a minimum Node.js version of v22.22.3 or v24.15.0 or v26.0.0."*
+and exits 3. Both lines still match `looksLikeNodeTooOld`.
+
+**The language servers, headlessly, on the generated projects (Node 22.23.5).**
+`tsc --lsp --stdio` from the library's own TypeScript 7.0.2 returned 1
+problem for a planted type error when asked (and pushed none, the shape
+3.10.0's bridge exists for). The catalog's own install
+(`npm install --save-dev @angular/language-server @angular/language-service`)
+in the Angular 22 project brought 22.2.6 of both, left the project's
+`typescript` at `~6.0` (6.0.3), `ng build` still exited 0, and `ngserver`
+pushed 1 diagnostic for a misspelled member in `app.component.html`.
+
+**Held by.** `ProjectTemplatesTest.viteTemplatesObeyTheCeilings`,
+`angularObeysItsCeilings`, `viteSolidTestsRunWithoutADom`,
+`tsLibraryBuildsWhereItsManifestPoints`, and `AngularSpacePinParityTest`
+(which now compares the CLI, build and compiler-cli pins too). Nine
+mutants, each killed by name: vite `^9`, vitest `^3`, the README floor
+removed, TypeScript `^7` in the Angular template, jsdom removed, `rootDir`
+removed, Solid's environment line removed, and the learning space's
+`@angular/core` or `typescript` moved alone.
+
+**Not done, and still open.**
+
+- **One machine.** Every proof above ran on macOS arm64. CI runs the Java
+  tests on three systems and installs nothing from npm, so Windows and
+  Linux have not installed or built these templates.
+- **Not walked in the IDE.** The assembled app was not built or opened.
+  The wizard creating each project, the first Run, the rack's devices on
+  the new versions and the painted squiggle in an Angular template are
+  unverified; the server half of the squiggle is the headless probe above.
+- **The wizard still says "Angular 21".** The description is a translated
+  string (`TemplateDesc_ANGULAR` in fourteen bundles, the English in the
+  enum) and this change touched no user-visible string. `docs/tour.md` and
+  `docs/demo-script.md` say "Angular 21" as well.
+- **Run Focused Test does not work in an Angular 21 or 22 workspace.**
+  Measured on the generated project: with vitest declared (as `ng new`
+  now declares it) the action picks `npx vitest run -t <name> <spec>`,
+  which exits 1 (`SyntaxError`, a raw Vitest cannot compile an Angular
+  spec); the `ng` route it would otherwise take passes
+  `--browsers=ChromeHeadless`, which the unit-test builder refuses without
+  a Vitest browser provider (exit 1). What works is
+  `ng test --watch=false --include=<spec>` (exit 0). The old template was
+  no better off: its `npm test` exited 1 for want of vitest, and the
+  action's `ng` route runs the same builder (that exact command was not
+  run on the old pins). `RunFocusedTestActionTest` pins both old choices.
+- **A stale Node gets an Angular language server four majors behind.** On Node
+  22.9.0 with npm 11.21.2 the same catalog install wrote
+  `@angular/language-server ^18.1.2` and `@angular/language-service
+  ^19.2.25` into the project: npm picks the newest version whose `engines`
+  accept the running Node, and says nothing. That server pushed no
+  diagnostic in 12 seconds. True of the 21.2 line too (its server declares
+  Node 22.12).
+- **Left where they were.** PHP Web (phpunit is 13.4.7 and needs PHP 8.4.1;
+  the template pins `^11` on PHP `>=8.2`; no composer on this machine to
+  prove a move), Go, Rust, Python, Elixir and the two classic templates
+  (floors and vendored files, not registry pins). The other learning
+  spaces carried `vite ^5.4` and `svelte ^4.2` pins when this was
+  written; they moved the same day, and `ViteSpacePinParityTest` holds
+  them to the templates' majors (ledger 143 has what was left).
+
+**The generators, the same day.** Node 26 is the Active LTS (26.13.1);
+24.22.3 and 22.23.5 are in maintenance. Dockerize's base is
+`node:26-alpine` and Export CI installs 26 (tags and action inputs
+checked against the registries, nothing built). The templates above were
+proven on 22 and 24; see the changelog for what ran on 26.
 
 ## Open — added by 3.8.2
 
@@ -273,7 +615,7 @@ unchanged: the launcher retries or refuses, or the product ships its own
 
 ## Open — added by 3.6.0 (the VS Code repository release)
 
-### 136. The debugger's windows have two names in a translated build
+### 136. The debugger's windows have two names in a translated build — narrowed after 3.12.0: the seven debugger windows done, the Output window measured and open
 
 Found by the 3.6.0 translators, three of them independently. Since
 v2.143.0 the Window ▸ Debugging rows are translated (`CTL_SessionsAction`
@@ -300,6 +642,77 @@ That is a unit of its own, not a rider on a feature release.
 language's own menu-row word (no mnemonic), move those windows out of the
 gate's untranslated list in the same commit, and let the gate name every
 sentence that still says the English word.
+
+**Taken for the seven debugger windows (after 3.12.0).** Recon first:
+`View.getName()` is `NbBundle.getMessage(View.class, displayNameResource)`
+and the seven factory methods (`getSessionsView`, `getBreakpointsView`, …)
+hand it exactly the seven `_view` keys, read from the RELEASE310 class. The
+overlay is fourteen files beside the menu rows' own
+(`branding/…/org-netbeans-spi-debugger-ui.jar/org/netbeans/modules/debugger/ui/views/Bundle_<lang>.properties`),
+and no value in them is a translation of its own: each is that language's
+`CTL_…Action` value with the mnemonic removed (`&Sitzungen` gives
+*Sitzungen*, `会话(&N)` gives *会话*), written by a script from the rows.
+
+Held three ways. The seven keys joined `main-window-chrome.txt`, so
+`MainWindowChromeSpeaksTest` fails when a platform upgrade renames or
+rewords one, or a language is missing. `WayfindingVocabularyTest` gained
+the law itself, *a debugger window's tab carries the name its Window-menu
+row carries, in every language*: it reads the platform's jar and each
+language's overlay jar out of the assembled cluster, and the English half
+(the row minus its mnemonic equals the tab) keeps the hand-kept pairing
+honest. And the English name may no longer stand for the window: no
+translated product string (same gate), and no translated document
+(`DocsMenuDoorsTest`), may say `Sessions` where the build's tab reads
+*Sitzungen*; a language whose word is the English one (French *Sessions*,
+Spanish *Variables*) has nothing to tell apart.
+
+**An eighth window, which this entry never listed.** Window ▸ Debugging
+▸ Debugging is a row of the same submenu and opens a tab titled from
+`CTL_Debugging_view`, one package down in `…/debugger/ui/views/debugging`
+(`DebuggingViewComponent.getName()`, read from the class). It took the same
+fix in a commit of its own, and the tab law holds it to its row. Its name
+is not held in prose: "Debugging" is also the submenu, half of *Start
+Debugging…* and a word VS Code's commands use.
+
+**This entry was wrong about its own subject in two places**, which is
+why the sweep was a fraction of what it feared. `WayfindingVocabularyTest`
+never held "Sessions" or "Breakpoints": its untranslated list is `Output`,
+`IDE Tools` and `Services`, so there was nothing to move out of it. And no
+hint in any bundle names a debugger window: measured on the assembled
+cluster, no English product string does, in any module. The sentences were
+thirteen, one in each `docs/coming-from-vscode.<lang>.md` but the French
+("listed in the Sessions window"), and the new document law named every
+one of them on its first run.
+
+Proven on a clean build: every gate of the application module, read
+against the freshly assembled cluster (`Tests run: 535, Failures: 0,
+Errors: 0`). Four mutants, each killed by name in one run: the German
+`CTL_Sessions_view` put back to `Sessions` (the tab law: *the tab reads
+"Sessions" and the row that opens it "Sitzungen"*); the Ukrainian overlay
+of the eighth window deleted (the tab law, and
+`MainWindowChromeSpeaksTest`: *paints "Debugging" in English*); the Russian
+guide put back to `в окне Sessions` (the document law); and `Breakpoints`
+written into a Russian product string (*says "Breakpoints" where this
+build's window reads "Точки останова"*). NOT walked: a branding overlay applies
+only inside the assembled app, so the picture is owed. Window ▸ Debugging
+▸ Sessions in a German build (*Fenster ▸ Debugging ▸ Sitzungen*) must open
+a tab titled *Sitzungen*.
+
+**Left open, each measured.**
+
+- *The Output window.* Its row is overlaid (`IOWindow`, German *Ausgabe*)
+  and its tab, `LBL_IO_WINDOW` in `org/netbeans/core/io/ui`, is not (the
+  key was found by value and has not been confirmed from the class). The
+  sweep that must ride with it is 298 sentences in fourteen languages: 142
+  bundle values (twelve keys; ten per language, twelve in Filipino) and 156
+  lines of documents (ten to twelve per language). The three largest homes
+  are `docs/coming-from-vscode.<lang>.md` (70),
+  `docs/tutorials/show-it-to-a-room.<lang>.md` (56) and the bundles of
+  `tools/…/vscode` (42). `Output` leaves `ENGLISH_BY_CONSTRUCTION` in the
+  same commit as its overlay, and that gate then names the bundle half.
+- *The hover text of the seven tabs* (`CTL_Sessions_view_tooltip`, "Sessions
+  View", and six siblings; `View.getToolTipText()`). No row carries a word
+  for it, so overlaying it would be a new translation, not a copied one.
 
 ### 137. A narrow-pane hint is budgeted in characters, and a character is not a width
 
@@ -4806,6 +5219,65 @@ The release workflow appends a hand-written CycloneDX component (purl,
 MIT, the NOTICE's sha256) to the aggregate BOM. Still invisible to
 Dependabot — bumps stay manual per NOTICE — but the SBOM no longer has
 a blind spot. Bump the workflow constant and the NOTICE together.
+
+**2026-11-13: the adapter moved from v1.117.0 to v1.140.1** (upstream's
+security release for CVE-2026-70094). What was done, what proved it and
+what did not:
+
+- *The tree.* `js-debug-dap-v1.140.1.tar.gz` (1,249,566 bytes, sha256
+  `c72fab31…927faf`, checked against the digest GitHub publishes for the
+  asset before unpacking), extracted verbatim as v1.117.0 was. The old
+  tree was byte-identical to its own tarball; the two tarballs hold the
+  same 60 files and nine differ.
+- *The protocol.* Nothing this product leans on moved. Upstream's source
+  between the tags does not touch the DAP server's entry point, the
+  session binder, `startDebugging`, output capture or termination; the
+  command line and the READY line read the same in both bundles. Every
+  real-adapter test gave the same verdict on both adapters with nothing
+  skipped (Node 22.9.0, Google Chrome): `RealJsDebugIntegrationTest` 7,
+  `RealChromeIntegrationTest` 2, and the 84 tests of the debug package.
+- *The Node floor rose, and that is the user-visible change.* The new
+  bundle does not load under Node 18.20.8 (`SyntaxError: Invalid flags
+  supplied to RegExp constructor 'v'`, from the `@sindresorhus/is` that
+  got 16 brings; got moved 11 → 16 upstream); v1.117.0 started there.
+  `JsDebugServer.MIN_NODE_MAJOR` (20, the release that brought the `v`
+  flag) refuses an older Node by name before the adapter is spawned, in
+  fifteen languages, where the user used to read "js-debug exited
+  immediately (exit 1) — is the debug adapter installed?". got 16
+  declares Node 22 and the user guide says 22. **Node 20 and 21 were not
+  measured** (neither is on the machine that did the bump): they pass
+  the refusal, and whether attach's `/json/version` fetch works there is
+  unknown. Raising the constant to 22 is a one-line decision.
+- *The CVE.* The advisory's defect is VS Code's startup auto-attach
+  reading `debug.javascript.terminalOptions` from an untrusted
+  workspace; the fix marks that setting restricted in the extension's
+  generated `package.json`. The DAP-server tarball has no `package.json`
+  and `terminalOptions` is in no script of either tarball (only as a
+  label key in `package.nls.json`), so that half was never in what we
+  ship. The release's second fix IS in the bundle:
+  the diagnostics report (`createDiagnostics`, a js-debug custom
+  request) wrote unescaped launch-configuration JSON into a `<script>`
+  in an HTML file under the temp dir. Nothing in this product sends that
+  request (no occurrence in our source; the platform's DAP client was
+  not decompiled to prove it never does), so it is believed unreachable
+  here, and v1.140.1 closes it either way.
+- *The SBOM row said the wrong license.* The v1.207.0 relicense swept
+  the hand-written js-debug row from MIT to Apache-2.0, and
+  `LicenseConsistencyGateTest` then pinned that literal as "the SBOM
+  says Apache-2.0" — the only license id in `release.yml`. The row says
+  MIT again and the gate holds it to the adapter's own LICENSE, and the
+  row's version and sha256 to the NOTICE. Nothing asserts the PRODUCT's
+  license in the published SBOM, and nothing did: the root pom has no
+  `<licenses>` element for CycloneDX to read. Open, small.
+- *Not proven.* No breakpoint was walked in the assembled app, and the
+  refusal was never seen on a status line. The two walks that matter
+  most: **Debug File on a Node script that forks a child** (a breakpoint
+  in each; two sessions in the Sessions window, the Output tab showing
+  the program's lines, zero `node` left after Stop), and **Debug in
+  Chrome on a served page** (breakpoint hits, Stop closes the browser
+  and leaves no Chrome). Also unrun: the Windows and Linux lanes, the
+  cluster's language gates over the fourteen new translations of the
+  refusal, and `mvn verify` (SpotBugs, JaCoCo floors).
 
 ### 28. Window-menu items showed no accelerator — CLOSED
 Every advertised chord now has a Keymaps/NetBeans shadow invoking the
