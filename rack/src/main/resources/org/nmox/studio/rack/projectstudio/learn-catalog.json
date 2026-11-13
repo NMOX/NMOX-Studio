@@ -3860,7 +3860,7 @@
       "files": [
         {
           "path": "package.json",
-          "content": "{\n  \"name\": \"playwright-space\",\n  \"private\": true,\n  \"scripts\": {\n    \"test\": \"playwright test\"\n  },\n  \"devDependencies\": {\n    \"@playwright/test\": \"^1.45.0\"\n  }\n}\n"
+          "content": "{\n  \"name\": \"playwright-space\",\n  \"private\": true,\n  \"scripts\": {\n    \"test\": \"playwright test\"\n  },\n  \"devDependencies\": {\n    \"@playwright/test\": \"^1.65.0\"\n  }\n}\n"
         },
         {
           "path": "playwright.config.ts",
