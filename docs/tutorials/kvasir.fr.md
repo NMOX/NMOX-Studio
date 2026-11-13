@@ -46,7 +46,7 @@ Options ▸ Rack et cloud.
    multiligne ; pressez **VIEW** pour ouvrir l’explication complète dans une
    fenêtre de conversation. Le bouton
    **MODEL** choisit FAST (par défaut) ou DEEP — Haiku / Sonnet,
-   GPT-5 mini / GPT-5, ou Gemini Flash / Pro, selon le fournisseur choisi.
+   GPT-6.1 Terra / GPT-6.1 Sol, ou Gemini Flash / Pro, selon le fournisseur choisi.
 
 ## Ce que vous venez d’apprendre
 

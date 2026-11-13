@@ -47,11 +47,19 @@ public enum KvasirProvider {
 
     /** Claude — the Anthropic Messages API (the original KVASIR wire). */
     ANTHROPIC("anthropic", "Claude (Anthropic)", "Anthropic", "Claude",
-            "claude-haiku-4-5", "Haiku", "claude-sonnet-5", "Sonnet",
+            // measured 2026-11-13: both ids are in the account's model list
+            // and answer through this wire. The ids shipped before them
+            // (claude-haiku-4-5, claude-sonnet-5) are still served.
+            "claude-haiku-5-5", "Haiku", "claude-sonnet-5-5", "Sonnet",
+            List.of("claude-haiku-4-5"), List.of("claude-sonnet-5"),
             "nmox.kvasir.apikey", "ANTHROPIC_API_KEY", "CLAUDE_API_KEY"),
     /** ChatGPT — the OpenAI Chat Completions API. */
     OPENAI("openai", "ChatGPT (OpenAI)", "OpenAI", "ChatGPT",
-            "gpt-5-mini", "GPT-5 mini", "gpt-5", "GPT-5",
+            // measured 2026-11-13: OpenAI's deprecations page shuts gpt-5
+            // and gpt-5-mini down on 2026-12-11 and names these two as their
+            // replacements; both answer on chat completions with this body.
+            "gpt-6.1-terra", "GPT-6.1 Terra", "gpt-6.1-sol", "GPT-6.1 Sol",
+            List.of("gpt-5-mini"), List.of("gpt-5"),
             // CHATGPT_API_KEY is honored beside the SDK's name for the same
             // reason CLAUDE_API_KEY is beside ANTHROPIC_API_KEY: it is what
             // people actually export (measured on David's box, v2.96.1)
@@ -59,8 +67,21 @@ public enum KvasirProvider {
     /** Gemini — the Google Generative Language API. */
     GOOGLE("google", "Gemini (Google)", "Google", "Gemini",
             // measured 2026-09-07 against the live API: 2.5-pro answers 404
-            // "no longer available to new users"; 3.1-pro-preview answers
+            // "no longer available to new users"; 3.1-pro-preview answers.
+            //
+            // NOT MOVED on 2026-11-13, and the trigger is written here: Google
+            // lists gemini-2.5-flash as deprecated and reroutes its requests
+            // to gemini-3.5-flash-lite on 2026-12-01 (a reroute, so this id
+            // keeps answering); 3.1-pro-preview is a preview with no date.
+            // Google recommends gemini-4-hydrogen for new work and calls
+            // gemini-4-carbon its strongest reasoner, with gemini-4-argon
+            // between them. All three are in the model list, and none could
+            // be asked a question: the account's prepaid credits were spent
+            // (RESOURCE_EXHAUSTED on every id, these two included). An id
+            // nobody has seen answer through this wire is not shipped as a
+            // default; kvasir.model.google.fast / .deep pins one today.
             "gemini-2.5-flash", "Flash", "gemini-3.1-pro-preview", "Pro",
+            List.of(), List.of(),
             "nmox.kvasir.google.apikey", "GEMINI_API_KEY", "GOOGLE_API_KEY");
 
     /** The two depths every provider offers: cheap-and-quick, or stronger. */
@@ -86,11 +107,14 @@ public enum KvasirProvider {
     private final String fastLabel;
     private final String deepModel;
     private final String deepLabel;
+    private final List<String> retiredFast;
+    private final List<String> retiredDeep;
     private final String keyringName;
     private final String[] envVars;
 
     KvasirProvider(String id, String label, String vendor, String product,
             String fastModel, String fastLabel, String deepModel, String deepLabel,
+            List<String> retiredFast, List<String> retiredDeep,
             String keyringName, String... envVars) {
         this.id = id;
         this.label = label;
@@ -100,6 +124,8 @@ public enum KvasirProvider {
         this.fastLabel = fastLabel;
         this.deepModel = deepModel;
         this.deepLabel = deepLabel;
+        this.retiredFast = retiredFast;
+        this.retiredDeep = retiredDeep;
         this.keyringName = keyringName;
         this.envVars = envVars;
     }
@@ -178,10 +204,37 @@ public enum KvasirProvider {
         return Optional.empty();
     }
 
+    /**
+     * The depth a model id USED to be this provider's shipped default for.
+     *
+     * <p>A default is a vendor's id, and vendors retire ids (OpenAI shuts
+     * gpt-5 and gpt-5-mini down on 2026-12-11). Whatever an older build
+     * remembered, a saved preference or a conversation's model, still holds
+     * the old id, and {@link #resolve} would have passed it through as "one
+     * of ours" for ever. A retired default means its depth, nothing more.
+     * A user who wants the old id itself pins it, and a pin is honoured
+     * before this is asked.
+     */
+    public Optional<Depth> retiredDepthOf(String modelId) {
+        if (modelId == null) {
+            return Optional.empty();
+        }
+        if (retiredFast.contains(modelId)) {
+            return Optional.of(Depth.FAST);
+        }
+        return retiredDeep.contains(modelId) ? Optional.of(Depth.DEEP) : Optional.empty();
+    }
+
     /** Which depth a model id is for ANY provider — the cross-provider bridge. */
     public static Optional<Depth> depthOfAny(String modelId) {
         for (KvasirProvider p : values()) {
             Optional<Depth> d = p.depthOf(modelId);
+            if (d.isPresent()) {
+                return d;
+            }
+        }
+        for (KvasirProvider p : values()) {
+            Optional<Depth> d = p.retiredDepthOf(modelId);
             if (d.isPresent()) {
                 return d;
             }
@@ -191,10 +244,12 @@ public enum KvasirProvider {
 
     /**
      * The id this provider actually sends for a requested model: blank →
-     * FAST; one of ours → itself; another provider's id → OUR id at the
-     * same depth (a remembered Claude depth becomes the matching Gemini
-     * depth, never a Claude id in a Gemini request); anything else →
-     * passed through as an explicit custom id, provided it is URL-safe.
+     * FAST; one of ours → itself; another provider's id, or a default any
+     * provider has since retired → OUR id at the same depth (a remembered
+     * Claude depth becomes the matching Gemini depth, never a Claude id in
+     * a Gemini request, and never an id its vendor has shut down);
+     * anything else → passed through as an explicit custom id, provided it
+     * is URL-safe.
      */
     public String resolve(String requested) {
         if (requested == null || requested.isBlank()) {

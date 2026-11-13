@@ -158,7 +158,7 @@ class KvasirDeviceTest {
     }
 
     @Test
-    @DisplayName("v2.96.0: the knob's depth resolves through the configured provider — DEEP on ChatGPT is gpt-5 at the OpenAI endpoint")
+    @DisplayName("v2.96.0: the knob's depth resolves through the configured provider — DEEP on ChatGPT is OpenAI's deep model at the OpenAI endpoint")
     void knobResolvesThroughProvider() throws IOException {
         String[] seenUrl = new String[1];
         String[] seenModel = new String[1];
@@ -179,7 +179,7 @@ class KvasirDeviceTest {
             device.keySource = () -> "sk-test".toCharArray();
             device.applyState(java.util.Map.of("model", "1"));
             String verdict = device.consult(true);
-            assertThat(seenUrl[0]).isEqualTo(org.nmox.studio.rack.engine.KvasirProvider.OPENAI.endpoint("gpt-5"))
+            assertThat(seenUrl[0]).isEqualTo(org.nmox.studio.rack.engine.KvasirProvider.OPENAI.endpoint("gpt-6.1-sol"))
                     .endsWith("/v1/chat/completions");
             assertThat(seenModel[0]).isEqualTo(org.nmox.studio.rack.engine.KvasirProvider.OPENAI
                     .model(org.nmox.studio.rack.engine.KvasirProvider.Depth.DEEP));

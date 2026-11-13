@@ -38,7 +38,7 @@ Anthropic ‏(Claude)، أو OpenAI ‏(ChatGPT)، أو Google ‏(Gemini). دو
 
 4. **اقروا الحكم.** تشخيص قصير بيظهر على الـ LCD متعدد السطور؛ ودوسوا
    **VIEW** عشان الشرح الكامل يتفتح في نافذة محادثة. مقبض **MODEL** بيختار FAST (الافتراضي)
-   أو DEEP — Haiku / Sonnet، أو GPT-5 mini / GPT-5، أو Gemini Flash /
+   أو DEEP — Haiku / Sonnet، أو GPT-6.1 Terra / GPT-6.1 Sol، أو Gemini Flash /
    Pro، على حسب المزوّد اللي اخترتوه.
 
 ## اللي اتعلمتوه

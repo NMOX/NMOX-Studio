@@ -137,7 +137,8 @@ public class KvasirDevice extends RackDevice {
         // positions persist by INDEX (append-only law), so the v1.52.0 patch
         // values HAIKU/SONNET read as FAST/DEEP; the provider names the ids.
         modelKnob = place(new Knob("MODEL", new String[]{"FAST", "DEEP"}, 0), 760, 26);
-        modelKnob.setToolTipText("Which model answers: FAST (Haiku / GPT-5 mini / Gemini Flash) or DEEP (Sonnet / GPT-5 / Gemini Pro)");
+        modelKnob.setToolTipText("Which model answers: FAST (" + depthNames(KvasirProvider.Depth.FAST)
+                + ") or DEEP (" + depthNames(KvasirProvider.Depth.DEEP) + ")");
         param("model", modelKnob);
 
         // v1.91.0: auto-explain by cable — patch VERITAS FAIL → EXPLAIN and
@@ -528,5 +529,22 @@ public class KvasirDevice extends RackDevice {
         dialog.setSize(680, 460);
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
+    }
+
+    /**
+     * Every provider's name for a depth, for the knob's tooltip. Built from
+     * the provider table: a sentence that spelled the names out went stale
+     * the day a vendor renamed its models.
+     */
+    static String depthNames(KvasirProvider.Depth depth) {
+        StringBuilder names = new StringBuilder();
+        for (KvasirProvider p : KvasirProvider.values()) {
+            if (names.length() > 0) {
+                names.append(" / ");
+            }
+            String label = p.depthLabel(depth);
+            names.append(label.startsWith("GPT") ? label : p == KvasirProvider.GOOGLE ? "Gemini " + label : label);
+        }
+        return names.toString();
     }
 }

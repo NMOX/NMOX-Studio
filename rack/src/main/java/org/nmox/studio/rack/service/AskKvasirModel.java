@@ -1,7 +1,6 @@
 package org.nmox.studio.rack.service;
 
 import java.util.prefs.Preferences;
-import org.nmox.studio.rack.engine.KvasirClient;
 import org.nmox.studio.rack.engine.KvasirProvider;
 import org.nmox.studio.rack.engine.KvasirProvider.Depth;
 import org.openide.util.NbPreferences;
@@ -11,8 +10,9 @@ import org.openide.util.NbPreferences;
  * preference like the KVASIR device's MODEL knob — a depth is not a
  * secret. The depth is provider-independent: it stores {@code fast} or
  * {@code deep}, and {@link #chosen()} answers with the configured
- * provider's id for it (Haiku/Sonnet, GPT-5 mini/GPT-5, Gemini
- * Flash/Pro), so switching providers keeps the user's depth. The chosen
+ * provider's id for it (each provider's own pair, as
+ * {@link KvasirProvider} names them), so switching providers keeps the
+ * user's depth. The chosen
  * model is fixed for a conversation's whole life (mid-conversation
  * switches would make the transcript lie about who answered what); the
  * choice only steers the NEXT Ask.
@@ -46,13 +46,17 @@ public final class AskKvasirModel {
 
     /**
      * The remembered depth. A pre-v2.96.0 preference stored the Anthropic
-     * model id itself; the Sonnet id still reads as Deep so an old choice
-     * survives. Unknown values fall back to Fast.
+     * model id itself; a Sonnet id, the current one or one since retired,
+     * still reads as Deep so an old choice survives. Unknown values fall
+     * back to Fast.
      */
     public static Depth chosenDepth() {
         String stored = PREFS.get(KEY, "");
-        return DEEP.equals(stored) || KvasirClient.MODEL_SONNET.equals(stored)
-                ? Depth.DEEP : Depth.FAST;
+        if (DEEP.equals(stored)) {
+            return Depth.DEEP;
+        }
+        // an id, then: the one shipped today or one shipped before it
+        return KvasirProvider.depthOfAny(stored).orElse(Depth.FAST);
     }
 
     /** The remembered depth as the configured provider's model id. */
@@ -68,6 +72,11 @@ public final class AskKvasirModel {
     /** Remembers a combo choice; anything but index 1 means Fast. */
     public static void remember(int comboIndex) {
         PREFS.put(KEY, comboIndex == 1 ? DEEP : FAST);
+    }
+
+    /** Test hook: what a build before v2.96.0 left behind, a model id. */
+    static void storeForTest(String raw) {
+        PREFS.put(KEY, raw);
     }
 
     /** Test hook. */

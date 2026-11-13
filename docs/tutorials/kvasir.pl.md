@@ -43,7 +43,7 @@ obejmuje każde oblicze KVASIR i jest też w Opcje ▸ Stojak i chmura.
    wyświetlaczu; naciśnij **VIEW**, żeby otworzyć pełne wyjaśnienie w oknie
    rozmowy. Pokrętło
    **MODEL** wybiera FAST (domyślnie) albo DEEP — Haiku / Sonnet,
-   GPT-5 mini / GPT-5 albo Gemini Flash / Pro, zależnie od wybranego
+   GPT-6.1 Terra / GPT-6.1 Sol albo Gemini Flash / Pro, zależnie od wybranego
    dostawcy.
 
 ## Czego się właśnie nauczyłeś

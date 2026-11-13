@@ -40,7 +40,7 @@ KVASIR face and also lives in Options ▸ Rack & Cloud.
 
 4. **Read the verdict.** A short diagnosis appears on the multi-line LCD;
    press **VIEW** to open the full explanation in a conversation window. The **MODEL** knob picks
-   FAST (default) or DEEP — Haiku / Sonnet, GPT-5 mini / GPT-5, or
+   FAST (default) or DEEP — Haiku / Sonnet, GPT-6.1 Terra / GPT-6.1 Sol, or
    Gemini Flash / Pro, whichever provider you chose.
 
 ## What you just learned

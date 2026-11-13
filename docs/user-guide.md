@@ -539,7 +539,7 @@ KVASIR answers in the language NMOX Studio is set to.
 **KEY…** to choose the provider and paste its key; the choice is remembered
 for every KVASIR face (EXPLAIN, Ask, Edit, Complete, Draft Commit Message,
 the studio explainers) and also sits in Options ▸ Rack & Cloud. FAST and
-DEEP map onto each vendor's own pair: Haiku / Sonnet, GPT-5 mini / GPT-5,
+DEEP map onto each vendor's own pair: Haiku / Sonnet, GPT-6.1 Terra / GPT-6.1 Sol,
 Gemini Flash / Pro. The key is stored in your OS keychain (macOS Keychain,
 GNOME Keyring, Windows Credential Vault), one entry per provider, never on
 disk and never in any project file. Alternatively, KVASIR reads the
