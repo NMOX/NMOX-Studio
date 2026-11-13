@@ -208,15 +208,16 @@ class ProjectTemplatesTest {
         ProjectTemplates.VITE_SVELTE.generate(dir, "demo-app");
 
         // package.json parses and pins the Svelte 5 toolchain: svelte ^5
-        // with the matching vite-plugin-svelte major (5 is the Svelte-5 +
-        // Vite-6 line — the whole set live-proven by npm install+build,
-        // v1.237.0; the template's vite major matches Vite + Solid's)
+        // with the vite-plugin-svelte major that peers on Vite 8 (7, which
+        // also wants svelte >=5.46.4 — the whole set proven by npm install,
+        // build and test on Node 22.23.5, 2026-11-13; the template's vite
+        // major matches the other three Vite templates')
         JSONObject pkg = new JSONObject(
                 Files.readString(dir.toPath().resolve("package.json")));
         JSONObject dev = pkg.getJSONObject("devDependencies");
         assertThat(dev.getString("svelte")).startsWith("^5.");
-        assertThat(dev.getString("@sveltejs/vite-plugin-svelte")).startsWith("^5.");
-        assertThat(dev.getString("vite")).startsWith("^6.");
+        assertThat(dev.getString("@sveltejs/vite-plugin-svelte")).startsWith("^7.");
+        assertThat(dev.getString("vite")).startsWith("^8.");
         assertThat(pkg.getJSONObject("scripts").getString("dev")).isEqualTo("vite");
 
         // the component speaks runes, not the Svelte-4 idiom
@@ -237,16 +238,21 @@ class ProjectTemplatesTest {
     }
 
     @Test
-    @DisplayName("The Vite templates obey the ceilings: no CRA, vite ^6, proven plugin majors")
+    @DisplayName("The Vite templates obey the ceilings: no CRA, vite ^8, vitest ^5, proven plugin majors")
     void viteTemplatesObeyTheCeilings() throws Exception {
         // Ported from the deleted platform wizard's WizardTemplateCeilingTest
         // (v1.246.0): this is now the ONE wizard, so the ceilings it enforced
         // live here. react-scripts is dead upstream and cannot install beside
-        // react 19 (the v1.244.0 find); vite stays ^6 because 7+ requires
-        // node >=22.12 and a starter must run on a learner's default node
-        // (the v1.237.0 live proof watched vite 8 refuse node 22.9). The pins
+        // react 19 (the v1.244.0 find). vite is ^8 and vitest ^5, the lines
+        // measured and proven on 2026-11-13 (ledger 140): vite 8.3.8 declares
+        // node ^20.19.0 || >=22.12.0 and vitest 5.1.0 declares
+        // ^22.12.0 || ^24.0.0 || >=26.0.0, both met by the current patch of
+        // every Node line still in support (22.23.5 that day), and each
+        // template installed, built and tested green on that Node. The pins
         // are Java string literals — invisible to Dependabot (v1.236.0
-        // pattern), so this test is the only thing that fails a bump PR.
+        // pattern), so this test is the only thing that fails a bump PR: a
+        // new major here needs a new proof and a new floor at the pins.
+        java.util.List<String> onVite = new java.util.ArrayList<>();
         for (ProjectTemplates template : ProjectTemplates.values()) {
             File dir = parent.resolve("ceiling-" + template.name().toLowerCase()).toFile();
             template.generate(dir, "demo-app");
@@ -261,45 +267,134 @@ class ProjectTemplatesTest {
                     assertThat(deps.has("react-scripts"))
                             .as(template + " " + section + " must never carry react-scripts").isFalse();
                     if (deps.has("vite")) {
+                        onVite.add(template.name());
                         assertThat(deps.getString("vite"))
-                                .as(template + " vite ceiling").startsWith("^6.");
+                                .as(template + " vite ceiling").startsWith("^8.");
+                    }
+                    if (deps.has("vitest")) {
+                        assertThat(deps.getString("vitest"))
+                                .as(template + " vitest ceiling").startsWith("^5.");
                     }
                 }
             }
+            if (pkg.optJSONObject("devDependencies") != null
+                    && pkg.getJSONObject("devDependencies").has("vite")) {
+                // the floor is said where a newcomer will read it
+                assertThat(Files.readString(dir.toPath().resolve("README.md")))
+                        .as(template + " README names the Node floor").contains("needs Node 22.12");
+            }
         }
+        // the population is the four Vite templates: a fifth joins the law
+        // by carrying vite, and losing one would silently shrink it
+        assertThat(onVite).containsExactlyInAnyOrder(
+                "VITE_REACT", "VITE_VUE", "VITE_SOLID", "VITE_SVELTE");
 
-        // the react and vue sets stay the exact npm-proven line (v1.237.0)
+        // the plugin majors are the ones that peer on Vite 8 (same proof)
         JSONObject react = new JSONObject(Files.readString(
                 parent.resolve("ceiling-vite_react").resolve("package.json")));
         assertThat(react.getJSONObject("dependencies").getString("react")).startsWith("^19.");
         assertThat(react.getJSONObject("devDependencies").getString("@vitejs/plugin-react"))
-                .startsWith("^5.");
+                .startsWith("^6.");
         assertThat(react.getJSONObject("scripts").getString("dev")).isEqualTo("vite");
 
         JSONObject vue = new JSONObject(Files.readString(
                 parent.resolve("ceiling-vite_vue").resolve("package.json")));
         assertThat(vue.getJSONObject("dependencies").getString("vue")).startsWith("^3.");
-        assertThat(vue.getJSONObject("devDependencies").getString("@vitejs/plugin-vue"))
-                .startsWith("^5.2");
+        JSONObject vueDev = vue.getJSONObject("devDependencies");
+        assertThat(vueDev.getString("@vitejs/plugin-vue")).startsWith("^6.");
+        // Vue's language server needs a TypeScript that still ships
+        // tsserverlibrary.js; 7 (the Go port) does not. The template
+        // declares no typescript today — if one arrives it stays below 7.
+        assertThat(vueDev.optString("typescript", "^6.0.0"))
+                .as("VITE_VUE typescript ceiling").doesNotStartWith("^7").doesNotStartWith("~7");
+
+        JSONObject solid = new JSONObject(Files.readString(
+                parent.resolve("ceiling-vite_solid").resolve("package.json")));
+        assertThat(solid.getJSONObject("devDependencies").getString("vite-plugin-solid"))
+                .startsWith("^2.11");
     }
 
     @Test
-    @DisplayName("Angular pins the proven ~21.2 + TS 5.9 line and the suffixed naming")
+    @DisplayName("Vite + Solid's test script runs without a DOM package")
+    void viteSolidTestsRunWithoutADom() throws Exception {
+        // Measured 2026-11-13 on the old pins and the new: vite-plugin-solid
+        // sets Vitest's environment to jsdom unless the config names one,
+        // the starter installs no jsdom, and `npm test` exited 1 with
+        // "Cannot find package 'jsdom'". Either the config names node or
+        // the package is declared; anything else is a test script that
+        // cannot run.
+        File dir = parent.resolve("solid-test-env").toFile();
+        ProjectTemplates.VITE_SOLID.generate(dir, "demo-app");
+
+        String config = Files.readString(dir.toPath().resolve("vite.config.js"));
+        JSONObject dev = new JSONObject(Files.readString(dir.toPath().resolve("package.json")))
+                .getJSONObject("devDependencies");
+        assertThat(config.contains("test: { environment: 'node' }") || dev.has("jsdom"))
+                .as("vitest must not be pointed at a jsdom nobody installed").isTrue();
+    }
+
+    @Test
+    @DisplayName("TypeScript Library pins ^7 and builds to dist/ root with tests run once")
+    void tsLibraryBuildsWhereItsManifestPoints() throws Exception {
+        File dir = parent.resolve("ts-lib-layout").toFile();
+        ProjectTemplates.TS_LIBRARY.generate(dir, "demo-lib");
+
+        JSONObject pkg = new JSONObject(Files.readString(dir.toPath().resolve("package.json")));
+        // TypeScript 7 is served by `tsc --lsp` since 3.10.0, and nothing
+        // in this template needs tsserverlibrary.js
+        assertThat(pkg.getJSONObject("devDependencies").getString("typescript")).startsWith("^7.");
+        assertThat(pkg.getString("main")).isEqualTo("dist/index.js");
+
+        // TypeScript 6 and 7 refuse an outDir without a rootDir (TS5011,
+        // measured: `tsc` exit 2, and what it did emit went to dist/src/,
+        // not where "main" points)
+        JSONObject options = new JSONObject(Files.readString(dir.toPath().resolve("tsconfig.json")))
+                .getJSONObject("compilerOptions");
+        assertThat(options.getString("rootDir")).isEqualTo("src");
+        assertThat(options.getString("outDir")).isEqualTo("dist");
+
+        // Vitest 4+ no longer skips dist/ by itself: without the include,
+        // `npm test` after a build ran every test twice (measured: 2 files)
+        assertThat(Files.readString(dir.toPath().resolve("vitest.config.ts")))
+                .contains("include: ['src/**/*.test.ts']");
+    }
+
+    @Test
+    @DisplayName("Angular pins the proven ~22.2 + TS ~6.0 line, a test script that runs, and the suffixed naming")
     void angularObeysItsCeilings() throws Exception {
         File dir = parent.resolve("ng-ceilings").toFile();
 
         ProjectTemplates.ANGULAR.generate(dir, "demo-ng");
 
-        // Angular stays ~21.2: 22 requires TypeScript 6, and the TS-5
-        // ceiling (ngserver/tsserver need tsserverlibrary.js) binds —
-        // the old ^22 pin could never npm-install (v1.241.0 night proof)
+        // Angular is ~22.2 with TypeScript ~6.0 (proven 2026-11-13 on Node
+        // 22.23.5: npm install, ng build, ng test, ng generate). The
+        // TypeScript ceiling is Angular's own: @angular/build and
+        // @angular/compiler-cli 22 peer on typescript >=6.0 <6.1, and the
+        // Angular Language Service needs tsserverlibrary.js, which
+        // TypeScript 7 does not ship. A tilde keeps npm inside 6.0.
         JSONObject pkg = new JSONObject(
                 Files.readString(dir.toPath().resolve("package.json")));
         assertThat(pkg.getJSONObject("dependencies").getString("@angular/core"))
-                .startsWith("~21.2");
+                .startsWith("~22.2");
         JSONObject dev = pkg.getJSONObject("devDependencies");
-        assertThat(dev.getString("@angular/cli")).startsWith("~21.2");
-        assertThat(dev.getString("typescript")).startsWith("~5.");
+        assertThat(dev.getString("@angular/cli")).startsWith("~22.2");
+        assertThat(dev.getString("@angular/build")).startsWith("~22.2");
+        assertThat(dev.getString("typescript")).startsWith("~6.0");
+
+        // `ng test` is the unit-test builder: it needs vitest, a DOM and
+        // a spec tsconfig that names vitest's globals. The template
+        // shipped none of the three before 2026-11-13 and its test script
+        // exited 1 (measured on the ~21.2 pins too).
+        assertThat(pkg.getJSONObject("scripts").getString("test")).isEqualTo("ng test");
+        assertThat(dev.getString("vitest")).startsWith("^5.");
+        assertThat(dev.getString("jsdom")).startsWith("^30.");
+        assertThat(Files.readString(dir.toPath().resolve("tsconfig.spec.json")))
+                .contains("\"vitest/globals\"").contains("src/**/*.spec.ts");
+
+        // Angular 22's CLI refuses a Node below its floor (exit 3); the
+        // README says the floor the registry declares
+        assertThat(Files.readString(dir.toPath().resolve("README.md")))
+                .contains("needs Node 22.22.3+, 24.15+, or 26+");
 
         // the workspace teaches the suffixed naming the IDE's template
         // intelligence keys on (v1.217.0 resolver: *.component.html) —
