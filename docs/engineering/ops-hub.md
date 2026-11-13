@@ -277,6 +277,41 @@ door were the real ones). Each row was fixed and walked again.
 | The deploy log showed the middle of every line (its caret sat at the end of docker's longest) | The caret goes to the last line's start |
 | The translators, reading the new English in five rounds: a refusal untrue in one of its two uses, a pronoun with no antecedent, one action under three verbs, yes/no answering "does it have docker?", the rollback question as one string with shell lines inside it, an ISO instant shown raw, and five kinds of English built in the engine | Reworded, split, typed, or moved to the bundle; each later round translated the result and found the next layer (an edge that read backwards from its far end, an arrow that pointed against a right-to-left line, the verify step's own two sentences) |
 
+### What the review of the second slice found (2026-11-13)
+
+A hostile read of 3.12.0's own additions, probes first (the exact argv
+and remote line for hostile container names, tags and labels; the
+camera at its limits and with non-finite inputs; arrow keys on canvases
+from 300×220 to 1200×700). Each row has a test that fails on 3.12.0.
+
+| Found | Now |
+|---|---|
+| `rollbackOffer` collected every line the host printed for `docker images` for its whole 20 s leash — the unbounded read the probe was cured of | It holds `Rollback.MAX_TAG_LINES` (2,000) and past that refuses in the probe's own words; 1,500 honest tags are still answered |
+| Roll back… was offered on ANY container with the `nmox.ops.app` label and one of our images, but its run line replaces the container named `nmox-<app>`: on a second container of the app (started by hand, renamed) the confirmed lines removed the DEPLOYED container and then failed on the port the other still held | Refused as not deployed from here unless the container is the one a deploy names (`DeployPlan.containerOf`) |
+| An arrow key in an untouched Hub moved the camera: a fit pads 28/30/52 px and a reveal wanted 36/66, so the node at a framed picture's edge was nudged by the difference, the HUD printed a "100%" readout, Fit lit up, and the next relayout put it back | What a fit calls in view, a reveal calls in view |
+
+Clean under probe: the container-name rule (`;`, `$()`, backticks,
+quotes, a newline, a leading `-`, a space, non-ASCII letters and digits,
+4 KB — all refused before a line is built; the door's argv carries the
+remote line as one argument after `--`), the stamp rule (ASCII digits
+only, `latest`/`<none>`/extra columns ignored, equal-by-value stamps
+never "earlier"), the confirm's two lines (the same `DeployPlan`'s
+`run()` and `verify()` that `Deployer.rollback` runs), Quick Search
+(reads `peek()` and the volatile copy, escapes what it shows).
+
+Not proven, written down: (1) **a Logs/Shell tab's title carries the
+service's label unguarded.** The label is the host's word (a compose
+label), and the platform's `TerminalContainerTabbed` hands a tab title
+to `JTabbedPane.setTitleAt` (read from its bytecode) — a Swing sink
+that renders a title beginning `<html>`. `PlainText.plain` on the title
+in `OpsHubTopComponent.serviceDoor` would close it; no test here can
+reach the platform's Terminal, so it is a hypothesis until walked.
+(2) `HudCamera` keeps a non-finite target for good (a NaN factor or
+point never settles, and the frame timer then never stops); nothing
+that reaches it today produces one (AWT's coordinates, the layout's
+guarded divisions). (3) `hub.rollback` does not re-check that the host
+it was handed is still on the Hub after the modal confirm.
+
 ## Hetzner Cloud, the second provider
 
 `HetznerOps` is found through Lookup beside `DigitalOceanOps`; a

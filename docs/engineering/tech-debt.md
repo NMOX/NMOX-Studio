@@ -32,6 +32,14 @@ three walks of the new build took out a dozen more
 (`docs/engineering/ops-hub.md` carries both tables). What is still
 open, each with its door, none built:
 
+- *Note, 2026-11-13:* a hostile review of 3.12.0's own additions (the
+  doors, rollback, the camera, the search, the inspector column) fixed
+  three defects — an unbounded read of the host's image list, a rollback
+  offered on a container the deploy did not name, an arrow key that
+  moved an untouched camera — and left three hypotheses unproven
+  (`ops-hub.md`, "What the review of the second slice found"): the
+  Terminal tab title's markup, a non-finite camera target, a host gone
+  during the rollback confirm.
 - **No live DigitalOcean create has been run.** `DigitalOceanOpsTest`
   proves the request body (tag, keys, cloud-init, monitoring), the
   paged listing, the 404-is-gone read and the destroy against
