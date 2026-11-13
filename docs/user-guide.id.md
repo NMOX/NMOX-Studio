@@ -299,6 +299,14 @@ Pohon artefak Foundry dan Hardhat, **Berinteraksi** yang dituntun ABI dengan kem
 
 Sebuah kanvas untuk DigitalOcean, Hetzner, dan Cloudflare: selaraskan dengan apa yang benar-benar ada, segarkan untuk melihat selisihnya, dan hancurkan setumpuk sumber daya dengan biayanya terpampang. Sambungan yang tak sah menolak dengan lantang dan menyebut sebabnya, dan selama sebuah operasi awan berjalan, kanvasnya terkunci dengan pita yang mengatakannya.
 
+### Pusat Ops
+
+![Pusat Ops — mesin ini, satu host nyata, dan dua server simulasi dalam kipas, sebuah peluncuran yang terbaca kembali sebagai simpul layanan, serta inspektur dengan fakta, pengukur, hubungan, dan pelacak peluncuran](images/ops-hub.png)
+
+Perancang Infrastruktur adalah apa yang Anda inginkan ada; Pusat Ops (**Jendela ▸ Pusat Ops**) adalah gambaran langsung dari apa yang ada: server yang bisa Anda jangkau, dengan mesin ini di sebelah kiri. **Server Baru…** memintanya dari DigitalOcean dengan token Perancang Infrastruktur, menampilkan harganya sebelum Anda mengonfirmasi, dan daftar peristiwa menceritakan setiap langkah yang teramati oleh Pusat Ops. **mosh** dan **ssh** membuka sesi di Terminal milik IDE sendiri. **Luncurkan…** membangun Dockerfile proyek yang dibidik di host lalu menjalankannya; dialognya lebih dulu menampilkan perintah persisnya, dan **Batal** adalah pilihan bawaan. Setiap host yang terjangkau diperiksa tiap 15 detik (beban, memori, disk, kontainer), dan tautannya digambar dengan garis utuh untuk yang teramati, putus-putus untuk yang tersimpulkan, dan titik-titik untuk yang dinyatakan. **Tambah Host…** untuk server yang sudah Anda miliki; **Simulasi** adalah penyedia pura-pura yang ditandai jelas, tanpa tagihan.
+
+Roda memperbesar dan memperkecil, menyeret di ruang kosong menggeser tampilan, dan **Paskan** membingkai semuanya lagi. Sebuah layanan punya **Log**, **Shell**, dan **Kembalikan…**, yang menjalankan image yang berjalan sebelumnya: tidak ada yang diunggah atau dibangun, dan Enter menjawab **Tidak**. Pusat Ops menyimpan `known_hosts` sendiri di `~/.nmox/ops/` dan tidak pernah menulis ke milik Anda.
+
 ### IRC (⌥⌘3)
 
 Sebuah klien penuh di dalam IDE: TLS dengan pemeriksaan nama yang sungguhan, SASL, perluasan IRCv3, pelengkapan dengan Tab, penyorotan, URL yang terbuka di peramban bawaan, pencatatan ke cakram, penyaring milik Anda sendiri, dan daftar kanal yang Anda saring sambil mengetik.

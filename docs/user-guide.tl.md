@@ -299,6 +299,14 @@ Ang puno ng mga artefact ng Foundry at Hardhat, isang **Makipag-ugnayan** na gin
 
 Isang lienzo para sa DigitalOcean, Hetzner at Cloudflare: itugma sa kung ano ang tunay na umiiral, i-refresh upang makita ang pagkakaiba, at gibain ang isang salansan habang nakalantad ang halaga nito. Ang mga bawal na kabit ay tumatanggi nang malakas at sinasabi kung bakit, at habang tumatakbo ang isang gawain sa ulap, nakakandado ang lienzo na may guhit na nagsasabi nito.
 
+### Hub ng Ops
+
+![Ang Hub ng Ops — ang makinang ito, isang tunay na host at dalawang kunwaring server na nakapamaypay, isang deploy na nabasa pabalik bilang node ng serbisyo, at ang inspector na may mga datos, panukat, ugnayan at tracker ng deploy](images/ops-hub.png)
+
+Ang Taga-disenyo ng Infrastructure ang gusto mong umiral; ang Hub ng Ops (**Bintana ▸ Hub ng Ops**) ang buhay na larawan ng umiiral: ang mga server na naaabot mo, at ang makinang ito sa kaliwa. Humihingi ang **Bagong Server…** ng isa sa DigitalOcean gamit ang token ng Taga-disenyo ng Infrastructure, ipinapakita ang presyo bago ka magkumpirma, at isinasalaysay ng mga event ang bawat naobserbahang hakbang. Nagbubukas ang **mosh** at **ssh** ng session sa terminal ng IDE. Bini-build ng **I-deploy…** sa host ang Dockerfile ng tinutukang proyekto at pinatatakbo ito; ipinapakita muna ang eksaktong mga command, at **Kanselahin** ang default. Sinusuri ang bawat naaabot na host tuwing 15 segundo (load, memory, disk, mga container), at buo ang guhit ng ugnay kung naobserbahan, putol-putol kung hinango, tuldok-tuldok kung idineklara. Para sa server na mayroon ka na ang **Magdagdag ng Host…**; kunwaring provider ang **Simulation**, may marka at walang singil.
+
+Nagzu-zoom ang wheel, nagpa-pan ang pag-drag, at ibinabalik ng **Ikasya** ang lahat sa view. May **Mga log**, **Shell** at **I-roll back…** ang serbisyo; pinatatakbo ng huli ang dating image: walang ia-upload o ibi-build, at **Hindi** ang sagot ng Enter. May sariling `known_hosts` ang Hub sa `~/.nmox/ops/` at hindi kailanman sumusulat sa iyo.
+
 ### IRC (⌥⌘3)
 
 Isang buong kliyente sa loob ng IDE: TLS na may tunay na pagsusuri ng pangalan, SASL, mga pagpapalawig ng IRCv3, pagkumpleto sa Tab, mga pagtatampok, mga URL na bumubukas sa nakapaloob na browser, pagtatala sa disk, sarili mong mga panala, at isang talaan ng mga channel na sinasala mo habang nagta-type.

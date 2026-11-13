@@ -299,6 +299,14 @@ Drzewo artefaktów Foundry i Hardhata, **Interakcja** prowadzona przez ABI z roz
 
 Płótno dla DigitalOcean, Hetznera i Cloudflare: zsynchronizuj to, co istnieje naprawdę, odśwież, by zobaczyć rozbieżności, i zniszcz stos, mając jego koszt przed oczami. Niedozwolone połączenia odmawiają na głos i mówią dlaczego, a póki trwa operacja w chmurze, płótno blokuje się z paskiem, który to oznajmia.
 
+### Centrum Ops
+
+![Centrum Ops — ta maszyna, prawdziwy host i dwa symulowane serwery w wachlarzu, wdrożenie odczytane z powrotem jako węzeł usługi oraz inspektor z faktami, wskaźnikami, powiązaniami i przebiegiem wdrożenia](images/ops-hub.png)
+
+Projektant infrastruktury pokazuje to, co ma istnieć; Centrum Ops (**Okno ▸ Centrum Ops**) to żywy obraz tego, co istnieje: serwery, do których masz dostęp, z tą maszyną po lewej. **Nowy serwer…** prosi o niego DigitalOcean tym samym tokenem, którego używa Projektant infrastruktury, pokazuje cenę przed potwierdzeniem, a lista zdarzeń opowiada każdy krok, który Centrum zaobserwuje. **mosh** i **ssh** otwierają sesję w Terminalu samego IDE. **Wdróż…** buduje na hoście Dockerfile wycelowanego projektu i uruchamia go; okno najpierw pokazuje dokładne polecenia, a domyślnym przyciskiem jest **Anuluj**. Każdy osiągalny host jest sondowany co 15 s (obciążenie, pamięć, dysk, kontenery), a połączenia rysowane są linią ciągłą, gdy są zaobserwowane, kreskowaną, gdy wywnioskowane, i kropkowaną, gdy zadeklarowane. **Dodaj hosta…** służy do serwera, który już masz; **Symulacja** to udawany dostawca, wyraźnie oznaczony i bez rachunku.
+
+Kółko myszy powiększa i pomniejsza, przeciąganie pustego miejsca przesuwa widok, a **Dopasuj** znów pokazuje wszystko. Usługa ma przyciski **Dziennik**, **Powłoka** i **Wycofaj…**; ten ostatni uruchamia obraz, który działał wcześniej: nic nie jest wysyłane ani budowane, a Enter odpowiada **Nie**. Centrum trzyma własny plik `known_hosts` w `~/.nmox/ops/` i nigdy nie pisze do twojego.
+
 ### IRC (⌥⌘3)
 
 Pełny klient wewnątrz IDE: TLS z prawdziwym sprawdzeniem nazwy, SASL, rozszerzenia IRCv3, uzupełnianie tabulatorem, podświetlenia, odnośniki otwierające się we wbudowanej przeglądarce, zapis na dysk, własne filtry i lista kanałów, którą przesiewasz w trakcie pisania.

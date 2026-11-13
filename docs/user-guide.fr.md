@@ -299,6 +299,14 @@ L’arbre des artefacts Foundry et Hardhat, un **Interagir** guidé par l’ABI 
 
 Une toile pour DigitalOcean, Hetzner et Cloudflare : synchronisez ce qui existe réellement, rafraîchissez pour voir les écarts, détruisez une pile avec son coût sous les yeux. Les câbles illégaux refusent à voix haute en expliquant pourquoi, et pendant qu’une opération dans le nuage tourne, la toile se verrouille avec un bandeau qui le dit.
 
+### Hub Ops
+
+![Le Hub Ops — cette machine, un hôte réel et deux serveurs simulés en éventail, un déploiement relu comme nœud de service, et l’inspecteur avec ses faits, jauges, relations et suivi de déploiement](images/ops-hub.png)
+
+Le Concepteur d’infrastructure est ce que vous voulez voir exister ; le Hub Ops (**Fenêtre ▸ Hub Ops**) est l’image vivante de ce qui existe : les serveurs que vous pouvez joindre, avec cette machine à gauche. **Nouveau serveur…** en demande un à DigitalOcean avec le jeton du Concepteur d’infrastructure, affiche le prix avant confirmation, et les événements racontent chaque étape observée. **mosh** et **ssh** ouvrent une session dans le terminal de l’IDE. **Déployer…** construit le Dockerfile du projet visé sur l’hôte et le lance ; les commandes exactes sont montrées d’abord, avec **Annuler** par défaut. Chaque hôte joignable est sondé toutes les 15 s (charge, mémoire, disque, conteneurs), et les liens sont en trait plein si observés, en tirets si inférés, en pointillés si déclarés. **Ajouter un hôte…** sert pour un serveur déjà à vous ; **Simulation** est un fournisseur fictif, marqué et sans facture.
+
+La molette zoome, glisser déplace la vue, et **Ajuster** recadre tout. Un service a ses **Journaux**, son **Shell** et **Revenir en arrière…**, qui relance l’image précédente : rien n’est envoyé ni construit, et Entrée répond **Non**. Le Hub tient son propre `known_hosts` sous `~/.nmox/ops/` et n’écrit jamais dans le vôtre.
+
 ### IRC (⌥⌘3)
 
 Un client complet dans l’IDE : TLS avec vraie vérification du nom, SASL, extensions IRCv3, complétion par tabulation, surlignages, URL qui s’ouvrent dans le navigateur intégré, journalisation sur disque, filtres à vous, et une liste de canaux que vous filtrez en tapant.
