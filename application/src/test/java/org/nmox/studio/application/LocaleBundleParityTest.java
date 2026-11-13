@@ -80,7 +80,6 @@ class LocaleBundleParityTest {
         return p;
     }
 
-    /** Drops the module-descriptor keys this arc leaves to the manifests. */
     /**
      * A translated key whose English is NOT in the base bundle, because it
      * has one home somewhere better.

@@ -530,12 +530,6 @@ public final class MainWindow extends TopComponent {
     }
 
     /**
-     * v1.235.0 (the ledger-29 remainder): the aimed project's node is
-     * this window's ambient selection, so Test Project (^F6), the Team
-     * menu and every project-sensitive action work while the Welcome
-     * tab is focused — the tab a fresh launch lands on.
-     */
-    /**
      * "See a server go live" ticks when a server APPEARS (v2.69.11), not
      * only when one happens to be live at a repaint — David's ▶ then ■
      * lived three seconds and was never observed — and it happens while
@@ -555,6 +549,12 @@ public final class MainWindow extends TopComponent {
                 welcomePanel.refreshGettingStarted();
             });
 
+    /**
+     * v1.235.0 (the ledger-29 remainder): the aimed project's node is
+     * this window's ambient selection, so Test Project (^F6), the Team
+     * menu and every project-sensitive action work while the Welcome
+     * tab is focused — the tab a fresh launch lands on.
+     */
     private final org.nmox.studio.core.util.AimFollower aimFollower =
             new org.nmox.studio.core.util.AimFollower(n ->
                     setActivatedNodes(new org.openide.nodes.Node[]{n}));

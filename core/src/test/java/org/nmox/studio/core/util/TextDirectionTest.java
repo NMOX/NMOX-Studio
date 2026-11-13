@@ -38,7 +38,7 @@ class TextDirectionTest {
         // name and the runtime in step.
         assertThat(Locale.forLanguageTag("he").getLanguage()).isEqualTo("he");
         assertThat(Locale.forLanguageTag("iw").getLanguage()).isEqualTo("he");
-        assertThat(new Locale("iw").getLanguage()).isEqualTo("he");
+        assertThat(Locale.of("iw").getLanguage()).isEqualTo("he");
     }
 
     @Test

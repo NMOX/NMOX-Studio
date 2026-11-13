@@ -78,14 +78,6 @@ class SiteShipsTest {
         assertThat(html).contains("skip-link").contains("lang=\"en\"").contains("id=\"main\"");
     }
 
-    /**
-     * The website's counts are bound to the same ground truth the docs
-     * are (v2.91.0): "Ninety-two ways in" sat a space stale for thirty
-     * releases because a word is invisible to a numeral gate — so the
-     * site says its counts in numerals, in both catalogs, and this reads
-     * them against the learning catalog and the generated device
-     * reference exactly the way DocsCountGateTest does.
-     */
     /** Every catalog the site ships, by language tag, from the directory. */
     private static java.util.List<String> locales() throws Exception {
         try (java.util.stream.Stream<java.nio.file.Path> s =
@@ -96,6 +88,14 @@ class SiteShipsTest {
         }
     }
 
+    /**
+     * The website's counts are bound to the same ground truth the docs
+     * are (v2.91.0): "Ninety-two ways in" sat a space stale for thirty
+     * releases because a word is invisible to a numeral gate — so the
+     * site says its counts in numerals, in both catalogs, and this reads
+     * them against the learning catalog and the generated device
+     * reference exactly the way DocsCountGateTest does.
+     */
     @org.junit.jupiter.api.Test
     @org.junit.jupiter.api.DisplayName("the site's device and space counts equal the catalogs, in every language")
     void countsAreTrue() throws Exception {

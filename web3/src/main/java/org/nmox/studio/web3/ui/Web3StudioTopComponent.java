@@ -1741,12 +1741,6 @@ public final class Web3StudioTopComponent extends TopComponent {
     }
 
     /**
-     * Off-EDT: runs the command in {@code dir}, streaming each output
-     * line to the log strip (and into {@code collector}); returns the
-     * exit code. UTF-8, stderr merged — a compiler's diagnostics belong
-     * in the same stream.
-     */
-    /**
      * Workspace Trust for the forge buttons (v1.224.0 spawn-site
      * sweep): {@code forge build} honors the repo's own foundry.toml
      * and {@code forge test} executes the repo's test contracts —
@@ -1768,6 +1762,12 @@ public final class Web3StudioTopComponent extends TopComponent {
         return true;
     }
 
+    /**
+     * Off-EDT: runs the command in {@code dir}, streaming each output
+     * line to the log strip (and into {@code collector}); returns the
+     * exit code. UTF-8, stderr merged — a compiler's diagnostics belong
+     * in the same stream.
+     */
     private int streamProcess(List<String> command, File dir, StringBuilder collector)
             throws IOException, InterruptedException {
         ProcessBuilder builder = ProcessSupport.builder(command)

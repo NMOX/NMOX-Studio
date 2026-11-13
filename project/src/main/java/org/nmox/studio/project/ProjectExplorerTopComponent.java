@@ -900,15 +900,6 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     }
 
     /**
-     * What KIND of text a row's subtitle is (v2.119.0). One eliding helper
-     * served three readers and the right answer differs for each: the walk
-     * of a fresh install photographed "devices, cables, p…nes — Tab flips
-     * it", because a middle ellipsis written for deep paths was cutting
-     * sentences. Measured at the same time: 36 of the 53 subtitle values
-     * across English and the twelve translations were over the budget, so
-     * this was most rows in most languages, not an edge.
-     */
-    /**
      * The page under the header: as wide as the dock, down to what cannot
      * shrink, and scrolling sideways only below that (3.5.2).
      *
@@ -968,6 +959,15 @@ public final class ProjectExplorerTopComponent extends TopComponent {
      */
     static final int SUBTITLE_ASKS_FOR = 38;
 
+    /**
+     * What KIND of text a row's subtitle is (v2.119.0). One eliding helper
+     * served three readers and the right answer differs for each: the walk
+     * of a fresh install photographed "devices, cables, p…nes — Tab flips
+     * it", because a middle ellipsis written for deep paths was cutting
+     * sentences. Measured at the same time: 36 of the 53 subtitle values
+     * across English and the twelve translations were over the budget, so
+     * this was most rows in most languages, not an edge.
+     */
     enum Sub {
         /** An absolute path: the ENDS tell you where it is. */
         PATH,

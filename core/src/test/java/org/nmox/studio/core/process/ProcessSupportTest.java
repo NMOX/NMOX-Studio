@@ -134,7 +134,6 @@ class ProcessSupportTest {
                 .isEmpty();
     }
 
-    /** PIDs of live processes whose command names them "sleep". */
     /**
      * The grandchild's own duration — a number nothing else on the box
      * sleeps for. The census below counts only sleeps carrying it: the
@@ -146,6 +145,7 @@ class ProcessSupportTest {
      */
     private static final String GRANDCHILD_SECONDS = "617";
 
+    /** PIDs of live processes whose command names them "sleep". */
     private static java.util.Set<Long> livingSleepPids() {
         return ProcessHandle.allProcesses()
                 .filter(ph -> ph.info().command()

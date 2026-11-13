@@ -431,7 +431,6 @@ public final class BlockParser {
 
     // ---- text inversion (exact inverses of BlockCodegen's escaping) ----
 
-    /** Template text back to its param form: refs → {x}/{@y}, unescape. */
     /**
      * The exact inverse of {@link BlockCodegen#textEscape}: {@code &lt;}
      * first, then {@code &amp;} — reverse of the escape order, so a user
@@ -441,6 +440,7 @@ public final class BlockParser {
         return s.replace("&lt;", "<").replace("&amp;", "&");
     }
 
+    /** Template text back to its param form: refs → {x}/{@y}, unescape. */
     private String untemplate(String s, boolean attrContext) {
         StringBuilder out = new StringBuilder();
         int i = 0;

@@ -41,12 +41,6 @@ final class ConsoleMimes {
     }
 
     /**
-     * True when the console holds nothing runnable: null, blank, or
-     * exactly one of the per-engine placeholders. RUN skips such text
-     * and the mime switch may overwrite it with the new engine's
-     * placeholder without losing user work.
-     */
-    /**
      * True when a console gaining focus should clear itself: it holds
      * exactly a placeholder (v1.266.0 — the DBA persona walk typed into
      * the console and RAN, and the untouched {@code "SELECT …;"}
@@ -63,6 +57,12 @@ final class ConsoleMimes {
         return text == null || text.isBlank();
     }
 
+    /**
+     * True when the console holds nothing runnable: null, blank, or
+     * exactly one of the per-engine placeholders. RUN skips such text
+     * and the mime switch may overwrite it with the new engine's
+     * placeholder without losing user work.
+     */
     static boolean isPlaceholderOrBlank(String text) {
         if (text == null || text.isBlank()) {
             return true;

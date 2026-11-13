@@ -172,7 +172,6 @@ class CatalogueProseLedgerTest {
                 + "that has stopped being true").isEmpty();
     }
 
-    /** Enum files carrying a leading string literal, by simple name. */
     /**
      * Every enum in the shipping source that carries words, keyed by the ENUM.
      *

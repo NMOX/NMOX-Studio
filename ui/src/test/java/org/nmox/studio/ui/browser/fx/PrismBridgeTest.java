@@ -238,12 +238,6 @@ class PrismBridgeTest {
     }
 
     /**
-     * The provided JavaFX jars are compiled for Java 24 and up; CI runs these on
-     * JDK 25. An older local JDK cannot load them at all, which says nothing about
-     * the bridge, so the two tests that touch real JavaFX classes skip there and
-     * say why. Any other failure to load still fails.
-     */
-    /**
      * Ledger 100: a page setting one family at {@code h1}, {@code h2},
      * {@code body}, {@code strong} and {@code em} gives WebKit five
      * {@code WCFont}s of ONE face, and the width fit — a dimensionless
@@ -323,6 +317,12 @@ class PrismBridgeTest {
                 });
     }
 
+    /**
+     * The provided JavaFX jars are compiled for Java 24 and up; CI runs these on
+     * JDK 25. An older local JDK cannot load them at all, which says nothing about
+     * the bridge, so the two tests that touch real JavaFX classes skip there and
+     * say why. Any other failure to load still fails.
+     */
     private static void assumeJavaFxLoads() {
         try {
             Class.forName("com.sun.webkit.graphics.WCFont", false, PrismBridgeTest.class.getClassLoader());

@@ -422,12 +422,6 @@ public final class ProjectInspector {
     }
 
     /**
-     * True when the project is a Deno workspace — deno ships its own
-     * lint, fmt, test, and language server, so every AUTO lane must
-     * speak {@code deno <verb>} instead of reaching for npx-resolved
-     * Node tooling that may not even have a node_modules to live in.
-     */
-    /**
      * True when the project opts into golangci-lint — the Go
      * community's aggregate linter. Config spellings per its docs.
      */
@@ -442,6 +436,12 @@ public final class ProjectInspector {
         return false;
     }
 
+    /**
+     * True when the project is a Deno workspace — deno ships its own
+     * lint, fmt, test, and language server, so every AUTO lane must
+     * speak {@code deno <verb>} instead of reaching for npx-resolved
+     * Node tooling that may not even have a node_modules to live in.
+     */
     public static boolean hasDeno(File projectDir) {
         File dir = kindDir(projectDir, ProjectKind.DENO);
         return new File(dir, "deno.json").isFile()
@@ -561,12 +561,6 @@ public final class ProjectInspector {
         }
     }
 
-    /**
-     * The locked version of a package from composer.lock (searching
-     * packages, then packages-dev), with composer's "v" prefix stripped:
-     * "v11.9.2" -> "11.9.2". Null when there is no readable lock or the
-     * package is not in it.
-     */
     /** Cargo.toml text ceiling — a manifest is small; a crafted one stays cheap. */
     private static final int CARGO_SCAN_CAP = 256 * 1024;
 
@@ -673,6 +667,12 @@ public final class ProjectInspector {
         return null;
     }
 
+    /**
+     * The locked version of a package from composer.lock (searching
+     * packages, then packages-dev), with composer's "v" prefix stripped:
+     * "v11.9.2" -> "11.9.2". Null when there is no readable lock or the
+     * package is not in it.
+     */
     public static String composerLockVersion(File dir, String packageName) {
         File lock = new File(dir, "composer.lock");
         if (!lock.isFile()) {

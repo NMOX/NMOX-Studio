@@ -114,14 +114,6 @@ public final class CopyAsMarkdown {
     }
 
     /**
-     * The 1-based inclusive line range a selection covers, as
-     * {@code [start, end]}; {@code [0, 0]} for an empty selection (the
-     * whole file — no fragment). A selection that ends exactly at the
-     * start of a line (its last character is the newline) does not
-     * count that next line: what you see highlighted is what the link
-     * names.
-     */
-    /**
      * The lines a GitHub link points at (3.2.0, Open on GitHub / Copy
      * GitHub Link): the selection's range as {@link #lineRange} reads it,
      * and with nothing selected the CARET's line — a link to "here", where
@@ -135,6 +127,14 @@ public final class CopyAsMarkdown {
         return new int[] {line, line};
     }
 
+    /**
+     * The 1-based inclusive line range a selection covers, as
+     * {@code [start, end]}; {@code [0, 0]} for an empty selection (the
+     * whole file — no fragment). A selection that ends exactly at the
+     * start of a line (its last character is the newline) does not
+     * count that next line: what you see highlighted is what the link
+     * names.
+     */
     public static int[] lineRange(javax.swing.text.Document doc, int selStart, int selEnd) {
         if (selEnd <= selStart) {
             return new int[] {0, 0};

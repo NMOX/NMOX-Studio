@@ -19,7 +19,7 @@ import org.openide.util.NbBundle.Messages;
  * Run ▸ Stop Build/Run also knows these runs (BuildExecutionSupport).
  */
 @ActionID(category = "Run", id = "org.nmox.studio.tools.npm.StopRunAction")
-@ActionRegistration(displayName = "#CTL_StopRun", iconBase = "org/nmox/studio/tools/npm/stop.png", lazy = false)
+@ActionRegistration(displayName = "#CTL_StopRun", lazy = false)
 @ActionReference(path = "Toolbars/Build", position = 360)
 @Messages("CTL_StopRun=Stop Running Command")
 public final class StopRunAction extends AbstractAction {

@@ -114,16 +114,6 @@ public enum DbEngine {
     }
 
     /**
-     * Builds the JDBC URL for a connection spec. Server engines use
-     * {@code host:port/database} (a spec port of {@code <= 0} falls back
-     * to {@link #defaultPort()}); SQLite uses the spec's
-     * {@link ConnectionSpec#filePath() filePath} verbatim.
-     *
-     * @throws IllegalStateException for {@link Kind#DOCUMENT} engines —
-     *         they have no JDBC URL; use
-     *         {@code DbBackend.create(spec, password)} instead
-     */
-    /**
      * Whether the connection dialog offers <i>Use TLS</i> for this engine:
      * CouchDB's HTTP transport (https, v1.122.0) and the MySQL/MariaDB
      * driver's {@code sslMode} (3.9.0). PostgreSQL negotiates its own
@@ -134,6 +124,16 @@ public enum DbEngine {
         return this == COUCHDB || this == MYSQL || this == MARIADB;
     }
 
+    /**
+     * Builds the JDBC URL for a connection spec. Server engines use
+     * {@code host:port/database} (a spec port of {@code <= 0} falls back
+     * to {@link #defaultPort()}); SQLite uses the spec's
+     * {@link ConnectionSpec#filePath() filePath} verbatim.
+     *
+     * @throws IllegalStateException for {@link Kind#DOCUMENT} engines —
+     *         they have no JDBC URL; use
+     *         {@code DbBackend.create(spec, password)} instead
+     */
     public String jdbcUrl(ConnectionSpec spec) {
         return switch (this) {
             case MYSQL, MARIADB -> "jdbc:mariadb://" + hostPort(spec) + "/" + nz(spec.database());

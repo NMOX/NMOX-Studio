@@ -44,7 +44,6 @@ public interface DeviceLogic {
     default void onGate(String portId, boolean high) {
     }
 
-    /** The rack aimed at a different project directory. */
     /**
      * The device's saved settings have just been restored from a patch, and
      * the face already shows them. Read them back here with the handles'
@@ -65,6 +64,7 @@ public interface DeviceLogic {
     default void onStateRestored(DeviceServices services) {
     }
 
+    /** The rack aimed at a different project directory. */
     default void onProjectChanged(File dir) {
     }
 

@@ -680,10 +680,6 @@ class DocsMenuDoorsTest {
     }
 
     /**
-     * {@code &File} and {@code Chec&k File} name the same row; the platform writes {@code ...} for {@code …};
-     * the RLM a right-to-left bundle sets between two Latin runs is layout, as it is in the document.
-     */
-    /**
      * A row whose label is a MessageFormat choice ({@code Debu&g {0,choice,0#File|1#File|1<Files}})
      * paints per selection; the documents name it the way the bar reads with
      * NOTHING selected and no main project — argument −1, the state a fresh
@@ -704,6 +700,10 @@ class DocsMenuDoorsTest {
         }
     }
 
+    /**
+     * {@code &File} and {@code Chec&k File} name the same row; the platform writes {@code ...} for {@code …};
+     * the RLM a right-to-left bundle sets between two Latin runs is layout, as it is in the document.
+     */
     private static String plain(String raw) {
         return raw.replaceAll("\\(&.\\)", "").replace("&", "").replace("...", "…").replace('\u2019', '\'')
                 .replaceAll("[\u200E\u200F\u202A-\u202E\u2066-\u2069]", "").trim();

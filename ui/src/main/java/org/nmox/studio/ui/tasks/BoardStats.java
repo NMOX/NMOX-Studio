@@ -163,11 +163,6 @@ final class BoardStats {
     }
 
     /**
-     * Computes the overview for {@code board} as of {@code nowMillis} in
-     * {@code zone}, with a {@code flowDays}-day history and at most
-     * {@code agingLimit} rows on the attention list.
-     */
-    /**
      * The burndown (v2.37.0), reconstructed from done stamps — no
      * per-day bookkeeping to rot. Stated definition: remaining on day D
      * = cards active now + cards whose done stamp lies AFTER D's end of
@@ -222,6 +217,11 @@ final class BoardStats {
         return new Burndown(committed, remaining, totalDays);
     }
 
+    /**
+     * Computes the overview for {@code board} as of {@code nowMillis} in
+     * {@code zone}, with a {@code flowDays}-day history and at most
+     * {@code agingLimit} rows on the attention list.
+     */
     static BoardStats of(TaskBoard board, long nowMillis, ZoneId zone,
             int flowDays, int agingLimit) {
         List<TaskBoard.Column> cols = board.columns();

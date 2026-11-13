@@ -296,8 +296,10 @@ final class WebKitTextPath {
         }
     }
 
-    /** The foreign-function API reached reflectively: this module compiles for Java 21. */
-    /** Package-private so a test can prove every java.lang.foreign signature still resolves. */
+    /**
+     * The foreign-function API reached reflectively: this module compiles for Java 21.
+     * Package-private so a test can prove every java.lang.foreign signature still resolves.
+     */
     static final class Foreign {
         final Method globalArena;
         final Method libraryLookup;

@@ -80,14 +80,14 @@ public final class GitSummaryLineHint implements DocumentListener {
         HintsController.setErrors(doc, LAYER, describe(doc));
     }
 
+    /** The most of line one ever read: past it the length only grows, and the warning already shows. */
+    static final int FIRST_LINE_CAP = 64 * 1024;
+
     /**
      * The warnings {@code doc} deserves right now: none, or one over the
      * part of the summary line past the limit. Package-private so the
      * mapping from rule to hint is a unit test.
      */
-    /** The most of line one ever read: past it the length only grows, and the warning already shows. */
-    static final int FIRST_LINE_CAP = 64 * 1024;
-
     static List<ErrorDescription> describe(Document doc) {
         String[] text = {""};
         doc.render(() -> {

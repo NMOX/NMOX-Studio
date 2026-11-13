@@ -473,13 +473,6 @@ public final class ComplexTextShaping {
     }
 
     /**
-     * Rewrites {@code WCFontImpl.getGlyphWidth(int)} so it starts with
-     * {@code double w = NmoxComplexText.width(this, glyph); if (w == w) return w;}
-     * — NaN falls through to the font's own width. The one branch gets its
-     * frame spelled out (locals this, glyph, w; empty stack), so frames are
-     * expanded for the whole class.
-     */
-    /**
      * Rewrites {@code WCFontImpl.getTextRuns(String)} to lay out
      * {@code NmoxComplexText.runsText(text)} instead of {@code text}: the string
      * without the length the native glue appends (v2.172.0, see
@@ -513,6 +506,13 @@ public final class ComplexTextShaping {
         return writer.toByteArray();
     }
 
+    /**
+     * Rewrites {@code WCFontImpl.getGlyphWidth(int)} so it starts with
+     * {@code double w = NmoxComplexText.width(this, glyph); if (w == w) return w;}
+     * — NaN falls through to the font's own width. The one branch gets its
+     * frame spelled out (locals this, glyph, w; empty stack), so frames are
+     * expanded for the whole class.
+     */
     static byte[] rewriteWidths(byte[] original, boolean[] applied) {
         ClassReader reader = new ClassReader(original);
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
@@ -661,10 +661,6 @@ public final class ComplexTextShaping {
     }
 
     /**
-     * The shaper the hook calls: reads a WebKit font's glyph mapping and asks
-     * JavaFX's own text layout to shape a run. Never throws into the paint.
-     */
-    /**
      * A font's shaped runs, least recently used first out (v2.171.0). WebKit
      * paints the same words on every repaint, and shaping each run is a JavaFX
      * text layout through reflection; before this cache a scroll re-shaped every
@@ -702,6 +698,10 @@ public final class ComplexTextShaping {
         }
     }
 
+    /**
+     * The shaper the hook calls: reads a WebKit font's glyph mapping and asks
+     * JavaFX's own text layout to shape a run. Never throws into the paint.
+     */
     static final class PrismBridge implements Function<Object[], Object> {
 
         private final Method platformFont;

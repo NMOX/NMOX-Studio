@@ -200,14 +200,6 @@ public final class SearchTerms {
     }
 
     /**
-     * Breaks text into lowercase words. Anything that is not a letter
-     * or digit separates — so {@code -}, {@code _}, {@code .},
-     * {@code /} and whitespace all split, which is what makes
-     * "Bundle-Size Gate" findable as "bundle size". A lowercase-to-
-     * uppercase step also splits, so camelCase identifiers
-     * ({@code getUserById}) are searchable by their parts.
-     */
-    /**
      * The letters that carry no Unicode decomposition, and so survive
      * {@link java.text.Normalizer} untouched.
      *
@@ -286,6 +278,14 @@ public final class SearchTerms {
         return kept.toString();
     }
 
+    /**
+     * Breaks text into lowercase words. Anything that is not a letter
+     * or digit separates — so {@code -}, {@code _}, {@code .},
+     * {@code /} and whitespace all split, which is what makes
+     * "Bundle-Size Gate" findable as "bundle size". A lowercase-to-
+     * uppercase step also splits, so camelCase identifiers
+     * ({@code getUserById}) are searchable by their parts.
+     */
     static List<String> words(String text) {
         List<String> out = new ArrayList<>();
         if (text == null || text.isEmpty()) {
