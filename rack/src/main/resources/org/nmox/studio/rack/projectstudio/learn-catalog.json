@@ -4048,7 +4048,7 @@
       "files": [
         {
           "path": "package.json",
-          "content": "{\n  \"name\": \"qwik-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"@builder.io/qwik\": \"^1.9.0\"\n  },\n  \"devDependencies\": {\n    \"vite\": \"^5.4.0\"\n  }\n}\n"
+          "content": "{\n  \"name\": \"qwik-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"@builder.io/qwik\": \"^1.20.0\"\n  },\n  \"devDependencies\": {\n    \"vite\": \"^7.0.0\"\n  }\n}\n"
         },
         {
           "path": "vite.config.js",
@@ -4063,7 +4063,7 @@
           "content": "import { render } from \"@builder.io/qwik\";\nimport { component$, useSignal } from \"@builder.io/qwik\";\n\nconst Counter = component$(() => {\n  const count = useSignal(0);\n  return (\n    <button onClick$={() => count.value++}>clicks: {count.value}</button>\n  );\n});\n\nrender(document.getElementById(\"app\")!, <Counter />);\n"
         }
       ],
-      "tutorial": "# Qwik\n\nQwik's trick is resumability: instead of re-running your components in\nthe browser (hydration), it serializes state and lazily wakes only the\nevent handlers you actually use - the $ suffixes mark the lazy-load\nboundaries.\n\n1. Run the dev driver (Vite underneath - VELOCITY speaks it).\n2. src/main.tsx: component$ and onClick$ are code-split points; open\n   the network tab and notice the handler chunk loads on first click,\n   not on page load.\n3. This space runs client-side (csr) for simplicity; Qwik City adds\n   the server half.\n",
+      "tutorial": "# Qwik\n\nQwik's trick is resumability: instead of re-running your components in\nthe browser (hydration), it serializes state and lazily wakes only the\nevent handlers you actually use - the $ suffixes mark the lazy-load\nboundaries.\n\n1. Run the dev driver (Vite underneath - VELOCITY speaks it). Qwik 1\n   accepts Vite up to 7, so this space rides Vite 7, which needs Node\n   20.19+ or 22.12+.\n2. src/main.tsx: component$ and onClick$ are code-split points; open\n   the network tab and notice the handler chunk loads on first click,\n   not on page load.\n3. This space runs client-side (csr) for simplicity; Qwik City adds\n   the server half.\n",
       "blurb.es": "Reanudabilidad en vez de hidratación: el estado se serializa y el cliente despierta solo lo que tocas.",
       "blurb.fr": "La reprise plutôt que l’hydratation : l’état se sérialise et le client ne réveille que ce que vous touchez.",
       "blurb.de": "Fortsetzbarkeit statt Hydration: der Zustand wird serialisiert, und der Client weckt nur, was Sie berühren.",
