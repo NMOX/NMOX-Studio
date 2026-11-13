@@ -802,17 +802,16 @@
       "driver": {
         "kind": "run",
         "command": [
-          "sh",
-          "-c",
-          "dotnet run --project ."
+          "dotnet",
+          "run"
         ],
         "prompt": "",
         "snippets": []
       },
       "install": {
         "mac": "brew install dotnet-sdk",
-        "linux": "sudo apt install dotnet-sdk-8.0",
-        "windows": "winget install Microsoft.DotNet.SDK.8"
+        "linux": "sudo apt install dotnet-sdk-10.0",
+        "windows": "winget install Microsoft.DotNet.SDK.10"
       },
       "files": [
         {
@@ -821,10 +820,10 @@
         },
         {
           "path": "learn.csproj",
-          "content": "<Project Sdk=\"Microsoft.NET.Sdk\">\n\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFramework>net8.0</TargetFramework>\n    <ImplicitUsings>enable</ImplicitUsings>\n    <Nullable>enable</Nullable>\n  </PropertyGroup>\n\n</Project>\n"
+          "content": "<Project Sdk=\"Microsoft.NET.Sdk\">\n\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFramework>net10.0</TargetFramework>\n    <RollForward>Major</RollForward>\n    <ImplicitUsings>enable</ImplicitUsings>\n    <Nullable>enable</Nullable>\n  </PropertyGroup>\n\n</Project>\n"
         }
       ],
-      "tutorial": "# C#\n\nC# (\"C sharp\") is Microsoft's flagship language: modern, expressive, and strongly typed. It runs on the cross-platform **.NET** runtime and powers web apps (ASP.NET), desktop apps, cloud services, and games via Unity. A standalone C# REPL isn't reliably installed everywhere, so this space builds and runs a small project instead.\n\n## Your REPL\n\nC# needs a project to run, so this space uses **run** mode. Click **RUN** to build and execute the project with `dotnet run`. The first run restores packages and may take a moment. Edit `Program.cs`, RUN again, see the result.\n\n## The sample\n\nOpen `Program.cs` (this uses **top-level statements** — no boilerplate `Main` needed):\n\n```csharp\nstatic string Greet(string name) => $\"Hello, {name}!\";\n```\n\n`=>` defines an expression-bodied method. `$\"...\"` is an interpolated string; `{name}` inserts the value.\n\n```csharp\nstatic int[] Squares(int n)\n{\n    var out_ = new int[n];\n    for (int i = 0; i < n; i++)\n    {\n        out_[i] = i * i;\n    }\n    return out_;\n}\n```\n\n`var` infers the type. `new int[n]` allocates an array of `n` ints.\n\n```csharp\nConsole.WriteLine(Greet(\"world\"));\nConsole.WriteLine($\"first five squares: {string.Join(\", \", Squares(5))}\");\n```\n\n`string.Join` stitches the array into a comma-separated string. `learn.csproj` configures the .NET project.\n\n## Try this\n\n1. Rewrite `Squares` with LINQ: `Enumerable.Range(0, n).Select(i => i * i).ToArray()`.\n2. Add a `Cubes` method and print it.\n3. Read a name from `Console.ReadLine()` and greet it.\n\n## Going further\n\nMicrosoft C# guide: https://learn.microsoft.com/en-us/dotnet/csharp/\n",
+      "tutorial": "# C#\n\nC# (\"C sharp\") is Microsoft's flagship language: modern, expressive, and strongly typed. It runs on the cross-platform **.NET** runtime and powers web apps (ASP.NET), desktop apps, cloud services, and games via Unity. A standalone C# REPL isn't reliably installed everywhere, so this space builds and runs a small project instead.\n\n## Your REPL\n\nC# needs a project to run, so this space uses **run** mode. Click **RUN** to build and execute the project with `dotnet run`. The first run restores packages and may take a moment. Edit `Program.cs`, RUN again, see the result.\n\n## The sample\n\nOpen `Program.cs` (this uses **top-level statements** — no boilerplate `Main` needed):\n\n```csharp\nstatic string Greet(string name) => $\"Hello, {name}!\";\n```\n\n`=>` defines an expression-bodied method. `$\"...\"` is an interpolated string; `{name}` inserts the value.\n\n```csharp\nstatic int[] Squares(int n)\n{\n    var out_ = new int[n];\n    for (int i = 0; i < n; i++)\n    {\n        out_[i] = i * i;\n    }\n    return out_;\n}\n```\n\n`var` infers the type. `new int[n]` allocates an array of `n` ints.\n\n```csharp\nConsole.WriteLine(Greet(\"world\"));\nConsole.WriteLine($\"first five squares: {string.Join(\", \", Squares(5))}\");\n```\n\n`string.Join` stitches the array into a comma-separated string. `learn.csproj` configures the .NET project. It targets `net10.0`, the long-term-support release, and `<RollForward>Major</RollForward>` lets a newer SDK run it too: an SDK brings only its own runtime, so without that line a .NET 11 install builds the program and then refuses to start it.\n\n## Try this\n\n1. Rewrite `Squares` with LINQ: `Enumerable.Range(0, n).Select(i => i * i).ToArray()`.\n2. Add a `Cubes` method and print it.\n3. Read a name from `Console.ReadLine()` and greet it.\n\n## Going further\n\nMicrosoft C# guide: https://learn.microsoft.com/en-us/dotnet/csharp/\n",
       "blurb.es": "El buque insignia de Microsoft: moderno, expresivo y potente en web, escritorio, juegos (Unity) y nube sobre .NET.",
       "blurb.fr": "Le fleuron de Microsoft : moderne, expressif et puissant en web, bureau, jeux (Unity) et cloud sur .NET.",
       "blurb.de": "Microsofts Flaggschiff: modern, ausdrucksstark und stark in Web, Desktop, Spielen (Unity) und Cloud auf .NET.",
@@ -2875,20 +2874,20 @@
       },
       "install": {
         "mac": "brew install dotnet-sdk",
-        "linux": "sudo apt-get install -y dotnet-sdk-8.0",
-        "windows": "winget install Microsoft.DotNet.SDK.8"
+        "linux": "sudo apt-get install -y dotnet-sdk-10.0",
+        "windows": "winget install Microsoft.DotNet.SDK.10"
       },
       "files": [
         {
           "path": "aspnet-space.csproj",
-          "content": "<Project Sdk=\"Microsoft.NET.Sdk.Web\">\n\n  <PropertyGroup>\n    <TargetFramework>net8.0</TargetFramework>\n    <Nullable>enable</Nullable>\n    <ImplicitUsings>enable</ImplicitUsings>\n  </PropertyGroup>\n\n</Project>\n"
+          "content": "<Project Sdk=\"Microsoft.NET.Sdk.Web\">\n\n  <PropertyGroup>\n    <TargetFramework>net10.0</TargetFramework>\n    <RollForward>Major</RollForward>\n    <Nullable>enable</Nullable>\n    <ImplicitUsings>enable</ImplicitUsings>\n  </PropertyGroup>\n\n</Project>\n"
         },
         {
           "path": "Program.cs",
           "content": "var builder = WebApplication.CreateBuilder(args);\nvar app = builder.Build();\n\napp.MapGet(\"/\", () => \"Hello, ASP.NET! Try /greet/Ada or /api/todos\");\n\napp.MapGet(\"/greet/{name}\", (string name) => $\"Hello, {name}!\");\n\nvar todos = new List<Todo> { new(1, \"Learn ASP.NET\", false) };\n\napp.MapGet(\"/api/todos\", () => todos);\n\napp.MapPost(\"/api/todos\", (Todo todo) =>\n{\n    todos.Add(todo);\n    return Results.Created($\"/api/todos/{todo.Id}\", todo);\n});\n\napp.Run();\n\nrecord Todo(int Id, string Text, bool Done);\n"
         }
       ],
-      "tutorial": "# ASP.NET\n\nASP.NET (Core) is Microsoft's cross-platform web framework, written in **C#** and running on the .NET runtime. Modern **minimal APIs** let you build a real HTTP service in a handful of lines — `app.MapGet(...)` maps a route to a lambda.\n\n## Honest note: you need the .NET SDK\n\nThis is a real, minimal project, but it needs the **.NET SDK** installed (see install hints). No extra scaffold step is required — `dotnet run` builds and runs it.\n\n## Get it running\n\n1. Install the .NET SDK.\n2. Click **RUN** (this runs `dotnet run`). The first run restores packages and compiles; then Kestrel (the built-in server) starts.\n3. The console prints a URL like `http://localhost:5000`. Open it, then try `/greet/Ada` and `/api/todos`.\n\n## The shape\n\n- `aspnet-space.csproj` — the project file. `Sdk=\"Microsoft.NET.Sdk.Web\"` pulls in the web framework; `ImplicitUsings` and `Nullable` are modern C# conveniences.\n- `Program.cs` — the whole app, top to bottom:\n  - `WebApplication.CreateBuilder(args)` then `.Build()` sets up the host.\n  - `app.MapGet(\"/greet/{name}\", (string name) => ...)` binds a route with a parameter straight to a lambda; the return value becomes the response.\n  - `app.MapPost(\"/api/todos\", (Todo todo) => ...)` model-binds the JSON body to a `Todo` record and returns `201 Created`.\n  - `record Todo(...)` is a compact immutable data type.\n\nCore idea: **map routes to lambdas; the framework handles binding, serialization, and hosting.**\n\n## Try this\n\n1. Add `app.MapGet(\"/api/todos/{id}\", (int id) => todos.FirstOrDefault(t => t.Id == id));`.\n2. Return JSON explicitly with `Results.Ok(new { message = \"hi\" })`.\n3. Add a `MapDelete` route that removes a todo by id.\n\n## Going further\n\nOfficial minimal-API tutorial: https://learn.microsoft.com/aspnet/core/tutorials/min-web-api\n",
+      "tutorial": "# ASP.NET\n\nASP.NET (Core) is Microsoft's cross-platform web framework, written in **C#** and running on the .NET runtime. Modern **minimal APIs** let you build a real HTTP service in a handful of lines — `app.MapGet(...)` maps a route to a lambda.\n\n## Honest note: you need the .NET SDK\n\nThis is a real, minimal project, but it needs the **.NET SDK** installed (see install hints). No extra scaffold step is required — `dotnet run` builds and runs it.\n\n## Get it running\n\n1. Install the .NET SDK.\n2. Click **RUN** (this runs `dotnet run`). The first run restores packages and compiles; then Kestrel (the built-in server) starts.\n3. The console prints a URL like `http://localhost:5000`. Open it, then try `/greet/Ada` and `/api/todos`.\n\n## The shape\n\n- `aspnet-space.csproj` — the project file. `Sdk=\"Microsoft.NET.Sdk.Web\"` pulls in the web framework; `ImplicitUsings` and `Nullable` are modern C# conveniences. `TargetFramework` is `net10.0`, the long-term-support release, and `<RollForward>Major</RollForward>` lets a newer SDK run it too (an SDK brings only its own runtime).\n- `Program.cs` — the whole app, top to bottom:\n  - `WebApplication.CreateBuilder(args)` then `.Build()` sets up the host.\n  - `app.MapGet(\"/greet/{name}\", (string name) => ...)` binds a route with a parameter straight to a lambda; the return value becomes the response.\n  - `app.MapPost(\"/api/todos\", (Todo todo) => ...)` model-binds the JSON body to a `Todo` record and returns `201 Created`.\n  - `record Todo(...)` is a compact immutable data type.\n\nCore idea: **map routes to lambdas; the framework handles binding, serialization, and hosting.**\n\n## Try this\n\n1. Add `app.MapGet(\"/api/todos/{id}\", (int id) => todos.FirstOrDefault(t => t.Id == id));`.\n2. Return JSON explicitly with `Results.Ok(new { message = \"hi\" })`.\n3. Add a `MapDelete` route that removes a todo by id.\n\n## Going further\n\nOfficial minimal-API tutorial: https://learn.microsoft.com/aspnet/core/tutorials/min-web-api\n",
       "blurb.es": "El framework web en C# de Microsoft: una app de API mínima asigna rutas a lambdas y corre sobre Kestrel.",
       "blurb.fr": "Le framework web C# de Microsoft : une appli minimal-API associe des routes à des lambdas et tourne sur Kestrel.",
       "blurb.de": "Microsofts C#-Web-Framework: eine Minimal-API ordnet Routen Lambdas zu und läuft auf Kestrel.",

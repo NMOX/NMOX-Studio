@@ -39,6 +39,23 @@ import static org.assertj.core.api.Assertions.assertThat;
  * python 3.12 / 3.14 and php 8.3 / 8.5 / 8.4: one fact with three homes,
  * each last touched by a different release. They must agree now, so
  * moving one without the others fails here.
+ *
+ * <p>The third law is the .NET major. The exporter's
+ * {@code dotnet-version}, the {@code TargetFramework} of every .NET
+ * project file a learning space writes, and the SDK each space's
+ * install hints name are one fact. On 2026-11-13 the exporter was
+ * moved to 10.x alone and moved back the same day, because the spaces
+ * still targeted {@code net8.0}; and the spaces themselves did not run
+ * on what their own macOS hint installs ({@code brew install
+ * dotnet-sdk} gave SDK 11.0.100, {@code dotnet run} exited 150: no 8.0
+ * runtime). Now: {@code net10.0} (the LTS, supported until 2028-11-14)
+ * with {@code <RollForward>Major</RollForward>}, measured to run on
+ * SDK 11.0.100 with exit 0. An unversioned hint installs whatever is
+ * newest, which is why the roll-forward line is part of the law. The
+ * C# space's run command was {@code sh -c "dotnet run --project ."},
+ * which the rack flattened to {@code sh -c dotnet run --project .}: a
+ * bare {@code dotnet}, usage text and exit 129. It is {@code dotnet
+ * run} now, as the ASP.NET space's always was.
  */
 class CiExportPinCurrencyTest {
 
@@ -102,6 +119,52 @@ class CiExportPinCurrencyTest {
         assertThat(all(templates, "image: nginx:([0-9.]+)-alpine"))
                 .as("the LEMP template's nginx image")
                 .containsExactly(only(dockerize, "image: nginx:([0-9.]+)-alpine"));
+    }
+
+    @Test
+    @DisplayName("a .NET learning space targets the major the exporter installs, and rolls forward")
+    void dotnetSpacesAndExporterAgree() throws IOException {
+        String exporter = Files.readString(Path.of(
+                "src/main/java/org/nmox/studio/rack/projectstudio/CiExporter.java"));
+        String major = only(exporter, "dotnet-version: ([0-9]+)\\.x");
+
+        int projectFiles = 0;
+        for (LearningCatalog.Space space : LearningCatalog.builtIns()) {
+            boolean dotnet = false;
+            for (LearningCatalog.SampleFile f : space.files()) {
+                if (!f.path().matches(".*\\.(cs|fs|vb)proj")) {
+                    continue;
+                }
+                dotnet = true;
+                projectFiles++;
+                assertThat(all(f.content(), "<TargetFramework>net([0-9]+)\\.0</TargetFramework>"))
+                        .as(space.slug() + "/" + f.path() + ": the TargetFramework major must be the"
+                                + " exporter's dotnet-version major — move them together")
+                        .containsExactly(major);
+                assertThat(f.content())
+                        .as(space.slug() + "/" + f.path() + ": an SDK newer than the target brings no"
+                                + " runtime for it (dotnet run exits 150) and the macOS hint installs"
+                                + " the newest SDK, so the project must roll forward")
+                        .contains("<RollForward>Major</RollForward>");
+            }
+            if (!dotnet) {
+                continue;
+            }
+            assertThat(space.driver().command())
+                    .as(space.slug() + ": the rack joins a run command with spaces and SOLDER splits it"
+                            + " again without a shell, so `sh -c \"dotnet run …\"` arrived as a bare"
+                            + " `dotnet` (measured: usage text, exit 129). A .NET space runs dotnet itself")
+                    .containsExactly("dotnet", "run");
+            assertThat(space.install()).as(space.slug() + " install hints").isNotEmpty();
+            for (Map.Entry<String, String> hint : space.install().entrySet()) {
+                assertThat(all(hint.getValue(), "(?:dotnet-sdk-|DotNet\\.SDK\\.|dotnet@|dotnet-sdk@)([0-9]+)"))
+                        .as(space.slug() + " " + hint.getKey() + " hint \"" + hint.getValue()
+                                + "\": a hint that names an SDK version names the exporter's major")
+                        .isSubsetOf(major);
+            }
+        }
+        // the law is only real if it covers something: C# and ASP.NET each ship one
+        assertThat(projectFiles).as(".NET project files in the catalog").isGreaterThanOrEqualTo(2);
     }
 
     /** Every distinct capture of {@code regex} in {@code text}. */

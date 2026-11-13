@@ -175,13 +175,20 @@ public final class CiExporter {
      * <p>Left as they were, each for its own reason. java 17, ruby 3.3
      * and elixir 1.17 / OTP 27 are still supported upstream and no other
      * generator names them, so there was nothing to measure a newer one
-     * against. {@code dotnet-version} stays 8.x although .NET 8 left
-     * support on 2026-11-10: the C# and ASP.NET learning spaces this
-     * product creates target {@code net8.0}, an SDK of a later major
-     * brings no 8.0 runtime to run them (measured with 11.0.100:
-     * {@code dotnet run} exits 150), and the three literals (this one,
-     * the two project files, the spaces' Linux install hint) are one
-     * fact that moves together or not at all.
+     * against.
+     *
+     * <p>{@code dotnet-version} is 10.x, and it is one fact with the
+     * C# and ASP.NET learning spaces: their project files target
+     * {@code net10.0} and their Linux and Windows install hints name
+     * SDK 10. Measured 2026-11-13 from Microsoft's release metadata:
+     * .NET 8 and 9 left support on 2026-11-10; 10.0 is the LTS and
+     * 11.0 the STS, both supported until 2028-11-14. An SDK brings
+     * only its own major's runtime (a {@code net8.0} space on SDK
+     * 11.0.100 built and then exited 150), so the spaces also carry
+     * {@code <RollForward>Major</RollForward>}: the macOS hint installs
+     * 11 today, and with that line the {@code net10.0} space runs
+     * there (exit 0). {@code CiExportPinCurrencyTest} holds this
+     * literal, the project files and the hints to one major.
      */
     static List<String> setupSteps(File projectDir) {
         List<String> steps = new ArrayList<>();
@@ -237,7 +244,7 @@ public final class CiExporter {
                 case DART -> steps.add("      - uses: dart-lang/setup-dart@v1\n");
                 case DOTNET -> steps.add("""
                           - uses: actions/setup-dotnet@v6
-                            with: { dotnet-version: 8.x }
+                            with: { dotnet-version: 10.x }
                     """.stripTrailing() + "\n");
                 case HASKELL -> steps.add("      - uses: haskell-actions/setup@v2\n");
                 case ZIG -> steps.add("      - uses: mlugg/setup-zig@v2\n");
