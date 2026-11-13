@@ -2,7 +2,7 @@
 
 *Every surface of NMOX Studio, exercised in one sitting.*
 
-This is the long tour. One session, twenty-five stations, touching all
+This is the long tour. One session, twenty-six stations, touching all
 of it: the polyglot editor, the task rack, the seven studios, the
 in-app browser with its source-aware DevTools, the kits, the learning
 spaces, the AI surfaces, and the ship gates. Each station says what to
@@ -39,6 +39,7 @@ points at it proudly.
 - [23. Ship it](#23-ship-it)
 - [24. Point an agent at it](#24-point-an-agent-at-it)
 - [25. Show it to a room](#25-show-it-to-a-room)
+- [26. The Ops Hub, on the Simulation](#26-the-ops-hub-on-the-simulation)
 - [The refusals are features](#the-refusals-are-features)
 - [Where everything lives](#where-everything-lives)
 <!-- /contents -->
@@ -601,6 +602,40 @@ shows") and copies nothing. The chat gets a crisp 2x image of the
 editor tab alone — toolbar, gutter, code, minimap, no IDE chrome — and
 the tree paste is the box-drawing README tree with `node_modules/ …`
 named but never entered and the IDE's own `.nmox*.json` left out.
+
+## 26. The Ops Hub, on the Simulation
+
+**Do:** With the project from station 23 still aimed (it has the
+Dockerfile that Dockerize wrote), Window ▸ **Ops Hub**. Tick
+**Simulation**. **New Server…**, keep the defaults, confirm. When the
+feed says cloud-init is done, select the new host and press
+**Deploy…**; read the remote commands, confirm. Deploy once more, then
+select the service node and press **Roll back…**. Turn the mouse wheel
+over the picture, drag the empty space, then press **Fit**. Last, select
+the host again and read the line under its **mosh** and **ssh** buttons.
+
+**See:** A banner across the picture: `SIMULATION — nothing here is
+real`. The create question is the Simulation's own and names no bill.
+The host is born beside this machine and glides out into the fan,
+carrying an address in 203.0.113.0/24 — the range the RFCs reserve for
+documentation, so it can never be a real server — while the feed
+narrates what the Hub observes: active, ssh answering, cloud-init done.
+The Deploy dialog lists the exact lines it will run on the host and the
+port the Dockerfile exposes, with Cancel as the default; the build
+streams into the inspector, and the next probe draws a service node
+beside the host on a solid link, because the Hub saw the container
+itself. Roll back… shows the two commands first and starts the image
+that ran before; nothing is uploaded or built, and Enter answers No.
+The wheel zooms about the pointer, a drag pans, and Fit frames
+everything again. Where a real host says which of mosh and ssh it
+recommends, this one says `simulated host: there is nothing to connect
+to`. Aim a folder with no Dockerfile and the feed refuses by name:
+`Deploy refused: the project has no Dockerfile — Docker Panel ▸
+Dockerize writes one`.
+
+Untick Simulation and the pretend hosts leave with it. With a
+DigitalOcean token set, the same New Server… makes a real one and shows
+its price first; **Add Host…** reaches a server you already have.
 
 ---
 
