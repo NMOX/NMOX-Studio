@@ -599,4 +599,37 @@ class PullDiagnosticsTest {
         }
         assertThat(count).as("launches that ask for problems").isEqualTo(2);
     }
+
+    /** Lets the bridge read one request of the server's without reaching the end of the fake server's queue. */
+    private void serverAsksToBeAskedAgain(InputStream in, int id) throws IOException {
+        server.says("{\"jsonrpc\":\"2.0\",\"id\":" + id + ",\"method\":\"workspace/diagnostic/refresh\"}");
+        assertThat(readOneRound(in)).as("the request is this class's to answer").isEmpty();
+    }
+
+    @Test
+    @DisplayName("a server that keeps asking to be asked again is answered within the longest wait: its requests do not push the answer away for ever")
+    void aRefreshStormDoesNotStarveTheAnswer() throws Exception {
+        opens(A);
+        bridge.work();
+        serverGot();
+        armed.clear();
+        InputStream in = bridge.fromServer();
+
+        // arming the timer again moves its time: sixty milliseconds after EVERY request is never, under a storm
+        serverAsksToBeAskedAgain(in, 1);
+        now.addAndGet(PullDiagnostics.MAX_WAIT_MILLIS - 20);
+        serverAsksToBeAskedAgain(in, 2);
+        now.addAndGet(500);
+        serverAsksToBeAskedAgain(in, 3);
+        assertThat(armed).as("the wait is counted from the first request that has had no reply")
+                .containsExactly(PullDiagnostics.OPEN_MILLIS, 20, 0);
+
+        bridge.work();
+        List<JSONObject> got = serverGot();
+        assertThat(got.stream().filter(m -> m.has("result")).count()).as("every request has its reply").isEqualTo(3);
+        assertThat(questions(got)).extracting(q -> q[0]).containsExactly(A);
+        armed.clear();
+        serverAsksToBeAskedAgain(in, 4);
+        assertThat(armed).as("replied, so the wait starts over").containsExactly(PullDiagnostics.OPEN_MILLIS);
+    }
 }

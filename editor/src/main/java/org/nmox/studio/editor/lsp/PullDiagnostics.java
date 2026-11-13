@@ -262,13 +262,23 @@ final class PullDiagnostics {
                     return;
                 }
             }
-            if (firstDirtyAt < 0) {
-                firstDirtyAt = millis.getAsLong();
-            }
-            long waited = millis.getAsLong() - firstDirtyAt;
-            delay = (int) Math.max(0, Math.min(delay, MAX_WAIT_MILLIS - waited));
+            delay = within(delay);
         }
         timer.in(delay);
+    }
+
+    /**
+     * Under {@link #state}: a delay cut to what is left of the longest
+     * wait. Arming the timer moves its time, so whatever arms it
+     * again and again (keys, or a server's requests) must count from
+     * the first thing left waiting, or the lane never runs.
+     */
+    private int within(int delay) {
+        if (firstDirtyAt < 0) {
+            firstDirtyAt = millis.getAsLong();
+        }
+        long waited = millis.getAsLong() - firstDirtyAt;
+        return (int) Math.max(0, Math.min(delay, MAX_WAIT_MILLIS - waited));
     }
 
     /** Under {@link #state}. */
@@ -586,6 +596,7 @@ final class PullDiagnostics {
     /** The server asked to be asked again: answer it, and ask about every open document. */
     private void refresh(JSONObject request) {
         JSONObject reply = new JSONObject().put("jsonrpc", "2.0").put("id", request.get("id")).put("result", JSONObject.NULL);
+        int delay;
         synchronized (state) {
             if (ended) {
                 return;
@@ -594,11 +605,11 @@ final class PullDiagnostics {
             for (String uri : open) {
                 dirty.putIfAbsent(uri, 0);
             }
-            if (firstDirtyAt < 0) {
-                firstDirtyAt = millis.getAsLong();
-            }
+            // a server that asks again every few milliseconds (a storm of file
+            // changes) would otherwise push its own replies away for as long as it asks
+            delay = within(OPEN_MILLIS);
         }
-        timer.in(OPEN_MILLIS);
+        timer.in(delay);
     }
 
     private final class FromServer extends InputStream {
