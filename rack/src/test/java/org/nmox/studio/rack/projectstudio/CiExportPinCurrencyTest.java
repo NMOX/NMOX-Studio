@@ -97,8 +97,17 @@ class CiExportPinCurrencyTest {
     void generatorsAgreeOnRuntimes() throws IOException {
         String exporter = Files.readString(Path.of(
                 "src/main/java/org/nmox/studio/rack/projectstudio/CiExporter.java"));
-        String dockerize = Files.readString(Path.of(
-                "src/main/java/org/nmox/studio/rack/docker/DockerizeGenerator.java"));
+        // what the generator WRITES, for every kind: its images live in constants
+        // now (nginx has one home), so the source no longer spells "FROM node:26"
+        StringBuilder written = new StringBuilder();
+        for (org.nmox.studio.rack.devices.ProjectInspector.ProjectKind kind
+                : org.nmox.studio.rack.devices.ProjectInspector.ProjectKind.values()) {
+            for (boolean statics : new boolean[] {false, true}) {
+                org.nmox.studio.rack.docker.DockerizeGenerator.generate(kind, "x", statics).values()
+                        .forEach(content -> written.append(content).append('\n'));
+            }
+        }
+        String dockerize = written.toString();
         String templates = Files.readString(Path.of(
                 "src/main/java/org/nmox/studio/rack/projectstudio/ProjectTemplates.java"));
 

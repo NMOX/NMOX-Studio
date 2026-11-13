@@ -81,6 +81,13 @@ class DockerizeProofFixturesTest {
     record Fixture(Mode mode, String deep, Map<String, String> files) {
     }
 
+    /**
+     * A project of a kind that is NOT in that kind's ordinary shape, with the
+     * Dockerfile line it exists to have built and run.
+     */
+    record Variant(String id, String folder, ProjectKind kind, String deep, String proves, Map<String, String> files) {
+    }
+
     /** One answer of the generator: a kind, and whether it was told the project builds a static bundle. */
     record Shape(ProjectKind kind, boolean statics) {
         String id() {
@@ -133,6 +140,25 @@ class DockerizeProofFixturesTest {
         assertThat(fixtures.keySet()).as("a fixture for a recipe the generator no longer has")
                 .allSatisfy(id -> assertThat(id.equals(GENERIC_ID)
                         || shapes.stream().anyMatch(s -> s.id().equals(id))).as(id).isTrue());
+
+        // the shapes a kind's ordinary fixture does not reach: the same recipe, following
+        // a project that holds something else (another package manager, another output
+        // directory, a binary not named after its folder, a folder named after a directory)
+        for (Variant v : variants()) {
+            Path dir = Files.createDirectories(out.resolve(v.folder()));
+            for (Map.Entry<String, String> file : v.files().entrySet()) {
+                Path target = dir.resolve(file.getKey());
+                Files.createDirectories(target.getParent());
+                Files.writeString(target, file.getValue(), StandardCharsets.UTF_8);
+            }
+            assertThat(ProjectInspector.detectKind(dir.toFile())).as(v.id()).isEqualTo(v.kind());
+            boolean statics = DockerizeGenerator.buildsStatic(dir.toFile());
+            Map<String, String> written = writeDockerize(dir, v.kind(), statics);
+            assertThat(written.get("Dockerfile")).as("%s: the line this variant exists to build", v.id())
+                    .contains(v.proves());
+            manifest.add(line(v.id(), dir, Mode.IMAGE,
+                    String.valueOf(DockerizeGenerator.defaultPort(v.kind(), statics)), v.deep()));
+        }
 
         // every kind without a recipe is handed the same files, so one proof stands for all of them
         List<String> none = kindsWithoutRecipe();
@@ -223,8 +249,8 @@ class DockerizeProofFixturesTest {
     }
 
     private static Path writeFixture(Path out, String id, Fixture fixture) throws IOException {
-        // "proof-go", never "go": the folder's name becomes the image's name and the
-        // path of the binary inside it, and /go is a directory in the golang image
+        // "proof-<id>" keeps the folders apart; the one named plain "go" is a variant, there
+        // because /go is a directory in the golang image and the recipe once wrote into it
         Path dir = Files.createDirectories(out.resolve("proof-" + id));
         for (Map.Entry<String, String> file : fixture.files().entrySet()) {
             Path target = dir.resolve(file.getKey());
@@ -236,7 +262,10 @@ class DockerizeProofFixturesTest {
 
     /** What the panel's Write button does, with what its preview holds. */
     private static Map<String, String> writeDockerize(Path dir, ProjectKind kind, boolean statics) throws IOException {
-        Map<String, String> files = DockerizeGenerator.generate(kind, imageName(dir.toFile()), statics);
+        // the panel reads the project before it generates; so does the proof
+        DockerizeGenerator.Facts facts = DockerizeGenerator.inspect(dir.toFile(), kind);
+        assertThat(facts.nodeStatic()).as("what the panel is told about a static bundle").isEqualTo(statics);
+        Map<String, String> files = DockerizeGenerator.generate(kind, imageName(dir.toFile()), facts);
         for (Map.Entry<String, String> file : files.entrySet()) {
             Path target = DockerRecipes.resolveInside(dir.toFile(), file.getKey());
             assertThat(target).as("%s is the product's to write: the fixture must not bring its own", file.getKey())
@@ -266,6 +295,7 @@ class DockerizeProofFixturesTest {
         all.put("rust", new Fixture(Mode.IMAGE, null, rust()));
         all.put("python", new Fixture(Mode.IMAGE, null, python()));
         all.put("deno", new Fixture(Mode.IMAGE, null, deno()));
+        all.put("bun", new Fixture(Mode.IMAGE, null, bun()));
         all.put("php", new Fixture(Mode.COMPOSE, "/some/front/controller/route", php()));
         all.put(GENERIC_ID, new Fixture(Mode.IDLE, null, Map.of("README.md", """
                 # proof-generic
@@ -273,6 +303,170 @@ class DockerizeProofFixturesTest {
                 No manifest on purpose: this is what Dockerize is handed when it detects no toolchain.
                 """)));
         return all;
+    }
+
+    private static List<Variant> variants() {
+        List<Variant> all = new ArrayList<>();
+        // /go is a directory in the golang image: `go build -o /go .` wrote the binary into it
+        all.add(new Variant("go-folder-named-go", "go", ProjectKind.GO, null, "go build -o /out/go .", go()));
+
+        Map<String, String> renamed = new LinkedHashMap<>(rust());
+        renamed.put("Cargo.toml", renamed.get("Cargo.toml").replace("name = \"proof-rust\"", "name = \"renamed-bin\""));
+        all.add(new Variant("rust-renamed-binary", "proof-rust-renamed", ProjectKind.RUST, null,
+                "cp target/release/renamed-bin /out/renamed-bin", renamed));
+
+        // lockfiles as pnpm 10.34.9 and yarn 1.22.22 wrote them for a project with no dependencies
+        Map<String, String> pnpm = new LinkedHashMap<>(node());
+        pnpm.remove("package-lock.json");
+        pnpm.put("pnpm-lock.yaml", """
+                lockfileVersion: '9.0'
+
+                settings:
+                  autoInstallPeers: true
+                  excludeLinksFromLockfile: false
+
+                importers:
+
+                  .: {}
+                """);
+        all.add(new Variant("node-pnpm", "proof-node-pnpm", ProjectKind.NODE, null,
+                "RUN pnpm install --frozen-lockfile --prod", pnpm));
+
+        Map<String, String> yarn = new LinkedHashMap<>(node());
+        yarn.remove("package-lock.json");
+        yarn.put("yarn.lock", "# THIS IS AN AUTOGENERATED FILE. DO NOT EDIT THIS FILE DIRECTLY.\n# yarn lockfile v1\n\n\n");
+        all.add(new Variant("node-yarn", "proof-node-yarn", ProjectKind.NODE, null,
+                "RUN yarn install --frozen-lockfile --production", yarn));
+
+        Map<String, String> unlocked = new LinkedHashMap<>(node());
+        unlocked.remove("package-lock.json");
+        all.add(new Variant("node-no-lockfile", "proof-node-unlocked", ProjectKind.NODE, null,
+                "RUN npm install --omit=dev", unlocked));
+
+        // the same stub idea as the vite fixture, under the names the other two static tools go by
+        all.add(new Variant("node-static-cra", "proof-node-cra", ProjectKind.NODE, "/some/client/route",
+                "COPY --from=build /app/build /usr/share/nginx/html", staticStub("react-scripts", "build", null)));
+        all.add(new Variant("node-static-angular", "proof-node-angular", ProjectKind.NODE, "/some/client/route",
+                "COPY --from=build /app/dist/proof/browser /usr/share/nginx/html",
+                staticStub("@angular/cli", "dist/proof/browser", """
+                        {
+                          "version": 1,
+                          "projects": {
+                            "proof": {
+                              "projectType": "application",
+                              "architect": {
+                                "build": {
+                                  "builder": "@angular/build:application",
+                                  "options": { "outputPath": "dist/proof" }
+                                }
+                              }
+                            }
+                          }
+                        }
+                        """)));
+
+        // pyproject.toml alone: no requirements.txt to COPY; uvicorn named there, bare ASGI in main.py
+        Map<String, String> pyproject = new LinkedHashMap<>(python());
+        pyproject.remove("requirements.txt");
+        pyproject.put("pyproject.toml", """
+                [build-system]
+                requires = ["setuptools>=68"]
+                build-backend = "setuptools.build_meta"
+
+                [project]
+                name = "proof-python-pyproject"
+                version = "0.1.0"
+                dependencies = ["uvicorn==0.54.0"]
+
+                [tool.setuptools]
+                py-modules = ["main"]
+                """);
+        all.add(new Variant("python-pyproject", "proof-python-pyproject", ProjectKind.PYTHON, null,
+                "RUN pip install --no-cache-dir .", pyproject));
+
+        Map<String, String> flask = new LinkedHashMap<>();
+        flask.put("requirements.txt", "flask==3.1.2\n");
+        flask.put("app.py", """
+                from flask import Flask
+
+                app = Flask(__name__)
+
+
+                @app.get("/")
+                def root():
+                    return "proof-python-flask ok\\n"
+                """);
+        all.add(new Variant("python-flask", "proof-python-flask", ProjectKind.PYTHON, null,
+                "\"flask\", \"--app\", \"app\", \"run\"", flask));
+        return all;
+    }
+
+    /**
+     * A static site whose build tool is a local stub named {@code tool},
+     * leaving its page where that tool leaves a bundle. NOT the tool: the
+     * dependency's name is what the product reads, and the output directory
+     * is what the recipe must copy.
+     */
+    private static Map<String, String> staticStub(String tool, String outDir, String angularJson) {
+        Map<String, String> f = new LinkedHashMap<>(nodeStatic());
+        String stubDir = "tools/" + tool.replace("@", "").replace("/", "-");
+        f.remove("tools/vite/package.json");
+        f.put("package.json", f.get("package.json").replace("\"vite\": \"file:tools/vite\"",
+                "\"" + tool + "\": \"file:" + stubDir + "\""));
+        f.put("package-lock.json", f.get("package-lock.json")
+                .replace("\"vite\": \"file:tools/vite\"", "\"" + tool + "\": \"file:" + stubDir + "\"")
+                .replace("\"node_modules/vite\"", "\"node_modules/" + tool + "\"")
+                .replace("\"resolved\": \"tools/vite\"", "\"resolved\": \"" + stubDir + "\"")
+                .replace("\"tools/vite\": {", "\"" + stubDir + "\": {"));
+        f.put(stubDir + "/package.json", """
+                {
+                  "name": "%s",
+                  "version": "0.0.0-proof",
+                  "private": true,
+                  "description": "NOT %s. A stand-in with its name, so NMOX Studio's Dockerize picks the static-site recipe and the output directory that tool writes, without the proof depending on the npm registry."
+                }
+                """.formatted(tool, tool));
+        f.put("build.js", f.get("build.js").replace("'dist/assets'", "'" + outDir + "/assets'")
+                .replace("rmSync('dist'", "rmSync('" + outDir.split("/")[0] + "'")
+                .replace("'dist/index.html'", "'" + outDir + "/index.html'")
+                .replace("'dist/assets/app.js'", "'" + outDir + "/assets/app.js'")
+                .replace("built dist/", "built " + outDir + "/"));
+        if (angularJson != null) {
+            f.put("angular.json", angularJson);
+        }
+        return f;
+    }
+
+    /**
+     * Detected by its bunfig.toml: bun deletes the lockfile of a project
+     * with no packages ("No packages! Deleted empty lockfile", bun 1.3.13),
+     * so a dependency-free Bun project has none and installs unfrozen.
+     */
+    private static Map<String, String> bun() {
+        Map<String, String> f = new LinkedHashMap<>();
+        f.put("bunfig.toml", """
+                # the proof's Bun project: this file is what makes it one
+                [install]
+                """);
+        f.put("package.json", """
+                {
+                  "name": "proof-bun",
+                  "version": "1.0.0",
+                  "private": true,
+                  "scripts": {
+                    "start": "bun run server.ts"
+                  }
+                }
+                """);
+        f.put("server.ts", """
+                const server = Bun.serve({
+                  port: 3000,
+                  hostname: "0.0.0.0",
+                  fetch: () => new Response("proof-bun ok\\n"),
+                });
+                console.log(`listening on ${server.port}`);
+                """);
+        return f;
     }
 
     /** A server with no dependencies and the lockfile `npm ci` insists on. */

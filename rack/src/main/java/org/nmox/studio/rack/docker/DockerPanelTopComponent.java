@@ -924,7 +924,9 @@ public final class DockerPanelTopComponent extends TopComponent {
                 files = DockerRecipes.materialize(fresh.get(), image);
                 source = Bundle.DockerPanelTopComponent_sourceRecipe(fresh.get().name());
             } else {
-                files = DockerizeGenerator.generate(kind, image, statics);
+                // the recipe follows what the project HOLDS (its package manager,
+                // its lockfile, its entry), read here on the background lane
+                files = DockerizeGenerator.generate(kind, image, DockerizeGenerator.inspect(dir, kind));
                 source = Bundle.DockerPanelTopComponent_sourceDetected(kind)
                         + (statics ? Bundle.DockerPanelTopComponent_sourceStaticSuffix() : "");
             }
@@ -934,7 +936,10 @@ public final class DockerPanelTopComponent extends TopComponent {
                 dockerizeInfo.setText(Bundle.DockerPanelTopComponent_dockerizeInfo(dir.getName(), source, image, String.valueOf(port)));
                 dockerfilePreview.setText(files.getOrDefault("Dockerfile", ""));
                 ignorePreview.setText(files.getOrDefault(".dockerignore", ""));
-                composePreview.setText(files.getOrDefault("compose.yaml", ""));
+                // a project with a stack of its own gets Dockerize's under another
+                // name, and that file's first lines say why
+                composePreview.setText(files.getOrDefault(DockerizeGenerator.COMPOSE,
+                        files.getOrDefault(DockerizeGenerator.SIDE_COMPOSE, "")));
                 for (DockerRecipes.Skipped skip : loaded.skipped()) {
                     org.openide.awt.StatusDisplayer.getDefault().setStatusText(
                             Bundle.DockerPanelTopComponent_recipeSkipped(skip.file(), skip.reason()));
