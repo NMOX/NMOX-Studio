@@ -227,6 +227,45 @@ not do, each measured or read, none built:
   the native server share a file. They share nothing by design: the
   debugger is js-debug.
 
+*Addendum, 2026-11-13: the hostile review of 3.10.0.* `PullDiagnostics`
+was fed hostile frames through its two streams and then driven, with its
+real timer, against TypeScript 7.0.2. Five defects were fixed with a
+failing test each (a storm of refresh requests, a pass per key with more
+documents open than one pass asks about, a related document's spelling
+and its ordering, a refusal logged where nobody reads, a question written
+after shutdown). Found and deliberately left, none of them reachable with
+7.0.2 as measured:
+
+- **A related document that is NOT open, and differs only by case from
+  one that is, is still filed under the open one.** Right on a file
+  system that ignores case, which is why the fold exists, and wrong on
+  one that does not. Telling the two apart is a question for the disk,
+  on the client's reader thread. Measured: 7.0.2 sent no
+  `relatedDocuments` at all, on open, on an edit that changed another
+  file's errors, or under four hundred files written to the project.
+- **A closed document comes back through a related report.** Closing
+  publishes it empty; an open document's later answer that relates it
+  publishes it again. That is what a client that pulls does elsewhere,
+  and it is how a file nobody opened reaches Action Items, so it stays;
+  it is not what "gone when the file closes" says.
+- **An answer to one of the bridge's own questions over 16 MiB passes to
+  the client unread**, as a response to a request the client never made.
+- **`"error":null` beside a `result` drops the answer**, and a full
+  report whose `items` is not an array publishes the document empty.
+  Neither is what this server writes.
+- **The client's frames are held whole, whatever their size.** The
+  16 MiB bound is on what is parsed, not on what is held until the frame
+  is complete; the client is the platform's own.
+- **After the framing is lost on one stream, a frame the lane had
+  already taken can be written between two pieces of a client frame.**
+  One pass wide, and only on a stream that is already unreadable.
+- **The lane is two threads for every server.** A server that stops
+  reading its input holds one of them for as long as it does.
+- **Seen, not ours:** on `exit` after `shutdown`, 7.0.2 logs
+  `error handling method 'exit': EOF` as an error and ends with code 1.
+  The line is an error by its own type, so the log filter passes it.
+  What the platform's client does with it at shutdown was not walked.
+
 ### 140. The project templates: moved to the current lines on 2026-11-13, and what the move did not prove
 
 **What the entry said (2026-11-06).** The Angular template pinned `~21.2`
