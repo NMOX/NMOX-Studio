@@ -128,6 +128,17 @@ class WayfindingVocabularyTest {
     private static final String PLATFORM_WINDOW_JAR = "org-netbeans-spi-debugger-ui";
     private static final String PLATFORM_WINDOW_TABS = "org/netbeans/modules/debugger/ui/views";
     private static final String PLATFORM_WINDOW_ROWS = "org/netbeans/modules/debugger/ui/actions";
+    /**
+     * The eighth row of that submenu, Window ▸ Debugging ▸ Debugging, and the
+     * tab it opens ({@code DebuggingViewComponent.getName()}, one package
+     * down). Its tab is held to its row like the seven. Its name is NOT held
+     * in prose: "Debugging" is also the submenu, half of "Start Debugging…"
+     * and a word VS Code's own commands use, so a sentence that says it is
+     * rarely naming this window.
+     */
+    private static final String DEBUGGING_WINDOW_TABS = PLATFORM_WINDOW_TABS + "/debugging";
+    private static final Map<String, String> DEBUGGING_WINDOW =
+            Map.of("CTL_Debugging_view", "CTL_DebuggingViewAction");
 
     private static Map<String, String> platformWindowPairs() {
         Map<String, String> tabToRow = new LinkedHashMap<>();
@@ -351,11 +362,18 @@ class WayfindingVocabularyTest {
     @DisplayName("a debugger window's tab carries the name its Window-menu row carries, in every language")
     void platformWindowTabsCarryTheirMenuRowsName() throws IOException {
         List<String> problems = new ArrayList<>();
-        Properties englishTabs = platformBundle(PLATFORM_WINDOW_TABS + "/Bundle.properties", null);
+        tabsAndRowsAgree(problems, PLATFORM_WINDOW_TABS, PLATFORM_WINDOWS);
+        tabsAndRowsAgree(problems, DEBUGGING_WINDOW_TABS, DEBUGGING_WINDOW);
+        assertThat(problems).as("one window, two names").isEmpty();
+    }
+
+    private static void tabsAndRowsAgree(List<String> problems, String tabsPackage,
+            Map<String, String> tabToRow) throws IOException {
+        Properties englishTabs = platformBundle(tabsPackage + "/Bundle.properties", null);
         Properties englishRows = platformBundle(PLATFORM_WINDOW_ROWS + "/Bundle.properties", null);
-        assertThat(englishTabs).as("the platform's views bundle in the assembled cluster").isNotNull();
+        assertThat(englishTabs).as("the platform's bundle at " + tabsPackage + " in the assembled cluster").isNotNull();
         assertThat(englishRows).as("the platform's actions bundle in the assembled cluster").isNotNull();
-        for (Map.Entry<String, String> pair : PLATFORM_WINDOWS.entrySet()) {
+        for (Map.Entry<String, String> pair : tabToRow.entrySet()) {
             String tab = englishTabs.getProperty(pair.getKey());
             String row = englishRows.getProperty(pair.getValue());
             if (tab == null || row == null) {
@@ -367,9 +385,9 @@ class WayfindingVocabularyTest {
             }
         }
         for (String loc : LOCALES) {
-            Properties tabs = platformBundle(PLATFORM_WINDOW_TABS + "/Bundle_nmoxstudio_" + loc + ".properties", loc);
+            Properties tabs = platformBundle(tabsPackage + "/Bundle_nmoxstudio_" + loc + ".properties", loc);
             Properties rows = platformBundle(PLATFORM_WINDOW_ROWS + "/Bundle_nmoxstudio_" + loc + ".properties", loc);
-            for (Map.Entry<String, String> pair : PLATFORM_WINDOWS.entrySet()) {
+            for (Map.Entry<String, String> pair : tabToRow.entrySet()) {
                 String row = rows == null ? null : rows.getProperty(pair.getValue());
                 String tab = tabs == null ? null : tabs.getProperty(pair.getKey());
                 if (row == null) {
@@ -384,7 +402,6 @@ class WayfindingVocabularyTest {
                 }
             }
         }
-        assertThat(problems).as("one window, two names").isEmpty();
     }
 
     /**

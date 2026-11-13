@@ -66,3 +66,6 @@ org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/views|CTL_Call
 org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/views|CTL_Watches_view|Watches
 org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/views|CTL_Variables_view|Variables
 org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/views|CTL_Sources_view|Sources
+# and the eighth row of the submenu, Window > Debugging > Debugging: its tab
+# is DebuggingViewComponent.getName(), one package down.
+org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/views/debugging|CTL_Debugging_view|Debugging
