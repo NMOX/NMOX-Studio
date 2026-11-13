@@ -195,12 +195,7 @@ public final class MainWindow extends TopComponent {
             windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_opsHub()), "OpsHubTopComponent"));
             windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_dockerPanel()), "DockerPanelTopComponent"));
 
-            JPanel columns = new JPanel(new java.awt.GridLayout(1, 4, 36, 0));
-            columns.setOpaque(false);
-            columns.add(start);
-            columns.add(recentColumn);
-            columns.add(windows);
-            columns.add(gettingStarted);
+            JPanel columns = columnsRow(start, recentColumn, windows, gettingStarted);
             refreshRecents();
 
             JLabel version = new JLabel(PlainText.plain(footerText()));
@@ -326,6 +321,37 @@ public final class MainWindow extends TopComponent {
             gettingStarted.revalidate();
             gettingStarted.repaint();
         }
+
+        /**
+         * The launchpad's columns side by side, each as wide as its own
+         * rows and all starting at the top.
+         *
+         * <p>It was a {@code GridLayout(1, 4)}: four EQUAL columns, each as
+         * wide as the widest. English hid that, since its columns are much
+         * alike. In German the checklist's longest row sets the width for
+         * all four, the row asked for more than the tab is wide, and the
+         * last column ran off the right edge with nothing to scroll (walked
+         * 3.13.0 at the default window size: "Ein Projekt ö", "Etwas
+         * ausfüh"). A column's width is now its own. The gap is the
+         * same on both sides of a column, so the row reads the same in a
+         * right-to-left window with no side named here.
+         */
+        static JPanel columnsRow(JPanel... cols) {
+            JPanel row = new JPanel(new GridBagLayout());
+            row.setOpaque(false);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridy = 0;
+            c.anchor = GridBagConstraints.FIRST_LINE_START;
+            c.insets = new Insets(0, COLUMN_GAP / 2, 0, COLUMN_GAP / 2);
+            for (int i = 0; i < cols.length; i++) {
+                c.gridx = i;
+                row.add(cols[i], c);
+            }
+            return row;
+        }
+
+        /** The space between two launchpad columns. */
+        static final int COLUMN_GAP = 36;
 
         private static JPanel column(String heading) {
             JPanel col = new JPanel();
