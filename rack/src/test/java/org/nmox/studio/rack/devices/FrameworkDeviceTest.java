@@ -168,7 +168,53 @@ class FrameworkDeviceTest {
         }
     }
 
+    @Test
+    @DisplayName("NEXUS LINT is the ESLint CLI from Next 16 on, where next has no lint command")
+    void nextLintFollowsTheMajor() {
+        assertThat(NextDevice.lintCommand("16.4.6")).containsExactly("npx", "eslint", ".");
+        assertThat(NextDevice.lintCommand("17.0.0")).containsExactly("npx", "eslint", ".");
+        assertThat(NextDevice.lintCommand("15.5.2")).containsExactly("npx", "next", "lint");
+        assertThat(NextDevice.lintCommand("9.5.0")).as("a one-digit major is not read as 95")
+                .containsExactly("npx", "next", "lint");
+        assertThat(NextDevice.lintCommand(null)).containsExactly("npx", "next", "lint");
+        assertThat(NextDevice.lintCommand("latest")).containsExactly("npx", "next", "lint");
+    }
+
     // ---------------- COSMOS / AstroDevice ----------------
+
+    @Test
+    @DisplayName("COSMOS DIAG is refused by name where @astrojs/check is not declared: astro would ask, and nobody answers")
+    void astroCheckIsRefusedWithoutItsPackage() throws IOException {
+        Rack rack = rackWith("package.json");
+        try {
+            Files.writeString(projectDir.resolve("package.json"),
+                    "{\"dependencies\":{\"astro\":\"^7.4.0\"}}");
+            AstroDevice astro = new AstroDevice();
+            Probe probe = new Probe();
+            rack.addDevice(astro);
+            rack.addDevice(probe);
+            rack.connect(astro.getPort("fail"), probe.getPort("trig"));
+
+            astro.diag();
+            settle(rack);
+
+            assertThat(probe.trig).as("a refusal is a verdict on the patch bay").hasSize(1);
+            assertThat(astro.isLive()).as("nothing was started").isFalse();
+            assertThat(AstroDevice.CHECK_REFUSAL).contains("@astrojs/check").contains("npm i -D");
+            // the trust gate refuses in this fixture too, in other words:
+            // the sentence on the LCD is what tells the two apart
+            assertThat(astro.statusLcd.getText()).isEqualTo(AstroDevice.CHECK_REFUSAL);
+
+            Files.writeString(projectDir.resolve("package.json"),
+                    "{\"devDependencies\":{\"@astrojs/check\":\"^0.9.0\"}}");
+            astro.diag();
+            settle(rack);
+            assertThat(astro.statusLcd.getText()).as("declared: the check is not refused for its package")
+                    .isNotEqualTo(AstroDevice.CHECK_REFUSAL);
+        } finally {
+            rack.shutdown();
+        }
+    }
 
     @Test
     @DisplayName("COSMOS build command is the static site build")

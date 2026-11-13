@@ -47,7 +47,7 @@ public class AstroDevice extends CommandDevice {
         stop.addActionListener(e -> stopByUser());
         build.addActionListener(e -> primaryAction());
         preview.addActionListener(e -> preview());
-        diag.addActionListener(e -> launch(List.of("npx", "astro", "check")));
+        diag.addActionListener(e -> offEdt(this::diag));
 
         addInPort("serve", "DEV", SignalType.TRIGGER);
         addInPort("stop", "STOP", SignalType.TRIGGER);
@@ -55,6 +55,31 @@ public class AstroDevice extends CommandDevice {
         addOutPort("url", "URL", SignalType.DATA);
         addOutPort("ready", "READY", SignalType.TRIGGER);
         addOutPort("serving", "SERVING", SignalType.GATE);
+    }
+
+    /** The package {@code astro check} cannot run without. */
+    static final String CHECK_PACKAGE = "@astrojs/check";
+    /** What the LCD says when it is not declared; the fix is in the sentence. */
+    static final String CHECK_REFUSAL = "NEEDS " + CHECK_PACKAGE + " — npm i -D " + CHECK_PACKAGE + " typescript";
+
+    /**
+     * DIAG: {@code astro check}, when the project can run it.
+     *
+     * <p>Without {@code @astrojs/check} Astro asks <em>Continue? Yes/No</em>
+     * to install it. The rack gives a command no terminal, so the question
+     * went unanswered, nothing was checked, and the run ended with exit 0:
+     * a green verdict for a check that never ran (found 2026-11-13 while
+     * the Astro learning space was proven). A project that does not declare
+     * the package is refused by name, with the command that adds it. The
+     * manifest is read off the EDT and at the press, so the answer follows
+     * an install made a moment ago.
+     */
+    void diag() {
+        if (ProjectInspector.dependencyVersion(projectDir(), CHECK_PACKAGE) == null) {
+            refuseLaunch(CHECK_REFUSAL);
+            return;
+        }
+        onEdt(() -> launch(List.of("npx", "astro", "check")));
     }
 
     @Override
