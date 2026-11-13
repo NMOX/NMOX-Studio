@@ -10,7 +10,7 @@ package org.nmox.studio.infra.ops.model;
 public enum HostStatus {
     /** The create request was accepted; the provider has not listed it yet. */
     REQUESTED,
-    /** The provider lists it but it is not active (DO: {@code new}). */
+    /** The provider lists it and is still bringing it up (DigitalOcean: {@code new}; Hetzner: {@code initializing}, {@code starting}). */
     PROVISIONING,
     /** Active with an address, and ssh does not answer yet. */
     BOOTING,

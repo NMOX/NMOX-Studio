@@ -633,17 +633,23 @@ public final class OpsHub {
         node.label = r.name();
         node.address = r.address();
         node.facts.putAll(r.facts());
-        node.facts.put("provider status", r.providerStatus());
+        String statusBefore = node.facts.put("provider status", r.providerStatus());
         node.lastSeenMillis = clock.getAsLong();
+        String notRunning = null;
         if (!r.active()) {
             if (node.status == HostStatus.DESTROYING) {
                 // the destroy owns its story
-            } else if ("new".equals(r.providerStatus()) || node.status == HostStatus.REQUESTED) {
+            } else if (r.comingUp() || node.status == HostStatus.REQUESTED) {
                 node.status = HostStatus.PROVISIONING;
             } else {
-                // off, archived: it exists and is not coming up — say what the provider says, sweep nothing
+                // off, archived, or a word this product does not know: it exists and is not coming up —
+                // say what the provider says, sweep nothing. The feed hears it when the provider's word
+                // CHANGES, not at every listing (a server that stays off would say so once a minute).
                 node.status = HostStatus.UNREACHABLE;
                 node.lastProblem = Bundle.OpsHub_providerSaysNotRunning(p.displayName(), String.valueOf(r.providerStatus()));
+                if (!String.valueOf(r.providerStatus()).equals(statusBefore)) {
+                    notRunning = node.lastProblem;
+                }
             }
         } else if (!node.status.reachable() && node.status != HostStatus.UNREACHABLE
                 && node.status != HostStatus.DESTROYING) {
@@ -661,6 +667,9 @@ public final class OpsHub {
             }
         } else {
             topology.touched(node);
+        }
+        if (notRunning != null) {
+            event(OpsEvent.Kind.INFO, id, notRunning);
         }
         return node;
     }

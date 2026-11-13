@@ -155,8 +155,8 @@ class OpsHubTest {
     @DisplayName("a listing adds hosts, updates them in place, and removes what the provider stopped listing")
     void listing() {
         OpsHub hub = hub();
-        provider.listed.add(new HostRecord("1", "alpha", "203.0.113.1", true, "active", Map.of("region", "nyc3")));
-        provider.listed.add(new HostRecord("2", "beta", null, false, "new", Map.of()));
+        provider.listed.add(new HostRecord("1", "alpha", "203.0.113.1", HostRecord.Phase.RUNNING, "active", Map.of("region", "nyc3")));
+        provider.listed.add(new HostRecord("2", "beta", null, HostRecord.Phase.COMING_UP, "new", Map.of()));
         hub.refresh();
         cloud.drain(3);
         Topology t = hub.topology();
@@ -165,7 +165,7 @@ class OpsHubTest {
         assertThat(t.node("scripted:2").status).isEqualTo(HostStatus.PROVISIONING);
         assertThat(t.edgesOf("scripted:1")).extracting(OpsEdge::kind).containsExactly("ssh");
         provider.listed.remove(1);
-        provider.listed.set(0, new HostRecord("1", "alpha-renamed", "203.0.113.1", true, "active", Map.of()));
+        provider.listed.set(0, new HostRecord("1", "alpha-renamed", "203.0.113.1", HostRecord.Phase.RUNNING, "active", Map.of()));
         hub.refresh();
         cloud.drain(3);
         assertThat(t.nodes(OpsKind.HOST)).hasSize(1);
@@ -488,7 +488,7 @@ class OpsHubTest {
     @DisplayName("destroying a provider host removes it and says billing stops; a provider's refusal keeps it and says why")
     void destroy() {
         OpsHub hub = hub();
-        provider.listed.add(new HostRecord("1", "alpha", "203.0.113.1", true, "active", Map.of()));
+        provider.listed.add(new HostRecord("1", "alpha", "203.0.113.1", HostRecord.Phase.RUNNING, "active", Map.of()));
         hub.refresh();
         cloud.drain(2);
         OpsNode node = hub.topology().node("scripted:1");
@@ -505,8 +505,8 @@ class OpsHubTest {
             }
         };
         OpsHub hub2 = new OpsHub(clock::get, Runnable::run, runner, prefs, cloud, ssh).withProviders(List.of(stubborn));
-        provider.listed.add(new HostRecord("2", "beta", "203.0.113.2", true, "active", Map.of()));
-        hub2.applyRecord(stubborn, new HostRecord("2", "beta", "203.0.113.2", true, "active", Map.of()));
+        provider.listed.add(new HostRecord("2", "beta", "203.0.113.2", HostRecord.Phase.RUNNING, "active", Map.of()));
+        hub2.applyRecord(stubborn, new HostRecord("2", "beta", "203.0.113.2", HostRecord.Phase.RUNNING, "active", Map.of()));
         OpsNode beta = hub2.topology().node("scripted:2");
         hub2.destroyHost(beta);
         cloud.drain(2);
@@ -605,7 +605,7 @@ class OpsHubTest {
 
         @Override
         public HostRecord createHost(HostSpec spec) {
-            HostRecord r = new HostRecord("7", spec.name(), "203.0.113.7", true, "active", Map.of());
+            HostRecord r = new HostRecord("7", spec.name(), "203.0.113.7", HostRecord.Phase.RUNNING, "active", Map.of());
             listed.add(r);
             return r;
         }
@@ -696,7 +696,7 @@ class OpsHubTest {
             }
         };
         OpsHub hub = new OpsHub(clock::get, Runnable::run, runner, prefs, cloud, ssh).withProviders(List.of(stubborn));
-        OpsNode node = hub.applyRecord(stubborn, new HostRecord("2", "beta", "203.0.113.2", true, "active", Map.of()));
+        OpsNode node = hub.applyRecord(stubborn, new HostRecord("2", "beta", "203.0.113.2", HostRecord.Phase.RUNNING, "active", Map.of()));
         ssh.drain(2); // nobody answers
         assertThat(node.status).isEqualTo(HostStatus.UNREACHABLE);
         hub.destroyHost(node);
@@ -709,12 +709,33 @@ class OpsHubTest {
     @DisplayName("a server the provider reports off is not 'provisioning': it is unreachable, and the provider's word is the reason")
     void poweredOffIsNotProvisioning() {
         OpsHub hub = hub();
-        OpsNode off = hub.applyRecord(provider, new HostRecord("3", "gamma", "203.0.113.3", false, "off", Map.of()));
+        OpsNode off = hub.applyRecord(provider, new HostRecord("3", "gamma", "203.0.113.3", HostRecord.Phase.NOT_RUNNING, "off", Map.of()));
         assertThat(off.status).isEqualTo(HostStatus.UNREACHABLE);
         assertThat(off.status.inProgress()).as("nothing to sweep for").isFalse();
         assertThat(off.lastProblem).isEqualTo("Scripted reports this server as: off");
-        OpsNode fresh = hub.applyRecord(provider, new HostRecord("4", "delta", null, false, "new", Map.of()));
+        OpsNode fresh = hub.applyRecord(provider, new HostRecord("4", "delta", null, HostRecord.Phase.COMING_UP, "new", Map.of()));
         assertThat(fresh.status).isEqualTo(HostStatus.PROVISIONING);
+    }
+
+    @Test
+    @DisplayName("a provider's word for 'not running' reaches the feed when it changes, once — and a word the product does not know is said, not guessed")
+    void notRunningIsSaidOnce() {
+        OpsHub hub = hub();
+        // Hetzner's words: initializing is on its way up, whatever the engine knows of the word itself
+        OpsNode node = hub.applyRecord(provider, new HostRecord("5", "eps", null, HostRecord.Phase.COMING_UP, "initializing", Map.of()));
+        assertThat(node.status).isEqualTo(HostStatus.PROVISIONING);
+        assertThat(hub.feed()).extracting(OpsEvent::text).noneMatch(t -> t.contains("reports this server as"));
+        hub.applyRecord(provider, new HostRecord("5", "eps", "203.0.113.5", HostRecord.Phase.NOT_RUNNING, "off", Map.of()));
+        assertThat(node.status).isEqualTo(HostStatus.UNREACHABLE);
+        hub.applyRecord(provider, new HostRecord("5", "eps", "203.0.113.5", HostRecord.Phase.NOT_RUNNING, "off", Map.of()));
+        hub.applyRecord(provider, new HostRecord("5", "eps", "203.0.113.5", HostRecord.Phase.NOT_RUNNING, "off", Map.of()));
+        assertThat(hub.feed()).extracting(OpsEvent::text).filteredOn(t -> t.equals("Scripted reports this server as: off"))
+                .as("said when it turned off, not at every listing after").hasSize(1);
+        hub.applyRecord(provider, new HostRecord("5", "eps", "203.0.113.5", HostRecord.Phase.NOT_RUNNING, "hibernating", Map.of()));
+        assertThat(node.status).as("an unknown word is not 'coming up': nothing sweeps").isEqualTo(HostStatus.UNREACHABLE);
+        assertThat(node.lastProblem).isEqualTo("Scripted reports this server as: hibernating");
+        assertThat(hub.feed()).extracting(OpsEvent::text).contains("Scripted reports this server as: hibernating");
+        assertThat(hub.feed()).filteredOn(e -> e.text().contains("reports this server as")).allMatch(e -> "scripted:5".equals(e.nodeId()));
     }
 
     @Test
@@ -743,7 +764,7 @@ class OpsHubTest {
     @DisplayName("only what the host itself answered marks its link: a listing and a silence cross nothing")
     void onlyAnswersCrossTheLink() {
         OpsHub hub = hub();
-        provider.listed.add(new HostRecord("1", "alpha", "203.0.113.1", true, "active", Map.of()));
+        provider.listed.add(new HostRecord("1", "alpha", "203.0.113.1", HostRecord.Phase.RUNNING, "active", Map.of()));
         hub.refresh();
         cloud.drain(2);
         runner.lines = probe(WEB);

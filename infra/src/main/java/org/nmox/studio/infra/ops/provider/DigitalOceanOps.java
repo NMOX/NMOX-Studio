@@ -113,7 +113,8 @@ public final class DigitalOceanOps implements OpsProvider {
             ks.add(new ProviderOptions.SshKey(String.valueOf(k.opt("id")), k.optString("name", ""),
                     k.optString("fingerprint", "")));
         }
-        return new ProviderOptions(rs, ss, is, ks);
+        // DigitalOcean states every price in US dollars
+        return new ProviderOptions(rs, ss, is, ks, "USD");
     }
 
     @Override
@@ -242,6 +243,15 @@ public final class DigitalOceanOps implements OpsProvider {
             facts.put("vpc", vpc);
         }
         facts.values().removeIf(String::isEmpty);
-        return new HostRecord(id, d.optString("name", id), ip, "active".equals(status), status, facts);
+        return new HostRecord(id, d.optString("name", id), ip, phase(status), status, facts);
+    }
+
+    /** DigitalOcean's droplet status ({@code new}, {@code active}, {@code off}, {@code archive}) as the Hub reads it. */
+    static HostRecord.Phase phase(String status) {
+        return switch (status == null ? "" : status) {
+            case "active" -> HostRecord.Phase.RUNNING;
+            case "new" -> HostRecord.Phase.COMING_UP;
+            default -> HostRecord.Phase.NOT_RUNNING;
+        };
     }
 }

@@ -113,7 +113,8 @@ public final class SimulatedWorld {
     HostRecord record(SimHost h) {
         long age = ageSeconds(h);
         boolean active = age >= ACTIVE_AFTER_S;
-        return new HostRecord(h.id, h.name, active ? h.address : null, active, active ? "active" : "new", h.facts);
+        return new HostRecord(h.id, h.name, active ? h.address : null,
+                active ? HostRecord.Phase.RUNNING : HostRecord.Phase.COMING_UP, active ? "active" : "new", h.facts);
     }
 
     /** The simulation's ssh: refuses before the host "boots", then answers the probe and the deploy from the script. */
