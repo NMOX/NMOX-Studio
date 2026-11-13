@@ -3,6 +3,10 @@
 # Vendored third-party artifacts ship byte-verbatim (NOTICE sha256 depends on it)
 editor/src/main/release/jsdebug/** -text
 editor/src/main/resources/org/nmox/studio/editor/grammars/*.tmLanguage.json -text
+# The Classic Kit's libraries: NOTICE-vendor.md records each file's SHA-256
+# and VendorResourcesTest recomputes it, so a windows autocrlf checkout must
+# not turn their line feeds into CRLF (prototype-1.7.3.js has 7,588 of them)
+rack/src/main/resources/org/nmox/studio/rack/projectstudio/vendor/*.js -text
 
 # The bundled website ships byte-verbatim: a11y.css/i18n.js must equal the
 # kits' own \n output on every OS (SiteShipsTest.kitParity — a windows

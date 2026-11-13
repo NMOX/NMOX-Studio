@@ -86,11 +86,11 @@ class ClassicKitTest {
             ClassicKit.write(project(), options(Set.of("backbone"),
                     ClassicKit.Mode.VENDORED, Set.of()));
 
-            assertThat(dir.resolve("vendor/underscore-1.13.7.min.js")).exists();
-            assertThat(dir.resolve("vendor/backbone-1.6.0.min.js")).exists();
+            assertThat(dir.resolve("vendor/underscore-1.13.8.min.js")).exists();
+            assertThat(dir.resolve("vendor/backbone-1.6.1.min.js")).exists();
             String html = Files.readString(dir.resolve("index.html"));
-            assertThat(html.indexOf("underscore-1.13.7.min.js"))
-                    .isLessThan(html.indexOf("backbone-1.6.0.min.js"));
+            assertThat(html.indexOf("underscore-1.13.8.min.js"))
+                    .isLessThan(html.indexOf("backbone-1.6.1.min.js"));
         }
 
         @Test
@@ -182,9 +182,9 @@ class ClassicKitTest {
             JSONObject deps = json.getJSONObject("dependencies");
             assertThat(deps.getString("jquery")).isEqualTo("^3.7.1");
             assertThat(deps.getString("mootools")).isEqualTo("^1.6.0");
-            assertThat(deps.getString("backbone")).isEqualTo("^1.6.0");
-            assertThat(deps.getString("underscore")).isEqualTo("^1.13.7");
-            assertThat(deps.getString("knockout")).isEqualTo("^3.5.1");
+            assertThat(deps.getString("backbone")).isEqualTo("^1.6.1");
+            assertThat(deps.getString("underscore")).isEqualTo("^1.13.8");
+            assertThat(deps.getString("knockout")).isEqualTo("^3.5.3");
             assertThat(deps.getString("lodash")).isEqualTo("^4.17.21");
             assertThat(json.getJSONArray("workspaces").getString(0))
                     .as("unknown fields survive the round-trip").isEqualTo("packages/*");
@@ -356,8 +356,8 @@ class ClassicKitTest {
             assertThat(bower.getString("name")).isEqualTo(project().getName());
             JSONObject deps = bower.getJSONObject("dependencies");
             assertThat(deps.getString("jquery")).isEqualTo("^3.7.1");
-            assertThat(deps.getString("backbone")).isEqualTo("^1.6.0");
-            assertThat(deps.getString("underscore")).isEqualTo("^1.13.7");
+            assertThat(deps.getString("backbone")).isEqualTo("^1.6.1");
+            assertThat(deps.getString("underscore")).isEqualTo("^1.13.8");
         }
 
         @Test

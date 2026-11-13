@@ -85,14 +85,14 @@ public final class ClassicKit {
             "jquery-3.7.1.min.js",
             "<script src=\"vendor/jquery-3.7.1.min.js\"></script>",
             "jquery", "^3.7.1");
-    private static final Lib ALPINE = new Lib("alpine", "Alpine.js", "3.14.9",
-            "alpinejs-3.14.9.min.js",
-            "<script defer src=\"vendor/alpinejs-3.14.9.min.js\"></script>",
-            "alpinejs", "^3.14.9");
-    private static final Lib HTMX = new Lib("htmx", "htmx", "2.0.4",
-            "htmx-2.0.4.min.js",
-            "<script src=\"vendor/htmx-2.0.4.min.js\"></script>",
-            "htmx.org", "^2.0.4");
+    private static final Lib ALPINE = new Lib("alpine", "Alpine.js", "3.17.5",
+            "alpinejs-3.17.5.min.js",
+            "<script defer src=\"vendor/alpinejs-3.17.5.min.js\"></script>",
+            "alpinejs", "^3.17.5");
+    private static final Lib HTMX = new Lib("htmx", "htmx", "2.0.11",
+            "htmx-2.0.11.min.js",
+            "<script src=\"vendor/htmx-2.0.11.min.js\"></script>",
+            "htmx.org", "^2.0.11");
     private static final Lib MOOTOOLS = new Lib("mootools", "MooTools Core (compat)", "1.6.0",
             "mootools-core-1.6.0-compat.min.js",
             "<script src=\"vendor/mootools-core-1.6.0-compat.min.js\"></script>",
@@ -101,20 +101,20 @@ public final class ClassicKit {
             "prototype-1.7.3.js",
             "<script src=\"vendor/prototype-1.7.3.js\"></script>",
             null, null);
-    private static final Lib BACKBONE = new Lib("backbone", "Backbone", "1.6.0",
-            "backbone-1.6.0.min.js",
-            "<script src=\"vendor/backbone-1.6.0.min.js\"></script>",
-            "backbone", "^1.6.0");
-    private static final Lib KNOCKOUT = new Lib("knockout", "Knockout", "3.5.1",
-            "knockout-3.5.1.js",
-            "<script src=\"vendor/knockout-3.5.1.js\"></script>",
-            "knockout", "^3.5.1");
+    private static final Lib BACKBONE = new Lib("backbone", "Backbone", "1.6.1",
+            "backbone-1.6.1.min.js",
+            "<script src=\"vendor/backbone-1.6.1.min.js\"></script>",
+            "backbone", "^1.6.1");
+    private static final Lib KNOCKOUT = new Lib("knockout", "Knockout", "3.5.3",
+            "knockout-3.5.3.js",
+            "<script src=\"vendor/knockout-3.5.3.js\"></script>",
+            "knockout", "^3.5.3");
 
     /** Not selectable on its own: Backbone's hard dependency, wired first. */
-    private static final Lib UNDERSCORE = new Lib("underscore", "Underscore", "1.13.7",
-            "underscore-1.13.7.min.js",
-            "<script src=\"vendor/underscore-1.13.7.min.js\"></script>",
-            "underscore", "^1.13.7");
+    private static final Lib UNDERSCORE = new Lib("underscore", "Underscore", "1.13.8",
+            "underscore-1.13.8.min.js",
+            "<script src=\"vendor/underscore-1.13.8.min.js\"></script>",
+            "underscore", "^1.13.8");
 
     /** The selectable catalog, dialog order. */
     public static List<Lib> libraries() {

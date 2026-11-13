@@ -4152,7 +4152,7 @@
       "files": [
         {
           "path": "index.html",
-          "content": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Alpine space</title>\n    <script defer src=\"https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js\"></script>\n  </head>\n  <body>\n    <div x-data=\"{ count: 0, open: false }\">\n      <button @click=\"count++\">clicks: <span x-text=\"count\"></span></button>\n      <button @click=\"open = !open\">toggle</button>\n      <p x-show=\"open\" x-transition>Hello from Alpine - no build step.</p>\n    </div>\n  </body>\n</html>\n"
+          "content": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Alpine space</title>\n    <script defer src=\"https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js\"></script>\n  </head>\n  <body>\n    <div x-data=\"{ count: 0, open: false }\">\n      <button @click=\"count++\">clicks: <span x-text=\"count\"></span></button>\n      <button @click=\"open = !open\">toggle</button>\n      <p x-show=\"open\" x-transition>Hello from Alpine - no build step.</p>\n    </div>\n  </body>\n</html>\n"
         }
       ],
       "tutorial": "# Alpine.js\n\njQuery's spiritual successor: sprinkle x-data on any element and the\nmarkup becomes reactive - no bundler, no components, no build step.\n\n1. Run the driver (a plain static server; IGNITION serves this project\n   the same way - it is a STATIC project).\n2. index.html: x-data declares state, @click mutates it, x-text and\n   x-show react. That is the whole model.\n3. Add an x-init attribute that logs to the console to see the\n   lifecycle; try an x-for template over a list.\n\nThe Classic Kit wizard (Tools menu) can vendor Alpine into any project\npinned + hashed, and the editor completes the Alpine.* JS API when the\npage carries it.\n",
@@ -4196,7 +4196,7 @@
       "files": [
         {
           "path": "index.html",
-          "content": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>htmx space</title>\n    <script src=\"https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js\"></script>\n  </head>\n  <body>\n    <h1>htmx</h1>\n    <button hx-get=\"/fragment.html\" hx-target=\"#panel\" hx-swap=\"innerHTML\">\n      load the fragment\n    </button>\n    <div id=\"panel\"><em>press the button - the server's HTML lands here</em></div>\n  </body>\n</html>\n"
+          "content": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>htmx space</title>\n    <script src=\"https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js\"></script>\n  </head>\n  <body>\n    <h1>htmx</h1>\n    <button hx-get=\"/fragment.html\" hx-target=\"#panel\" hx-swap=\"innerHTML\">\n      load the fragment\n    </button>\n    <div id=\"panel\"><em>press the button - the server's HTML lands here</em></div>\n  </body>\n</html>\n"
         },
         {
           "path": "fragment.html",

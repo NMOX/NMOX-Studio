@@ -22,8 +22,8 @@ class ClassicKitActionTest {
                 .filter(lib -> "backbone".equals(lib.id())).findFirst().orElseThrow();
 
         assertThat(ClassicKitAction.libraryLabel(backbone))
-                .contains("Backbone 1.6.0")
-                .contains("Underscore 1.13.7")
+                .contains("Backbone 1.6.1")
+                .contains("Underscore 1.13.8")
                 .contains("wired first");
     }
 
