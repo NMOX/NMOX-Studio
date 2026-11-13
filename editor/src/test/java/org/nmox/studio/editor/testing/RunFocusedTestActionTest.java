@@ -175,6 +175,94 @@ class RunFocusedTestActionTest {
         assertThat(f.dir()).isEqualTo(project);
     }
 
+    /** What `ng new` 22 writes: vitest declared, and a test target on the CLI's unit-test builder. */
+    private static File ng22Workspace(File project, String angularJson) throws Exception {
+        Files.writeString(new File(project, "package.json").toPath(),
+                "{\"name\":\"app\",\"dependencies\":{\"@angular/core\":\"~22.2.0\"},"
+                        + "\"devDependencies\":{\"vitest\":\"^5.0.0\",\"jsdom\":\"^30.0.0\"}}",
+                StandardCharsets.UTF_8);
+        Files.writeString(new File(project, "angular.json").toPath(), angularJson, StandardCharsets.UTF_8);
+        File appDir = new File(project, "src/app");
+        assertThat(appDir.mkdirs()).isTrue();
+        Files.writeString(new File(project, "src/index.html").toPath(),
+                "<!doctype html><html><body></body></html>", StandardCharsets.UTF_8);
+        File spec = new File(appDir, "app.component.spec.ts");
+        Files.writeString(spec.toPath(), "it('creates and counts', () => {})", StandardCharsets.UTF_8);
+        return spec;
+    }
+
+    private static final String UNIT_TEST_BUILDER = "{\"version\":1,\"projects\":{\"app\":{\"root\":\"\","
+            + "\"sourceRoot\":\"src\",\"architect\":{\"build\":{\"builder\":\"@angular/build:application\"},"
+            + "\"test\":{\"builder\":\"@angular/build:unit-test\"}}}}}";
+
+    @Test
+    @DisplayName("Angular 21+ (the unit-test builder, vitest declared): ng test with the name as its filter, and no browser")
+    void angularUnitTestBuilderRunsThroughNg(@TempDir File project) throws Exception {
+        // Measured 2026-11-13 on a generated Angular 22.2 workspace (Node
+        // 22.23.5): `npx vitest run -t <name> <spec>` exits 1 (the specs need
+        // the CLI's own build), `ng test --browsers=ChromeHeadless` exits 1
+        // ("The "browsers" option requires @vitest/browser-…"), and
+        // `ng test --watch=false --include=<spec> --filter=<name>` exits 0
+        // with 1 passed. `ng new` declares vitest, so the old rule (a declared
+        // vitest outranks ng) picked the command that cannot work.
+        File spec = ng22Workspace(project, UNIT_TEST_BUILDER);
+        Focused f = RunFocusedTestAction.commandFor("text/typescript", spec, "creates and counts", 1);
+        assertThat(f).isNotNull();
+        assertThat(f.command()).containsExactly("ng", "test", "--watch=false",
+                "--include=src/app/app.component.spec.ts", "--filter=creates and counts");
+        assertThat(f.dir()).isEqualTo(project);
+    }
+
+    @Test
+    @DisplayName("the unit-test builder: a name with regex characters is a literal, and no name is the whole file")
+    void angularUnitTestBuilderFilterIsALiteral(@TempDir File project) throws Exception {
+        File spec = ng22Workspace(project, UNIT_TEST_BUILDER);
+        Focused f = RunFocusedTestAction.commandFor("text/typescript", spec, "adds (1+1)", 1);
+        assertThat(f.command()).last().isEqualTo("--filter=adds \\(1\\+1\\)");
+        Focused whole = RunFocusedTestAction.commandFor("text/typescript", spec, null, 1);
+        assertThat(whole.command()).containsExactly("ng", "test", "--watch=false",
+                "--include=src/app/app.component.spec.ts");
+        // only a spec can be handed to ng test
+        File plain = new File(project, "src/app/app.component.ts");
+        Files.writeString(plain.toPath(), "export class App {}", StandardCharsets.UTF_8);
+        assertThat(RunFocusedTestAction.commandFor("text/typescript", plain, "x", 1)).isNull();
+    }
+
+    @Test
+    @DisplayName("a vitest workspace whose angular.json names another test builder keeps plain vitest; the builder is read per project")
+    void otherBuildersKeepTheirRunner(@TempDir File project) throws Exception {
+        File spec = ng22Workspace(project, "{\"version\":1,\"projects\":{\"app\":{\"root\":\"\","
+                + "\"architect\":{\"test\":{\"builder\":\"@analogjs/vitest-angular:test\"}}}}}");
+        Focused f = RunFocusedTestAction.commandFor("text/typescript", spec, "creates and counts", 1);
+        assertThat(f.command()).startsWith("npx", "vitest", "run");
+        // two projects: the file's own project decides, not the first one listed
+        File lib = new File(project, "projects/lib/src");
+        assertThat(lib.mkdirs()).isTrue();
+        File libSpec = new File(lib, "lib.spec.ts");
+        Files.writeString(libSpec.toPath(), "it('x', () => {})", StandardCharsets.UTF_8);
+        Files.writeString(new File(project, "angular.json").toPath(),
+                "{\"version\":1,\"projects\":{"
+                        + "\"app\":{\"root\":\"\",\"architect\":{\"test\":{\"builder\":\"@analogjs/vitest-angular:test\"}}},"
+                        + "\"lib\":{\"root\":\"projects/lib\",\"targets\":{\"test\":{\"builder\":\"@angular/build:unit-test\"}}}}}",
+                StandardCharsets.UTF_8);
+        assertThat(RunFocusedTestAction.commandFor("text/typescript", libSpec, "x", 1).command())
+                .startsWith("ng", "test", "--watch=false");
+        assertThat(RunFocusedTestAction.commandFor("text/typescript", spec, "creates and counts", 1).command())
+                .startsWith("npx", "vitest", "run");
+    }
+
+    @Test
+    @DisplayName("an angular.json that cannot be read as a workspace changes nothing")
+    void unreadableWorkspaceFileChangesNothing(@TempDir File project) throws Exception {
+        File spec = ng22Workspace(project, "{ this is not json");
+        assertThat(RunFocusedTestAction.commandFor("text/typescript", spec, "creates and counts", 1).command())
+                .startsWith("npx", "vitest", "run");
+        Files.writeString(new File(project, "angular.json").toPath(),
+                "{\"projects\":[1,2],\"version\":1}", StandardCharsets.UTF_8);
+        assertThat(RunFocusedTestAction.commandFor("text/typescript", spec, "creates and counts", 1).command())
+                .startsWith("npx", "vitest", "run");
+    }
+
     @Test
     @DisplayName("Angular workspace: a project-local node_modules/.bin/ng wins over PATH")
     void angularPrefersLocalNg(@TempDir File project) throws Exception {
