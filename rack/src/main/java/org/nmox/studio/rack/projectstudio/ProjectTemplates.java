@@ -884,7 +884,7 @@ public enum ProjectTemplates {
         }
     },
 
-    ANGULAR("Angular (standalone)", "Angular 21, zoneless, signals + control flow, HALO-wired") {
+    ANGULAR("Angular (standalone)", "Angular 22, zoneless, signals + control flow, HALO-wired") {
         @Override
         void writeFiles(Path dir, String name) throws IOException {
             write(dir, "package.json", """
