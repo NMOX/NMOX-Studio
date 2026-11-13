@@ -28,11 +28,94 @@ import org.nmox.studio.core.process.ProcessSupport;
  * so teardown must kill the whole tree, and a force-quit IDE must not
  * orphan a chain (static reaper hook, removed again on clean stop, the
  * rack's reaper idiom).
+ *
+ * <p>The adapter runs under the user's own {@code node}, so the adapter's
+ * Node floor is the user's floor ({@link #MIN_NODE_MAJOR}): a Node below
+ * it is refused by name ({@link NodeTooOld}) before anything is started.
  */
 public final class JsDebugServer {
 
     private static final Logger LOG = Logger.getLogger(JsDebugServer.class.getName());
     private static final String READY_MARKER = "Debug server listening at";
+
+    /**
+     * The oldest Node major the vendored adapter LOADS under. Measured for
+     * js-debug v1.140.1: under Node 18.20.8 the bundle dies while loading
+     * ({@code SyntaxError: Invalid flags supplied to RegExp constructor
+     * 'v'} — the RegExp {@code v} flag arrived with Node 20), where
+     * v1.117.0 started. Its bundled HTTP client (got 16) declares Node 22;
+     * 22.9.0 is what the real-adapter tests ran on, and 20 and 21 were not
+     * measured — so the refusal covers what is certain and the user guide
+     * names 22. Re-measure on every adapter bump (the NOTICE beside the
+     * adapter says how).
+     */
+    public static final int MIN_NODE_MAJOR = 20;
+    private static final java.time.Duration NODE_VERSION_TIMEOUT = java.time.Duration.ofSeconds(5);
+    private static final java.util.regex.Pattern NODE_VERSION =
+            java.util.regex.Pattern.compile("^v?(\\d{1,4})\\.\\d{1,6}\\.\\d{1,6}");
+
+    /**
+     * The user's Node is older than the vendored adapter can load under.
+     * Carries the two facts so the caller says the sentence in the reader's
+     * language; the message here is the log's.
+     */
+    public static final class NodeTooOld extends IOException {
+        private static final long serialVersionUID = 1L;
+        private final String found;
+
+        public NodeTooOld(String found) {
+            super("Node.js " + found + " is too old for the bundled js-debug adapter, which needs Node.js "
+                    + MIN_NODE_MAJOR + " or newer");
+            this.found = found;
+        }
+
+        /** The version {@code node --version} printed, as printed ({@code v18.20.8}). */
+        public String found() {
+            return found;
+        }
+
+        /** The oldest major the adapter starts under. */
+        public int needed() {
+            return MIN_NODE_MAJOR;
+        }
+    }
+
+    /**
+     * The major of what {@code node --version} printed, or -1 when the
+     * text is not a Node version. Pure; the first line is the answer.
+     */
+    static int nodeMajor(String versionOutput) {
+        if (versionOutput == null) {
+            return -1;
+        }
+        java.util.regex.Matcher m = NODE_VERSION.matcher(versionOutput.strip());
+        return m.find() ? Integer.parseInt(m.group(1)) : -1;
+    }
+
+    /**
+     * Refuses a Node the adapter cannot load under, by name, BEFORE the
+     * adapter is spawned — without this the user saw "js-debug exited
+     * immediately (exit 1)" and a stack trace in a FINE log record. Only a
+     * definite answer refuses: a {@code node} that is missing, slow, or
+     * prints something that is not a version is left to the launch itself,
+     * which already reports those.
+     */
+    private static void requireNode(String node, File dir) throws NodeTooOld {
+        ProcessSupport.BoundedResult version;
+        try {
+            version = ProcessSupport.runBounded(List.of(node, "--version"), dir, NODE_VERSION_TIMEOUT);
+        } catch (IOException ex) {
+            LOG.log(Level.FINE, "node --version could not be run; the launch will say why", ex);
+            return;
+        }
+        if (!version.ok()) {
+            return;
+        }
+        java.util.regex.Matcher m = NODE_VERSION.matcher(version.stdout().strip());
+        if (m.find() && Integer.parseInt(m.group(1)) < MIN_NODE_MAJOR) {
+            throw new NodeTooOld(m.group()); // the matched version alone, never the rest of the output
+        }
+    }
     private static final int READY_TIMEOUT_SECONDS = 30; // until-ready wait, not a sleep: costs
     // nothing when node starts fast. 10s false-failed on cold/loaded
     // machines (antivirus-scanned windows runners; first-boot laptops)
@@ -58,12 +141,19 @@ public final class JsDebugServer {
     /**
      * Spawns the server and blocks (bounded) until it prints its READY
      * line. On timeout or early exit the process tree is killed and an
-     * IOException names what happened.
+     * IOException names what happened; a Node older than the adapter loads
+     * under is a {@link NodeTooOld}, thrown before anything is spawned.
      */
     public static JsDebugServer start(File dapDebugServerJs) throws IOException, InterruptedException {
+        return start(dapDebugServerJs, "node");
+    }
+
+    /** Test seam: {@code node} is the command that stands for the user's Node. */
+    static JsDebugServer start(File dapDebugServerJs, String node) throws IOException, InterruptedException {
+        requireNode(node, dapDebugServerJs.getParentFile());
         int port = freePort();
         ProcessBuilder pb = ProcessSupport.builder(List.of(
-                "node", dapDebugServerJs.getAbsolutePath(),
+                node, dapDebugServerJs.getAbsolutePath(),
                 String.valueOf(port), "127.0.0.1"));
         pb.directory(dapDebugServerJs.getParentFile());
         pb.redirectErrorStream(true);

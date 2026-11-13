@@ -133,6 +133,9 @@ public class BrowserDebugAction extends BaseAction {
                 }
                 debugChrome(label, root, browser, url);
                 DapDebugAction.showOutput();
+            } catch (org.nmox.studio.editor.debug.dap.JsDebugServer.NodeTooOld old) {
+                StatusDisplayer.getDefault().setStatusText(
+                        org.nmox.studio.core.util.PlainStatus.text(DapDebugAction.nodeTooOld(old)));
             } catch (Exception ex) {
                 StatusDisplayer.getDefault().setStatusText(
                         org.openide.util.NbBundle.getMessage(BrowserDebugAction.class, "BrowserDebugAction_failed", ex.getMessage()));

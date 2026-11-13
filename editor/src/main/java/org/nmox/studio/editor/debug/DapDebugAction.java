@@ -211,11 +211,25 @@ public class DapDebugAction extends BaseAction {
             } catch (Spoken said) {
                 StatusDisplayer.getDefault().setStatusText(
                         org.nmox.studio.core.util.PlainStatus.text(said.getMessage()));
+            } catch (org.nmox.studio.editor.debug.dap.JsDebugServer.NodeTooOld old) {
+                StatusDisplayer.getDefault().setStatusText(
+                        org.nmox.studio.core.util.PlainStatus.text(nodeTooOld(old)));
             } catch (Exception ex) {
                 StatusDisplayer.getDefault().setStatusText(
                         org.openide.util.NbBundle.getMessage(DapDebugAction.class, "DapDebugAction_failed", ex.getMessage()));
             }
         });
+    }
+
+    /**
+     * The refusal for a Node the bundled adapter cannot load under, in the
+     * reader's language: the version found and the oldest one that works.
+     * One sentence for both doors that start the adapter (this action and
+     * Debug in Chrome).
+     */
+    static String nodeTooOld(org.nmox.studio.editor.debug.dap.JsDebugServer.NodeTooOld old) {
+        return org.openide.util.NbBundle.getMessage(DapDebugAction.class, "DapDebugAction_nodeTooOld",
+                old.found(), Integer.toString(old.needed()));
     }
 
     /** Whether anything accepts a connection at {@code address}:{@code port}; a loopback question, bounded. */

@@ -133,7 +133,8 @@ class SpawnSiteTrustLedgerTest {
      */
     private static final Map<String, String> BUILDER_LEDGER = Map.ofEntries(
             Map.entry("JsDebugServer.java",
-                "GATED-BY-CALLER: every debug action requestTrusts before any spawn (v1.37.0)"),
+                "GATED-BY-CALLER: every debug action requestTrusts before any spawn (v1.37.0); the "
+                + "`node --version` floor check ahead of the adapter is the same fixed tool, inside the same gate"),
             Map.entry("PrettierFormatter.java",
                 "GATED: project-local .bin/prettier only when isTrusted; else the global tool (v1.102.0)"),
             Map.entry("SassCompiler.java",
