@@ -192,7 +192,7 @@ public final class MainWindow extends TopComponent {
             windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_contractStudio()), "Web3StudioTopComponent"));
             windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_apiStudio()), "ApiClientTopComponent"));
             windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_infraDesigner()), "InfraDesignerTopComponent"));
-            windows.add(windowLink(Bundle.MainWindow_opsHub(), "OpsHubTopComponent"));
+            windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_opsHub()), "OpsHubTopComponent"));
             windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_dockerPanel()), "DockerPanelTopComponent"));
 
             JPanel columns = new JPanel(new java.awt.GridLayout(1, 4, 36, 0));
