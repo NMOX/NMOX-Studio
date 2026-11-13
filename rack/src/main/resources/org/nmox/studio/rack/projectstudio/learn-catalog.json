@@ -3329,36 +3329,36 @@
         "kind": "run",
         "command": [
           "npx",
-          "tailwindcss",
+          "@tailwindcss/cli",
           "-i",
           "input.css",
           "-o",
           "output.css",
-          "--watch"
+          "--watch=always"
         ],
         "prompt": "",
         "snippets": []
       },
       "install": {
-        "mac": "brew install node && npm install    # installs tailwindcss from package.json in this folder",
-        "linux": "sudo apt install nodejs npm && npm install    # installs tailwindcss from package.json in this folder",
+        "mac": "brew install node && npm install    # installs the Tailwind CLI from package.json in this folder",
+        "linux": "sudo apt install nodejs npm && npm install    # installs the Tailwind CLI from package.json in this folder",
         "windows": "Install Node.js from nodejs.org, then in this folder: npm install"
       },
       "files": [
         {
           "path": "package.json",
-          "content": "{\n  \"name\": \"tailwind-space\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"scripts\": {\n    \"build\": \"tailwindcss -i input.css -o output.css\",\n    \"watch\": \"tailwindcss -i input.css -o output.css --watch\"\n  },\n  \"devDependencies\": {\n    \"tailwindcss\": \"^3.4.0\"\n  }\n}\n"
+          "content": "{\n  \"name\": \"tailwind-space\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"scripts\": {\n    \"build\": \"tailwindcss -i input.css -o output.css\",\n    \"watch\": \"tailwindcss -i input.css -o output.css --watch=always\"\n  },\n  \"devDependencies\": {\n    \"@tailwindcss/cli\": \"^4.3.0\",\n    \"tailwindcss\": \"^4.3.0\"\n  }\n}\n"
         },
         {
           "path": "input.css",
-          "content": "@tailwind base;\n@tailwind components;\n@tailwind utilities;\n\n/* You can define your own components with @apply, too: */\n.btn {\n  @apply px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700;\n}\n"
+          "content": "@import \"tailwindcss\";\n\n/* You can define your own components with @apply, too: */\n.btn {\n  @apply px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700;\n}\n"
         },
         {
           "path": "index.html",
           "content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <title>Tailwind demo</title>\n  <!-- The build reads THIS file for class names and writes output.css -->\n  <link rel=\"stylesheet\" href=\"output.css\">\n</head>\n<body class=\"bg-slate-100 min-h-screen flex items-center justify-center\">\n  <div class=\"bg-white p-8 rounded-2xl shadow-lg max-w-sm text-center\">\n    <h1 class=\"text-2xl font-bold text-slate-800\">Utility-first</h1>\n    <p class=\"mt-2 text-slate-500\">Every style here is a class, no CSS file to hand-write.</p>\n    <button class=\"btn mt-6\">Click me</button>\n  </div>\n</body>\n</html>\n"
         }
       ],
-      "tutorial": "# Tailwind CSS\n\nTailwind is a utility-first CSS framework. Instead of writing custom CSS, you\ncompose designs directly in your HTML from small, single-purpose classes\n(`p-8`, `text-2xl`, `bg-white`, `flex`). A **build step** scans your files for\nthe classes you actually use and generates a tiny stylesheet with only those.\nIt's a *tool*, not a runtime library — you run its CLI.\n\n## Get set up\n\nYou need Node.js. Install the CLI from the provided `package.json` **in this\nfolder**:\n\n```bash\nnpm install\n```\n\n## Run it\n\nStart the Tailwind build in watch mode. It reads `input.css` (which has the\n`@tailwind` directives), scans `index.html` for class names, and writes\n`output.css`:\n\n```bash\nnpx tailwindcss -i input.css -o output.css --watch\n```\n\nLeave that running, then open **`index.html`** in your browser. You'll see a\nstyled card and button. Edit a class in `index.html` (say `bg-white` →\n`bg-yellow-200`), save, and the watcher rebuilds `output.css` — reload to see\nit.\n\n> First run may create a `tailwind.config.js`; that's Tailwind telling the\n> scanner which files to watch. The defaults work for this sample.\n\n## The sample\n\n- **`input.css`** — the three `@tailwind` directives plus a custom `.btn`\n  component built with `@apply`.\n- **`index.html`** — a card styled entirely with utility classes; it links the\n  generated `output.css`.\n- **`package.json`** — pins the `tailwindcss` CLI and adds `build`/`watch`\n  scripts.\n\n## Try this\n\n1. Add `hover:scale-105 transition` to the card `div` and hover it.\n2. Make the layout responsive: change padding to `p-4 md:p-8`.\n3. Add a second button and give it `bg-emerald-600` via a new `@apply` rule.\n\n## Going further\n\nThe utility reference is searchable and worth bookmarking:\nhttps://tailwindcss.com/docs/utility-first\n",
+      "tutorial": "# Tailwind CSS\n\nTailwind is a utility-first CSS framework. Instead of writing custom CSS, you\ncompose designs directly in your HTML from small, single-purpose classes\n(`p-8`, `text-2xl`, `bg-white`, `flex`). A **build step** scans your files for\nthe classes you actually use and generates a tiny stylesheet with only those.\nIt's a *tool*, not a runtime library — you run its CLI.\n\n## Get set up\n\nYou need Node.js. Install the CLI from the provided `package.json` **in this\nfolder**:\n\n```bash\nnpm install\n```\n\n## Run it\n\nStart the Tailwind build in watch mode. It reads `input.css` (which has the\n`@import \"tailwindcss\"` line), scans `index.html` for class names, and writes\n`output.css`:\n\n```bash\nnpx @tailwindcss/cli -i input.css -o output.css --watch=always\n```\n\nLeave that running, then open **`index.html`** in your browser. You'll see a\nstyled card and button. Edit a class in `index.html` (say `bg-white` →\n`bg-yellow-200`), save, and the watcher rebuilds `output.css` — reload to see\nit.\n\n> There is no `tailwind.config.js` in Tailwind 4: the CLI finds `index.html`\n> on its own, and you customize the design in CSS with `@theme`. `--watch=always`\n> keeps the watcher alive when it is started from the rack rather than a terminal.\n\n## The sample\n\n- **`input.css`** — the one `@import \"tailwindcss\"` line plus a custom `.btn`\n  component built with `@apply`.\n- **`index.html`** — a card styled entirely with utility classes; it links the\n  generated `output.css`.\n- **`package.json`** — pins `tailwindcss` and its CLI, `@tailwindcss/cli`, and\n  adds `build`/`watch` scripts.\n\n## Try this\n\n1. Add `hover:scale-105 transition` to the card `div` and hover it.\n2. Make the layout responsive: change padding to `p-4 md:p-8`.\n3. Add a second button and give it `bg-emerald-600` via a new `@apply` rule.\n\n## Going further\n\nThe utility reference is searchable and worth bookmarking:\nhttps://tailwindcss.com/docs/utility-first\n",
       "blurb.es": "CSS primero de utilidades: compón diseños con clases diminutas y deja que el build elimine el resto.",
       "blurb.fr": "Du CSS utilitaire d’abord : composez vos designs avec de minuscules classes et laissez le build retirer le reste.",
       "blurb.de": "CSS nach dem Utility-Prinzip: Designs aus winzigen Klassen bauen und den Rest vom Build entfernen lassen.",
