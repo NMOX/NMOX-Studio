@@ -150,4 +150,43 @@ class BundleEncodingGateTest {
             }).sorted().toList();
         }
     }
+
+    /**
+     * A platform overlay is escaped ASCII, every one.
+     *
+     * <p>The overlays under {@code branding/src/main/nbm-branding} are read by
+     * a dozen gates with {@code Properties.load(InputStream)}, which is
+     * ISO-8859-1 by contract; their comments say the files are "written as
+     * escaped ASCII, so the two agree". 124 of 2,159 were not (102 of them
+     * Arabic, written raw by the translator of v2.152.0 and by every later
+     * hand that kept its neighbour's encoding). The platform reads raw UTF-8
+     * correctly, so nothing was wrong on screen (walked in Spanish, 3.13.0:
+     * <em>Repetir compilación/ejecución</em>), but those gates were judging
+     * Arabic as mojibake, and their laws about it held by accident. Measured
+     * in BYTES: a first count with a regex over code points U+0080 to U+00FF
+     * found six files and missed every Arabic one.
+     */
+    @Test
+    @DisplayName("every platform overlay under nbm-branding is escaped ASCII, so a Latin-1 reader and the platform agree")
+    void overlaysAreEscapedAscii() throws IOException {
+        Path overlays = Path.of("..", "branding", "src", "main", "nbm-branding");
+        assertThat(overlays).as("the platform overlays").isDirectory();
+        List<String> raw = new ArrayList<>();
+        int files = 0;
+        try (Stream<Path> walk = Files.walk(overlays)) {
+            for (Path p : walk.filter(f -> f.toString().endsWith(".properties")).toList()) {
+                files++;
+                for (byte b : Files.readAllBytes(p)) {
+                    if (b < 0) {
+                        raw.add(overlays.relativize(p).toString().replace('\\', '/'));
+                        break;
+                    }
+                }
+            }
+        }
+        assertThat(files).as("the overlay population (a walk that finds nothing proves nothing)")
+                .isGreaterThan(2000);
+        assertThat(raw).as("overlays holding a raw non-ASCII byte: write the character as a \\uXXXX escape")
+                .isEmpty();
+    }
 }

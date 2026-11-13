@@ -83,11 +83,16 @@ under `compose.nmox.yaml` are unit-tested and not in the runner proof.
 The corepack lines for pnpm and yarn were proven on a runner, on
 `node:26-alpine`.
 
-**Two gates read Arabic overlays as Latin-1.** `CodeNamedMenuRowsTest`
-and `MainWindowChromeSpeaksTest` read platform overlays with
-`Properties.load(InputStream)`; about a hundred Arabic overlay files are
-raw UTF-8, so those gates judge Arabic as mojibake. Their laws happen to
-hold on it. The fix is the reader `BundleEncodingGateTest` already has.
+**~~Two gates read Arabic overlays as Latin-1.~~ Closed the same day.**
+124 of the 2,159 overlay files under `nbm-branding` were raw UTF-8 (102
+of them Arabic), and a dozen gates read overlays with
+`Properties.load(InputStream)`, which is ISO-8859-1: they judged those
+files as mojibake and their laws held on them by accident. The platform
+reads raw UTF-8 correctly (walked in Spanish), so nothing was wrong on
+screen. Every overlay is escaped ASCII now, and
+`BundleEncodingGateTest.overlaysAreEscapedAscii` holds it, counted in
+bytes: a first count by a regex over code points found six files and
+missed every Arabic one.
 
 **TypeScript 7's folds.** With TypeScript 7's own server running, the
 platform's client folds a single-line destructuring (`const {...} =
