@@ -363,6 +363,9 @@ final class JdbcCore {
      */
     static String humanize(Throwable t) {
         String message = message(t);
+        if (isServersVerdictOnTheLogin(t)) {
+            return message;
+        }
         String lower = message.toLowerCase(Locale.ROOT);
         // MariaDB Connector/J: "Trying to connect with ssl, but ssl not enabled in
         // the server. TLS is enabled by default, set sslMode=disable ..." — measured
@@ -382,6 +385,27 @@ final class JdbcCore {
             return Bundle.JdbcCore_tlsCertificate(message);
         }
         return message;
+    }
+
+    /**
+     * SQLSTATE class 28, "invalid authorization specification": the server
+     * was reached, spoke the protocol, and refused the user or the password.
+     * That is never a TLS refusal, and its message repeats the user name,
+     * which is the user's own text. Measured live on mysql:8.4 and
+     * mariadb:11 (ledger 142): {@code Access denied for user
+     * 'tls_certificate_bot'@'172.17.0.1' (using password: YES)} arrives with
+     * state 28000, and the looser certificate rule below called it a server
+     * whose certificate could not be verified.
+     */
+    private static boolean isServersVerdictOnTheLogin(Throwable t) {
+        int depth = 0;
+        for (Throwable x = t; x != null && depth < 8; x = x.getCause(), depth++) {
+            if (x instanceof java.sql.SQLException sql && sql.getSQLState() != null
+                    && sql.getSQLState().startsWith("28")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     static String blankToNull(String s) {

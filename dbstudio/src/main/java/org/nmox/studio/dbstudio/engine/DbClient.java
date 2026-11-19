@@ -348,7 +348,23 @@ public final class DbClient implements DbBackend {
         if (database != null && database.indexOf('?') >= 0) {
             return true;
         }
-        String host = spec.host();
+        return hostCarriesUrlSyntax(spec.host());
+    }
+
+    /**
+     * Whether a host field holds anything a URL parser reads as more than a
+     * name. One rule for every server engine: the document backends build
+     * their addresses by the same concatenation, and they were measured
+     * against what this build ships (ledger 142). The MongoDB driver starts
+     * its options at the first {@code /?}, so a host of
+     * {@code db.internal/?proxyHost=elsewhere&x=} sent the session through a
+     * SOCKS proxy the dialog never showed, {@code /admin?authMechanism=PLAIN}
+     * made the keychain password travel in the clear, and either one dropped
+     * the two timeouts appended after it. {@code java.net.URI} reads
+     * {@code db.internal@elsewhere} as user-info and a host, so CouchDB's
+     * Basic credentials went to {@code elsewhere}.
+     */
+    static boolean hostCarriesUrlSyntax(String host) {
         if (host == null) {
             return false;
         }
@@ -361,8 +377,28 @@ public final class DbClient implements DbBackend {
         return false;
     }
 
-    /** What ends the host, starts the options, or opens the MariaDB {@code address=(…)} form. */
-    private static final String HOST_URL_SYNTAX = "/?#&=()\\";
+    /**
+     * What ends the host, starts the options, opens the MariaDB
+     * {@code address=(…)} form, or ({@code @}) turns what precedes it into
+     * user-info. No host name holds any of them.
+     */
+    private static final String HOST_URL_SYNTAX = "/?#&=()\\@";
+
+    /**
+     * A bare IPv6 address in the brackets a URL needs ({@code ::1} becomes
+     * {@code [::1]}); anything else as it came. The JDBC drivers take the
+     * bare form, the MongoDB driver and {@code java.net.URI} do not
+     * (measured: the first throws, the second answers a null host).
+     */
+    static String urlHost(String host) {
+        if (host == null) {
+            return "";
+        }
+        String h = host.trim();
+        boolean bareV6 = !h.startsWith("[") && h.indexOf(':') >= 0 && h.indexOf(':') != h.lastIndexOf(':')
+                && h.indexOf(',') < 0;
+        return bareV6 ? "[" + h + "]" : h;
+    }
 
     /** The host spellings a connection to this machine takes; no lookup, a string rule. */
     static boolean isLoopbackHost(String host) {

@@ -121,6 +121,9 @@ public final class MongoBackend implements DbBackend {
      */
     @Override
     public String test() {
+        if (DbClient.hostCarriesUrlSyntax(spec.host())) {
+            return Bundle.DbClient_carriesOptions();
+        }
         try (MongoClient probe = MongoClients.create(connectionString())) {
             String database = blank(spec.database()) ? "admin" : spec.database();
             probe.getDatabase(database).runCommand(new Document("ping", 1));
@@ -142,6 +145,9 @@ public final class MongoBackend implements DbBackend {
     public synchronized String open() {
         if (client != null) {
             return null;
+        }
+        if (DbClient.hostCarriesUrlSyntax(spec.host())) {
+            return Bundle.DbClient_carriesOptions();
         }
         if (blank(spec.database())) {
             return NO_DATABASE;
@@ -352,6 +358,11 @@ public final class MongoBackend implements DbBackend {
     }
 
     static String connectionString(String user, char[] password, String host, int port) {
+        if (DbClient.hostCarriesUrlSyntax(host)) {
+            // test() and open() refuse in the user's words before they get here;
+            // this is the backstop that keeps such a string from being built at all
+            throw new IllegalArgumentException("host carries URL syntax");
+        }
         StringBuilder url = new StringBuilder("mongodb://");
         if (user != null && !user.isBlank()) {
             url.append(urlEncode(user));
@@ -360,7 +371,7 @@ public final class MongoBackend implements DbBackend {
             }
             url.append('@');
         }
-        url.append(host == null ? "" : host).append(':').append(port)
+        url.append(DbClient.urlHost(host)).append(':').append(port)
                 .append("/?connectTimeoutMS=").append(TIMEOUT_MS)
                 .append("&serverSelectionTimeoutMS=").append(TIMEOUT_MS);
         return url.toString();

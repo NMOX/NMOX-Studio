@@ -133,10 +133,18 @@ public final class ServicesBackend implements DbBackend {
     }
 
     private String notConnectedMessage(Exception cause) {
-        String hint = Bundle.ServicesBackend_servicesHint(connection.getDisplayName());
+        return notConnectedMessage(connection.getDisplayName(), cause);
+    }
+
+    /** The refusal, as a function of its two facts (so a test can hand it a driver's real words). */
+    static String notConnectedMessage(String displayName, Exception cause) {
+        String hint = Bundle.ServicesBackend_servicesHint(displayName);
         return cause == null
                 ? Bundle.ServicesBackend_notConnected(hint)
-                : Bundle.ServicesBackend_causeWithHint(JdbcCore.humanize(cause), hint);
+                // the driver's own words: the TLS sentences of JdbcCore.humanize tell the
+                // reader to tick or untick Use TLS, a box a Services connection does not
+                // have (its URL is the user's own and Edit is disabled for it; ledger 142)
+                : Bundle.ServicesBackend_causeWithHint(JdbcCore.message(cause), hint);
     }
 
     /**

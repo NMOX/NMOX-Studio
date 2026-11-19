@@ -302,6 +302,145 @@ class DockerizeFactsTest {
         assertThat(df.indexOf("COPY . .")).isLessThan(df.indexOf("RUN deno install"));
     }
 
+    @Test
+    @DisplayName("yarn 4 leaves devDependencies out with focus; yarn 2 and 3 cannot, and the file says so")
+    void yarnBerryProductionInstall(@TempDir Path dir) throws IOException {
+        Path four = Files.createDirectories(dir.resolve("four"));
+        write(four, "package.json", "{\"packageManager\": \"yarn@4.9.2\", \"scripts\": {\"start\": \"node s.js\"}}");
+        write(four, "yarn.lock", "");
+        write(four, ".yarnrc.yml", "nodeLinker: node-modules\n");
+        assertThat(dockerfile(four, ProjectKind.NODE))
+                .contains("RUN yarn install --immutable && yarn workspaces focus --all --production\n")
+                .doesNotContain("Plug'n'Play").doesNotContain("NODE_OPTIONS");
+
+        Path three = Files.createDirectories(dir.resolve("three"));
+        write(three, "package.json", "{\"packageManager\": \"yarn@3.8.7\", \"scripts\": {\"start\": \"node s.js\"}}");
+        write(three, "yarn.lock", "");
+        write(three, ".yarnrc.yml", "nodeLinker: \"node-modules\" # quoted, with a comment\n");
+        assertThat(dockerfile(three, ProjectKind.NODE))
+                .contains("RUN yarn install --immutable\n").doesNotContain("workspaces focus")
+                .contains("the image carries devDependencies").doesNotContain("NODE_OPTIONS");
+
+        // no pin: the release the project vendors says which yarn it is
+        Path vendored = Files.createDirectories(dir.resolve("vendored"));
+        write(vendored, "package.json", "{\"scripts\": {\"start\": \"node s.js\"}}");
+        write(vendored, "yarn.lock", "");
+        write(vendored, ".yarnrc.yml", "nodeLinker: pnpm\nyarnPath: .yarn/releases/yarn-4.5.0.cjs\n");
+        assertThat(dockerfile(vendored, ProjectKind.NODE)).contains("yarn workspaces focus --all --production");
+
+        assertThat(DockerizeGenerator.yarnMajor("yarn@10.1.0", "")).isEqualTo(10);
+        assertThat(DockerizeGenerator.yarnMajor("yarn@4.9.2+sha512.abc", "")).isEqualTo(4);
+        assertThat(DockerizeGenerator.yarnMajor("", "yarnPath: .yarn/releases/yarn-3.8.7.cjs")).isEqualTo(3);
+        assertThat(DockerizeGenerator.yarnMajor("", "")).as("nothing says: not assumed to be 4").isZero();
+        assertThat(DockerizeGenerator.yarnMajor("yarn@berry", "")).isZero();
+    }
+
+    @Test
+    @DisplayName("yarn Plug'n'Play: the server image keeps its packages under /app and tells node where they are")
+    void yarnPlugAndPlay(@TempDir Path dir) throws IOException {
+        Path pnp = Files.createDirectories(dir.resolve("pnp"));
+        write(pnp, "package.json", "{\"packageManager\": \"yarn@4.9.2\", \"scripts\": {\"start\": \"node s.js\"}}");
+        write(pnp, "yarn.lock", "");
+        Map<String, String> files = files(pnp, ProjectKind.NODE);
+        String df = files.get("Dockerfile");
+        assertThat(df).contains("ENV YARN_ENABLE_GLOBAL_CACHE=false\n")
+                .contains("ENV NODE_OPTIONS=\"--require /app/.pnp.cjs\"\n");
+        assertThat(df.indexOf("ENV YARN_ENABLE_GLOBAL_CACHE=false")).isLessThan(df.indexOf("RUN yarn install"));
+        assertThat(df.indexOf("ENV NODE_OPTIONS"))
+                .as("after the install: yarn itself cannot start while node is told to load a map that is not written yet")
+                .isGreaterThan(df.indexOf("RUN yarn install")).isLessThan(df.indexOf("COPY . ."));
+        assertThat(files.get(".dockerignore")).contains(".pnp.*\n").contains(".yarn/cache\n");
+
+        Path esm = Files.createDirectories(dir.resolve("esm"));
+        write(esm, "package.json", "{\"type\": \"module\", \"packageManager\": \"yarn@4.9.2\", \"scripts\": {\"start\": \"node s.js\"}}");
+        write(esm, "yarn.lock", "");
+        assertThat(dockerfile(esm, ProjectKind.NODE))
+                .contains("ENV NODE_OPTIONS=\"--require /app/.pnp.cjs --experimental-loader /app/.pnp.loader.mjs\"\n");
+
+        // a static build runs through yarn, as root, and needs neither line
+        Path site = Files.createDirectories(dir.resolve("site"));
+        write(site, "package.json", "{\"packageManager\": \"yarn@4.9.2\", \"scripts\": {\"build\": \"vite build\"},"
+                + " \"devDependencies\": {\"vite\": \"^8.0.0\"}}");
+        write(site, "yarn.lock", "");
+        Map<String, String> built = files(site, ProjectKind.NODE);
+        assertThat(built.get("Dockerfile")).contains("nginx").doesNotContain("NODE_OPTIONS")
+                .doesNotContain("workspaces focus");
+        assertThat(built.get(".dockerignore")).doesNotContain(".pnp.");
+        // and yarn 1 has no Plug'n'Play to speak of
+        assertThat(DockerizeGenerator.generate(ProjectKind.NODE, "x", false).get(".dockerignore")).doesNotContain(".pnp.");
+    }
+
+    @Test
+    @DisplayName("deno: the start task when deno.json has one, else the entry file that exists, else a file that says so")
+    void denoStartsWhatTheProjectHolds(@TempDir Path dir) throws IOException {
+        // the ordinary shape, unchanged
+        assertThat(DockerizeGenerator.generate(ProjectKind.DENO, "x", false).get("Dockerfile"))
+                .contains("RUN deno cache main.ts || true\n").endsWith("CMD [\"deno\", \"task\", \"start\"]\n");
+
+        Path task = Files.createDirectories(dir.resolve("task"));
+        write(task, "deno.jsonc", "{\n  // comments are why this is read as text\n  \"tasks\": {\n"
+                + "    \"dev\": \"deno run --watch server.ts\",\n    \"start\" : \"deno run -A server.ts\"\n  }\n}\n");
+        write(task, "server.ts", "");
+        assertThat(dockerfile(task, ProjectKind.DENO))
+                .contains("RUN deno cache server.ts || true\n").doesNotContain("main.ts")
+                .endsWith("CMD [\"deno\", \"task\", \"start\"]\n");
+
+        Path entry = Files.createDirectories(dir.resolve("entry"));
+        write(entry, "deno.json", "{\"tasks\": {\"dev\": \"deno run --watch src/main.ts\"}, \"start\": \"not a task\"}\n");
+        write(entry, "src/main.ts", "");
+        assertThat(dockerfile(entry, ProjectKind.DENO))
+                .as("a start key outside tasks is not a task; the entry under src is found")
+                .contains("RUN deno cache src/main.ts || true\n").contains("no \"start\" task in deno.json")
+                .endsWith("CMD [\"deno\", \"run\", \"--allow-net\", \"--allow-env\", \"--allow-read\", \"src/main.ts\"]\n");
+
+        Path nothing = Files.createDirectories(dir.resolve("nothing"));
+        write(nothing, "deno.json", "{}\n");
+        write(nothing, "lib/util.ts", "");
+        assertThat(dockerfile(nothing, ProjectKind.DENO))
+                .contains("NO START COMMAND WAS DETECTED").doesNotContain("deno cache")
+                .doesNotContain("\"task\", \"start\"").contains("Deno.exit(1)");
+    }
+
+    @Test
+    @DisplayName("deno: only a start key directly inside tasks counts")
+    void denoStartTaskRule() {
+        assertThat(DockerizeGenerator.declaresStartTask("{\"tasks\":{\"start\":\"x\"}}")).isTrue();
+        assertThat(DockerizeGenerator.declaresStartTask("{\"tasks\":{\"build\":{\"command\":\"x\"},\"start\" :\"x\"}}")).isTrue();
+        assertThat(DockerizeGenerator.declaresStartTask("{\"tasks\":{\"dev\":\"x\"},\"start\":\"x\"}")).isFalse();
+        assertThat(DockerizeGenerator.declaresStartTask("{\"tasks\":{\"dev\":{\"start\":\"x\"}}}")).as("nested deeper").isFalse();
+        assertThat(DockerizeGenerator.declaresStartTask("{\"tasks\":{\"prestart\":\"x\",\"dev\":\"echo start\"}}")).isFalse();
+        assertThat(DockerizeGenerator.declaresStartTask("{\"tasks\":{")).isFalse();
+        assertThat(DockerizeGenerator.declaresStartTask("")).isFalse();
+    }
+
+    @Test
+    @DisplayName("rust: a crate with src/lib.rs and no binary gets a file that builds it and says there is nothing to start")
+    void rustLibraryOnly(@TempDir Path dir) throws IOException {
+        Path lib = Files.createDirectories(dir.resolve("lib"));
+        write(lib, "Cargo.toml", "[package]\nname = \"shapes\"\nversion = \"0.1.0\"\n");
+        write(lib, "src/lib.rs", "");
+        String df = dockerfile(lib, ProjectKind.RUST);
+        assertThat(df).contains("BUILDS A LIBRARY AND NO BINARY").contains("cargo build --release")
+                .doesNotContain("cp target/release").doesNotContain("COPY --from=build")
+                .contains("nothing to start");
+
+        // each of cargo's three ways to have a binary keeps the ordinary recipe
+        Path both = Files.createDirectories(dir.resolve("both"));
+        write(both, "Cargo.toml", "[package]\nname = \"shapes\"\nversion = \"0.1.0\"\n");
+        write(both, "src/lib.rs", "");
+        write(both, "src/main.rs", "");
+        assertThat(dockerfile(both, ProjectKind.RUST)).contains("cp target/release/shapes /out/shapes");
+        Path binDir = Files.createDirectories(dir.resolve("bindir"));
+        write(binDir, "Cargo.toml", "[package]\nname = \"shapes\"\nversion = \"0.1.0\"\n");
+        write(binDir, "src/lib.rs", "");
+        write(binDir, "src/bin/tool.rs", "");
+        assertThat(dockerfile(binDir, ProjectKind.RUST)).doesNotContain("BUILDS A LIBRARY");
+        Path declared = Files.createDirectories(dir.resolve("declared"));
+        write(declared, "Cargo.toml", "[package]\nname = \"shapes\"\nversion = \"0.1.0\"\n\n[[bin]]\nname = \"tool\"\npath = \"tool.rs\"\n");
+        write(declared, "src/lib.rs", "");
+        assertThat(dockerfile(declared, ProjectKind.RUST)).contains("cp target/release/tool /out/tool");
+    }
+
     // ---- 8: bun
 
     @Test

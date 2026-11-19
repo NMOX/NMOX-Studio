@@ -118,6 +118,9 @@ public final class CouchBackend implements DbBackend {
      */
     @Override
     public String test() {
+        if (DbClient.hostCarriesUrlSyntax(spec.host())) {
+            return Bundle.DbClient_carriesOptions();
+        }
         try {
             String body = get("/");
             if (parseWelcome(body) == null) {
@@ -458,7 +461,12 @@ public final class CouchBackend implements DbBackend {
                 .build());
     }
 
-    private HttpRequest.Builder request(String path) {
+    private HttpRequest.Builder request(String path) throws java.io.IOException {
+        if (DbClient.hostCarriesUrlSyntax(spec.host())) {
+            // every request passes here, so nothing is dialed and no credential
+            // header is built for a host that is more than a name (ledger 142)
+            throw new java.io.IOException(Bundle.DbClient_carriesOptions());
+        }
         // v1.260.0: localhost couch reached on whichever loopback stack
         // it bound (HttpClient dials only the first resolved address)
         HttpRequest.Builder builder = CleartextHttp.pinVersion(HttpRequest.newBuilder(
@@ -565,7 +573,7 @@ public final class CouchBackend implements DbBackend {
         // CouchDB credentials stop traversing cleartext when the server
         // supports it; false keeps the pre-v1.122.0 behavior
         String scheme = spec.secure() ? "https://" : "http://";
-        return scheme + (spec.host() == null ? "" : spec.host()) + ":" + port;
+        return scheme + DbClient.urlHost(spec.host()) + ":" + port;
     }
 
     /** Encodes one path segment (CouchDB db names may contain {@code +/$...}). */
