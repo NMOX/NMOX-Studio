@@ -62,21 +62,46 @@ pin. The install hints were not rewritten in this release.
 
 **Seen while proving the spaces, not fixed.**
 
-- The Gleam space's tutorial calls the test lane "already wired" and the
-  space ships no test: `gleam test` exits 1.
+- ~~The Gleam space's tutorial calls the test lane "already wired" and the
+  space ships no test: `gleam test` exits 1.~~ Closed by 3.13.1: the space
+  ships `test/hello_test.gleam` and gleeunit; `1 passed, no failures` on
+  gleam 1.19.2.
 - `scarb cairo-test` is deprecated in favour of `snforge`, which was not
   on the machine; the Cairo space passes with a warning.
 - The Preact blurb says "3 kB" in fifteen languages; Preact 11's size was
   not measured.
-- `npx playwright install chromium` downloads 595 MB on a learner's
-  first run of the Playwright space. The tutorial does not say so.
+- ~~`npx playwright install chromium` downloads 595 MB on a learner's
+  first run of the Playwright space. The tutorial does not say so.~~
+  Closed by 3.13.1: it says so, and the install line stopped fetching
+  Firefox and WebKit, which the space's tests never used. SPECTER's
+  BROWSERS button still installs every browser, and the tutorial says
+  that too.
 - NIMBUS DIAG on a Nuxt 4 project with no type checker exits 1 with
   Nuxt's own instruction. It speaks; it could speak in our words.
 
-**Dockerize, after the nine.** `deno cache main.ts` and
+**Dockerize, after the nine.** ~~`deno cache main.ts` and
 `CMD ["deno", "task", "start"]` still assume their entry. A Rust crate
 with only a `[lib]` gets a recipe that cannot start. Yarn Berry gets no
-production-only install. An existing `compose.yaml` that Dockerize did
+production-only install.~~ Those three closed by 3.13.1, and measuring
+the third found a fourth that was worse: a Yarn Plug'n'Play project,
+which is Yarn 2+'s default, got an image that could not start at all
+(`MODULE_NOT_FOUND`; fixed, and in the runner proof). What 3.13.1 left:
+
+- Yarn 2 and 3 still carry devDependencies (`workspaces focus` is a
+  plugin there, measured on 3.8.7 and 2.4.3).
+- A `.yarnrc.yml` with no `packageManager` pin and no `yarnPath` gets
+  whatever yarn corepack defaults to, which is 1.x: the berry flags in
+  its file are then wrong. Not built.
+- A zero-install project (a committed `.yarn/cache`) has that cache kept
+  out of the image by the new `.dockerignore` lines and fetches again.
+  Not built.
+- `nodeLinker` set through `YARN_NODE_LINKER` in the environment rather
+  than in `.yarnrc.yml` reads as Plug'n'Play.
+- A Deno start that falls back to the entry file is given
+  `--allow-net --allow-env --allow-read`; a program that writes will be
+  refused by Deno, in Deno's words.
+
+An existing `compose.yaml` that Dockerize did
 not write is protected only by the overwrite question (it cannot be told
 from our own). Bun's frozen-lockfile path and the dockerized LEMP stack
 under `compose.nmox.yaml` are unit-tested and not in the runner proof.
@@ -120,15 +145,23 @@ path could switch extension loading on; the TLS sentences answered ordinary
 query errors; the failure balloon was a markup sink. Left, each for a
 reason:
 
-- **MongoDB and CouchDB build their addresses the same way and were not
-  probed.** `MongoBackend.connectionString` concatenates the host into
+- ~~**MongoDB and CouchDB build their addresses the same way and were not
+  probed.**~~ **Probed and closed by 3.13.1** (`HostileDocumentHostTest`):
+  the hypothesis held on both. A MongoDB host of
+  `h/?proxyHost=elsewhere&x=` set a SOCKS proxy and dropped both
+  timeouts, `h/admin?authMechanism=PLAIN&x=` put the password on the
+  wire, and a CouchDB host of `h@elsewhere` sent the Basic credentials to
+  `elsewhere`. One host rule holds every server engine now, with `@` in
+  it. What this entry said before: `MongoBackend.connectionString` concatenates the host into
   `mongodb://host:port/?…` and `CouchBackend.baseUrl` into
   `http(s)://host:port`. A host holding `/?tls=false&x=` or `user@elsewhere`
   is the same class as the JDBC one. Not measured against the MongoDB
   driver's own parser, so not changed: a hypothesis, to be probed the way
   `HostileSpecUrlTest` probes the JDBC drivers.
-- **A Services-window connection gets none of these protections, and its
-  refusals can name a box it does not have.** The URL is the user's own and
+- **A Services-window connection gets none of these protections.** (Its
+  refusals no longer name a box it does not have: 3.13.1 gives them the
+  driver's own words, `ServicesBackendTest`. The rest of this item
+  stands.) As written: The URL is the user's own and
   NetBeans opens the connection: no stated `sslMode`, no loopback rule, no
   local-infile refusal, no option check. `ServicesBackend.open` still runs
   the driver's failure through `JdbcCore.humanize`, so a MariaDB driver the
@@ -137,7 +170,16 @@ reason:
   the code, not reproduced: it needs a registered MySQL-family driver that
   fails with those words. The user guide says the Services connections
   "run in the same console" and says nothing of what they do not get.
-- **The third TLS rule is still loose where it applies.** For a MySQL or
+- **The third TLS rule is still loose where it applies, less so since
+  3.13.1.** The named false positive is closed by measurement: a refused
+  login arrives with SQLSTATE 28000 on mysql:8.4 and mariadb:11, and
+  that state now passes through as the server's verdict
+  (`HumanizeScopeTest.aRefusedLoginIsNotATlsRefusal`). mysql:8.4's own
+  self-signed certificate under *Use TLS* answers *Cannot use
+  authentication plugin caching_sha2_password with a Self signed
+  certificates* (state 42000), which keeps the sentence. Still not
+  produced: a hostname mismatch and an untrusted CA chain, which need a
+  certificate signed for another name. As written: For a MySQL or
   MariaDB connect failure, any message holding "ssl" or "tls" beside
   "certificate", "hostname", "pkix" or "handshake" becomes the certificate
   sentence: *Access denied for user 'tls_certificate_bot'* would. The

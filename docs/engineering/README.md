@@ -36,6 +36,10 @@ Every document here is current; the v0.x-era papers were removed in
   booting and photographing the assembled app on both.
 - **[tech-debt.md](./tech-debt.md)** — the current debt ledger: open
   items with their deferral reasons, closed items by version.
+- **[status-history.md](./status-history.md)** — the release-by-release
+  status paragraphs and per-version notes that used to sit inside
+  `CLAUDE.md`, moved out verbatim when that file outgrew the size at
+  which it loads. `CHANGELOG.md` remains the full record.
 - **[gates.md](./gates.md)** — every build-failing law test, grouped by
   theme, with the law it holds and where it came from. **Read this when
   your build fails on a test whose name ends in `GateTest` or

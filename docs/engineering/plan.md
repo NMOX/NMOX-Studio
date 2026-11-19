@@ -1,5 +1,29 @@
 # The Plan
 
+*Currency addendum 2026-11-19 (3.13.1). The
+first session run from a terminal rather than the desktop app. What it
+taught:
+
+1. **The instruction file had stopped loading.** `CLAUDE.md` was four
+   times its reader's limit, grown one status paragraph per ship. A file
+   that is appended to at every ship needs a budget and a gate like any
+   other growing thing; it has both now.
+2. **"Not measured" in the ledger is a work order.** Ledger 142's
+   document-backend hosts were recorded as a hypothesis for want of a
+   probe that took ten minutes to write; the TLS rule for want of a live
+   server that `docker run` supplies. Both were real.
+3. **Measuring one debt finds the one beside it.** Asking whether Yarn 4
+   can install for production built a Plug'n'Play image, which could not
+   start: a defect in every release since the recipe was written, on
+   Yarn's default configuration.
+4. **A terminal proves what a daemon, a driver or a toolchain can
+   answer, and nothing about a screen.** The session changed no window
+   and says so.
+
+v3.13.0 sat tagged with no release for six days behind Apple's notary
+agreement, which only David could accept. He did on 2026-11-19; the same
+run's failed jobs were re-run and published it, and 3.13.1 followed.*
+
 *Currency addendum 2026-11-13 (3.13.0, the refresh). The brief was four
 hours: review and reconsider every area, bump what can be bumped, build
 what had been waiting. What the afternoon taught:

@@ -161,4 +161,28 @@ class ServicesBackendTest {
         assertThat(ServicesBackend.portOf("jdbc:derby://h:notaport/d")).isEqualTo(-1);
         assertThat(ServicesBackend.databaseOf(null)).isEmpty();
     }
+
+    @Test
+    @DisplayName("a Services connection's refusal is the driver's own words: it never names the Use TLS box, which it does not have")
+    void aRefusalNeverNamesABoxThisConnectionLacks() {
+        // each is a message JdbcCore.humanize turns into a sentence about ticking or unticking Use TLS;
+        // the second is what mysql:8.4 answered a verify-full connection on 2026-11-19
+        for (String driverWords : new String[]{
+            "Trying to connect with ssl, but ssl not enabled in the server",
+            "(conn=8) Cannot use authentication plugin caching_sha2_password with a Self signed certificates. "
+                + "Either set sslMode=trust, use password with a MitM-Proof authentication plugin or provide "
+                + "server certificate to client",
+            "RSA public key is not available client side (option serverRsaPublicKeyFile not set)"}) {
+            java.sql.SQLException cause = new java.sql.SQLException(driverWords);
+            assertThat(JdbcCore.humanize(cause)).as("the control: DB Studio's own connections do get a sentence")
+                    .isNotEqualTo(driverWords);
+            String refusal = ServicesBackend.notConnectedMessage("shop on db.example", cause);
+            assertThat(refusal).contains(driverWords).contains("shop on db.example");
+            assertThat(refusal)
+                    .isEqualTo(Bundle.ServicesBackend_causeWithHint(driverWords,
+                            Bundle.ServicesBackend_servicesHint("shop on db.example")));
+        }
+        assertThat(ServicesBackend.notConnectedMessage("x", null))
+                .isEqualTo(Bundle.ServicesBackend_notConnected(Bundle.ServicesBackend_servicesHint("x")));
+    }
 }

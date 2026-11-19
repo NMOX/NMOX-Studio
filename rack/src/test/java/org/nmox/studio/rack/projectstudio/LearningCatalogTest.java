@@ -128,4 +128,35 @@ class LearningCatalogTest {
         assertThat(spaces.get(0).files()).isEmpty();
         assertThat(spaces.get(0).driver().snippets()).isEmpty();
     }
+
+    @Test
+    @DisplayName("a space whose tutorial sends the learner to a test lane ships a test for it to run")
+    void aNamedTestLaneHasATest() {
+        // 3.13.0 found the Gleam tutorial calling VERITAS "already wired" in a space with no
+        // test: `gleam test` exited 1. Proven with gleam 1.19.2 on 2026-11-19: 1 passed.
+        LearningCatalog.Space gleam = LearningCatalog.find("gleam");
+        assertThat(gleam.tutorial()).contains("VERITAS (`gleam test`");
+        assertThat(gleam.files()).extracting(LearningCatalog.SampleFile::path)
+                .contains("test/hello_test.gleam");
+        assertThat(gleam.files()).filteredOn(f -> f.path().equals("gleam.toml")).singleElement()
+                .satisfies(f -> assertThat(f.content()).contains("[dev-dependencies]").contains("gleeunit"));
+        assertThat(gleam.files()).filteredOn(f -> f.path().equals("test/hello_test.gleam")).singleElement()
+                .satisfies(f -> assertThat(f.content()).contains("hello.squares("));
+        assertThat(gleam.files()).filteredOn(f -> f.path().equals("src/hello.gleam")).singleElement()
+                .satisfies(f -> assertThat(f.content()).contains("pub fn squares("));
+    }
+
+    @Test
+    @DisplayName("the Playwright space installs the one browser its tests use, and says what the download costs")
+    void playwrightInstallsWhatItUses() {
+        LearningCatalog.Space space = LearningCatalog.find("playwright");
+        assertThat(LearningSpace.installHint(space))
+                .as("no `projects` in the space's config, so Chromium alone runs: Firefox and WebKit were downloaded for nothing")
+                .endsWith("npx playwright install chromium");
+        assertThat(space.tutorial()).contains("npx playwright install chromium").contains("about 600 MB");
+        assertThat(space.files()).filteredOn(f -> f.path().equals("playwright.config.ts")).singleElement()
+                .satisfies(f -> assertThat(f.content())
+                        .as("once the config names projects, the install line must name their browsers")
+                        .doesNotContain("projects"));
+    }
 }

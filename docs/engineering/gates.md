@@ -172,6 +172,7 @@ Fifteen languages, each written in its own conventions, with the English enterin
 A number, a link or a picture in the docs is a claim, so it has a test.
 
 - [`DocsCountGateTest`](../../application/src/test/java/org/nmox/studio/application/DocsCountGateTest.java): Every count a live doc quotes (devices, spaces, manifests, grammars, languages) equals the product's (v1.362.0).
+- [`ClaudeMdSizeGateTest`](../../application/src/test/java/org/nmox/studio/application/ClaudeMdSizeGateTest.java): `CLAUDE.md` stays under a budget far below the 150,000 characters at which it stops loading, and holds one status paragraph that a ship replaces (after 3.13.0: it had reached 626,700, each release stacked above the last).
 - [`UiCountLiteralGateTest`](../../application/src/test/java/org/nmox/studio/application/UiCountLiteralGateTest.java): No user-visible string literal carries a hand-typed count (v2.85.0: a button promised 92 spaces while 93 shipped).
 - [`DocsIndexGateTest`](../../application/src/test/java/org/nmox/studio/application/DocsIndexGateTest.java): Every document beside an index is linked from it, including every live engineering document (v2.90.0).
 - [`DocsContentsGateTest`](../../application/src/test/java/org/nmox/studio/application/DocsContentsGateTest.java): The long documents' contents blocks are derived from their own headings (v2.89.0).

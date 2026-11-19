@@ -86,14 +86,20 @@ public final class DockerizeGenerator {
      * @param nodeLocked     that manager's lockfile is in the build context
      * @param yarnBerry      yarn 2+ ({@code .yarnrc.yml}, or a pin of it)
      * @param yarnDir        a {@code .yarn} directory to copy before installing
+     * @param yarnFocus      yarn 4 or later, which can leave devDependencies out
+     * @param yarnPnp        yarn 2+ with no {@code nodeLinker}: Plug'n'Play, no node_modules
+     * @param yarnEsm        package.json says {@code "type": "module"}
      * @param staticDir      where the build leaves the bundle, under /app
      * @param staticNote     what that was read from, or null
      * @param rustBinary     the crate's binary name; "" means the image name
      * @param rustWorkspace  Cargo.toml is a workspace root with no package
+     * @param rustLibOnly    the crate builds a library and no binary
      * @param pyInstall      how dependencies are installed
      * @param pyStart        what starts the app
      * @param pyModule       the module holding the app, or null when none was found
      * @param denoWorkspace  deno.json names workspace members
+     * @param denoTask       deno.json has a {@code start} task
+     * @param denoEntry      the entry file that was found, or null
      * @param bunPackage     there is a package.json
      * @param bunLocked      there is a bun.lock or bun.lockb
      * @param bunScript      package.json has a start script
@@ -101,8 +107,9 @@ public final class DockerizeGenerator {
      * @param foreignCompose the project has a compose file Dockerize did not write
      */
     public record Facts(boolean nodeStatic, String nodeManager, boolean nodeLocked, boolean yarnBerry,
-            boolean yarnDir, String staticDir, String staticNote, String rustBinary, boolean rustWorkspace,
-            PyInstall pyInstall, PyStart pyStart, String pyModule, boolean denoWorkspace, boolean bunPackage,
+            boolean yarnDir, boolean yarnFocus, boolean yarnPnp, boolean yarnEsm, String staticDir, String staticNote, String rustBinary, boolean rustWorkspace,
+            boolean rustLibOnly, PyInstall pyInstall, PyStart pyStart, String pyModule, boolean denoWorkspace,
+            boolean denoTask, String denoEntry, boolean bunPackage,
             boolean bunLocked, boolean bunScript, String bunEntry, boolean foreignCompose) {
 
         /** The ordinary shape of a kind: nothing was read from disk. */
@@ -118,14 +125,20 @@ public final class DockerizeGenerator {
         boolean nodeLocked = true;
         boolean yarnBerry;
         boolean yarnDir;
+        boolean yarnFocus;
+        boolean yarnPnp;
+        boolean yarnEsm;
         String staticDir = "dist";
         String staticNote;
         String rustBinary = "";
         boolean rustWorkspace;
+        boolean rustLibOnly;
         PyInstall pyInstall = PyInstall.REQUIREMENTS;
         PyStart pyStart = PyStart.UVICORN;
         String pyModule = "main";
         boolean denoWorkspace;
+        boolean denoTask = true;
+        String denoEntry = "main.ts";
         boolean bunPackage = true;
         boolean bunLocked = true;
         boolean bunScript = true;
@@ -137,8 +150,10 @@ public final class DockerizeGenerator {
         }
 
         Facts build() {
-            return new Facts(nodeStatic, nodeManager, nodeLocked, yarnBerry, yarnDir, staticDir, staticNote,
-                    rustBinary, rustWorkspace, pyInstall, pyStart, pyModule, denoWorkspace, bunPackage,
+            return new Facts(nodeStatic, nodeManager, nodeLocked, yarnBerry, yarnDir, yarnFocus, yarnPnp, yarnEsm,
+                    staticDir, staticNote,
+                    rustBinary, rustWorkspace, rustLibOnly, pyInstall, pyStart, pyModule, denoWorkspace,
+                    denoTask, denoEntry, bunPackage,
                     bunLocked, bunScript, bunEntry, foreignCompose);
         }
     }
@@ -163,7 +178,7 @@ public final class DockerizeGenerator {
             case NODE -> inspectNode(dir, d);
             case RUST -> inspectRust(dir, d);
             case PYTHON -> inspectPython(dir, d);
-            case DENO -> d.denoWorkspace = mentions(text(dir, "deno.json") + text(dir, "deno.jsonc"), "workspace");
+            case DENO -> inspectDeno(dir, d);
             case BUN -> inspectBun(dir, d);
             default -> {
                 // go and php ask nothing of the project beyond its manifest
@@ -188,6 +203,11 @@ public final class DockerizeGenerator {
             boolean pinnedBerry = pin.startsWith("yarn@") && !pin.startsWith("yarn@1.") && !pin.startsWith("yarn@0.");
             d.yarnBerry = pinnedBerry || new File(dir, ".yarnrc.yml").isFile();
             d.yarnDir = d.yarnBerry && new File(dir, ".yarn").isDirectory();
+            String rc = text(dir, ".yarnrc.yml");
+            d.yarnFocus = d.yarnBerry && yarnMajor(pin, rc) >= 4;
+            // Plug'n'Play is yarn 2+'s default: only a nodeLinker line asks for node_modules
+            d.yarnPnp = d.yarnBerry && !rcKey(rc, "nodeLinker").matches("node-modules|pnpm");
+            d.yarnEsm = pkg != null && "module".equals(pkg.optString("type", ""));
         }
         if (!d.nodeStatic) {
             return;
@@ -207,6 +227,34 @@ public final class DockerizeGenerator {
      * browser builder writes {@code <outputPath>} itself; the default
      * outputPath is {@code dist/<project>}.
      */
+    /** The yarn major a project pins: its {@code packageManager}, else the release its {@code yarnPath} names; 0 when neither says. */
+    static int yarnMajor(String pin, String yarnrc) {
+        String version = pin.startsWith("yarn@") ? pin.substring("yarn@".length()) : "";
+        if (version.isEmpty()) {
+            String path = rcKey(yarnrc, "yarnPath");
+            int at = path.lastIndexOf("yarn-");
+            version = at < 0 ? "" : path.substring(at + "yarn-".length());
+        }
+        int end = 0;
+        while (end < version.length() && end < 4 && Character.isDigit(version.charAt(end))) {
+            end++;
+        }
+        return end == 0 ? 0 : Integer.parseInt(version.substring(0, end));
+    }
+
+    /** A top-level scalar of a .yarnrc.yml, unquoted; "" when the key is not there. */
+    static String rcKey(String yarnrc, String key) {
+        for (String raw : yarnrc.split("\n")) {
+            if (raw.startsWith(key + ":")) {
+                String value = raw.substring(key.length() + 1);
+                int hash = value.indexOf(" #");
+                value = (hash >= 0 ? value.substring(0, hash) : value).strip();
+                return value.replace("\"", "").replace("'", "");
+            }
+        }
+        return "";
+    }
+
     private static void angularOutput(File dir, Draft d) {
         JSONObject root = json(dir, "angular.json");
         JSONObject projects = root == null ? null : root.optJSONObject("projects");
@@ -292,6 +340,59 @@ public final class DockerizeGenerator {
         } else {
             d.rustWorkspace = workspace;
         }
+        // cargo's own rule for what a package builds: a [[bin]], src/main.rs, or
+        // anything under src/bin is a binary; src/lib.rs with none of them is a
+        // library, and `cargo build` leaves nothing in target/release to start
+        d.rustLibOnly = bin == null && pkg != null
+                && new File(dir, "src/lib.rs").isFile()
+                && !new File(dir, "src/main.rs").isFile()
+                && !new File(dir, "src/bin").isDirectory();
+    }
+
+    /** What starts a Deno project: its {@code start} task, else an entry file at a usual name. */
+    private static void inspectDeno(File dir, Draft d) {
+        String manifest = text(dir, "deno.json") + text(dir, "deno.jsonc");
+        d.denoWorkspace = mentions(manifest, "workspace");
+        d.denoTask = declaresStartTask(manifest);
+        d.denoEntry = null;
+        for (String entry : new String[] {"main.ts", "main.js", "server.ts", "server.js", "mod.ts",
+            "index.ts", "index.js", "src/main.ts", "src/main.js", "src/server.ts", "src/index.ts"}) {
+            if (new File(dir, entry).isFile()) {
+                d.denoEntry = entry;
+                break;
+            }
+        }
+    }
+
+    /**
+     * Whether a deno.json (or .jsonc, which a JSON parser refuses for its
+     * comments) holds a {@code "start"} key inside its {@code "tasks"}
+     * object. Read as text: the object is followed to its closing brace.
+     */
+    static boolean declaresStartTask(String manifest) {
+        int tasks = manifest.indexOf("\"tasks\"");
+        int open = tasks < 0 ? -1 : manifest.indexOf('{', tasks);
+        if (open < 0) {
+            return false;
+        }
+        int depth = 0;
+        for (int i = open; i < manifest.length(); i++) {
+            char c = manifest.charAt(i);
+            if (c == '{') {
+                depth++;
+            } else if (c == '}' && --depth == 0) {
+                return false;
+            } else if (depth == 1 && manifest.startsWith("\"start\"", i)) {
+                int after = i + "\"start\"".length();
+                while (after < manifest.length() && Character.isWhitespace(manifest.charAt(after))) {
+                    after++;
+                }
+                if (after < manifest.length() && manifest.charAt(after) == ':') {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static void inspectPython(File dir, Draft d) {
@@ -442,7 +543,12 @@ public final class DockerizeGenerator {
                 if (nodeBuildsStatic) {
                     files.put("docker/nginx.conf", nodeNginxConf());
                 }
-                files.put(".dockerignore", ignore(side, "node_modules", "dist", ".git", "*.log"));
+                // under Plug'n'Play the image writes its own map and package store; this
+                // machine's would overwrite them at COPY . . with paths into another home
+                files.put(".dockerignore", facts.yarnPnp() && !nodeBuildsStatic
+                        ? ignore(side, "node_modules", "dist", ".git", "*.log",
+                                ".pnp.*", ".yarn/cache", ".yarn/unplugged", ".yarn/install-state.gz")
+                        : ignore(side, "node_modules", "dist", ".git", "*.log"));
             }
             case BUN -> {
                 files.put("Dockerfile", bun(facts));
@@ -551,15 +657,39 @@ public final class DockerizeGenerator {
                 String copy = "COPY package.json yarn.lock* .yarnrc.yml* ./\n"
                         + (f.yarnDir() ? "COPY .yarn ./.yarn\n" : "");
                 String run;
+                String before = "";
+                String after = "";
                 if (f.yarnBerry()) {
-                    // yarn 2+ has no --production install; the image carries devDependencies
-                    run = "RUN yarn install" + (f.nodeLocked() ? " --immutable" : "") + "\n";
+                    String install = "yarn install" + (f.nodeLocked() ? " --immutable" : "");
+                    if (production && f.yarnFocus()) {
+                        // measured on yarn 4.9.2: after an install, focus removes what only
+                        // devDependencies brought; yarn 2 and 3 need a plugin for the command
+                        run = "# yarn 4: the lockfile is checked, then devDependencies are left out\n"
+                                + "RUN " + install + " && yarn workspaces focus --all --production\n";
+                    } else {
+                        run = (production ? "# yarn 2 and 3 have no production-only install without a plugin:"
+                                + " the image carries devDependencies\n" : "")
+                                + "RUN " + install + "\n";
+                    }
+                    if (production && f.yarnPnp()) {
+                        // measured: without these two the image could not start. `npm start`
+                        // found no node_modules, and the packages sat in root's home
+                        before = """
+                                # this project uses Yarn Plug'n'Play (.yarnrc.yml sets no nodeLinker), so there
+                                # is no node_modules: the packages are kept under /app/.yarn, where the node
+                                # user can read them, rather than in root's home
+                                ENV YARN_ENABLE_GLOBAL_CACHE=false
+                                """;
+                        after = "# and node is told where they are, because \"npm start\" does not go through yarn\n"
+                                + "ENV NODE_OPTIONS=\"--require /app/.pnp.cjs"
+                                + (f.yarnEsm() ? " --experimental-loader /app/.pnp.loader.mjs" : "") + "\"\n";
+                    }
                 } else {
                     run = "RUN yarn install" + (f.nodeLocked() ? " --frozen-lockfile" : "")
                             + (production ? " --production" : "") + "\n";
                 }
                 return corepack.formatted(f.yarnBerry() ? "yarn (2 or later)" : "yarn")
-                        + (f.nodeLocked() ? "" : unlocked.formatted("yarn.lock")) + copy + run;
+                        + (f.nodeLocked() ? "" : unlocked.formatted("yarn.lock")) + before + copy + run + after;
             }
             default -> {
                 if (f.nodeLocked()) {
@@ -693,6 +823,24 @@ public final class DockerizeGenerator {
         // copied to /out, which the image does not have: /<name> was a
         // directory for a crate called src.
         String bin = f.rustBinary() == null || f.rustBinary().isEmpty() ? name : f.rustBinary();
+        if (f.rustLibOnly()) {
+            return """
+                    # THIS CRATE BUILDS A LIBRARY AND NO BINARY: there is src/lib.rs and no
+                    # src/main.rs, src/bin or [[bin]], so `cargo build` leaves nothing to start.
+                    # The image below compiles the crate (a check that it builds in a clean
+                    # room) and says so when run. To ship a service, add src/main.rs and
+                    # run Dockerize again.
+                    FROM %s AS build
+                    WORKDIR /src
+                    COPY . .
+                    RUN --mount=type=cache,target=/usr/local/cargo/registry \\
+                        --mount=type=cache,target=/src/target \\
+                        cargo build --release
+
+                    FROM %s
+                    CMD ["sh", "-c", "echo 'NMOX Studio Dockerize: this crate builds a library and no binary, so there is nothing to start. Add src/main.rs and run Dockerize again.' >&2; exit 1"]
+                    """.formatted(RUST_IMAGE, DEBIAN_IMAGE);
+        }
         String note = f.rustWorkspace()
                 ? """
                 # Cargo.toml here is a WORKSPACE ROOT with no [package], so no binary name
@@ -771,10 +919,7 @@ public final class DockerizeGenerator {
                     # source: everything is copied first, so a code edit re-resolves dependencies
                     COPY . .
                     RUN deno install
-                    RUN deno cache main.ts || true
-                    EXPOSE 8000
-                    CMD ["deno", "task", "start"]
-                    """.formatted(DENO_IMAGE);
+                    """.formatted(DENO_IMAGE) + denoStart(f);
         }
         return """
                 FROM %s
@@ -785,10 +930,37 @@ public final class DockerizeGenerator {
                 COPY deno.json* deno.lock* ./
                 RUN deno install
                 COPY . .
-                RUN deno cache main.ts || true
-                EXPOSE 8000
-                CMD ["deno", "task", "start"]
-                """.formatted(DENO_IMAGE);
+                """.formatted(DENO_IMAGE) + denoStart(f);
+    }
+
+    /**
+     * The lines after the source is copied. The recipe once cached and started
+     * {@code main.ts} whatever the project held: a project whose entry is
+     * {@code server.ts}, or one with no {@code start} task, built an image
+     * that could not start.
+     */
+    private static String denoStart(Facts f) {
+        StringBuilder sb = new StringBuilder();
+        if (f.denoEntry() != null) {
+            sb.append("RUN deno cache ").append(f.denoEntry()).append(" || true\n");
+        }
+        sb.append("EXPOSE 8000\n");
+        if (f.denoTask()) {
+            sb.append("CMD [\"deno\", \"task\", \"start\"]\n");
+        } else if (f.denoEntry() != null) {
+            sb.append("# no \"start\" task in deno.json: this runs the entry file that was found, with\n")
+                    .append("# the network, the environment and reading allowed. Narrow the flags to what\n")
+                    .append("# the program needs, or add a start task and run Dockerize again.\n")
+                    .append("CMD [\"deno\", \"run\", \"--allow-net\", \"--allow-env\", \"--allow-read\", \"")
+                    .append(f.denoEntry()).append("\"]\n");
+        } else {
+            sb.append("# NO START COMMAND WAS DETECTED: no \"start\" task in deno.json and no main, server,\n")
+                    .append("# mod or index file. Name your entry here, for example\n")
+                    .append("# CMD [\"deno\", \"run\", \"--allow-net\", \"src/app.ts\"]\n")
+                    .append("CMD [\"deno\", \"eval\", \"console.error('NMOX Studio Dockerize: no start command was detected"
+                            + " for this project. Edit the CMD line of its Dockerfile.'); Deno.exit(1)\"]\n");
+        }
+        return sb.toString();
     }
 
     private static String php() {

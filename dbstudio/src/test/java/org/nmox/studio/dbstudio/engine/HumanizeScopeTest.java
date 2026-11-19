@@ -86,6 +86,37 @@ class HumanizeScopeTest {
     }
 
     @Test
+    @DisplayName("measured live: a refused login whose user name holds tls and certificate is the server's verdict, not a certificate")
+    void aRefusedLoginIsNotATlsRefusal() {
+        // the words and the SQLSTATE mysql:8.4 and mariadb:11 answered on 2026-11-19, over TLS and without
+        String denied = "(conn=11) Access denied for user 'tls_certificate_bot'@'172.17.0.1' (using password: YES)";
+        String handshake = "(conn=6) Access denied for user 'ssl_handshake_svc'@'172.17.0.1' (using password: YES)";
+        for (DbEngine engine : new DbEngine[]{DbEngine.MYSQL, DbEngine.MARIADB}) {
+            assertThat(DbClient.connectFailure(engine,
+                    new java.sql.SQLInvalidAuthorizationSpecException(denied, "28000", 1045)))
+                    .as("%s", engine).isEqualTo(denied);
+            assertThat(DbClient.connectFailure(engine,
+                    new java.sql.SQLInvalidAuthorizationSpecException(handshake, "28000", 1045)))
+                    .as("%s", engine).isEqualTo(handshake);
+            // the driver wraps: the verdict is still the server's when it is the cause
+            assertThat(DbClient.connectFailure(engine, new SQLException("ssl: could not log in to the certificate store",
+                    "08000", new java.sql.SQLInvalidAuthorizationSpecException(denied, "28000", 1045))))
+                    .as("%s, wrapped", engine).doesNotContain(TLS_SENTENCE_HEAD);
+            // and the same words with no such state are still judged by the rule: the control
+            assertThat(DbClient.connectFailure(engine, new SQLException(denied)))
+                    .as("%s: without the state the loose rule still fires, which is what the state is for", engine)
+                    .isEqualTo(Bundle.JdbcCore_tlsCertificate(denied));
+            // what mysql:8.4's own self-signed certificate really answers under Use TLS (state 42000)
+            String selfSigned = "(conn=8) Cannot use authentication plugin caching_sha2_password with a Self signed "
+                    + "certificates. Either set sslMode=trust, use password with a MitM-Proof authentication plugin "
+                    + "or provide server certificate to client";
+            assertThat(DbClient.connectFailure(engine, new java.sql.SQLSyntaxErrorException(selfSigned, "42000", -1)))
+                    .as("%s: the real certificate refusal keeps its sentence", engine)
+                    .isEqualTo(Bundle.JdbcCore_tlsCertificate(selfSigned));
+        }
+    }
+
+    @Test
     @DisplayName("a server's message is repeated up to a bound, cut with an ellipsis and never inside a surrogate pair")
     void aServersMessageIsBounded() {
         String huge = "x".repeat(2_000_000);

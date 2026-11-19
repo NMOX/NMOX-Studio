@@ -3627,6 +3627,7 @@
         "prompt": "1>",
         "snippets": [
           "hello:main().",
+          "hello:squares([1,2,3]).",
           "gleam@int:to_string(42).",
           "gleam@list:map([1,2,3], fun(X) -> X * 2 end).",
           "gleam@string:uppercase(<<\"hello\">>)."
@@ -3640,14 +3641,18 @@
       "files": [
         {
           "path": "gleam.toml",
-          "content": "name = \"hello\"\nversion = \"1.0.0\"\n\n[dependencies]\ngleam_stdlib = \">= 0.34.0 and < 2.0.0\"\n"
+          "content": "name = \"hello\"\nversion = \"1.0.0\"\n\n[dependencies]\ngleam_stdlib = \">= 0.34.0 and < 2.0.0\"\n\n[dev-dependencies]\ngleeunit = \">= 1.0.0 and < 2.0.0\"\n"
         },
         {
           "path": "src/hello.gleam",
-          "content": "import gleam/io\nimport gleam/list\nimport gleam/int\n\npub fn main() {\n  io.println(\"Hello, Gleam!\")\n\n  [1, 2, 3, 4, 5]\n  |> list.map(fn(n) { n * n })\n  |> list.map(int.to_string)\n  |> list.each(io.println)\n}\n"
+          "content": "import gleam/io\nimport gleam/list\nimport gleam/int\n\npub fn main() {\n  io.println(\"Hello, Gleam!\")\n\n  [1, 2, 3, 4, 5]\n  |> squares\n  |> list.map(int.to_string)\n  |> list.each(io.println)\n}\n\npub fn squares(numbers: List(Int)) -> List(Int) {\n  list.map(numbers, fn(n) { n * n })\n}\n"
+        },
+        {
+          "path": "test/hello_test.gleam",
+          "content": "import gleeunit\nimport hello\n\npub fn main() {\n  gleeunit.main()\n}\n\npub fn squares_test() {\n  assert hello.squares([1, 2, 3]) == [1, 4, 9]\n}\n"
         }
       ],
-      "tutorial": "# Gleam\n\nGleam is a statically typed language for the Erlang VM: Rust-flavored syntax, a friendly compiler that explains its errors, and the BEAM's legendary concurrency underneath. Everything compiles to plain Erlang, so the whole OTP ecosystem is yours.\n\n## Your REPL\n\nGleam has no REPL of its own — click **START** and the studio runs `gleam shell`, which compiles this project and drops you into the *Erlang* shell with your Gleam modules loaded. Call them Erlang-style: `hello:main().` (note the trailing dot!). The stdlib compiles to modules like `gleam@list`.\n\n## The sample\n\n`src/hello.gleam` shows the pipe operator `|>` threading a list through map and print — the idiom Gleam shares with Elixir and F#. Run the whole program from the rack: aim at this folder and IGNITION's `gleam run` lane is already wired, as are FORGE (`gleam build`), VERITAS (`gleam test`), and CRATE (`gleam deps download`).\n\n## Try\n\n1. Add a function `pub fn double(x: Int) -> Int { x * 2 }` to `hello.gleam`, press START again, and call `hello:double(21).`\n2. Break the types on purpose — change `x * 2` to `x <> \"!\"` — and read the compiler's error. Gleam's error messages teach the language.\n3. `gleam add gleam_http` in SOLDER, then explore an HTTP client from the shell.\n",
+      "tutorial": "# Gleam\n\nGleam is a statically typed language for the Erlang VM: Rust-flavored syntax, a friendly compiler that explains its errors, and the BEAM's legendary concurrency underneath. Everything compiles to plain Erlang, so the whole OTP ecosystem is yours.\n\n## Your REPL\n\nGleam has no REPL of its own — click **START** and the studio runs `gleam shell`, which compiles this project and drops you into the *Erlang* shell with your Gleam modules loaded. Call them Erlang-style: `hello:main().` (note the trailing dot!). The stdlib compiles to modules like `gleam@list`.\n\n## The sample\n\n`src/hello.gleam` shows the pipe operator `|>` threading a list through a function of its own (`squares`), a map and a print — the idiom Gleam shares with Elixir and F#. `test/hello_test.gleam` holds one test of `squares`, written with `assert` and run by gleeunit, the dev-dependency in `gleam.toml`. Run the whole program from the rack: aim at this folder and IGNITION's `gleam run` lane is already wired, as are FORGE (`gleam build`), VERITAS (`gleam test`, which answers `1 passed, no failures`), and CRATE (`gleam deps download`).\n\n## Try\n\n1. Add a function `pub fn double(x: Int) -> Int { x * 2 }` to `hello.gleam`, press START again, and call `hello:double(21).`\n2. Add `pub fn double_test() { assert hello.double(21) == 42 }` to `test/hello_test.gleam` and run VERITAS: two passed. Change 42 to 43 and read what a failing `assert` prints.\n3. Break the types on purpose — change `x * 2` to `x <> \"!\"` — and read the compiler's error. Gleam's error messages teach the language.\n4. `gleam add gleam_http` in SOLDER, then explore an HTTP client from the shell.\n",
       "blurb.es": "Un lenguaje amable y con tipos seguros para la máquina de Erlang: sintaxis con sabor a Rust y superpoderes de la BEAM.",
       "blurb.fr": "Un langage aimable et typé pour la machine Erlang : une syntaxe au goût de Rust, les super-pouvoirs de la BEAM.",
       "blurb.de": "Eine freundliche, typsichere Sprache für die Erlang-VM — Syntax im Rust-Stil, Kräfte der BEAM.",
@@ -3853,9 +3858,9 @@
         "snippets": []
       },
       "install": {
-        "mac": "brew install node && npx playwright install",
-        "linux": "sudo apt-get install -y nodejs npm && npx playwright install",
-        "windows": "winget install OpenJS.NodeJS.LTS && npx playwright install"
+        "mac": "brew install node && npx playwright install chromium",
+        "linux": "sudo apt-get install -y nodejs npm && npx playwright install chromium",
+        "windows": "winget install OpenJS.NodeJS.LTS && npx playwright install chromium"
       },
       "files": [
         {
@@ -3871,7 +3876,7 @@
           "content": "import { test, expect } from \"@playwright/test\";\n\n// A self-contained page: no server needed for your first green run.\nconst PAGE = `data:text/html,<h1 id=\"title\">Hello, Playwright</h1>\n<button onclick=\"document.getElementById('title').textContent='Clicked!'\">Click me</button>`;\n\ntest(\"the page greets us\", async ({ page }) => {\n  await page.goto(PAGE);\n  await expect(page.locator(\"#title\")).toHaveText(\"Hello, Playwright\");\n});\n\ntest(\"clicking the button changes the heading\", async ({ page }) => {\n  await page.goto(PAGE);\n  await page.click(\"text=Click me\");\n  await expect(page.locator(\"#title\")).toHaveText(\"Clicked!\");\n});\n"
         }
       ],
-      "tutorial": "# Playwright\n\nEnd-to-end tests drive a **real browser** — clicks, navigation, what the\nuser actually sees. Playwright is the modern standard: fast, parallel,\nand able to record tests for you.\n\n## 1. Install the pieces\n\nYou need Node (the rack told you if it's missing) and Playwright's\nbrowsers, one time:\n\n    npm install\n    npx playwright install\n\n## 2. First green run\n\nPress **START** on the run device (or run `npx playwright test`). The two\nstarter tests visit a self-contained page — no server needed — click a\nbutton, and assert what changed. You should see `2 passed`.\n\n## 3. Meet SPECTER, the E2E console\n\nOpen the Task Rack (⌘9) and rack **SPECTER** from the VERIFY shelf —\nthis project's `playwright.config.ts` makes its ENGINE=auto resolve to\nplaywright:\n\n- **RUN** runs the suite; flip **HEADED** to watch the browser work.\n- **REPORT** serves the HTML report — it lands on the ⇄ serving chip\n  and ⌘I like any dev server.\n- **RECORD** opens the codegen recorder: click around any page and\n  Playwright writes the test for you. If a dev server is running in the\n  rack, RECORD aims at it automatically.\n- **BROWSERS** re-runs `npx playwright install` when browsers are stale.\n\n## 4. Test a real app\n\nSet `baseURL` in `playwright.config.ts` to your dev server (VELOCITY's\nURL, say), then `await page.goto(\"/\")` — the **E2E Loop** preset wires\nVELOCITY's READY jack straight into SPECTER's RUN so the suite fires\nthe moment the server is up.\n\n## Troubleshooting\n\n- `browserType.launch: Executable doesn't exist` → run\n  `npx playwright install` (SPECTER's BROWSERS button does this).\n- Tests pass locally but not in CI → export the rack patch\n  (Project Studio ▸ Export CI) — SPECTER exports its RUN as a step.\n",
+      "tutorial": "# Playwright\n\nEnd-to-end tests drive a **real browser** — clicks, navigation, what the\nuser actually sees. Playwright is the modern standard: fast, parallel,\nand able to record tests for you.\n\n## 1. Install the pieces\n\nYou need Node (the rack told you if it's missing) and a browser for\nPlaywright to drive, one time:\n\n    npm install\n    npx playwright install chromium\n\nThe second line downloads Chromium, about 600 MB, into Playwright's own\ncache: allow it a few minutes on a slow connection. The starter tests\nuse Chromium only. Without the word `chromium` the same command fetches\nFirefox and WebKit as well, which is what you want once your config\nnames them under `projects`.\n\n## 2. First green run\n\nPress **START** on the run device (or run `npx playwright test`). The two\nstarter tests visit a self-contained page — no server needed — click a\nbutton, and assert what changed. You should see `2 passed`.\n\n## 3. Meet SPECTER, the E2E console\n\nOpen the Task Rack (⌘9) and rack **SPECTER** from the VERIFY shelf —\nthis project's `playwright.config.ts` makes its ENGINE=auto resolve to\nplaywright:\n\n- **RUN** runs the suite; flip **HEADED** to watch the browser work.\n- **REPORT** serves the HTML report — it lands on the ⇄ serving chip\n  and ⌘I like any dev server.\n- **RECORD** opens the codegen recorder: click around any page and\n  Playwright writes the test for you. If a dev server is running in the\n  rack, RECORD aims at it automatically.\n- **BROWSERS** runs `npx playwright install` when browsers are stale —\n  every browser Playwright supports, a larger download than step 1's.\n\n## 4. Test a real app\n\nSet `baseURL` in `playwright.config.ts` to your dev server (VELOCITY's\nURL, say), then `await page.goto(\"/\")` — the **E2E Loop** preset wires\nVELOCITY's READY jack straight into SPECTER's RUN so the suite fires\nthe moment the server is up.\n\n## Troubleshooting\n\n- `browserType.launch: Executable doesn't exist` → run\n  `npx playwright install chromium` (SPECTER's BROWSERS button installs\n  every browser).\n- Tests pass locally but not in CI → export the rack patch\n  (Project Studio ▸ Export CI) — SPECTER exports its RUN as a step.\n",
       "checkpoints": [
         {
           "label": "The example spec passes",

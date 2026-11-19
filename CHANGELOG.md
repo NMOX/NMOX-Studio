@@ -4,6 +4,121 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.13.1] - 2026-11-19
+
+**What a command line can prove: the debts in the ledger that needed a
+driver, a daemon or a toolchain rather than a screen.** The first session
+worked from a terminal instead of the desktop app. It opened with a
+measurement of its own: `CLAUDE.md`, the file every coding session reads
+first, held 626,700 characters against a reader that stops at 150,000,
+so the working method and the build commands had been arriving behind a
+warning for months. Then the open ledger was read for what could be
+settled by running something. Docker was started, three database
+servers were asked real questions, and each recipe changed here was
+built and run.
+
+### Security
+
+- **A MongoDB or CouchDB host could carry more than a name** (ledger 142
+  had this as a hypothesis; it is measured now, against the MongoDB
+  driver this build ships and `java.net.URI`). The two document backends
+  build their addresses the way the JDBC ones did, from a host field a
+  `git clone` can bring in `.nmoxdb.json`. A MongoDB host of
+  `db.internal/?proxyHost=elsewhere&x=` sent the session through a SOCKS
+  proxy the dialog never showed; `db.internal/admin?authMechanism=PLAIN&x=`
+  made the keychain password itself travel where the default sends a
+  proof of it; and either one dropped the two five-second timeouts
+  appended after the host. A CouchDB host of `db.internal@elsewhere`
+  is user-info and a host to `java.net.URI`: the request, and its Basic
+  credentials, went to `elsewhere`. One rule now holds every server
+  engine (`DbClient.hostCarriesUrlSyntax`, with `@` added to it): Test
+  and Connect refuse in the sentence the JDBC engines already used, in
+  fifteen languages, no connection string is built, and no CouchDB
+  request of any kind is made. `HostileDocumentHostTest` stands a
+  loopback server in for the other host and passes when it hears
+  nothing.
+
+### Fixed
+
+- **A Yarn Plug'n'Play project got a Dockerfile whose image could not
+  start.** Plug'n'Play is the default of Yarn 2 and later; there is no
+  `node_modules`, the recipe starts with `npm start`, and the packages
+  sat in root's home where the `node` user cannot read them. Built and
+  run to see it: `MODULE_NOT_FOUND`. The server recipe now keeps the
+  packages under `/app/.yarn` and tells node where the map is
+  (`NODE_OPTIONS`, set after the install, with the ESM loader beside it
+  for a `"type": "module"` project), and the `.dockerignore` keeps this
+  machine's `.pnp.cjs` and cache out of the image. Proven with a
+  dependency under CommonJS and under ES modules.
+- **Yarn 4 leaves devDependencies out of the image.** The file used to
+  say "yarn 2+ has no --production install". Measured on 4.9.2, 3.8.7
+  and 2.4.3 in the recipe's own base image: 4 has
+  `yarn workspaces focus --all --production` built in and it removes
+  what only devDependencies brought; 2 and 3 need a plugin and keep the
+  old line, which now says why. The major is read from the
+  `packageManager` pin, else from the release `yarnPath` names.
+- **A Deno project is started by what it holds.** The recipe cached and
+  started `main.ts` whatever the project was: one whose entry is
+  `server.ts`, or one with no `start` task, built an image that could
+  not start. It now uses the `start` task when `deno.json` or
+  `deno.jsonc` has one (read as text, since a JSON parser refuses the
+  comments), else the entry file found among the usual names, else it
+  says that no start command was detected, as the Bun and Python recipes
+  do.
+- **A Rust crate that builds only a library** (`src/lib.rs`, and no
+  `src/main.rs`, `src/bin` or `[[bin]]`) got a recipe that copied a
+  binary cargo never built. Its file now compiles the crate and says
+  there is nothing to start.
+- **A refused login is not a certificate problem.** For MySQL and
+  MariaDB, any connect failure holding "ssl" or "tls" beside
+  "certificate" or "handshake" became the sentence about the server's
+  certificate, and a user named `tls_certificate_bot` with a wrong
+  password got it. The live servers gave the rule its edge: a refused
+  login arrives with SQLSTATE 28000, on mysql:8.4 and mariadb:11, over
+  TLS and without, and that state is now the server's own verdict. What
+  mysql:8.4 really answers a verified connection to its self-signed
+  certificate is pinned beside it and keeps the sentence.
+- **A Services-window connection's refusal no longer names a box it
+  does not have.** Its failures ran through the same TLS sentences, which
+  tell the reader to tick or untick *Use TLS*; a Services entry has no
+  such box. It gets the driver's own words.
+- **`::1` connects to MongoDB and CouchDB.** A bare IPv6 address was
+  concatenated as typed: the MongoDB driver threw and `java.net.URI`
+  answered a null host. It is bracketed where a URL needs it.
+- **The Gleam learning space has a test.** Its tutorial called the
+  `gleam test` lane "already wired" and the space shipped none, so the
+  lane exited 1. It ships `test/hello_test.gleam` and gleeunit now:
+  `1 passed, no failures` on gleam 1.19.2, with `gleam run` and the
+  shell snippets run against the same files.
+- **The Playwright space downloads one browser, and says what it
+  costs.** Its install line fetched Chromium, Firefox and WebKit for
+  tests that use Chromium alone. It names `chromium`, and the tutorial
+  says the download is about 600 MB.
+
+### Changed
+
+- **`CLAUDE.md` is 26,000 characters, and a gate keeps it loadable.**
+  Each ship had put its status paragraph above the earlier ones on one
+  line (315,000 characters) and added a line to a version history
+  (294,000). Both moved verbatim to `docs/engineering/status-history.md`.
+  `ClaudeMdSizeGateTest` holds a budget far below the reader's limit and
+  the mechanism itself: one status paragraph, replaced by each ship.
+- **Three more recipes in the Dockerize proof**: Yarn 4 under
+  Plug'n'Play and a Deno project with no start task, built and answered
+  on a real daemon for this release with the two recipes beside them.
+
+### Not verified
+
+- For the record, not a gap: v3.13.0, tagged on 2026-11-13, was
+  published on 2026-11-19. Apple's notary answered 403 until a pending
+  agreement was accepted; the same run's failed jobs were then re-run.
+  No tag moved.
+- The Yarn and Deno fixtures in the runner proof have no dependencies;
+  the dependency cases were built and run by hand. A zero-install
+  project that commits `.yarn/cache` was not built.
+- Nothing here was looked at on a screen: no dialog was opened. The
+  refusals are the ones the JDBC engines already show.
+
 ## [3.13.0] - 2026-11-13
 
 **The refresh: everything the product generates, vendors and pins,
@@ -26657,6 +26772,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.13.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.13.0...v3.13.1
 [3.13.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.12.0...v3.13.0
 [3.12.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.11.0...v3.12.0
 [3.11.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.10.0...v3.11.0
