@@ -207,7 +207,9 @@ class DockerizeFactsTest {
 
         Files.delete(dir.resolve(".yarnrc.yml"));
         write(dir, "package.json", "{\"name\":\"y\",\"packageManager\":\"yarn@4.5.0\"}\n");
-        assertThat(dockerfile(dir, ProjectKind.NODE)).contains("RUN yarn install --immutable\n");
+        assertThat(dockerfile(dir, ProjectKind.NODE))
+                .as("a yarn 4 pin: immutable, then devDependencies left out (yarnBerryProductionInstall)")
+                .contains("RUN yarn install --immutable && yarn workspaces focus --all --production\n");
         write(dir, "package.json", "{\"name\":\"y\",\"packageManager\":\"yarn@1.22.22\"}\n");
         assertThat(dockerfile(dir, ProjectKind.NODE)).contains("RUN yarn install --frozen-lockfile --production\n");
     }
