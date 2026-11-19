@@ -51,7 +51,7 @@ class ClaudeMdSizeGateTest {
     @DisplayName("there is one status paragraph: a ship replaces it, and the outgoing one goes to the history file")
     void oneStatusParagraph() throws IOException {
         String text = Files.readString(CLAUDE_MD, StandardCharsets.UTF_8);
-        assertThat(count(text, "**Status**: shipping (v"))
+        assertThat(count(text, "**Status**: "))
                 .as("status paragraphs in CLAUDE.md").isEqualTo(1);
         assertThat(count(text, "**Before that"))
                 .as("an earlier release's status stacked under the current one: this is how the file grew to "
