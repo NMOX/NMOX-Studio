@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-11-19 (3.13.1, prepared and not tagged). The
+*Currency addendum 2026-11-19 (3.13.1). The
 first session run from a terminal rather than the desktop app. What it
 taught:
 
@@ -20,8 +20,9 @@ taught:
    answer, and nothing about a screen.** The session changed no window
    and says so.
 
-Blocked, and only David can clear it: Apple's notary agreement. v3.13.0
-is tagged with no release, and 3.13.1 waits behind it.*
+v3.13.0 sat tagged with no release for six days behind Apple's notary
+agreement, which only David could accept. He did on 2026-11-19; the same
+run's failed jobs were re-run and published it, and 3.13.1 followed.*
 
 *Currency addendum 2026-11-13 (3.13.0, the refresh). The brief was four
 hours: review and reconsider every area, bump what can be bumped, build

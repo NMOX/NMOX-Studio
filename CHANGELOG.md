@@ -109,9 +109,10 @@ built and run.
 
 ### Not verified
 
-- v3.13.0 still has no release: Apple's notary answered 403 again on
-  2026-11-19 (a required agreement is missing or has expired). This
-  version was prepared behind it and is not tagged.
+- For the record, not a gap: v3.13.0, tagged on 2026-11-13, was
+  published on 2026-11-19. Apple's notary answered 403 until a pending
+  agreement was accepted; the same run's failed jobs were then re-run.
+  No tag moved.
 - The Yarn and Deno fixtures in the runner proof have no dependencies;
   the dependency cases were built and run by hand. A zero-install
   project that commits `.yarn/cache` was not built.
