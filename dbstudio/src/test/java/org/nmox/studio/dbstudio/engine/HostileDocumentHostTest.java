@@ -121,6 +121,10 @@ class HostileDocumentHostTest {
                 List<QueryResult> run = backend.runConsole("{\"selector\":{}}", 10);
                 assertThat(run).as("the console, %s", host).allMatch(QueryResult::isError);
             }
+            // with no password stored the refusal is still this sentence alone: Test answers
+            // before the request is attempted, so no "enter a password" advice is added to it
+            CouchBackend noPassword = new CouchBackend(spec(DbEngine.COUCHDB, "db.internal.invalid@127.0.0.1", port), null);
+            assertThat(noPassword.test()).isEqualTo(Bundle.DbClient_carriesOptions());
             assertThat(heard).as("the other host heard nothing").isEmpty();
         } finally {
             other.stop(0);
