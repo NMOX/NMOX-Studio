@@ -150,10 +150,10 @@ class CloudLinksSurviveRefusalTest {
         // line afterwards is a race in this fork: no NotificationDisplayer is
         // registered here, so the platform's stand-in writes each balloon onto
         // the status line as a Message that clears the line when the garbage
-        // collector reaches it (StatusDisplayer's default finalize()). That
-        // read "" once on a Linux runner (2026-11-19), and when it did not, it
-        // read the BALLOON's text, which also carries the id: the assertion
-        // passed with the designer's own status sentence deleted.
+        // collector reaches it (StatusDisplayer's default finalize(), read
+        // from RELEASE310's bytecode). The line read "" once on a Linux runner
+        // (2026-11-19); and a line read afterwards holds the balloon's text,
+        // not the designer's sentence, which is the one this test is about.
         java.util.List<String> said = new java.util.concurrent.CopyOnWriteArrayList<>();
         javax.swing.event.ChangeListener heard = e ->
                 said.add(org.openide.awt.StatusDisplayer.getDefault().getStatusText());
