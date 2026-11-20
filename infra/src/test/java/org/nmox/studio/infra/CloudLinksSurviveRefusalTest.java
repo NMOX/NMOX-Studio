@@ -146,6 +146,18 @@ class CloudLinksSurviveRefusalTest {
         String web = writeUndeployed(dir);
         InfraDesignerTopComponent designer = loaded(dir);
         deployed(designer, web, "777");
+        // Every text the status line is GIVEN, as it is given. Reading the
+        // line afterwards is a race in this fork: no NotificationDisplayer is
+        // registered here, so the platform's stand-in writes each balloon onto
+        // the status line as a Message that clears the line when the garbage
+        // collector reaches it (StatusDisplayer's default finalize()). That
+        // read "" once on a Linux runner (2026-11-19), and when it did not, it
+        // read the BALLOON's text, which also carries the id: the assertion
+        // passed with the designer's own status sentence deleted.
+        java.util.List<String> said = new java.util.concurrent.CopyOnWriteArrayList<>();
+        javax.swing.event.ChangeListener heard = e ->
+                said.add(org.openide.awt.StatusDisplayer.getDefault().getStatusText());
+        org.openide.awt.StatusDisplayer.getDefault().addChangeListener(heard);
 
         InfraGraph theirs = new InfraGraph(); // their version dropped web-1
         theirs.addNode(NodeKind.DROPLET, 200, 20).label = "worker";
@@ -162,8 +174,11 @@ class CloudLinksSurviveRefusalTest {
                 .as("held, never dropped with the canvas").containsExactly("777");
         assertThat(deployLog(dir)).as("the deploy log names the resource and its id")
                 .contains("web-1").contains("777").contains(GraphIO.DEFAULT_FILENAME);
-        assertThat(org.openide.awt.StatusDisplayer.getDefault().getStatusText())
-                .as("and so does the status line").contains("777");
+        org.openide.awt.StatusDisplayer.getDefault().removeChangeListener(heard);
+        PendingCloudLinks.Link held = pending(designer).pending().get(0);
+        assertThat(said).as("and so does the status line, in the designer's own sentence")
+                .contains(org.nmox.studio.core.util.PlainStatus.text(
+                        InfraDesignerTopComponent.unsavedLinkSentence(held)));
     }
 
     @Test
